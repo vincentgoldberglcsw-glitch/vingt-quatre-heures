@@ -209,6 +209,9 @@ let coreG=new THREE.IcosahedronGeometry(1,2);coreG.deleteAttribute('uv');coreG.d
 const treePos=[];
 for(let i=0;i<NS;i+=3)for(const sd of [-1,1])for(let k=0;k<3;k++){
   if(rnd()<.14)continue;let o=sd*(22+k*14+rr(0,16)),minD=16;
+  if(DRIVE&&sd<0&&i>Z.wilma+20/SEG&&i<Z.tu0-130/SEG){   // Wilma Chan Way: a thick belt of trees on the right. Own hash for spacing and jitter, so the seeded scenery after this is unchanged
+    const hh=n=>{const s=Math.sin(i*12.9898+k*78.233+n*37.719)*43758.5453;return s-Math.floor(s);};
+    if(hh(0)>=.3){const oo=-(13.5+k*6.5+hh(1)*4+XW[i]),x=P[i].x+Nn[i].x*oo+(hh(2)-.5)*3,z=P[i].z+Nn[i].z*oo+(hh(3)-.5)*3;if(farFromRoad(x,z,10))treePos.push([x,z]);}}
   if(DRIVE){const zn=zoneOf(i),cr=(i-Z.paru)/(92/SEG);if(zn==='town'){if(k||i%21||(i>Z.wt0-5&&i<Z.wt0+70)||(i>Z.paru&&i<Z.central&&Math.abs(cr-Math.round(cr))*92<16))continue;o=sd*11.2;minD=9.5;}else if(zn==='freeway'){if(k||rnd()<.6||H[i]>1)continue;o=sd*rr(26,60);}else if(zn==='hills'){if(rnd()<.6||H[i]>.5)continue;}else continue;}   // street trees in town, a few by the freeways, oaks at the foot of the Richmond hills; the redwoods are their own
   else if(sd>0&&i>GS0-8&&i<GS1+8&&Math.abs(o)<36||sd<0&&i>GS0&&i<GS1)continue;
   const x=P[i].x+Nn[i].x*o+rr(-3,3)*(minD<16?.2:1),z=P[i].z+Nn[i].z*o+rr(-3,3)*(minD<16?.2:1);if(farFromRoad(x,z,minD))treePos.push([x,z]);}
@@ -501,6 +504,7 @@ await BOOT.step('BORING THE TUBES',.29);
   tunL=new THREE.PointLight(0xffc27a,0,46,1.3);scene.add(tunL);
 
 await BOOT.step('BUILDING ALAMEDA · HOUSE BY HOUSE',.33);
+if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>setTimeout(r,2500))]).catch(()=>{});   // the rounded hand-lettered face on the Fuzzy Caterpillar billboard (falls back to a system face offline)
   // ---- Alameda: craftsman bungalows, Victorians and corner apartments, lawns and hedges, parked cars, the shops on Central, the house at 1611
   const wallT=canvas(256,256,(g,w,h)=>{g.fillStyle='#fff';g.fillRect(0,0,w,h);g.strokeStyle='rgba(0,0,0,.09)';g.lineWidth=1;for(let y=0;y<h;y+=9){g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke();}
     const win=(x,y,ww,hh)=>{g.fillStyle='#fbfaf4';g.fillRect(x-5,y-5,ww+10,hh+10);g.fillStyle='#27323a';g.fillRect(x,y,ww,hh);g.strokeStyle='#fbfaf4';g.lineWidth=3;g.beginPath();g.moveTo(x+ww/2,y);g.lineTo(x+ww/2,y+hh);g.moveTo(x,y+hh/2);g.lineTo(x+ww,y+hh/2);g.stroke();};
@@ -572,7 +576,7 @@ await BOOT.step('BUILDING ALAMEDA · HOUSE BY HOUSE',.33);
       for(let k=0;k<8;k++){const x=120+k*52,y=226-Math.sin(k*.9)*20,r=k?34:26;g.fillStyle=k%2?'#58b548':'#e6ef5a';g.beginPath();g.arc(x,y,r,0,7);g.fill();g.fillStyle='#1c1c1c';g.fillRect(x-10,y+r-4,6,16);g.fillRect(x+6,y+r-4,6,16);}
       const hx=536,hy=200;g.fillStyle='#f0c23a';g.beginPath();g.arc(hx,hy,46,0,7);g.fill();g.fillStyle='#fff';for(const dx of[-15,15]){g.beginPath();g.arc(hx+dx,hy-8,11,0,7);g.fill();}g.fillStyle='#1c1c1c';for(const dx of[-13,17]){g.beginPath();g.arc(hx+dx,hy-7,5,0,7);g.fill();}
       g.strokeStyle='#1c1c1c';g.lineWidth=4;g.beginPath();g.arc(hx,hy+4,26,.2,2.94);g.stroke();
-      g.fillStyle='#22407a';g.font='italic 900 84px Georgia,serif';g.textAlign='center';g.fillText('Fuzzy Caterpillar School',w/2,408,960);g.strokeStyle='#1c2a4a';g.lineWidth=16;g.strokeRect(8,8,w-16,h-16);});
+      g.font='96px Chewy,"Comic Sans MS",cursive';g.textAlign='center';g.lineJoin='round';g.strokeStyle='#fffdf2';g.lineWidth=14;g.strokeText('Fuzzy Caterpillar School',w/2,412,960);g.fillStyle='#22407a';g.fillText('Fuzzy Caterpillar School',w/2,412,960);g.strokeStyle='#1c2a4a';g.lineWidth=16;g.strokeRect(8,8,w-16,h-16);});
     const i=Z.central+m(320),bb=new THREE.Group(),fm=new THREE.MeshStandardMaterial({map:bt,roughness:.7,emissiveMap:bt,emissive:0xffffff,emissiveIntensity:.25});const bd=new THREE.Mesh(new THREE.BoxGeometry(28,12.6,.4),[steelM,steelM,steelM,steelM,fm,steelM]);bd.position.y=13.6;bb.add(bd);
     for(const x of[-12.6,12.6])B(.7,8,.7,steelM,x,4,-.3,0,bb);bb.traverse(o=>{o.castShadow=true;});off(i,0,0,bb.position);bb.rotation.y=yaw(i)+Math.PI;scene.add(bb);}
   { // ---- telephone poles down San Antonio and Paru, wires strung between them, and crows sitting on the crossarms
@@ -928,8 +932,8 @@ function livery(o,M,res){const ky=4.4/M.CL;
     if(!M.lamp)for(const x of[92,420]){g.fillStyle='#d9d2b4';g.beginPath();g.ellipse(x,150,34,58,0,0,7);g.fill();
       for(const yy of[128,172]){const rg=g.createRadialGradient(x,yy,2,x,yy,18);rg.addColorStop(0,'#fffbe8');rg.addColorStop(.6,'#cfc9ae');rg.addColorStop(1,'#77735f');g.fillStyle=rg;g.beginPath();g.arc(x,yy,17,0,7);g.fill();}
       g.strokeStyle='#202224';g.lineWidth=3.5;g.beginPath();g.ellipse(x,150,34,58,0,0,7);g.stroke();g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=1.5;g.beginPath();g.ellipse(x-6,140,22,44,0,3.4,4.7);g.stroke();}
-    g.fillStyle='#f3efe2';g.beginPath();g.ellipse(w/2,186,56,50,0,0,7);g.fill();g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=1.5;g.stroke();
-    g.save();g.translate(w/2,186);g.rotate(Math.PI);g.fillStyle='#111';g.font='900 70px Arial Black,Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(o.num,0,4);g.restore();
+    if(!M.cls){g.fillStyle='#f3efe2';g.beginPath();g.ellipse(w/2,186,56,50,0,0,7);g.fill();g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=1.5;g.stroke();   // race number on the nose (the classic cars carry none)
+    g.save();g.translate(w/2,186);g.rotate(Math.PI);g.fillStyle='#111';g.font='900 70px Arial Black,Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(o.num,0,4);g.restore();}
     g.fillStyle='#0d0e0f';for(const x of[76,436]){g.beginPath();g.moveTo(x-9,268);g.lineTo(x+9,268);g.lineTo(x+3,306);g.lineTo(x-3,306);g.fill();}
     for(const[x,y]of[[112,350],[400,350]]){g.fillStyle='#b9b6aa';g.beginPath();g.arc(x,y,9,0,7);g.fill();g.strokeStyle='#33352f';g.lineWidth=2;g.stroke();g.beginPath();g.moveTo(x-6,y);g.lineTo(x+6,y);g.stroke();}
     g.fillStyle='#c9c6b8';for(const[x,y]of[[170,300],[342,300],[60,326],[452,326],[170,700],[342,700],[30,700],[482,700]]){g.beginPath();g.arc(x,y,3.2,0,7);g.fill();}
@@ -996,7 +1000,7 @@ function makeCar(o){
     if(o.model==='k'){const f=add(new THREE.Mesh(FING,paint),sd*.8-.012,tailY-.03,zR+.62);f.rotation.y=Math.PI/2;f.scale.set(.6,.62,1);}
     if(o.model==='lh'){const f=add(new THREE.Mesh(FING,paint),sd*(tw-.1)-.012,tailY-.04,zR+1.05);f.rotation.y=Math.PI/2;f.scale.set(1.05,1.05,1);}
     if(o.model==='o')add(new THREE.Mesh(new THREE.BoxGeometry(.5,.02,.2),acc),sd*.5,tailY+.03,zR+.08).rotation.x=.35;
-    const rd=decal(o.rt,.4,.4);add(rd,sd*.985,.36,-.12,false);rd.rotation.order='YXZ';rd.rotation.set(-.12,sd*Math.PI/2,0);
+    if(!M.cls){const rd=decal(o.rt,.4,.4);add(rd,sd*.985,.36,-.12,false);rd.rotation.order='YXZ';rd.rotation.set(-.12,sd*Math.PI/2,0);}
     [[.5,.3,0],[.5,.2,1],[-.62,.3,2]].forEach(([z,y,k])=>{const d=decal(DEC[k],.24,.08);add(d,sd*.99,y,z,false);d.rotation.order='YXZ';d.rotation.set(-.1,sd*Math.PI/2,0);});
     const tl=add(new THREE.Mesh(cyl(.055,.055,.03,14),tailM),sd*tw*.42,.14+M.B[0]*.62,zR-.005,false);tl.rotation.x=Math.PI/2;
     const ex=add(new THREE.Mesh(new THREE.CylinderGeometry(.075,.04,.42,14,1,true),std({color:0x6a665c,metalness:.85,roughness:.35,side:THREE.DoubleSide})),sd*.2,.24,zR-.1);ex.rotation.x=-Math.PI/2+.12;}
@@ -1021,10 +1025,10 @@ const LIVS={   // each car has its own set of colours
   lh:[{name:'PSYCHÉDÉLIQUE',d:'Purple with green swirls. No. 3.',base:'#4a2f7a',swirl:'#7fc46a',num:'3',helmet:'#e6e1d0'},{name:'ARGENT RAYÉ',d:'Silver with blue and red stripes. No. 21.',base:'#c9cbc8',twin:'#1f3358',stripe:'#b3241c',pin:'#7a1512',num:'21',helmet:'#1f3358'},{...GULF,d:GULF.d+' No. 18.',num:'18'}],
   f512:[{name:'ROSSO CORSA',d:'Racing red, white band and roundel, gold wheels. No. 7.',base:'#c4231a',band:'#f3efe2',num:'7',helmet:'#e6e1d0',rim:'gold'},{name:'GIALLO',d:'Yellow with a red stripe, gold wheels. No. 9.',base:'#e3b92e',stripe:'#b3241c',pin:'#3a0c08',num:'9',helmet:'#1a1a1a',rim:'gold'},{name:'ROSSO E BLU',d:'Red with a blue and white nose band. No. 11.',base:'#b81f18',band:'#1f3f8a',nose:'#f3efe2',num:'11',helmet:'#1f3f8a',rim:'gold'}],
   gt40:[{name:'WHITE AND BLUE',d:'White with twin blue stripes. No. 2.',base:'#ece8dc',twin:'#1f3f8a',num:'2',helmet:'#1f3f8a'},{name:'BLACK AND SILVER',d:'Black with a silver stripe. No. 1.',base:'#1c1d1f',stripe:'#b9bcc0',pin:'#55585c',num:'1',helmet:'#b9bcc0'},{...GULF,d:GULF.d+' No. 6.',num:'6'}],
-  m1:[{name:'ORANGE',d:'Bright orange, as it left the factory. No. 41.',base:'#e2501c',num:'41',helmet:'#e6e1d0'},{name:'PROCAR',d:'White with blue and red stripes. No. 40.',base:'#ece8dc',twin:'#1f6fd0',stripe:'#c8302a',pin:'#3a2a8a',num:'40',helmet:'#1f6fd0'},{name:'NOIR',d:'Black with a silver line. No. 42.',base:'#17181a',pin:'#b9bcc0',stripe:'#2a2c30',num:'42',helmet:'#b9bcc0'}],
-  p904:[{name:'ROT',d:'Signal red. No. 31.',base:'#c4231a',num:'31',helmet:'#e6e1d0'},{name:'SILBER',d:'Works silver with a red nose. No. 32.',base:'#c9cbc8',nose:'#b3241c',num:'32',helmet:'#b3241c'},{name:'BLAU',d:'Dark blue with a white stripe. No. 33.',base:'#1f3f8a',stripe:'#ece8dc',pin:'#0e1830',num:'33',helmet:'#ece8dc'}],
-  ghibli:[{name:'VERDE GEMMA',d:'Metallic lime-gold green. No. 51.',base:'#a8b02a',num:'51',helmet:'#e6e1d0'},{name:'BLU SERA',d:'Midnight blue. No. 52.',base:'#141c36',num:'52',helmet:'#b9bcc0'},{name:'ROSSO',d:'Deep red. No. 53.',base:'#b81f18',num:'53',helmet:'#1a1a1a'}],
-  bb:[{name:'ROSSO E NERO',d:'Burgundy red over black. No. 61.',base:'#9a1f2a',edge:'#141414',num:'61',helmet:'#e6e1d0'},{name:'NERO',d:'Black, with a white nose panel. No. 62.',base:'#141416',nose:'#e6e1d0',num:'62',helmet:'#c4231a'},{name:'GIALLO E NERO',d:'Yellow over black. No. 63.',base:'#e3b92e',edge:'#141414',num:'63',helmet:'#141414'}]};
+  m1:[{name:'ORANGE',d:'Bright orange, as it left the factory.',base:'#e2501c',num:'41',helmet:'#e6e1d0'},{name:'PROCAR',d:'White with blue and red stripes.',base:'#ece8dc',twin:'#1f6fd0',stripe:'#c8302a',pin:'#3a2a8a',num:'40',helmet:'#1f6fd0'},{name:'NOIR',d:'Black with a silver line.',base:'#17181a',pin:'#b9bcc0',stripe:'#2a2c30',num:'42',helmet:'#b9bcc0'}],
+  p904:[{name:'ROT',d:'Signal red.',base:'#c4231a',num:'31',helmet:'#e6e1d0'},{name:'SILBER',d:'Works silver with a red nose.',base:'#c9cbc8',nose:'#b3241c',num:'32',helmet:'#b3241c'},{name:'BLAU',d:'Dark blue with a white stripe.',base:'#1f3f8a',stripe:'#ece8dc',pin:'#0e1830',num:'33',helmet:'#ece8dc'}],
+  ghibli:[{name:'VERDE GEMMA',d:'Metallic lime-gold green.',base:'#a8b02a',num:'51',helmet:'#e6e1d0'},{name:'BLU SERA',d:'Midnight blue.',base:'#141c36',num:'52',helmet:'#b9bcc0'},{name:'ROSSO',d:'Deep red.',base:'#b81f18',num:'53',helmet:'#1a1a1a'}],
+  bb:[{name:'ROSSO E NERO',d:'Burgundy red over black.',base:'#9a1f2a',edge:'#141414',num:'61',helmet:'#e6e1d0'},{name:'NERO',d:'Black, with a white nose panel.',base:'#141416',nose:'#e6e1d0',num:'62',helmet:'#c4231a'},{name:'GIALLO E NERO',d:'Yellow over black.',base:'#e3b92e',edge:'#141414',num:'63',helmet:'#141414'}]};
 const LIV=()=>{const a=LIVS[G.model];return a[G.liv%a.length];};
 const RIV=[
   {base:'#b3241c',nose:'#e3c94a',edge:'#e3c94a',num:'5',helmet:'#d8d2c0',model:'f512',name:'J. AUBERT'},
@@ -1040,7 +1044,7 @@ const ents=[];
 function disposeCar(c){scene.remove(c);c.traverse(m=>{if(m.material&&m.material.map&&m.material!==wallMat&&!DEC.includes(m.material.map)&&m.material.map!==glowTex)m.material.map.dispose();});}
 function buildHero(model){
   if(hero)disposeCar(hero);
-  hero=mk({...LIV(),res:2,model});$('hnum').textContent=LIV().num;
+  hero=mk({...LIV(),res:2,model});$('hnum').textContent=LIV().num;$('hnumW').style.display=MODELS[model].cls?'none':'';
   // cockpit interior (only shown in cockpit camera)
   interior=new THREE.Group();const IN=MODELS[model].int||{},dashM=std({color:IN.dash||0x141414,roughness:.7}),rimM=std({color:IN.rim||0x141414,roughness:IN.rim?.45:.7}),spokeM=IN.spoke?std({color:IN.spoke,metalness:.7,roughness:.35}):chrome,blk=std({color:0x141414,roughness:.7}),suit=std({color:0xe8e4d6,roughness:.9});
   const dash=new THREE.Mesh(new THREE.BoxGeometry(1.25,.1,.3),dashM);dash.position.set(0,.54,.78);interior.add(dash);
@@ -1167,7 +1171,7 @@ const WX={sun:{name:'GRAND SOLEIL',d:'Bright sun. Hot track, full grip.',grip:1.
   hail:{name:'GRÊLE',d:'Hail. Slippery, and stones knock the car about.',grip:.76,sunK:.36,cov:1,fn:40,ff:480,wet:.5,snow:0},
   snow:{name:'NEIGE',d:'Snow. Under half grip, wheelspin, heavy drag off line.',grip:.42,sunK:.5,cov:1,fn:26,ff:310,wet:0,snow:1}};
 const WKEYS=['sun','overcast','rain','hail','snow'];
-if(DRIVE)Object.assign(WX.overcast,{name:'COUVERT',d:'Overcast, dark clouds over the bay. Normal grip.',cov:.9,fn:200,ff:3400});   // the bay drive: a low, dark sky, but clear enough to see across the water
+if(DRIVE)Object.assign(WX.overcast,{name:'COUVERT',d:'Slightly overcast, with dark clouds rolling over the bay now and then. Normal grip.',cov:.5,fn:200,ff:3400});   // the bay drive: a light grey sky; updateWeather() darkens it from time to time
 const wx={...WX.overcast};
 const NR=1700,rainPos=new Float32Array(NR*6),rainG=new THREE.BufferGeometry();rainG.setAttribute('position',new THREE.BufferAttribute(rainPos,3));
 const rain=new THREE.LineSegments(rainG,new THREE.LineBasicMaterial({color:0xcfd8e0,transparent:true,opacity:.42,fog:false}));rain.frustumCulled=false;scene.add(rain);
@@ -1553,7 +1557,8 @@ function setTime(h,tm){
   const sn=wx.snow*lerp(.12,1,d);roadMat.roughness=lerp(.72,.2,wx.wet);roadMat.color.setScalar(lerp(1,.6,wx.wet));roadMat.emissive.setScalar(sn*.36);
   groundMat.emissive.setScalar(sn*.8);for(const m of LANDM)m.emissive.setScalar(sn*.8);dirtMat.emissive.setScalar(sn*.7);leafMat.emissive.setScalar(sn*.3);tuftMat.emissive.setScalar(sn*.6);
 }
-function updateWeather(rdt){const t=WX[G.weather],k=clamp(rdt*.9,0,1);for(const p of['grip','sunK','cov','fn','ff','wet','snow'])wx[p]=lerp(wx[p],t[p],k);}
+function updateWeather(rdt){const t=WX[G.weather],k=clamp(rdt*.9,0,1);for(const p of['grip','sunK','cov','fn','ff','wet','snow'])wx[p]=lerp(wx[p],t[p],k);
+  if(DRIVE&&G.weather==='overcast'){const s=Math.sin(G.t*.021)+.6*Math.sin(G.t*.0137+1.7),dark=sst(s,.75,1.35);wx.cov=lerp(wx.cov,t.cov+.36*dark,k);}}   // every few minutes a darker bank of cloud drifts over for a minute or so
 
 await BOOT.step('LOADING THE FILM',.92);
 /* ================= POST ================= */
@@ -1801,16 +1806,17 @@ function quakeStart(q){for(const o of CONES.list)o.visible=true;let n=0;   // tr
   for(const t of TRAF){if(n>=5)break;if(t.kind==='moto'&&n<4)continue;t.act=true;t.fall=null;t.g.visible=true;t.s=q.a*SEG-(t.vb>10?16:7)*(2.3+n*.9)-R(0,6);t.v=t.vb=t.kind==='buggy'?7:16;t.lt=n%2?-RW*.75:-RW*.25;t.lat=t.lt;t.g.rotation.set(0,0,0);n++;}}
 function quakeEnd(){for(const o of CONES.list)o.visible=false;}
 function placeVehicle(t){const i=wrapI(Math.floor(t.s/SEG)),j=wrapI(i+1);at(t.s,t.lat,0,t.g.position);const sl=(H[wrapI(i+1)]-H[wrapI(i-1)])/(2*SEG);t.g.rotation.set(-Math.atan(sl),yaw(i),0);t.ob.x=t.g.position.x;t.ob.z=t.g.position.z;}
-function trafficTick(dt,pe){const i0=PL.idx,zn=zoneArr[i0],road=i=>{const c=zoneArr[i];return(c===3&&i>Z.tu1+40&&!(i>Z.detour-60&&i<Z.detour+90))||c===4;},on=road(i0),bay=i0>=Z.b0-250&&i0<=Z.b1;
+function trafficTick(dt,pe){const i0=PL.idx,zn=zoneArr[i0],road=i=>{const c=zoneArr[i];return(c===3&&i>Z.tu1+40&&!(i>Z.detour-60&&i<Z.detour+90))||c===4;},on=road(i0),bay=i0>=Z.b0-250&&i0<=Z.b1,
+    rsr=i0>=Z.rb0-250&&i0<=Z.rb1,i880=i0>Z.tu1&&i0<Z.b0-250,gap=bay?30:rsr?90:70,spd=bay?1:1.2;   // I-880 and the San Rafael bridge: fewer vehicles, further apart and a bit quicker; the Bay Bridge stays busy for the earthquake
   for(const t of TRAF){
     if(t.fall){const F=t.fall;F.vy-=20*dt;t.g.position.x+=F.vx*dt;t.g.position.z+=F.vz*dt;t.g.position.y+=F.vy*dt;t.g.rotation.x+=F.w*dt;t.g.rotation.z+=F.w*.3*dt;t.ob.x=1e9;
       if(t.g.position.y<-44&&!F.sp){F.sp=1;sfxSplash();NOGY=1;for(let k=0;k<26;k++){const a=R(0,6.283),sp=R(2,8);puff(V.set(t.g.position.x,-44.6,t.g.position.z),Math.cos(a)*sp,R(5,16),Math.sin(a)*sp,R(.8,1.6),R(4,7),R(1.2,2.4),.8,0xeef2f4);}NOGY=0;}
       if(t.g.position.y<-60){t.fall=null;t.act=false;t.g.visible=false;}continue;}
-    const want=on&&(bay||t.n<9);
+    const want=on&&(bay||t.n<(rsr?4:i880?5:9));
     if(t.act){const ds=wdiff(t.s-pe.s),i=wrapI(Math.floor(t.s/SEG));if(ds<-160||ds>1000||(!want&&ds>-40)||!road(i)){t.act=false;t.g.visible=false;t.ob.x=1e9;}}
     if(!t.act){if(want&&Math.random()<dt*1.5){const s=wrapS(pe.s+R(300,850)),i=wrapI(Math.floor(s/SEG));if(road(i)&&!(QK.st&&i>QK.a-200&&i<QK.b+10)){const w=RW+XW[i],ln=[-.75,-.25,.25,.75][Math.random()*4|0]*w;
-        if(TRAF.every(o=>!o.act||Math.abs(wdiff(o.s-s))>30||Math.abs(o.lt-ln)>1.5)){t.act=true;t.s=s;t.lt=t.lat=ln;t.v=t.vb;t.g.visible=true;}}}continue;}
-    let v=t.vb;for(const o of TRAF){if(o===t||!o.act||o.fall||Math.abs(o.lt-t.lt)>1.5)continue;const d=wdiff(o.s-t.s);if(d>0&&d<(t.len+o.len)/2+14)v=Math.min(v,o.v*.9);}
+        if(TRAF.every(o=>!o.act||Math.abs(wdiff(o.s-s))>gap||Math.abs(o.lt-ln)>1.5)){t.act=true;t.s=s;t.lt=t.lat=ln;t.v=t.vb*spd;t.g.visible=true;}}}continue;}
+    let v=t.kind==='buggy'?t.vb:t.vb*spd;for(const o of TRAF){if(o===t||!o.act||o.fall||Math.abs(o.lt-t.lt)>1.5)continue;const d=wdiff(o.s-t.s);if(d>0&&d<(t.len+o.len)/2+14)v=Math.min(v,o.v*.9);}
     const dp=wdiff(pe.s-t.s);if(dp>0&&dp<(t.len/2+16)&&Math.abs(pe.lat-t.lat)<2.6)v=Math.min(v,Math.max(0,pe.v-2));   // don't run into the player from behind
     const i=wrapI(Math.floor(t.s/SEG));
     if(QK&&QK.st&&QK.t>2.2&&t.lat<-.2&&i>=QK.a&&i<=QK.b){const tg=T[i];t.fall={vx:tg.x*Math.max(t.v,5),vz:tg.z*Math.max(t.v,5),vy:1,w:R(.8,1.5)};sfxCrunch(.5);continue;}   // the road has gone from under it
@@ -2050,7 +2056,7 @@ function frame(manual){
   if(G.msgT>0){G.msgT-=rdt;if(G.msgT<=0)$('msg').innerHTML='';}
   updateWeather(rdt);
   updateLightning(rdt);announcerTick(rdt,pe);if(DRIVE)driveTick(rdt);
-  const hour=QS.has('t')?+QS.get('t'):DRIVE?(15.5+G.raceT/1500*24)%24:(()=>{const p=clamp(pe.dist/(LAPS*LEN),0,1);return (p<.5?16+p/.5*4.6:p<.74?20.6+(p-.5)/.24*8.6:29.2+(p-.74)/.26*10.8)%24;})();   // the three laps span the full 24 hours of light
+  const hour=QS.has('t')?+QS.get('t'):DRIVE?(15.5+G.raceT/4200*24)%24:(()=>{const p=clamp(pe.dist/(LAPS*LEN),0,1);return (p<.5?16+p/.5*4.6:p<.74?20.6+(p-.5)/.24*8.6:29.2+(p-.74)/.26*10.8)%24;})();   // the three laps span the full 24 hours of light
   if(G.state==='finish')G.finT+=rdt;
   if(flagman){const near=wdiff(S0-pe.s),wave=G.state==='finish'||(PL.lapN>=LAPS-1&&near<320&&near>-30);flagman.arm.rotation.z=wave?Math.sin(tm*9)*.75:lerp(flagman.arm.rotation.z,2.5,.1);flagman.flag.rotation.y=wave?Math.sin(tm*13)*.5:0;}
   // McQueen is out of the car, smoking, whenever he is not driving

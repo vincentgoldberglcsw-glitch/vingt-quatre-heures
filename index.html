@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#000000">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chewy&display=swap">
 <style>
   html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;color:#efe9d6;user-select:none}
   canvas{display:block}
@@ -43,7 +44,8 @@
   #title h1{font-size:40px}#title .opt b{font-size:19px}
   #trk{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}#trkL{flex:0 0 100%;font-size:11px;letter-spacing:.28em;color:#e9c98a}
   #trk button{flex:1;text-align:left;font:inherit;color:#efe9d6;background:rgba(8,10,12,.55);border:2px solid rgba(239,233,214,.35);padding:9px 10px;cursor:pointer;position:relative}
-  #trk button b{display:block;font-size:20px;letter-spacing:.06em}#trk button span{display:block;font-size:10px;letter-spacing:.08em;opacity:.8;margin-top:2px}
+  #trk button b{display:block;font-size:20px;letter-spacing:.06em;padding-right:22px}#trk button span{display:block;font-size:10px;letter-spacing:.08em;opacity:.8;margin-top:2px}
+  #trk button em{display:block;font-style:normal;font-size:13px;letter-spacing:.05em;margin-top:3px;color:#e9c98a}#trk button.on em{color:#3a2a10}#title.home #trk button em{font-size:17px}
   #trk button i{position:absolute;right:8px;top:6px;font-style:normal;font-size:11px;opacity:.7;border:1px solid currentColor;padding:0 5px}
   #homeH{display:none;font-size:40px;line-height:.95;font-weight:800;letter-spacing:.02em;margin-bottom:18px}#trkH{display:none;flex:0 0 100%;font-size:10px;letter-spacing:.14em;opacity:.8}
   #title.home h1,#title.home h2,#title.home .opt,#title.home .go,#title.home .keys{display:none}#title.home #homeH,#title.home #trkH{display:block}#title.home #trk button{padding:16px 12px}#title.home #trk button b{font-size:26px}
@@ -108,7 +110,7 @@
 <script>addEventListener('error',function(e){var s=document.getElementById('ldStage');if(s&&document.getElementById('load')){s.textContent='COULD NOT START: '+(e.message||'error');s.style.color='#ff5a3a';}});
 if(new URLSearchParams(location.search).get('mode')==='drive')document.getElementById('ldSub').textContent='ALAMEDA · AROUND THE BAY';</script>
 <div class="bar t"></div><div class="bar b"></div>
-<div class="hud hide" id="tl"><b id="pos">P6</b><span id="of"> / 8</span><br>S. McQUEEN &nbsp;·&nbsp; No. <span id="hnum">20</span> &nbsp;·&nbsp; <span id="mdl">917K</span><br><i id="clk">16:00</i> &nbsp;<span id="hr">HOUR 1 OF 24</span><br><span id="wxl">COUVERT</span></div>
+<div class="hud hide" id="tl"><b id="pos">P6</b><span id="of"> / 8</span><br>S. McQUEEN <span id="hnumW">&nbsp;·&nbsp; No. <span id="hnum">20</span></span> &nbsp;·&nbsp; <span id="mdl">917K</span><br><i id="clk">16:00</i> &nbsp;<span id="hr">HOUR 1 OF 24</span><br><span id="wxl">COUVERT</span></div>
 <div class="hud hide" id="tr">LAP <span id="lap">1</span><br>LAST <span id="last">–</span><br>BEST <span id="best">–</span></div>
 <div class="hud hide" id="lf"><b id="spd">0</b>KM/H<b id="mph">0</b>MPH<b id="rpmN">0</b>RPM<div id="rev"><div></div></div></div>
 <div class="hud hide" id="br"><b id="gear">1</b>GEAR<div id="steer"><div></div></div><div id="peds"><span><i id="pedB"></i></span><span><i id="pedT"></i></span></div></div>
@@ -120,7 +122,7 @@ if(new URLSearchParams(location.search).get('mode')==='drive')document.getElemen
 <div id="flash"></div><div id="flare"></div><div id="fade"></div>
 <div id="title">
   <h1>VINGT-QUATRE<br>HEURES</h1><h2>AN ENDURANCE FILM YOU CAN DRIVE · 1970</h2>
-  <div id="homeH">VINGT-QUATRE<br>HEURES</div><div id="trk"><div id="trkL">CHOOSE YOUR TRACK</div><button id="trk1"><i>1</i><b>LE MANS</b><span>The 24 Hours · 3-lap race</span></button><button id="trk2"><i>2</i><b>ALAMEDA</b><span>Free drive · tube · Bay Bridge</span></button><div id="trkH">◄ ► OR 1 / 2 TO CHOOSE &nbsp;·&nbsp; ENTER TO CONFIRM &nbsp;·&nbsp; OR CLICK</div></div>
+  <div id="homeH">VINGT-QUATRE<br>HEURES</div><div id="trk"><div id="trkL">CHOOSE YOUR TRACK</div><button id="trk1"><i>1</i><b>LES 24 HEURES DU MANS</b><em>The 24 Hours of Le Mans</em><span>3-lap race · 24 hours of light</span></button><button id="trk2"><i>2</i><b>ALAMEDA</b><em>Around the Bay and Back</em><span>Free drive · tube · Bay Bridge</span></button><div id="trkH">◄ ► OR 1 / 2 TO CHOOSE &nbsp;·&nbsp; ENTER TO CONFIRM &nbsp;·&nbsp; OR CLICK</div></div>
   <div class="opt">◄ ► &nbsp;CAR<b id="oModel"></b><span id="oDesc"></span></div>
   <div class="opt">V &nbsp;CAR CLASS<b id="oCls"></b><span>V switches between the racing cars and the classic cars.</span></div>
   <div class="opt">A D &nbsp;COLOURS<b id="oLiv"></b><span id="oLivD"></span></div>
