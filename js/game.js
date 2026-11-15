@@ -148,7 +148,7 @@ roadTex.wrapS=roadTex.wrapT=roadBump.wrapS=roadBump.wrapT=THREE.RepeatWrapping;r
 const roadMat=std({map:roadTex,bumpMap:roadBump,bumpScale:1.2,roughness:.72});
 let QK=null;
 if(DRIVE){const qa=Z.b0+Math.round((Z.b1-Z.b0)*.74),qb=qa+42;ribbon(i=>-RW-XW[i],i=>RW+XW[i],.02,.02,roadMat,28,0,qa);ribbon(i=>-RW-XW[i],i=>RW+XW[i],.02,.02,roadMat,28,qb,NS);
-  QK={a:qa,b:qb,st:0,t:0,side:-1,half:[ribbon(0,RW,.02,.02,roadMat,28,qa,qb),ribbon(-RW,0,.02,.02,roadMat,28,qa,qb)]};}   // half[0] is the left side; the right-hand lanes are the ones that go
+  QK={a:qa,b:qb,st:0,t:0,side:-1,half:[ribbon(0,i=>RW+XW[i],.02,.02,roadMat,28,qa,qb),ribbon(i=>-RW-XW[i],0,.02,.02,roadMat,28,qa,qb)]};}   // half[0] is the left side; the right-hand lanes are the ones that go
 else ribbon(-RW,RW,0.02,0.02,roadMat,28);
 const dirtTex=canvas(256,512,(g,w,h)=>{g.fillStyle='#8f8566';g.fillRect(0,0,w,h);speck(g,w,h,30000,['rgba(60,54,40,.35)','rgba(170,160,128,.4)','rgba(110,120,70,.35)','rgba(190,184,160,.3)'],3);
   let gr=g.createLinearGradient(0,0,w,0);gr.addColorStop(0,'rgba(86,104,52,.9)');gr.addColorStop(.45,'rgba(86,104,52,0)');g.fillStyle=gr;g.fillRect(0,0,w,h);});
@@ -687,8 +687,9 @@ await BOOT.step('SPANNING THE BAY · THREE BRIDGES',.49);
   {const trussT=canvas(128,128,(g)=>{g.clearRect(0,0,128,128);g.strokeStyle='#fff';g.lineWidth=11;g.strokeRect(5,5,118,118);g.beginPath();g.moveTo(0,0);g.lineTo(128,128);g.moveTo(128,0);g.lineTo(0,128);g.stroke();});trussT.wrapS=trussT.wrapT=THREE.RepeatWrapping;
     const bridge=(a,b,o)=>{const col=o.col,sm=std({color:col,roughness:.55,metalness:.5}),trussM=std({map:trussT,color:col,alphaTest:.4,side:D2,roughness:.6,metalness:.4}),cableM=std({color:o.cable||0x767c81,roughness:.5,metalness:.6}),TH=o.TH;
       for(const sd of[-1,1]){ribbon(sd*8.4,sd*6.6,.14,.14,side,3,a,b);ribbon(sd*8.3,sd*8.3,.14,1.2,o.rail?std({color:col,roughness:.6,side:D2}):railM,2,a,b).castShadow=true;ribbon(sd*8.5,sd*8.5,-6,0,trussM,6,a,b);}
-      ribbon(8.5,-8.5,-6,-6,std({color:0x4a4e52,roughness:.8,side:D2}),6,a,b);
-      for(let i=a+m(30);i<b-m(20);i+=m(o.pier||60)){const h=45+H[i]-6;B(4,h,15,mat('pier',{color:0x8a8a84,roughness:.9}),P[i].x,-45+h/2,P[i].z,yaw(i));}
+      const und=std({color:0x4a4e52,roughness:.8,side:D2}),gap=QK&&a<QK.a&&b>QK.b;   // the underside of the deck; where the Bay Bridge's right-hand lanes fall away it stops at the centre line, so the hole opens onto the water
+      if(gap){ribbon(8.5,-8.5,-6,-6,und,6,a,QK.a);ribbon(8.5,-8.5,-6,-6,und,6,QK.b,b);ribbon(8.5,0,-6,-6,und,6,QK.a,QK.b);}else ribbon(8.5,-8.5,-6,-6,und,6,a,b);
+      for(let i=a+m(30);i<b-m(20);i+=m(o.pier||60)){if(gap&&i>QK.a-m(12)&&i<QK.b+m(12))continue;const h=45+H[i]-6;B(4,h,15,mat('pier',{color:0x8a8a84,roughness:.9}),P[i].x,-45+h/2,P[i].z,yaw(i));}
       if(o.truss)for(const[t0,t1,hh]of o.truss){const c0=a+Math.round((b-a)*t0),c1=a+Math.round((b-a)*t1);for(const sd of[-1,1])ribbon(sd*9.2,sd*9.2,1.2,hh,trussM,8.3,c0,c1).castShadow=true;ribbon(9.2,-9.2,hh,hh,trussM,8.3,c0,c1);
         for(let i=c0;i<=c1;i+=8){const g=new THREE.Group();for(const x of[-9.2,9.2])B(.55,hh,.55,sm,x,hh/2,0,0,g);B(18.9,.6,.6,sm,0,hh,0,0,g);g.position.copy(P[i]);g.rotation.y=yaw(i);scene.add(g);}}
       if(!TH)return;const sup=o.sup.map(f=>a+Math.round((b-a)*f));
@@ -1747,7 +1748,7 @@ function quakeTick(rdt){const q=QK,i=PL.idx;if(!q)return;
   q.t+=rdt;const m=q.half[q.side>0?0:1];if(q.t<5.5)G.shake=Math.max(G.shake,.6*(1-q.t/5.5)+.12);
   if(q.t>2.2){const u=q.t-2.2;m.position.y=-Math.min(70,9*u*u);if(!q.cr){q.cr=1;sfxCrunch(1);}
     if(u<2.6&&Math.random()<rdt*34){const j=q.a+(Math.random()*(q.b-q.a)|0);puff(off(j,q.side*R(.5,6),R(-3,1),V),R(-2,2),R(1,4),R(-2,2),2,6,R(1.5,3),.5,0x9a968c);}}
-  if(q.t>2.8&&i>=q.a-1&&i<=q.b&&!PL.crash&&PL.safe<=0){const pe=ents.find(e=>e.player);if(pe.lat*q.side>.4)startDive(q.side,7,i);}
+  if(q.t>2.8&&i>=q.a-1&&i<=q.b&&!PL.crash&&PL.safe<=0){const pe=ents.find(e=>e.player);if(pe.lat*q.side>.4)startDive(q.side,1.2,i,{room:(q.b-i)*SEG-6});}
   if(!PL.crash&&(i>q.b+260||i<q.a-260)){q.st=0;m.position.y=0;quakeEnd();}}
 // the tanker that breaks up the manatee's pipe
 if(DRIVE){const tk=new THREE.Group(),A=(geo,m,x,y,z)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);tk.add(o);return o;},bx=(a,b,c)=>new THREE.BoxGeometry(a,b,c),wh=std({color:0xeeeae0,roughness:.6});
@@ -1803,8 +1804,8 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),D2=THREE.DoubleSide;
 function sfxBell(){if(!AC)return;let t=AC.currentTime;for(let k=0;k<2;k++){for(const[f,v]of[[1760,.22],[2640,.1],[4400,.05]])tone('sine',f,t,.9,v,master,{a:.002,h:.08});t+=.24;}}
 function sfxScreech(){if(!AC)return;const t=AC.currentTime;tone('sawtooth',2300,t,.9,.12,master,{to:1300,a:.05,h:.4,lp:3200,ft:'bandpass',q:6});}
 function quakeStart(q){for(const o of CONES.list)o.visible=true;let n=0;   // traffic already on the bridge runs on into the gap: a few vehicles in the right-hand lanes, timed to reach it as it goes
-  for(const t of TRAF){if(n>=5)break;if(t.kind==='moto'&&n<4)continue;t.act=true;t.fall=null;t.g.visible=true;t.s=q.a*SEG-(t.vb>10?16:7)*(2.3+n*.9)-R(0,6);t.v=t.vb=t.kind==='buggy'?7:16;t.lt=n%2?-RW*.75:-RW*.25;t.lat=t.lt;t.g.rotation.set(0,0,0);n++;}}
-function quakeEnd(){for(const o of CONES.list)o.visible=false;}
+  for(const t of TRAF){if(n>=5)break;if(t.kind==='moto'&&n<4)continue;t.act=true;t.fall=null;t.g.visible=true;if(t.vb0==null)t.vb0=t.vb;t.s=q.a*SEG-(t.vb>10?16:7)*(2.3+n*.9)-R(0,6);t.v=t.vb=t.kind==='buggy'?7:16;t.lt=n%2?-RW*.75:-RW*.25;t.lat=t.lt;t.g.rotation.set(0,0,0);n++;}}
+function quakeEnd(){for(const o of CONES.list)o.visible=false;for(const t of TRAF)if(t.vb0!=null){t.vb=t.vb0;t.vb0=null;}}   // the vehicles slowed for the collapse go back to their own speeds
 function placeVehicle(t){const i=wrapI(Math.floor(t.s/SEG)),j=wrapI(i+1);at(t.s,t.lat,0,t.g.position);const sl=(H[wrapI(i+1)]-H[wrapI(i-1)])/(2*SEG);t.g.rotation.set(-Math.atan(sl),yaw(i),0);t.ob.x=t.g.position.x;t.ob.z=t.g.position.z;}
 function trafficTick(dt,pe){const i0=PL.idx,zn=zoneArr[i0],road=i=>{const c=zoneArr[i];return(c===3&&i>Z.tu1+40&&!(i>Z.detour-60&&i<Z.detour+90))||c===4;},on=road(i0),bay=i0>=Z.b0-250&&i0<=Z.b1,
     rsr=i0>=Z.rb0-250&&i0<=Z.rb1,i880=i0>Z.tu1&&i0<Z.b0-250,gap=bay?30:rsr?90:70,spd=bay?1:1.2;   // I-880 and the San Rafael bridge: fewer vehicles, further apart and a bit quicker; the Bay Bridge stays busy for the earthquake
@@ -1871,9 +1872,12 @@ function cityQuakeTick(rdt){const i=PL.idx,a=Z.b1+70;
   for(const r of CQ.rub){if(r.ob)continue;r.t-=rdt;if(r.t>0)continue;r.vy-=20*rdt;r.m.position.y+=r.vy*rdt;r.m.rotation.x+=r.w*rdt;r.m.rotation.z+=r.w*.7*rdt;
     if(r.m.position.y<=r.gy+.7){r.m.position.y=r.gy+.7;r.ob={x:r.m.position.x,z:r.m.position.z,r:2.1};OBST.push(r.ob);sfxCrunch(.6);NOGY=1;for(let q=0;q<8;q++)puff(V.set(r.ob.x+R(-1,1),r.gy+.5,r.ob.z+R(-1,1)),R(-3,3),R(1,3),R(-3,3),1,4,R(1,2),.5,0x9a968c);NOGY=0;}}
   if(zoneOf(i)!=='city'&&!PL.crash){for(const r of CQ.rub){scene.remove(r.m);if(r.ob){const k=OBST.indexOf(r.ob);if(k>=0)OBST.splice(k,1);}}CQ.rub.length=0;CQ.st=0;}}
-function startDive(sd,vn,bi){ohNo();{const e=ents.find(e=>e.player);if(e)e.v=0;}const n=Nn[bi],out=Math.max(vn,9);PL.crash={t:0,dive:1,ph:0,tt:0,sd,x:PL.x,z:PL.z,y:H[bi],vx:PL.vx*.75+n.x*sd*out,vz:PL.vz*.75+n.z*sd*out,vy:5.5,idx:bi,dir:PL.x<2350?-1:1};PL.vx=PL.vz=0;
-  V.set(PL.x,.8,PL.z);shed(V,PL.crash.vx,PL.crash.vz,8,0x7f868b);for(let i=0;i<40;i++)spark(V,PL.crash.vx*.5+R(-9,9),R(1,9),PL.crash.vz*.5+R(-9,9));sfxCrunch(1);G.shake=1;G.slow=.45;G.slowT=2.6;say('OVER THE RAIL','',2.4);endSkid();
-  at(bi*SEG+24,-sd*4.5,3.2,PL.crash.cam=new THREE.Vector3());}
+// hole: the road has opened under the car (the earthquake), {room: metres of gap left ahead}. The car then drops straight through, keeping only as much speed as keeps it inside the gap, instead of being thrown out over the side rail
+function startDive(sd,vn,bi,hole){ohNo();{const e=ents.find(e=>e.player);if(e)e.v=0;}const n=Nn[bi],out=hole?vn:Math.max(vn,9),fs=Math.hypot(PL.vx,PL.vz)||1,kf=hole?Math.min(.75,Math.max(1,hole.room)/2.4/fs):.75;
+  PL.crash={t:0,dive:1,ph:0,tt:0,sd,x:PL.x,z:PL.z,y:H[bi],vx:PL.vx*kf+n.x*sd*out,vz:PL.vz*kf+n.z*sd*out,vy:hole?0:5.5,idx:bi,dir:PL.x<2350?-1:1};PL.vx=PL.vz=0;
+  V.set(PL.x,.8,PL.z);shed(V,PL.crash.vx,PL.crash.vz,8,0x7f868b);for(let i=0;i<40;i++)spark(V,PL.crash.vx*.5+R(-9,9),R(1,9),PL.crash.vz*.5+R(-9,9));sfxCrunch(1);G.shake=1;G.slow=.45;G.slowT=2.6;say(hole?'THE BRIDGE GAVE WAY':'OVER THE RAIL','',2.4);endSkid();
+  if(hole)at(bi*SEG+Math.min(40,hole.room*.6),sd*2.5,16,PL.crash.cam=new THREE.Vector3());   // over the gap, looking back and down as the car drops through it
+  else at(bi*SEG+24,-sd*4.5,3.2,PL.crash.cam=new THREE.Vector3());}
 function diveTick(dt,pe){const D=PL.crash;D.tt+=dt;
   if(D.ph===0){D.x+=D.vx*dt;D.z+=D.vz*dt;D.vy-=22*dt;D.y+=D.vy*dt;hero.position.set(D.x,D.y,D.z);hero.rotation.x+=1.5*dt;hero.rotation.z+=D.sd*1.1*dt;
     if(D.y<-45){D.ph=1;D.t1=D.tt;D.wx=D.x;D.wz=D.z;V.set(D.x,-44.6,D.z);for(let i=0;i<70;i++){const a=R(0,6.283),sp=R(2,11);puff(V,Math.cos(a)*sp,R(6,22),Math.sin(a)*sp,R(.8,1.6),R(4,8),R(1.2,2.6),.8,0xeef2f4);}sfxSplash();G.shake=.8;}return;}
@@ -2079,7 +2083,9 @@ function frame(manual){
   else if(diving){const D=PL.crash;   // watch the fall from the deck, then come down to the water for the rescue
     if(D.ph<1){camera.position.copy(D.cam);camera.position.x+=jx;camera.fov=lerp(camera.fov,34,.1);look.lerp(hero.position,.3);}
     else if(D.tt-D.t1>1&&D.tt-D.t1<9.2){const u=D.tt-D.t1,a=u*.22+1,ty=u>6.3?mcq.position.y+.9:hero.position.y+1;V.set(D.wx+Math.cos(a)*10.5,ty+1.7,D.wz+Math.sin(a)*10.5);camP.lerp(V,D.camU?clamp(rdt*3,0,1):1);D.camU=1;camera.position.copy(camP);camera.fov=lerp(camera.fov,46,.1);look.lerp(V2.set(D.wx,ty,D.wz),.15);}   // under water, circling the car
-    else{V.set(D.wx-D.dir*9+2,-43.3,D.wz+8);camP.lerp(V,D.camW?clamp(rdt*2,0,1):1);D.camW=1;camera.position.copy(camP);camera.fov=lerp(camera.fov,30,.1);look.lerp(V2.set(D.wx,-44.7,D.wz),.2);}}
+    else{if(!D.camS){const j=wrapI(D.idx),n=Nn[j],tg=T[j],dl=(D.wx-P[j].x)*n.x+(D.wz-P[j].z)*n.z,lat=D.sd*Math.max(Math.abs(dl)+9,12)-dl;   // on the surface: out to the side, clear of the bridge and its piers, a little ahead
+        D.camS=[D.wx+n.x*lat+tg.x*5,D.wz+n.z*lat+tg.z*5];}
+      V.set(D.camS[0],-43.3,D.camS[1]);camP.lerp(V,D.camW?clamp(rdt*2,0,1):1);D.camW=1;camera.position.copy(camP);camera.fov=lerp(camera.fov,30,.1);look.lerp(V2.set(D.wx,-44.7,D.wz),.2);}}
   else if(PL.crash){if(!PL.crash.cam){PL.crash.cam=1;at(PL.crash.s+55,-PL.crash.sd*5.5,1.6,camP);look.copy(hero.position);}camera.position.copy(camP);camera.position.x+=jx;camera.position.y+=jy;
     const d=camP.distanceTo(hero.position);camera.fov=lerp(camera.fov,clamp(2*Math.atan(6/d)*57.3,9,38),.08);look.lerp(V.copy(hero.position).setY(hero.position.y+.6),.2);}
   else if(G.state==='finish'&&G.finT<4.4&&!DRIVE){at(S0-15,-(RW-3.4),1.05,camera.position);camera.fov=lerp(camera.fov,34,.2);look.lerp(V.copy(hero.position).setY(.6),first?1:.25);}   // low by the line as the flag falls
