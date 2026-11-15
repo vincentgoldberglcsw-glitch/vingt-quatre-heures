@@ -1,12 +1,31 @@
 # Vingt-Quatre Heures
 
-A 3D browser driving game in the style of the 1971 film *Le Mans*. Everything is in one file, `index.html`: no art or sound files, no build step. Graphics use Three.js r165 loaded from a CDN; all textures, models and sounds are generated in code.
+A 3D browser driving game in the style of the 1971 film *Le Mans*, with two tracks: the Le Mans circuit, and a 34 km drive from a house in Alameda round San Francisco Bay and home again. Graphics use Three.js r165 from a CDN; textures, models and sounds are generated in code. There is no build step: the site is static files.
+
+The original single-file version of the game is kept, untouched and playable, in `classic/` (on the site: `/classic/`).
 
 ## How to run
 
-- **On the web:** open the site (any static host works; `index.html` is the whole game).
+- **On the web:** open the site. Any static host works; pushing to `main` on GitHub redeploys the Vercel site.
 - **On this Windows PC:** double-click `play.bat`. It starts `serve.ps1`, a small local web server on port 8765, and opens the game.
-- The game must be served over http, not opened as a file, because it loads Three.js as a module.
+- The game must be served over http, not opened as a file, because it loads its code as modules.
+
+## What changed in the rebuild (November 2026)
+
+**Driving.** The car is now a simulated machine (`js/sim/vehicle.js`), not a point that slides:
+- Four tyres, each with its own load, slip ratio and slip angle. Grip comes from Pacejka "Magic Formula" curves with a friction circle, so braking and cornering share the same grip, and a locked or spinning wheel has less of it.
+- Weight transfer: braking loads the front tyres, accelerating the rear, cornering the outside. Downforce grows with the square of speed (a 917K corners at about 1.2 g at 50 km/h and 1.9 g at 250 km/h).
+- Engine torque curve, five gears with a shift time, a clutch that slips for the launch, engine braking, a limited-slip differential, rear-wheel drive. Each car has its own weight, power, drag and gearing, set so it still reaches the top speed listed on the title screen.
+- Brakes per wheel, which can lock. Two wheels on the grass pull the car round.
+- Driver aids (H switches them off): ABS, traction control, and steering help that keeps the front tyres just under their peak and unwinds lock when the tail slides. With the aids off it drives as a 1970 car did.
+- The body rolls, dives and squats on its springs. Rivals' corner speeds come from the same tyre model, so the race stays fair.
+- The tyre curves and the torque curve are tabulated once during loading; the physics runs at 480 steps a second without allocating memory.
+
+**The land.** The hills are the real ones (`js/world/terrain.js`). `assets/bay-dem.png` is the surveyed height of the land round the bay (USGS data via the public Terrain Tiles set on AWS; `tools/fetch-elevation.ps1` rebuilds it). The game's map is a compressed sketch of the real one, so the survey is fitted to it through 29 named points on the route. Where the real ground is flat the game is flat (Alameda is, to within a few metres); where it rises - San Francisco, the Marin headlands, the hills behind Richmond, Berkeley and Oakland - it rises, with grass, woodland and houses on it. The skyline behind everything is the true horizon from wherever the car is, redrawn as you drive. Ground near the road and under anything already built is kept level.
+
+**Loading.** A loading screen appears at once and the world is built in named stages behind it. The hills are raised tile by tile (640 m squares, nearest first) in a few milliseconds a frame. After the first visit the engine, code and map data are kept on the device (`sw.js`), so the game starts faster and works offline.
+
+**Corners.** Every junction on the Alameda loop has roughly twice the radius it had (tightest corner in town 51 m, was 30 m; in the city 54 m, was 31 m), with the tubes, bridges and coastlines left where they were.
 
 ## What is in the game
 
@@ -49,6 +68,7 @@ A 3D browser driving game in the style of the 1971 film *Le Mans*. Everything is
 | N | announcer on/off |
 | M | music on/off (off by default) |
 | P | pause |
+| H | driver aids on/off (ABS, traction control, steering help) |
 | R | put the car back on the road |
 | Esc | back to the home screen |
 
@@ -58,11 +78,16 @@ A 3D browser driving game in the style of the 1971 film *Le Mans*. Everything is
 2. Extend San Francisco with a steep street of Victorian houses, then a drop to the wharf.
 3. An option to board a ferry to Alcatraz.
 4. More Le Mans ad boards, once the owner supplies the images.
-5. Nothing in the game's sound has been checked by ear. The cockpit dials are shared by all cars.
+5. Nothing in the game's sound has been checked by ear. The engine note now follows the real revs and gear changes, but the sound itself is the old synthesiser.
+6. The road's own height profile is still hand-made (the climbs onto the bridges, Hyde Street and so on); only the land beside it comes from the survey.
+7. The world's models are still built in code. Imported 3D models (buildings from OpenStreetMap, Blender-made cars) would be the next step up in looks.
+8. Manual gears, and a steering wheel with force feedback.
 
 ## Notes for whoever works on this next
 
-- `index.html` is about 265 KB of dense JavaScript in one module. Section markers, in order: TRACK, VEGETATION, CROWD, STRUCTURES, FREE DRIVE WORLD, CARS, McQUEEN, SKY + LIGHT, WEATHER, PARTICLES / WRECKS, AUDIO, GAME, TIME OF DAY, POST, UI + INPUT, RUNNING START + INTRO MONTAGE, LOOP.
+- Files: `index.html` (page, styles, loading screen), `js/game.js` (the game: world, cars, weather, sound, interface, main loop), `js/sim/vehicle.js` (driving model), `js/world/terrain.js` (survey, hills, horizon), `js/boot.js` (loading stages), `sw.js` (offline copy), `vercel.json` (cache headers), `classic/index.html` (the original).
+- `js/game.js` is dense. Section markers, in order: TRACK, VEGETATION, CROWD, STRUCTURES, FREE DRIVE WORLD, CARS, McQUEEN, SKY + LIGHT, WEATHER, PARTICLES / WRECKS, AUDIO, GAME, TIME OF DAY, POST, UI + INPUT, RUNNING START + INTRO MONTAGE, LOOP. Each `await BOOT.step(...)` line is a loading stage.
+- The player's car: `playerUpdate()` hands the car's speed to `stepVehicle()` in the car's own frame each time and takes back position, heading and speed, so walls, bumps and other cars can still push it between steps. `window.__test.VS` is the live vehicle state; `__test.dyn()` the current car's numbers.
 - The track is a closed spline sampled into `P[]` (points), `T[]` (tangents), `Nn[]` (left normals), about 2 m apart. `H[]` is road height and `XW[]` extra half-width (free drive only). `off(i, lateral, heightAboveRoad)` and `at(s, lateral, heightAboveRoad)` place things; `ribbon(...)` builds strips along the road and accepts functions for offsets and heights.
 - `DRIVE` is true for the Alameda free drive (`?mode=drive`). The loop is built by `buildRoute()` (a turtle: S straight, L/R turns, M marks a named point). `Z` holds those marks as track indices (`start`, `paru`, `central`, `wilma`, `tu0`/`tu1`, `detour`, `toll`, `b0`/`b1`, `hyde`, `marina`, `gg0`/`gg1`, `sq`, `rb0`/`rb1`, `shane`, `i80`, `wt1`/`wt0`, `bv`) and scenery is placed relative to them. Static scenery is merged by `bakeStatic()` and culled beyond 3 km; dynamic things (traffic, cable car, train, hawks) live in the extras block near `extrasTick()`.
 - URL options for testing: `?auto=1` skips the home screen, `&drive=1` autopilot, `&cam=0..3`, `&wx=sun|overcast|rain|hail|snow`, `&model=k|o|lh|f512|gt40|m1|p904|ghibli|bb`, `&t=<hour>`, `&mode=drive`, `&go=1` (skip the track choice).
