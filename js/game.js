@@ -470,7 +470,8 @@ await BOOT.step('LAND AND WATER',.22);
 
 await BOOT.step('KERBS AND BARRIERS',.26);
   // ---- kerbs, pavements, fences and concrete barriers
-  const pavement=(a,b,hedged,sides=[-1,1])=>{if(b-a<3)return;for(const sd of sides){for(let i=a;i<b;i++)KB[i]|=sd>0?1:2;ribbon(i=>sd*(9.6+XW[i]),i=>sd*(6.6+XW[i]),.13,.13,side,3,a,b);ribbon(i=>sd*(6.6+XW[i]),i=>sd*(6.6+XW[i]),0,.13,side,3,a,b);if(hedged)ribbon(i=>sd*(9.6+XW[i]),i=>sd*(9.6+XW[i]),.13,1.05,hedge,3,a,b);}};
+  const pavement=(a,b,hedged,sides=[-1,1])=>{if(b-a<3)return;for(const sd of sides){for(let i=a;i<b;i++)KB[i]|=sd>0?1:2;ribbon(i=>sd*(9.6+XW[i]),i=>sd*(6.6+XW[i]),.13,.13,side,3,a,b);ribbon(i=>sd*(6.6+XW[i]),i=>sd*(6.6+XW[i]),0,.13,side,3,a,b);if(hedged){let a0=a;for(const[g0,g1]of(sd<0?HG:[])){if(g1<=a0||g0>=b)continue;if(g0-a0>=2)ribbon(i=>sd*(9.6+XW[i]),i=>sd*(9.6+XW[i]),.13,1.05,hedge,3,a0,g0);a0=Math.max(a0,g1);}if(b-a0>=2)ribbon(i=>sd*(9.6+XW[i]),i=>sd*(9.6+XW[i]),.13,1.05,hedge,3,a0,b);}}};
+  const HG=DRIVE?(h=>[[h-6,h-1],[h+1,h+3]])(Math.round(Z.start/9)*9):[];   // gaps in the front fence at 1611 for the driveway and the walk (the house stands at the multiple of 9 nearest Z.start, its driveway 7 m back along the street)
   const barrier=(a,b,sides=[-1,1],mm=jersey)=>{if(b-a<3)return;for(const sd of sides){ribbon(i=>sd*(8.3+XW[i]),i=>sd*(6.6+XW[i]),.012,.012,side,4,a,b);ribbon(i=>sd*(8.3+XW[i]),i=>sd*(8.3+XW[i]),0,.85,mm,4,a,b).castShadow=true;}};
   const CROSS=[];for(let k=1;k<=9;k++)CROSS.push(Z.paru+m(92*k));   // the nine cross streets on Paru
   const nearCross=(i,d)=>CROSS.some(c=>Math.abs(i-c)<d);
@@ -548,6 +549,51 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
     B(w+4,.06,5.6,lawnM,0,.03,d/2+2.9,0,g);if(rnd()<.7){const bu=new THREE.Mesh(new THREE.SphereGeometry(1,10,8),mat("bush"+(rnd()<.3?1:0),{color:rnd()<.3?0xc9b83a:0x3f6a34,roughness:1}));bu.scale.set(1.6,1.2,1.4);bu.position.set(w*.35,.9,d/2+3);g.add(bu);}
     if(num){const pl=new THREE.Mesh(new THREE.PlaneGeometry(1.1,.5),new THREE.MeshBasicMaterial({map:canvas(128,64,(c)=>{c.fillStyle='#1c2a4a';c.fillRect(0,0,128,64);c.fillStyle='#f4f1e8';c.font='900 46px Arial Black,Arial';c.textAlign='center';c.textBaseline='middle';c.fillText(num,64,36);})}));pl.position.set(-w*.14,2.7,d/2+2.56);g.add(pl);}
     g.traverse(o=>{o.castShadow=o.receiveShadow=true;});g.position.set(x,y,z);g.rotation.y=rot;scene.add(g);};
+  // ---- 1611 San Antonio Ave, in detail: a boxy 2½-storey Craftsman in dark brown-grey shingle under a low hipped roof with a hipped dormer and louvred vent,
+  // two pairs of tall white sash windows over a white railing band, a red brick chimney up the right-hand corner, a recessed porch on the left and a bay window,
+  // a yellow flowering shrub and a dark rounded one on the lawn, a straight walk to the door, and on the right a two-strip driveway with a white SUV and a blue bin.
+  // Own random numbers; it stores where the driveway is in Z.home (track coordinates) for the start and the finish of the drive.
+  const home1611=(x,z,rot,i0)=>{let rs=1611;const lr=()=>(rs=(rs*16807)%2147483647)/2147483647,g=new THREE.Group(),w=9.6,d=11,b=.6,h1=3.3,h2=3.1,top=b+h1+h2;
+    const shT=canvas(256,256,(c,W,Hh)=>{c.fillStyle='#4a423c';c.fillRect(0,0,W,Hh);for(let y=0;y<Hh;y+=16)for(let x0=-(y/16%2)*10;x0<W;x0+=20){const v=lr();c.fillStyle=`rgb(${66+v*26|0},${58+v*22|0},${52+v*18|0})`;c.fillRect(x0+1,y+1,18,15);c.fillStyle='rgba(20,16,14,.55)';c.fillRect(x0,y+14,20,2);}});
+    shT.wrapS=shT.wrapT=THREE.RepeatWrapping;shT.repeat.set(2.5,2);
+    const shM=std({map:shT,roughness:.95}),trimW=std({color:0xf2f0e8,roughness:.6}),glass=std({color:0x1d262c,roughness:.12,metalness:.4}),rfM=std({color:0x3e3530,roughness:.95}),brk=std({color:0x9a4632,roughness:.95}),
+      conc=std({color:0xb8b4aa,roughness:.95}),lawn=std({color:0x5f9a3a,roughness:1}),dk=std({color:0x2a2420,roughness:.9});
+    const win=(wx,wy,ww,wh,wz=d/2)=>{B(ww+.28,wh+.28,.1,trimW,wx,wy,wz+.04,0,g);B(ww,wh,.12,glass,wx,wy,wz+.06,0,g);B(ww,.07,.16,trimW,wx,wy+.02,wz+.08,0,g);B(ww+.4,.12,.22,trimW,wx,wy-wh/2-.18,wz+.1,0,g);};
+    // the body: the upper floor full width; below it the porch is cut back on the left
+    B(w,h2,d,shM,0,b+h1+h2/2,0,0,g);B(w-2.8,h1,d,shM,1.4,b+h1/2,0,0,g);B(2.8,h1,d-2.1,shM,-w/2+1.4,b+h1/2,-1.05,0,g);B(w+.12,b,d+.12,dk,0,b/2,0,0,g);
+    B(w+.2,.14,d+.2,trimW,0,b+h1,0,0,g);   // the belt course between the floors
+    // the low hipped roof with deep eaves, and the hipped dormer with its louvred vent
+    const hip=(rw,rd,rh)=>{const m=new THREE.Mesh(new THREE.ConeGeometry(Math.SQRT2,1,4,1).rotateY(Math.PI/4).translate(0,.5,0),rfM);m.scale.set(rw/2,rh,rd/2);return m;};
+    const rf=hip(w+2,d+2,2.5);rf.position.y=top;g.add(rf);B(w+2,.22,d+2,dk,0,top-.05,0,0,g);
+    const dm=new THREE.Group();B(2.8,1.5,2.4,shM,0,.75,0,0,dm);const dr=hip(3.6,3.1,1);dr.position.y=1.5;dm.add(dr);
+    const louv=new THREE.Mesh(new THREE.PlaneGeometry(1.7,.85),std({map:canvas(128,64,(c)=>{c.fillStyle='#f2f0e8';c.fillRect(0,0,128,64);c.fillStyle='#3a3430';for(let y=10;y<56;y+=8)c.fillRect(10,y,108,4);}),roughness:.7}));louv.position.set(0,.8,1.22);dm.add(louv);
+    dm.position.set(0,top+.25,d/2-1.6);g.add(dm);
+    // upper floor: two pairs of tall white sash windows, and the white railing band under them
+    for(const px of[-2.3,2.1])for(const k of[-.6,.6])win(px+k,b+h1+1.55,.95,1.75);
+    B(w*.86,.32,.3,trimW,-.1,b+h1+.42,d/2+.15,0,g);B(w*.86,.08,.4,trimW,-.1,b+h1+.62,d/2+.2,0,g);for(let k=0;k<17;k++)B(.07,.24,.07,dk,-.1-w*.41+k*w*.82/16,b+h1+.42,d/2+.31,0,g);
+    // the red brick chimney up the right-hand front corner and above the roof
+    B(1,top+3.2,1.1,brk,w/2+.5,(top+3.2)/2,d/2-1.4,0,g);B(1.2,.2,1.3,brk,w/2+.5,top+3.2,d/2-1.4,0,g);
+    // ground floor: the recessed porch on the left (posts, small hipped roof, door, steps) and the bay window to its right
+    for(const px of[-w/2+.15,-w/2+2.65])B(.26,h1,.26,trimW,px,b+h1/2,d/2-.13,0,g);
+    const pr=hip(3.6,1.8,.6);pr.position.set(-w/2+1.4,b+h1-.15,d/2+.55);g.add(pr);B(1.05,2.2,.1,std({color:0x5a3a28,roughness:.6}),-w/2+1.4,b+1.1,d/2-2.05,0,g);B(1.35,2.45,.08,trimW,-w/2+1.4,b+1.18,d/2-2.1,0,g);
+    for(let s=0;s<3;s++)B(1.8,.2,.4,conc,-w/2+1.4,.1+s*.2,d/2+.6-s*.4,0,g);B(2.8,.06,2.1,conc,-w/2+1.4,b+.03,d/2-1.05,0,g);
+    B(3.4,2.3,.85,shM,.9,b+1.5,d/2+.42,0,g);for(const k of[-1,0,1])win(.9+k*1.05,b+1.6,.85,1.4,d/2+.85);const bt=hip(3.8,1.2,.4);bt.position.set(.9,b+2.65,d/2+.45);g.add(bt);
+    win(3.6,b+1.6,.9,1.5);
+    // front garden: lawn, the concrete walk, the yellow shrub and the tall dark one
+    const yard=14.4-d/2;B(w+4.4,.05,yard,lawn,-1.2,.03,d/2+yard/2,0,g);B(1.2,.07,yard,conc,-w/2+1.4,.04,d/2+yard/2,0,g);
+    const bush=(bx,bz,sx,sy,sz,c)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(1,12,9),std({color:c,roughness:1}));m.scale.set(sx,sy,sz);m.position.set(bx,sy*.85,bz);g.add(m);};
+    bush(-1.4,d/2+2.1,1.9,1.6,1.5,0xe8d020);bush(-.4,d/2+1.4,1.1,1.1,1,0xd8c018);bush(2.4,d/2+1.5,1.5,2.4,1.4,0x2f5a26);
+    for(let k=0;k<5;k++)bush(-w/2+3+lr()*5,d/2+.6,.5,.45,.5,0x3f6a34);
+    // the driveway: two concrete wheel strips with grass between, from the kerb back beside the house; the white SUV partway up it and a blue bin
+    const dx=w/2+2.4,dz0=-d/2-1,dz1=14.4,dl=dz1-dz0;for(const k of[-.78,.78])B(.62,.07,dl,conc,dx+k,.045,(dz0+dz1)/2,0,g);B(.95,.05,dl,lawn,dx,.03,(dz0+dz1)/2,0,g);
+    const suv=new THREE.Group(),wht=std({color:0xeceff0,roughness:.35,metalness:.3});B(1.9,.95,4.6,wht,0,.85,0,0,suv);B(1.75,.7,2.7,glass,0,1.65,-.35,0,suv);B(1.78,.08,2.75,wht,0,2.02,-.35,0,suv);
+    for(const[wx,wz]of[[-.88,1.45],[.88,1.45],[-.88,-1.45],[.88,-1.45]]){const t=new THREE.Mesh(cyl(.38,.38,.26,12).rotateZ(Math.PI/2),dk);t.position.set(wx,.38,wz);suv.add(t);}
+    suv.position.set(dx,0,-1.6);g.add(suv);B(.62,1.05,.72,std({color:0x1f5ab8,roughness:.6}),dx+1.6,.53,1.6,0,g);B(.66,.08,.76,std({color:0x16448e,roughness:.6}),dx+1.6,1.08,1.6,0,g);
+    const pl=new THREE.Mesh(new THREE.PlaneGeometry(.9,.4),new THREE.MeshBasicMaterial({map:canvas(128,64,(c)=>{c.fillStyle='#f2f0e8';c.fillRect(0,0,128,64);c.fillStyle='#2a2420';c.font='900 44px Georgia,serif';c.textAlign='center';c.textBaseline='middle';c.fillText('1611',64,36);})}));pl.position.set(-w/2+2.65,b+2.4,d/2+.06);g.add(pl);
+    g.traverse(o=>{o.castShadow=o.receiveShadow=true;});g.position.set(x,0,z);g.rotation.y=rot;scene.add(g);g.updateMatrixWorld(true);
+    // where things are on the track: the player's car sits in the driveway (local z 6.6), nose to the house
+    const tr=(lx,lz)=>{const v=new THREE.Vector3(lx,0,lz).applyMatrix4(g.matrixWorld),ex=v.x-P[i0].x,ez=v.z-P[i0].z;return{s:i0*SEG+ex*T[i0].x+ez*T[i0].z,lat:ex*Nn[i0].x+ez*Nn[i0].z,x:v.x,z:v.z};};
+    const c0=tr(dx,6.6),c1=tr(dx,5.6),sv=tr(dx,-1.6);OBST.push({x:sv.x,z:sv.z,r:2});Z.home={s:c0.s,lat:c0.lat,h:Math.atan2(c1.x-c0.x,c1.z-c0.z)};};
   const apt=(x,y,z,rot,col)=>{const g=new THREE.Group(),w=rr(16,22),h=rr(8,10.5),d=rr(12,15);B(w,h,d,mat('a'+col,{map:aptT,color:col,roughness:.9}),0,h/2,0,0,g);B(w+.6,.5,d+.6,white,0,h+.25,0,0,g);B(w+.2,.4,d+.2,side,0,.2,0,0,g);
     B(3,3,.3,mat('door',{color:0x3a2a22}),0,1.5,d/2+.1,0,g);B(4,.25,2,white,0,3.2,d/2+1,0,g);for(const x2 of[-w*.32,w*.32]){const bu=new THREE.Mesh(new THREE.SphereGeometry(1,10,8),mat('bush0',{color:0x3f6a34,roughness:1}));bu.scale.set(2.4,1.2,1.2);bu.position.set(x2,.9,d/2+1.2);g.add(bu);}
     g.traverse(o=>{o.castShadow=o.receiveShadow=true;});g.position.set(x,y,z);g.rotation.y=rot;scene.add(g);};
@@ -613,7 +659,7 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
       for(const sd of[-1,1]){const isHome=sd<0&&Math.abs(i-homeI)<5;if(shops&&sd<0&&Math.abs(i-(Z.central+m(190)))<14)continue;   // the theatre's plot
         if(sd>0&&i>CROSS[0]+8&&i<CROSS[1]-8)continue;                                       // the supermarket's plot
         off(i,sd*((shops?14.2:21)+XW[i]),0,V);const rot=faceRoad(i,sd);
-        if(shops)shop(V.x,0,V.z,rot);else if(isHome)house(V.x,0,V.z,rot,0x3a3d40,'1611','craft');else if(nearCross(i,m(30))&&rnd()<.35)apt(V.x,0,V.z,rot,pick([0xb8d0b0,0xe8dcc0,0xc9d6c2,0xd9c7b8]));
+        if(shops)shop(V.x,0,V.z,rot);else if(isHome){house(V.x,0,V.z,rot,0x3a3d40,'1611','craft');scene.remove(scene.children[scene.children.length-1]);home1611(V.x,V.z,rot,i);}   /* the plain house is still built and dropped, so the shared random numbers run on as before */else if(nearCross(i,m(30))&&rnd()<.35)apt(V.x,0,V.z,rot,pick([0xb8d0b0,0xe8dcc0,0xc9d6c2,0xd9c7b8]));
         else{const cr=rnd()<.55;house(V.x,0,V.z,rot,cr?CRAFT[n++%CRAFT.length]:VIC[n++%VIC.length],'',cr?'craft':'vic');}
         if(!isHome&&rnd()<.42&&Math.abs(i-homeI)>14&&!nearCross(i+3,m(22)))parked(wrapI(i+3),sd);}}}
   {// the supermarket on the left of Paru, the block after Encinal: a low stucco box with a raised entrance bay under a tiled roof, the sign, glass doors under a canopy,
@@ -725,7 +771,7 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
       M(cTail,crowM,0,.17,-.34).rotation.x=.4;for(const s of[-1,1])M(cLeg,bk,s*.05,.06,.02);
       const wings=[-1,1].map(s=>{const p=new THREE.Group();p.position.set(s*.12,.28,.02);p.scale.x=s;p.add(new THREE.Mesh(cWing,crowM));p.rotation.z=-1.35;g.add(p);return p;});
       g.scale.setScalar(1.25);g.position.copy(pos);g.rotation.y=ry;scene.add(g);CROWS.push({g,hd,wings,h:pos.clone(),ry,st:0,t:R(0,3),hy:0,v:new THREE.Vector3(),dl:0});};
-    for(let i=Z.start-6;i<Z.central-m(30);i+=15){if(nearCross(i,m(12))||curved(i)||curved(i+8)||curved(i-8))continue;ids.push(i);}
+    for(let i=Z.start-9;i<Z.central-m(30);i+=15){if(nearCross(i,m(12))||curved(i)||curved(i+8)||curved(i-8))continue;ids.push(i);}
     ids.forEach((i,n)=>{const g=new THREE.Group(),A=(geo,mm,x,y,z)=>{const o=new THREE.Mesh(geo,mm);o.position.set(x,y,z);o.castShadow=true;g.add(o);return o;};
       A(cyl(.12,.16,9.6,8),wd,0,4.8,0);A(new THREE.BoxGeometry(2.7,.14,.14),wd,0,8.6,0);A(new THREE.BoxGeometry(1.9,.12,.12),wd,0,7.8,0);
       off(i,-(10.7+XW[i]),0,g.position);g.rotation.y=yaw(i);scene.add(g);g.updateMatrixWorld(true);
@@ -1653,7 +1699,7 @@ const RIVC=[   // the field when you race the classics
   {base:'#b81f18',num:'55',helmet:'#1a1a1a',model:'ghibli',name:'M. ROSSI'},{base:'#9a1f2a',edge:'#141414',num:'65',helmet:'#e6e1d0',model:'bb',name:'D. MARTIN'}];
 function setupGrid(){for(const r of[...RIV,...RIVC])if(r.car)r.car.visible=false;for(const w of [...wrecks])endWreck(w);fires.length=0;ents.length=0;const order=DRIVE?['p']:[0,1,2,3,4,'p',5,6];
   order.forEach((id,k)=>{const s=DRIVE?S0:S0-6-k*7.5,lat=DRIVE?-(5.3+XW[START_I]):RW-2.2;   /* free drive: parked at the kerb in front of the house */   // echelon start: cars parked nose-out along the pit side, as in 1970
-    if(id==='p'){ents.push({player:true,car:hero,s,lat,v:0,dist:s-S0,name:'S. McQUEEN',num:LIV().num,out:0});at(s,lat,0,V);PL.x=V.x;PL.z=V.z;PL.idx=wrapI(Math.round(s/SEG));PL.h=yaw(PL.idx)-(DRIVE?0:GRID_A);G.camH=yaw(PL.idx);PL.vx=PL.vz=0;PL.steer=0;resetVehicle(VS,hero.M.dyn,0);PL.crash=null;PL.safe=0;PL.lapN=0;PL.last=PL.best=0;}
+    if(id==='p'){ents.push({player:true,car:hero,s,lat,v:0,dist:s-S0,name:'S. McQUEEN',num:LIV().num,out:0});at(s,lat,0,V);PL.x=V.x;PL.z=V.z;PL.idx=wrapI(Math.round(s/SEG));PL.h=yaw(PL.idx)-(DRIVE?0:GRID_A);G.camH=yaw(PL.idx);PL.vx=PL.vz=0;PL.steer=0;resetVehicle(VS,hero.M.dyn,0);PL.crash=null;PL.auto=null;PL.safe=0;PL.lapN=0;PL.last=PL.best=0;}
     else{const r=(MKEYS===CLASSICS?RIVC:RIV)[id];if(!r.car)r.car=mk(r);r.car.visible=true;ents.push({car:r.car,s,lat,v:0,dist:s-S0,skill:.93+id*.01+rnd()*.015,vmax:MODELS[r.model].top*.94,off:rr(-1,1),pass:0,out:0,doom:0,ang:-GRID_A,name:r.name,num:r.num});}});
   G.raceT=0;G.doomT=30;G.stopT=0;G.finT=0;endSkid();placeAll(0);}
 function placeAll(dt){for(const e of ents){if(e.player||e.car.wreck)continue;const i=wrapI(Math.floor(e.s/SEG));at(e.s,e.lat,0,e.car.position);e.car.rotation.set(0,yaw(i)+(e.doom?e.doom*.45:0)+e.ang,0);if(e.v>2)e.ang*=Math.exp(-1.6*dt);
@@ -1680,6 +1726,7 @@ function readInput(racing){let st=0,thr=0,brk=0;if(!racing)return[0,0,0];
   if(G.autoSt!=null)st=G.autoSt;return[st,thr,brk];}
 function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*(1-(PL.melt||0)*.1),racing=G.state==='race';
   if(PL.crash){PL.crash.t+=dt/Math.max(G.slow,.3);return;}
+  if(PL.auto&&autoDrive(dt,pe))return;   // backing out of the driveway at the start, pulling in at the finish
   let[st,thr,brk]=readInput(racing);if(G.state==='finish')brk=1;
   const rev=racing&&keys.KeyX?1:0;                                                                           // reverse is its own key; the brake only ever stops the car
   if(G.state==='finish'&&G.finT<2.6){brk=0;thr=1;}                                                           // cross the line at racing speed, then slow down
@@ -1860,15 +1907,15 @@ const PLACES=DRIVE?(()=>{const m=x=>Math.round(x/SEG);return[[0,'SAN ANTONIO AVE
 const placeOf=i=>{let p=PLACES[0];for(const q of PLACES)if(i>=q[0])p=q;return p;};
 const tmNow=()=>performance.now()/1000;
 function startDrive(){clearCrack();fqArm();initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');for(const id of['tl','br','lf','map','bl'])$(id).classList.remove('hide');
-  setupGrid();hero.visible=true;ANN.on=false;G.state='race';first=true;PL.lapStart=0;const J=JUMPS[JUMP];if(J)jumpTo(J[0]);DA.zn=placeOf(PL.idx)[1];
-  if(J)say(J[1],J[2],4);else say('1611 SAN ANTONIO AVE','ALAMEDA · PARKED OUT FRONT · AROUND THE BAY AND HOME',4);}
+  setupGrid();hero.visible=true;ANN.on=false;G.state='race';first=true;PL.lapStart=0;const J=JUMPS[JUMP];if(J)jumpTo(J[0]);else homeStart();DA.zn=placeOf(PL.idx)[1];
+  if(J)say(J[1],J[2],4);else say('1611 SAN ANTONIO AVE','ALAMEDA · BACKING OUT OF THE DRIVEWAY · AROUND THE BAY AND HOME',4);}
 // Jump points: the Alameda drive can start partway round instead of at the house (chosen on the home screen, ?from=bb|sf|gg|i80). The car sits stopped in the right-hand lane,
 // and the distance already "driven" is counted from the house, so getting home still finishes the drive.
 const JUMPS=DRIVE?{bb:[Z.b0-Math.round(200/SEG),'BAY BRIDGE','THE TOLL PLAZA BEHIND YOU · WEST TO SAN FRANCISCO'],sf:[Z.b1,'SAN FRANCISCO','OFF THE BAY BRIDGE · DOWNTOWN'],
   gg:[Z.gg0-Math.round(250/SEG),'GOLDEN GATE BRIDGE','NORTH TO MARIN'],i80:[Z.i80,'I-80 SOUTH','BERKELEY, EMERYVILLE, OAKLAND · THEN HOME']}:{};
 const JUMPN={'':'THE HOUSE',bb:'THE BAY BRIDGE',sf:'SAN FRANCISCO',gg:'THE GOLDEN GATE',i80:'I-80'};
 let JUMP=JUMPS[QS.get('from')]?QS.get('from'):'';
-function jumpTo(j){j=wrapI(j);const pe=ents.find(e=>e.player),lat=-(RW+XW[j])/2;pe.s=j*SEG;pe.lat=lat;pe.v=0;pe.dist=wrapI(j-START_I)*SEG;at(pe.s,lat,0,V);
+function jumpTo(j){j=wrapI(j);PL.auto=null;const pe=ents.find(e=>e.player),lat=-(RW+XW[j])/2;pe.s=j*SEG;pe.lat=lat;pe.v=0;pe.dist=wrapI(j-START_I)*SEG;at(pe.s,lat,0,V);
   PL.x=V.x;PL.z=V.z;PL.idx=j;PL.h=G.camH=yaw(j);PL.vx=PL.vz=0;PL.cy=PL.gy=H[j];PL.air=0;PL.vy=0;PL.steer=0;resetVehicle(VS,hero.M.dyn,0);placeAll(0);first=true;}
 // Town streets: dead leaves, and now and then a bit of litter, blown about by a gusty wind and thrown up by the car as it passes.
 let LV=null;if(DRIVE){const N=110,m=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,1),new THREE.MeshStandardMaterial({side:THREE.DoubleSide,roughness:.9}),N),c=new THREE.Color(),p=[];m.frustumCulled=false;
@@ -1968,8 +2015,21 @@ function crackScreen(){let el=$('crack');if(!el){el=document.createElement('div'
   if(el.style.opacity!=='1'){el.style.opacity='1';say('GOBBLE !','A TURKEY HAS CRACKED THE WINDSCREEN',2.6);sfxCrunch(.7);}}
 function clearCrack(){const el=$('crack');if(el)el.style.opacity='0';}
 // the free drive ends where it began: back outside 1611 San Antonio Ave after the whole loop, the car rolls to a stop and the time is shown
-function driveHome(pe){if(!DRIVE||G.state!=='race'||PL.crash||pe.dist<LEN*.97||PL.idx<Z.start-3||PL.idx>Z.start+14)return;
-  G.state='finish';G.finT=0;G.stopT=0;first=true;sfxCheer();say('HOME','1611 SAN ANTONIO AVE · ROUND THE BAY IN '+fmt(G.raceT),6);}
+function driveHome(pe){const H0=Z.home;if(!DRIVE||!H0||G.state!=='race'||PL.crash||PL.auto||pe.dist<LEN*.97)return;const ahead=wdiff(H0.s-pe.s);if(ahead<14||ahead>150)return;
+  const kerb=-(RW+XW[wrapI(Math.round(H0.s/SEG))]-1.3),v0=Math.max(8,Math.abs(pe.v)),c=Math.min(ahead/3,30);   // pull in to the kerb at the foot of the driveway and roll to a stop
+  PL.auto={t:0,T:clamp(2*ahead/v0,2.5,9),ease:'out',fin:true,rev:false,p:[[pe.s,pe.lat],[pe.s+c,pe.lat],[pe.s+ahead-c,kerb],[pe.s+ahead,kerb]]};
+  G.state='finish';G.finT=0;G.stopT=0;sfxCheer();say('HOME','1611 SAN ANTONIO AVE · ROUND THE BAY IN '+fmt(G.raceT),6);}
+// the start of the free drive: the car is in the driveway at 1611, nose to the house, and backs out across the pavement, swinging into the lane facing the right way.
+// PL.auto runs a path in track coordinates (a Bézier over s and lateral), and the player takes over when it ends. driveHome() uses the same thing to bring the car in.
+function homeStart(){const H0=Z.home;if(!DRIVE||!H0)return;const pe=ents.find(e=>e.player),lane=-(RW+XW[wrapI(Math.round(H0.s/SEG))])/2;
+  PL.auto={t:0,T:6.5,hold:.4,rev:true,p:[[H0.s,H0.lat],[H0.s,H0.lat+5.5],[H0.s,lane-.4],[H0.s-10,lane]]};autoPlace(0,pe,true);pe.v=0;PL.vx=PL.vz=0;PL.steer=0;G.camH=PL.h;first=true;}
+function bez(p,u,k){const a=1-u;return a*a*a*p[0][k]+3*a*a*u*p[1][k]+3*a*u*u*p[2][k]+u*u*u*p[3][k];}
+function autoPlace(u,pe,init){const A=PL.auto,s=bez(A.p,u,0),lat=bez(A.p,u,1),u2=Math.min(1,u+.002),u1=u2-.002,ds=bez(A.p,u2,0)-bez(A.p,u1,0),dl=bez(A.p,u2,1)-bez(A.p,u1,1),ns=wrapS(s),i=wrapI(Math.floor(ns/SEG));
+  at(ns,lat,0,V);const sg=A.rev?-1:1,fx=sg*(T[i].x*ds+Nn[i].x*dl),fz=sg*(T[i].z*ds+Nn[i].z*dl);PL.x=V.x;PL.z=V.z;if(fx||fz)PL.h=Math.atan2(fx,fz);PL.idx=i;pe.lat=lat;
+  pe.dist=init?wdiff(ns-S0):pe.dist+wdiff(ns-pe.s);pe.s=ns;PL.gy=PL.cy=H[i];PL.vy=0;PL.air=0;}
+function autoDrive(dt,pe){const A=PL.auto;if(dt<=0)return true;A.t+=dt;const k=clamp(A.t/A.T,0,1),u=A.ease==='out'?1-(1-k)*(1-k):k*k*(3-2*k),px=PL.x,pz=PL.z;autoPlace(u,pe,false);
+  PL.vx=(PL.x-px)/dt;PL.vz=(PL.z-pz)/dt;const v=Math.hypot(PL.vx,PL.vz);pe.v=A.rev?-v:v;PL.steer=A.rev?clamp(Math.sin(k*Math.PI)*.8,0,1)*Math.sign(-A.p[3][0]+A.p[0][0]||1)*.6:0;
+  if(k<1)return true;PL.vx=PL.vz=0;pe.v=0;if(A.fin)return true;A.hold-=dt;if(A.hold>0)return true;PL.auto=null;PL.steer=0;resetVehicle(VS,hero.M.dyn,0);return true;}
 // the crows on the poles and wires: they look about while they sit; drive past quickly and they go up, flapping and calling, and settle again once you have gone
 let cawT=0;
 function crowsTick(rdt){if(!CROWS.length)return;cawT-=rdt;const v=Math.hypot(PL.vx,PL.vz),tm=tmNow();
