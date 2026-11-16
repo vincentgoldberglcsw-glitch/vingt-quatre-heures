@@ -51,6 +51,8 @@
   #title.home h1,#title.home h2,#title.home .opt,#title.home .go,#title.home .keys{display:none}#title.home #homeH,#title.home #trkH{display:block}#title.home #trk button{padding:16px 12px}#title.home #trk button b{font-size:26px}
   #title:not(.home) #trkL{display:none}#title:not(.home) #trk{margin-top:0}
   #trk button.on{background:#e9a13a;color:#14110c;border-color:#e9a13a}#trk button:hover{border-color:#e9a13a}
+  #jmp{flex:0 0 100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:10px;letter-spacing:.14em}#jmp>span{opacity:.8;margin-right:4px}
+  #title #trk #jmp button{flex:0 1 auto;padding:6px 26px 6px 9px;font-size:12px;letter-spacing:.06em}#title #trk #jmp button i{top:5px;font-size:10px}
   .opt{margin:8px 0;font-size:12px;letter-spacing:.2em;color:#b9b29c}
   .opt b{display:block;font-size:24px;color:#efe9d6;letter-spacing:.04em;margin-top:2px}
   .opt span{font-size:12px;color:#d8d0b8;letter-spacing:.04em;display:block;margin-top:2px}
@@ -122,7 +124,7 @@ if(new URLSearchParams(location.search).get('mode')==='drive')document.getElemen
 <div id="flash"></div><div id="flare"></div><div id="fade"></div>
 <div id="title">
   <h1>VINGT-QUATRE<br>HEURES</h1><h2>AN ENDURANCE FILM YOU CAN DRIVE · 1970</h2>
-  <div id="homeH">VINGT-QUATRE<br>HEURES</div><div id="trk"><div id="trkL">CHOOSE YOUR TRACK</div><button id="trk1"><i>1</i><b>LES 24 HEURES DU MANS</b><em>The 24 Hours of Le Mans</em><span>3-lap race · 24 hours of light</span></button><button id="trk2"><i>2</i><b>ALAMEDA</b><em>Around the Bay and Back</em><span>Free drive · tube · Bay Bridge</span></button><div id="trkH">◄ ► OR 1 / 2 TO CHOOSE &nbsp;·&nbsp; ENTER TO CONFIRM &nbsp;·&nbsp; OR CLICK</div></div>
+  <div id="homeH">VINGT-QUATRE<br>HEURES</div><div id="trk"><div id="trkL">CHOOSE YOUR TRACK</div><button id="trk1"><i>1</i><b>LES 24 HEURES DU MANS</b><em>The 24 Hours of Le Mans</em><span>3-lap race · 24 hours of light</span></button><button id="trk2"><i>2</i><b>ALAMEDA</b><em>Around the Bay and Back</em><span>Free drive · tube · Bay Bridge</span></button><div id="jmp"><span>ALAMEDA DRIVE · START AT</span><button data-j=""><i>H</i>THE HOUSE</button><button data-j="bb"><i>3</i>BAY BRIDGE</button><button data-j="sf"><i>4</i>SAN FRANCISCO</button><button data-j="gg"><i>5</i>GOLDEN GATE</button><button data-j="i80"><i>6</i>I-80</button></div><div id="trkH">◄ ► OR 1 / 2 TO CHOOSE &nbsp;·&nbsp; 3–6 OR H: WHERE THE DRIVE STARTS &nbsp;·&nbsp; ENTER TO CONFIRM &nbsp;·&nbsp; OR CLICK</div></div>
   <div class="opt">◄ ► &nbsp;CAR<b id="oModel"></b><span id="oDesc"></span></div>
   <div class="opt">V &nbsp;CAR CLASS<b id="oCls"></b><span>V switches between the racing cars and the classic cars.</span></div>
   <div class="opt">A D &nbsp;COLOURS<b id="oLiv"></b><span id="oLivD"></span></div>

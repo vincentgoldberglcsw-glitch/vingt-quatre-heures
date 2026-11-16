@@ -45,6 +45,9 @@ const DRIVE=QS.get('mode')==='drive',RW=DRIVE?6.6:9.5,LAPS=3;   // RW: half-widt
 const D2R=Math.PI/180;
 // Marina Blvd: the turn off the foot of Hyde St is a wide, smooth sweep (radius MR). Hyde St and the Marina straight are each shortened by MR-60 so the turn ends exactly where the old 60 m corner did, and the Golden Gate, Marin and the rest of the loop do not move.
 const MR=220;
+// Alameda: every corner is a wide sweep. PR: San Antonio onto Paru (the straight before it is shortened by PR-52 so Paru St stays where it was), CR: Paru onto Central, WR: Central onto Wilma Chan Way,
+// HR1..HR3: the way home (San Antonio from Grand, Grand from Buena Vista, Buena Vista from the Webster Tube). Grand St stays where it was too.
+const PR=110,CR=160,WR=160,HR1=120,HR2=110,HR3=110;
 function routeTurtle(x,z,th){const pts=[],mk={},T={pts,mk,get x(){return x},get z(){return z},get th(){return th},
   push(){pts.push([x,z]);},
   S(len,st=40){const n=Math.max(1,Math.round(len/st));for(let k=0;k<n;k++){x+=Math.sin(th)*len/n;z+=Math.cos(th)*len/n;T.push();}return T;},
@@ -54,7 +57,7 @@ function buildRoute(X80=-600){
   // Corners are swept, not square: every junction on the loop has about twice the radius it had, so it can be driven as a corner rather than stopped for.
   // The two straights into the Posey Tube are trimmed to suit, so that the tube mouth - and with it the port, the bridges and the coastlines - stays exactly where it was.
   const old=routeTurtle(0,0,-90*D2R).S(40).S(260).R(90,24).S(920).L(90,24).S(400).R(70,45).S(560).R(20,200);
-  const lead=(a,b)=>routeTurtle(0,0,-90*D2R).M('t0').S(40).M('start').S(260).R(90,52).M('paru').S(890).L(90,120).M('central').S(a).R(70,90).M('wilma').S(b).R(20,200).M('tu0');
+  const lead=(a,b)=>routeTurtle(0,0,-90*D2R).M('t0').S(40).M('start').S(260-(PR-52)).R(90,PR).M('paru').S(890).L(90,CR).M('central').S(a).R(70,WR).M('wilma').S(b).R(20,200).M('tu0');
   const p0=lead(1,1),wd=-160*D2R,wl=1+(old.z-p0.z)/Math.cos(wd),cl=1-(old.x-p0.x-(wl-1)*Math.sin(wd));
   const f=lead(cl,wl);
   f.S(580,40).M('tu1')
@@ -64,8 +67,8 @@ function buildRoute(X80=-600){
    .S(380,40).M('richmond').L(25,260).S(400,40).M('shane').S(300,40).R(25,260);
   f.S(X80-150-f.x,50).M('refinery').R(90,150).M('i80');
   // the way home, driven backwards from the house so the two ends can be made to meet: east on San Antonio, north on Grand, west on Buena Vista, north through the Webster Tube, then up to the I-80 line
-  const tu=f.pts[f.mk.tu0],Xt=tu[0]+90,r1=60,r2=55,r3=55,n=-tu[1]-r1-r2-r3-120,w=220+r1-r2-r3-Xt;
-  const ret=d=>{const r=routeTurtle(0,0,90*D2R);r.S(220).L(90,r1).S(n).M('bv').L(90,r2).S(w).R(90,r3).S(120).M('wt0').S(580,40).M('wt1').S(260).R(35,300).S(d,60).L(35,300);return r;};
+  const tu=f.pts[f.mk.tu0],Xt=tu[0]+90,r1=HR1,r2=HR2,r3=HR3,S0=280-r1,n=-tu[1]-r1-r2-r3-120,w=S0+r1-r2-r3-Xt;
+  const ret=d=>{const r=routeTurtle(0,0,90*D2R);r.S(S0).L(90,r1).S(n).M('bv').L(90,r2).S(w).R(90,r3).S(120).M('wt0').S(580,40).M('wt1').S(260).R(35,300).S(d,60).L(35,300);return r;};
   const g=d=>ret(d).x-X80;let a=50,b=4000;for(let k=0;k<60;k++){const mid=(a+b)/2;if(g(a)*g(mid)<=0)b=mid;else a=mid;}const r=ret((a+b)/2);
   // I-80 south: two gentle S-bends that cancel out, then straight on to meet the way home
   f.S(700,60).R(6,900).S(500,60).L(6,900).M('berkeley').S(1500,60).L(6,900).S(500,60).R(6,900).M('emeryville').S(1800,60).M('oakland');f.S(r.z-f.z,60);
@@ -217,7 +220,7 @@ for(let i=0;i<NS;i+=3)for(const sd of [-1,1])for(let k=0;k<3;k++){
   if(DRIVE&&sd<0&&i>Z.wilma+20/SEG&&i<Z.tu0-130/SEG){   // Wilma Chan Way: a thick belt of trees on the right. Own hash for spacing and jitter, so the seeded scenery after this is unchanged
     const hh=n=>{const s=Math.sin(i*12.9898+k*78.233+n*37.719)*43758.5453;return s-Math.floor(s);};
     if(hh(0)>=.3){const oo=-(13.5+k*6.5+hh(1)*4+XW[i]),x=P[i].x+Nn[i].x*oo+(hh(2)-.5)*3,z=P[i].z+Nn[i].z*oo+(hh(3)-.5)*3;if(farFromRoad(x,z,10))treePos.push([x,z]);}}
-  if(DRIVE){const zn=zoneOf(i),cr=(i-Z.paru)/(92/SEG);if(zn==='town'){if(k||i%21||(i>Z.wt0-5&&i<Z.wt0+70)||(i>Z.paru&&i<Z.central&&Math.abs(cr-Math.round(cr))*92<16))continue;o=sd*11.2;minD=9.5;}else if(zn==='freeway'){if(k||rnd()<.6||H[i]>1)continue;o=sd*rr(26,60);}else if(zn==='hills'){if(rnd()<.6||H[i]>.5)continue;}else continue;}   // street trees in town, a few by the freeways, oaks at the foot of the Richmond hills; the redwoods are their own
+  if(DRIVE){const zn=zoneOf(i),cr=(i-Z.paru)/(92/SEG);if(zn==='town'){if(k||i%21||(i>Z.wt0-5&&i<Z.wt0+70)||(i>Z.paru&&i<Z.central&&Math.abs(cr-Math.round(cr))*92<16)||(sd>0&&i>Z.paru-(PR*1.57+12)/SEG&&i<Z.paru+3))continue;o=sd*11.2;minD=9.5;}else if(zn==='freeway'){if(k||rnd()<.6||H[i]>1)continue;o=sd*rr(26,60);}else if(zn==='hills'){if(rnd()<.6||H[i]>.5)continue;}else continue;}   // street trees in town, a few by the freeways, oaks at the foot of the Richmond hills; the redwoods are their own
   else if(sd>0&&i>GS0-8&&i<GS1+8&&Math.abs(o)<36||sd<0&&i>GS0&&i<GS1)continue;
   const x=P[i].x+Nn[i].x*o+rr(-3,3)*(minD<16?.2:1),z=P[i].z+Nn[i].z*o+rr(-3,3)*(minD<16?.2:1);if(farFromRoad(x,z,minD)){treePos.push([x,z]);if(minD===9.5)TOWNT.push([x,z]);}}
 const CARDS=34,NT=treePos.length;
@@ -249,7 +252,7 @@ const tuftMat=std({map:tuftTex,alphaTest:.4,side:THREE.DoubleSide,roughness:1});
  const tufts=new THREE.InstancedMesh(tg,tuftMat,NTUFT);
  const pops=new THREE.InstancedMesh(tg,std({map:poppyTex,alphaTest:.4,side:THREE.DoubleSide,roughness:1}),NPOP);
  // in town the tufts keep to the front lawns, behind the pavement, and none grow in the supermarket car park or on the paved crossroads
- const mS=x=>Math.round(x/SEG),bare=DRIVE?[[Z.paru+mS(92)+8,Z.paru+mS(184)-8,1],[Z.paru-mS(82)-6,Z.paru+6,1]]:[];
+ const mS=x=>Math.round(x/SEG),bare=DRIVE?[[Z.paru+mS(92)+8,Z.paru+mS(184)-8,1],[Z.paru-mS(PR*1.57+30)-6,Z.paru+6,1]]:[];
  const put=(mesh,k,lo,hi,s0,s1)=>{const i=DRIVE?landIdx[rnd()*landIdx.length|0]:rnd()*NS|0,sd=rnd()<.5?-1:1;let o=sd*(lo+Math.pow(rnd(),1.6)*(hi-lo));
    if(DRIVE&&zoneArr[i]===1){const e=12.4+XW[i];if(Math.abs(o)<e)o=sd*(e+(Math.abs(o)-lo)*.5);}off(i,o,0,V);V.x+=T[i].x*rr(-1,1);V.z+=T[i].z*rr(-1,1);
    Q.setFromAxisAngle(YAX,rr(0,6.3));const s=rr(s0,s1),sx=s*rr(.9,1.5),gone=bare.some(([a,b,ss])=>i>=a&&i<=b&&sd===ss&&Math.abs(o)<60);M4.compose(V,Q,S.set(gone?0:sx,gone?0:s,gone?0:s));mesh.setMatrixAt(k,M4);};
@@ -472,7 +475,7 @@ await BOOT.step('KERBS AND BARRIERS',.26);
   const CROSS=[];for(let k=1;k<=9;k++)CROSS.push(Z.paru+m(92*k));   // the nine cross streets on Paru
   const nearCross=(i,d)=>CROSS.some(c=>Math.abs(i-c)<d);
   // the two corners into Paru and onto Central are crossroads: the road through the turn keeps its pavement only on the inside, the outside is open junction (built with the cross streets below)
-  const JN=[{c:Z.paru,R:52,os:1,name:['SAN ANTONIO AVE','PARU ST']}];   // (the end of Paru is a long gentle curve onto Central, not a crossroads)
+  const JN=[{c:Z.paru,R:PR,os:1,name:['SAN ANTONIO AVE','PARU ST']}];   // (the end of Paru is a long gentle curve onto Central, not a crossroads)
  for(const J of JN)J.i0=J.c-Math.round(J.R*Math.PI/2/SEG);   // R: the turn's radius in buildRoute(); os: which side is the outside of the turn (+1 left)
   {let a=Z.wt0+m(130);for(const c of CROSS){pavement(a,c-8,rnd()<.5);a=c+8;}pavement(a,Z.wilma,false);
     span(Z.wt0+m(130),0,(a,b)=>pavement(a,b,true));pavement(0,JN[0].i0,true);pavement(JN[0].i0,Z.paru,true,[-1]);pavement(Z.paru,CROSS[0]-8,true);}
@@ -644,10 +647,10 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
     let hs=91;const hr=()=>{hs=(hs*16807)%2147483647;return hs/2147483647;},hp=a=>a[hr()*a.length|0];
     const O=P[Z.paru],tq=T[Z.paru+20],tu=new THREE.Vector2(tq.x,tq.z).normalize(),nv=new THREE.Vector2(tu.y,-tu.x);   // u: metres north along Paru from the corner, v: metres west (left)
     const W2=(u,v)=>[O.x+tu.x*u+nv.x*v,O.z+tu.y*u+nv.y*v],inIsle=(x,z)=>x>-1290&&x<540&&z>-1580&&z<290;
-    const US=[-328,-236,-144,-52,92,184,276,368,460,552,644,736,828,942],VL=[-400,-250,-130,0,130,250,400];
+    const US=[-PR-276,-PR-184,-PR-92,-PR,92,184,276,368,460,552,644,736,828,890+CR],VL=[-400,-250,-130,0,130,250,400];
     const rd=std({color:0x4a4b4e,roughness:.9}),rdS=(u0,v0,u1,v1,w)=>{const[x0,z0]=W2(u0,v0),[x1,z1]=W2(u1,v1),L=Math.hypot(x1-x0,z1-z0);if(L<2)return;const o=new THREE.Mesh(new THREE.PlaneGeometry(w,L).rotateX(-Math.PI/2),rd);o.position.set((x0+x1)/2,.012,(z0+z1)/2);o.rotation.y=Math.atan2(x1-x0,z1-z0);o.receiveShadow=true;scene.add(o);};
-    for(const u of US){if(u===-52){rdS(u,160,u,400,12);continue;}if(u===942){rdS(u,-160,u,-400,12);continue;}const a=u>0&&u<900?55:12;rdS(u,a,u,400,12);rdS(u,-a,u,-400,12);}   // east-west streets (Paru's own crossings are already paved for 55 m either side)
-    for(const v of VL)if(v)rdS(-340,v,942,v,12);                                                                                                                                  // streets parallel to Paru
+    for(const u of US){if(u===-PR){rdS(u,160,u,400,12);continue;}if(u===890+CR){rdS(u,-160,u,-400,12);continue;}const a=u>0&&u<890?55:12;rdS(u,a,u,400,12);rdS(u,-a,u,-400,12);}   // east-west streets (Paru's own crossings are already paved for 55 m either side)
+    for(const v of VL)if(v)rdS(-PR-288,v,890+CR,v,12);                                                                                                                                  // streets parallel to Paru
     const lots=[];
     for(let a=0;a<US.length-1;a++)for(let b=0;b<VL.length-1;b++){const u0=US[a],u1=US[a+1],v0=VL[b],v1=VL[b+1];
       for(const[u,face]of[[u0+18,-1],[u1-18,1]])for(let v=v0+15;v<=v1-15;v+=13+hr()*3){if(Math.abs(v)<26||(u0===92&&v0===0))continue;/* u0 92, v0 0: the supermarket block */const[x,z]=W2(u+(hr()-.5)*2,v);if(!inIsle(x,z)||!farFromRoad(x,z,40))continue;lots.push([x,z,face,hr()]);}}
@@ -1857,7 +1860,16 @@ const PLACES=DRIVE?(()=>{const m=x=>Math.round(x/SEG);return[[0,'SAN ANTONIO AVE
 const placeOf=i=>{let p=PLACES[0];for(const q of PLACES)if(i>=q[0])p=q;return p;};
 const tmNow=()=>performance.now()/1000;
 function startDrive(){clearCrack();initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');for(const id of['tl','br','lf','map','bl'])$(id).classList.remove('hide');
-  setupGrid();hero.visible=true;ANN.on=false;G.state='race';first=true;PL.lapStart=0;DA.zn=placeOf(PL.idx)[1];say('1611 SAN ANTONIO AVE','ALAMEDA · PARKED OUT FRONT · AROUND THE BAY AND HOME',4);}
+  setupGrid();hero.visible=true;ANN.on=false;G.state='race';first=true;PL.lapStart=0;const J=JUMPS[JUMP];if(J)jumpTo(J[0]);DA.zn=placeOf(PL.idx)[1];
+  if(J)say(J[1],J[2],4);else say('1611 SAN ANTONIO AVE','ALAMEDA · PARKED OUT FRONT · AROUND THE BAY AND HOME',4);}
+// Jump points: the Alameda drive can start partway round instead of at the house (chosen on the home screen, ?from=bb|sf|gg|i80). The car sits stopped in the right-hand lane,
+// and the distance already "driven" is counted from the house, so getting home still finishes the drive.
+const JUMPS=DRIVE?{bb:[Z.b0-Math.round(200/SEG),'BAY BRIDGE','THE TOLL PLAZA BEHIND YOU · WEST TO SAN FRANCISCO'],sf:[Z.b1,'SAN FRANCISCO','OFF THE BAY BRIDGE · DOWNTOWN'],
+  gg:[Z.gg0-Math.round(250/SEG),'GOLDEN GATE BRIDGE','NORTH TO MARIN'],i80:[Z.i80,'I-80 SOUTH','BERKELEY, EMERYVILLE, OAKLAND · THEN HOME']}:{};
+const JUMPN={'':'THE HOUSE',bb:'THE BAY BRIDGE',sf:'SAN FRANCISCO',gg:'THE GOLDEN GATE',i80:'I-80'};
+let JUMP=JUMPS[QS.get('from')]?QS.get('from'):'';
+function jumpTo(j){j=wrapI(j);const pe=ents.find(e=>e.player),lat=-(RW+XW[j])/2;pe.s=j*SEG;pe.lat=lat;pe.v=0;pe.dist=wrapI(j-START_I)*SEG;at(pe.s,lat,0,V);
+  PL.x=V.x;PL.z=V.z;PL.idx=j;PL.h=G.camH=yaw(j);PL.vx=PL.vz=0;PL.cy=PL.gy=H[j];PL.air=0;PL.vy=0;PL.steer=0;resetVehicle(VS,hero.M.dyn,0);placeAll(0);first=true;}
 // Town streets: dead leaves, and now and then a bit of litter, blown about by a gusty wind and thrown up by the car as it passes.
 let LV=null;if(DRIVE){const N=110,m=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,1),new THREE.MeshStandardMaterial({side:THREE.DoubleSide,roughness:.9}),N),c=new THREE.Color(),p=[];m.frustumCulled=false;
   for(let i=0;i<N;i++){const lit=i%8===0,big=lit&&i%16===0;p.push({x:1e9,z:1e9,y:0,vx:0,vy:0,vz:0,a:R(0,6),b:R(0,6),s:lit?(big?R(.3,.42):R(.14,.2)):R(.1,.2),asp:lit?(big?1.35:1.8):R(.55,.8),lit});
@@ -2439,9 +2451,13 @@ const KMAP={ArrowLeft:'ArrowLeft',ArrowRight:'ArrowRight',ArrowUp:'ArrowUp',Arro
 const codeOf=e=>e.code||KMAP[e.key]||(e.key&&e.key.length===1?'Key'+e.key.toUpperCase():e.key);
 // Home screen is two steps: first choose the track, then (on that track) the car, colours, weather and steering.
 let HOME=!QS.get('go')&&!QS.has('auto'),trkSel=DRIVE?1:0;
-function showHome(){$('title').classList.toggle('home',HOME);$('trk1').classList.toggle('on',HOME?trkSel===0:!DRIVE);$('trk2').classList.toggle('on',HOME?trkSel===1:DRIVE);}
-function pickTrack(drive){if(drive===DRIVE){HOME=false;showHome();return;}const q=new URLSearchParams();if(drive)q.set('mode','drive');q.set('go','1');q.set('model',G.model);q.set('liv',G.liv);q.set('wx',G.weather);location.search=q.toString();}
-$('trk1').onclick=()=>pickTrack(false);$('trk2').onclick=()=>pickTrack(true);showHome();
+function showHome(){$('title').classList.toggle('home',HOME);$('trk1').classList.toggle('on',HOME?trkSel===0:!DRIVE);$('trk2').classList.toggle('on',HOME?trkSel===1:DRIVE);
+  for(const b of document.querySelectorAll('#jmp button'))b.classList.toggle('on',DRIVE&&b.dataset.j===JUMP);
+  if(DRIVE)document.querySelector('#title h2').textContent=JUMP?'A FREE DRIVE FROM '+JUMPN[JUMP]+' TO 1611 SAN ANTONIO AVE':'A FREE DRIVE FROM 1611 SAN ANTONIO AVE AND HOME AGAIN';}
+// from: where the Alameda drive starts ('' the house, or a jump point)
+function pickTrack(drive,from=''){if(drive===DRIVE){if(drive)JUMP=from;HOME=false;showHome();return;}const q=new URLSearchParams();if(drive){q.set('mode','drive');if(from)q.set('from',from);}q.set('go','1');q.set('model',G.model);q.set('liv',G.liv);q.set('wx',G.weather);location.search=q.toString();}
+$('trk1').onclick=()=>pickTrack(false);$('trk2').onclick=()=>pickTrack(true);for(const b of document.querySelectorAll('#jmp button'))b.onclick=()=>pickTrack(true,b.dataset.j);showHome();
+const JKEY={Digit3:'bb',Numpad3:'bb',Digit4:'sf',Numpad4:'sf',Digit5:'gg',Numpad5:'gg',Digit6:'i80',Numpad6:'i80',KeyH:''};
 if(MODELS[G.model]&&MODELS[G.model].cls)MKEYS=CLASSICS;
 function setSens(d){G.sens=clamp(Math.round((G.sens+d)*10)/10,.1,1);try{localStorage.setItem('vqh-sens',G.sens);}catch(e){}$('oSens').textContent=Math.round(G.sens*100)+'%';say('STEERING '+Math.round(G.sens*100)+'%','[ LESS SENSITIVE · MORE SENSITIVE ]',1.4);}
 addEventListener('keydown',e=>{const c=codeOf(e);keys[c]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(c))e.preventDefault();if(e.repeat)return;
@@ -2449,7 +2465,8 @@ addEventListener('keydown',e=>{const c=codeOf(e);keys[c]=true;if(['ArrowUp','Arr
   if(c==='Escape'&&G.state!=='title'&&G.state!=='intro'){if(window.speechSynthesis)speechSynthesis.cancel();const q=new URLSearchParams();if(DRIVE)q.set('mode','drive');q.set('model',G.model);q.set('liv',G.liv);q.set('wx',G.weather);location.search=q.toString();return;}   // Esc: back to the title screen
   if(c==='BracketLeft'||e.key==='[')setSens(-.1);if(c==='BracketRight'||e.key===']')setSens(.1);
   if(G.state==='title'){
-    if(HOME){if(c==='ArrowRight'||c==='ArrowLeft'||c==='ArrowUp'||c==='ArrowDown'){trkSel=1-trkSel;showHome();}if(c==='Enter'||c==='Space')pickTrack(trkSel===1);if(e.key==='1')pickTrack(false);if(e.key==='2')pickTrack(true);return;}
+    if(HOME){if(c==='ArrowRight'||c==='ArrowLeft'||c==='ArrowUp'||c==='ArrowDown'){trkSel=1-trkSel;showHome();}if(c==='Enter'||c==='Space')pickTrack(trkSel===1);if(e.key==='1')pickTrack(false);if(e.key==='2')pickTrack(true);if(c in JKEY)pickTrack(true,JKEY[c]);return;}
+    if(DRIVE&&c in JKEY&&c!=='KeyH'){JUMP=JKEY[c];showHome();return;}
     if(c==='Escape'||c==='Backspace'){HOME=true;trkSel=DRIVE?1:0;showHome();return;}
     if(c==='KeyV'){MKEYS=MKEYS===RACERS?CLASSICS:RACERS;G.model=MKEYS[0];G.liv=0;buildHero(G.model);setupGrid();refreshTitle();G.titleClose=7;}   // racing cars / classic cars
     if(c==='ArrowRight'||c==='ArrowLeft'){const i=MKEYS.indexOf(G.model);G.model=MKEYS[(i+(c==='ArrowRight'?1:MKEYS.length-1))%MKEYS.length];G.liv=0;buildHero(G.model);setupGrid();refreshTitle();G.titleClose=7;}
@@ -2549,7 +2566,7 @@ function sfxTick(){if(!AC)return;const t=AC.currentTime;tone('square',2100,t,.01
 await BOOT.step('WARMING UP',.95);
 /* ================= LOOP ================= */
 buildHero(G.model);setupGrid();refreshTitle();
-if(DRIVE){document.querySelector('#title h1').innerHTML='ALAMEDA<br>AROUND THE BAY';document.querySelector('#title h2').textContent='A FREE DRIVE FROM 1611 SAN ANTONIO AVE AND HOME AGAIN';document.querySelector('#title .go').textContent='PRESS ENTER TO DRIVE';
+if(DRIVE){document.querySelector('#title h1').innerHTML='ALAMEDA<br>AROUND THE BAY';showHome();document.querySelector('#title .go').textContent='PRESS ENTER TO DRIVE';
   document.querySelector('#title .keys').innerHTML='ESC — BACK TO TRACK CHOICE<br>Paru St, the Posey Tube, the port, the Bay Bridge, Hyde St, the Golden Gate, the redwoods, Richmond, I-80 and home.';$('of').textContent='';}
 if(QS.has('render')){$('title').classList.add('hide');}
 if(QS.has('auto')){$('title').classList.add('hide');for(const id of['tl','tr','br','lf','map','bl'])$(id).classList.remove('hide');G.state='race';ents.forEach(e=>{if(!e.player)e.v=30;});PL.vx=Math.sin(PL.h)*40;PL.vz=Math.cos(PL.h)*40;resetVehicle(VS,hero.M.dyn,40);if(QS.has('drive'))keys.ArrowUp=true;}
@@ -2562,6 +2579,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
 window.__test={CROWS,DUCK,DEB,CQ,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+  jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
   level:()=>{if(!AC)return'no audio';if(!window.__an){window.__an=AC.createAnalyser();master.connect(window.__an);}const d=new Float32Array(2048);window.__an.getFloatTimeDomainData(d);let s=0,p=0;for(const v of d){s+=v*v;p=Math.max(p,Math.abs(v));}return{state:AC.state,rms:Math.sqrt(s/d.length).toFixed(4),peak:p.toFixed(3),step:stepN};}};
