@@ -2189,9 +2189,15 @@ function trafficTick(dt,pe){if(TRAF.pol){const f=(tmNow()*7|0)%2;TRAF.pol[0].emi
     const dp=wdiff(pe.s-t.s);if(dp>0&&dp<(t.len/2+16)&&Math.abs(pe.lat-t.lat)<2.6)v=Math.min(v,Math.max(0,pe.v-2));   // don't run into the player from behind
     const i=wrapI(Math.floor(t.s/SEG));
     if(QK&&QK.st&&QK.t>2.2&&t.lat<QK.ls-.4&&i>=QK.a&&i<=QK.b){const tg=T[i];t.fall={vx:tg.x*Math.max(t.v,5),vz:tg.z*Math.max(t.v,5),vy:1,w:R(.8,1.5)};sfxCrunch(.5);continue;}   // the road has gone from under it
-    t.v+=clamp(v-t.v,-9*dt,3*dt);t.s=wrapS(t.s+t.v*dt);const w=RW+XW[i];t.lt=clamp(t.lt,-.75*w,.75*w);t.lat+=clamp(t.lt-t.lat,-(t.sw?3:1.5)*dt,(t.sw?3:1.5)*dt);placeVehicle(t);
+    t.v+=clamp(v-t.v,-9*dt,3*dt);t.s=wrapS(t.s+t.v*dt);const w=RW+XW[i];t.lt=clamp(t.lt,-.75*w,.75*w);t.lat+=clamp(t.lt-t.lat,-(t.sw?3:1.5)*dt,(t.sw?3:1.5)*dt);
+    if(t.kv){t.lat+=t.kv*dt;t.kv*=Math.exp(-2.2*dt);if(Math.abs(t.kv)<.2)t.kv=0;t.lt=clamp(t.lat,-.75*w,.75*w);const wl=wallAt[i]-.5;   // knocked sideways by the player
+      if(Math.abs(t.lat)>wl){if(zoneArr[i]===4){const n=Nn[i],tg=T[i],sd=Math.sign(t.lat),out=Math.max(3,Math.abs(t.kv));t.fall={vx:tg.x*t.v+n.x*sd*out,vz:tg.z*t.v+n.z*sd*out,vy:2.5,w:R(1,1.8)*sd};t.kv=0;sfxCrunch(.8);sfxScrape(1);G.shake=Math.max(G.shake,.4);placeVehicle(t);continue;}   // over the bridge rail and down into the bay, tipping as it goes
+        t.lat=Math.sign(t.lat)*wl;t.kv=0;}}
+    placeVehicle(t);
     for(const wh of t.g.wh)wh.rotation.x+=t.v*dt/.4;if(t.g.legs){const q=tmNow()*9;t.g.legs.forEach((l,k)=>{l.rotation.x=Math.sin(q+(k%2?0:Math.PI)+(k>1?.6:0))*.5;});}
-    const dx=t.g.position.x-PL.x,dz=t.g.position.z-PL.z,rel=Math.abs(pe.v-t.v);if(dx*dx+dz*dz<(t.r+1)**2&&rel>30&&!PL.crash&&PL.safe<=0&&G.state==='race')crashPlayer(rel*.4,false);}}
+    if(t.bt>0)t.bt-=dt;const dx=t.g.position.x-PL.x,dz=t.g.position.z-PL.z,rel=Math.abs(pe.v-t.v);
+    if(dx*dx+dz*dz<(t.r+1)**2&&!PL.crash&&G.state==='race'){if(pe.v>44.7&&PL.safe<=0)crashPlayer(Math.max(rel,20)*.4,false);   // over 100 mph, a crash
+      else if(!(t.bt>0)){t.bt=.7;const n=Nn[i],sd=(dx*n.x+dz*n.z)>=0?1:-1;t.kv=sd*clamp(rel*.35+3,3,11);t.v*=.7;PL.vx*=.82;PL.vz*=.82;PL.x-=n.x*sd*.4;PL.z-=n.z*sd*.4;G.shake=Math.max(G.shake,.55);sfxCrunch(clamp(rel/25+.35,.35,.9));}}}}   // below that a bump: both cars pushed apart and slowed, the other one knocked sideways
 // ---- San Quentin's beach (east of the prison, down to the bay): big surf crashing in and people flying kites. Hyde St: a few people on the pavements, and kids skateboarding down the middle of the road below the crest (solid: steer round them).
 // All made after bakeStatic, with their own seeded numbers so nothing else moves.
 const SQB={g:null,waves:[],kites:[]},HYD={walk:[],kids:[],t:0};
@@ -2304,9 +2310,11 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=4471;return()=>(s=(s*1680
     g.visible=false;G1.add(g);return g;};
   for(let k=0;k<40;k++){const kind=k<3?'big':['fish','weed','fish','squid','fish','weed'][k%6],g=mk(kind),o=kind==='big'?{x:1e9,z:1e9,r:1.2}:null;if(o)OBST.push(o);
     MAR.deb.push({g,bd:g.children[0],kind,o,on:false,age:0,life:60,flop:0,ph:0,gy:0,fly:false,vx:0,vy:0,vz:0,sp:0});}
+  for(let k=0;k<30;k++){const kind=k%5<3?'weed':'squid',g=mk(kind);MAR.deb.push({g,bd:g.children[0],kind,o:null,on:false,age:0,life:60,flop:0,ph:0,gy:0,fly:false,vx:0,vy:0,vz:0,sp:0});}   // a bigger pool for the extra squid and seaweed
   G1.visible=false;}
-function marSpawn(big,s,lat){let d=null;for(const q of MAR.deb)if((q.kind==='big')===big&&!q.on){d=q;break;}
-  if(!d){for(const q of MAR.deb)if((q.kind==='big')===big&&(!d||q.age-q.life>d.age-d.life))d=q;}if(!d)return;
+const MARK=['fish','weed','fish','squid','fish','weed'];
+function marSpawn(big,s,lat,kind){let d=null;for(const q of MAR.deb)if((q.kind==='big')===big&&(!kind||q.kind===kind)&&!q.on){d=q;break;}
+  if(!d){for(const q of MAR.deb)if((q.kind==='big')===big&&(!kind||q.kind===kind)&&(!d||q.age-q.life>d.age-d.life))d=q;}if(!d)return;
   const i=wrapI(Math.floor(s/SEG));at(s,lat,.02,d.g.position);d.gy=d.g.position.y;d.g.rotation.y=Math.random()*6.283;d.g.scale.setScalar(1);d.g.visible=true;
   Object.assign(d,{on:true,age:0,life:R(55,120),flop:d.kind==='fish'?R(3,9):d.kind==='big'?R(4,7):0,ph:Math.random()*6,fly:false});if(d.o){d.o.x=d.g.position.x;d.o.z=d.g.position.z;}}
 MAR.tick=rdt=>marinaTick(rdt);   /* for scripted tests: the autopilot only steps sim(), and this runs per frame */
@@ -2333,7 +2341,7 @@ function marinaTick(rdt){if(!DRIVE||!MAR.g)return;const LW=40;   /* the length o
     if(u>=2.35&&u<7.2){const q=clamp((u-2.35)/1.3,0,1),fr=lerp(-(ed+1.2),ed+2.5,1-(1-q)*(1-q)),bk=-(ed+1.2)+Math.max(0,u-4.6)*3.2;w.fr=fr;w.bk=bk;w.foam.visible=true;w.foam.position.x=bk;w.foam.scale.x=Math.max(.01,fr-bk);
       w.foamM.opacity=u<5?.92:.92*Math.max(0,1-(u-5)/2.2);w.ft.offset.x=-u*.25;w.ft.offset.y=u*.05;
       if(u<5.4&&Math.abs(wdiff(pe.s-w.s0))<LW/2+1.5&&pe.lat<fr+.8&&pe.lat>bk-1)wet=true;}else w.foam.visible=false;
-    if(u>=3&&!w.deb){w.deb=true;const n=3+(Math.random()*6|0);for(let k=0;k<n;k++){const lat=R(-ed+.6,Math.min(w.fr,ed)-.6);marSpawn(false,w.s0+R(-LW/2+2,LW/2-2),lat);}
+    if(u>=3&&!w.deb){w.deb=true;const n=3+(Math.random()*6|0);for(let k=0;k<n;k++){const kd=MARK[Math.random()*6|0],c=kd==='fish'?1:2+(Math.random()<.5?1:0);for(let j=0;j<c;j++){const lat=R(-ed+.6,Math.min(w.fr,ed)-.6);marSpawn(false,w.s0+R(-LW/2+2,LW/2-2),lat,kd);}}   /* squid and seaweed come in two or three times as thick as the fish */
       if(Math.random()<.35){const lat=Math.random()<.5?R(-ed+1.5,-5):R(5,ed-1.5);marSpawn(true,w.s0+R(-LW/2+4,LW/2-4),lat);}}
     if(u>7.4){w.t=-1;w.g.visible=false;}}
   // the car in the wash: a burst of spray as it hits the water, then drag and a shove towards the field side
