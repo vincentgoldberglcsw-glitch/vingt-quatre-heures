@@ -196,4 +196,4 @@ function updatePanorama(x, z, eye) {
   PAN.tex.needsUpdate = true; return true;
 }
 
-export const Terrain = { load, georef, addLand, setRoad, occupy, heightAt, elev, start, pump, panorama, updatePanorama, state: T, info: () => ({ scale: KREAL, heightScale: HS, tiles: T.built, left: T.queue.length }) };
+export const Terrain = { load, georef, addLand, setRoad, occupy, heightAt, landAt, elev, start, pump, panorama, updatePanorama, state: T, info: () => ({ scale: KREAL, heightScale: HS, tiles: T.built, left: T.queue.length }) };
