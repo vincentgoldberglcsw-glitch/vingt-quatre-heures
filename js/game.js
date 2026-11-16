@@ -109,7 +109,7 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
     H[i]=7*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.6,z.wilma+WL*.76)
       +18*bump(i,z.tu1+m(160),z.tu1+m(340),z.toll-m(520),z.toll-m(260))
       +22*bump(i,z.b0-m(240),z.b0-m(10),z.b1-m(460),z.b1-m(120))
-      +55*bump(i,z.hyde+m(40),z.hyde+m(390),z.hyde+m(450),z.hyde+m(830))
+      +78*bump(i,z.hyde+m(50),z.hyde+m(380),z.hyde+m(450),z.hyde+m(690))   /* Hyde St: a long, very steep climb, a short crest, then a sharp drop towards the Wharf */
       +26*bump(i,z.gg0-m(300),z.gg0-m(20),z.sq-m(650),z.sq-m(150))
       +9*Math.sin((i-z.gg1)*SEG/170)*bump(i,z.gg1+m(150),z.gg1+m(350),z.sq-m(900),z.sq-m(700))
       +16*bump(i,z.rb0+m(500),z.rb0+m(1000),z.rb0+m(1500),z.rb0+m(2000))
@@ -866,7 +866,7 @@ await BOOT.step('SAN FRANCISCO',.55);
     // Victorians up and over the hill, stepped like the real ones, bay windows and cornices
     const vt=canvas(128,256,(g,w,h)=>{g.fillStyle='#fff';g.fillRect(0,0,w,h);for(let fl=0;fl<3;fl++){const y=20+fl*78;g.fillStyle='#f4f1e8';g.fillRect(8,y-6,112,4);for(const x of[18,74]){g.fillStyle='#f4f1e8';g.fillRect(x-4,y-4,44,64);g.fillStyle='#2a343c';g.fillRect(x,y,36,56);}}});
     const cols=[0xe6c9a8,0xb8c9d6,0xd8b7b0,0xc9d6c2,0xf0ead8,0xe8dcc0,0xc7c3d8,0x9fb8a8,0xe8b8a0];
-    for(let i=Z.hyde+m(30);i<Z.marina-m(30);i+=6)for(const sd of[-1,1]){if(rnd()<.08||(i>Z.hyde+m(320)&&i<Z.hyde+m(540)))continue;   /* open at the crest, for the view */off(i,sd*(15+XW[i]),0,V);const w=rr(7.5,9),h=rr(10,13),d=12,g=new THREE.Group(),c=pick(cols),mm=mat('vt'+c,{map:vt,color:c,roughness:.85});
+    for(let i=Z.hyde+m(30);i<Z.marina-m(30);i+=6)for(const sd of[-1,1]){if(rnd()<.08||(i>Z.hyde+m(360)&&i<Z.hyde+m(470)))continue;   /* open at the crest, for the view */off(i,sd*(15+XW[i]),0,V);const w=rr(7.5,9),h=rr(10,13),d=12,g=new THREE.Group(),c=pick(cols),mm=mat('vt'+c,{map:vt,color:c,roughness:.85});
       B(w,h,d,mm,0,h/2,0,0,g);B(w+.5,.6,d+.4,white,0,h+.3,0,0,g);B(w*.45,h*.7,1.4,mm,w*.2,h*.42,d/2+.6,0,g);B(w+.3,h,d,mat('step',{color:0x9a968c}),0,-h/2+.05,0,0,g);
       g.position.copy(V);g.rotation.y=faceRoad(i,sd);scene.add(g);}
     // cable car slot and rails in the left lane
@@ -913,7 +913,17 @@ await BOOT.step('THE MARIN REDWOODS',.63);
     for(const[lx,lz,w,d,h,mm]of[[0,0,140,30,26,tan],[-60,-60,30,110,20,tan2],[60,-60,30,110,20,tan2],[0,-110,120,26,18,tan],[0,40,40,20,34,tan]]){const[x,z]=R2(lx,lz);B(w,h,d,mm,x,h/2,z,ry);}
     for(const[lx,lz]of[[-110,60],[110,60],[-110,-160],[110,-160]]){const[x,z]=R2(lx,lz);B(6,16,6,tan2,x,8,z,ry);B(8,4,8,glassM,x,18,z,ry);}
     for(const[a2,b2,c2,d2]of[[-110,60,110,60],[-110,-160,110,-160],[-110,60,-110,-160],[110,60,110,-160]]){const[x0,z0]=R2(a2,b2),[x1,z1]=R2(c2,d2);const L=Math.hypot(x1-x0,z1-z0);B(L,7,1.4,tan,(x0+x1)/2,3.5,(z0+z1)/2,Math.atan2(-(z1-z0),x1-x0));}
-    board(Z.sq+m(120),-(12),9,3,sign(1024,340,'SAN QUENTIN','#1f5a3a','#f4f1e8','900 120px Arial','STATE PRISON  →'));}
+    board(Z.sq+m(120),-(12),9,3,sign(1024,340,'SAN QUENTIN','#1f5a3a','#f4f1e8','900 120px Arial','STATE PRISON  →'));
+    board(Z.sq-m(90),-12,10,3.6,canvas(1024,368,(c,w,h)=>{c.fillStyle='#f2c230';c.fillRect(0,0,w,h);c.strokeStyle='#111';c.lineWidth=16;c.strokeRect(14,14,w-28,h-28);c.fillStyle='#111';c.textAlign='center';c.textBaseline='middle';c.font='900 92px Arial';c.fillText('YOU ARE APPROACHING',w/2,h*.34,w*.9);c.fillText('A FEDERAL PRISON',w/2,h*.68,w*.9);}));
+    // the perimeter fence a little way outside the walls: steel posts, chain-link, and coils of razor wire all along the top
+    {const fh=5,lnk=canvas(64,64,(g,w,h)=>{g.clearRect(0,0,w,h);g.strokeStyle='#d8dce0';g.lineWidth=7;g.beginPath();g.moveTo(0,0);g.lineTo(w,h);g.moveTo(w,0);g.lineTo(0,h);g.stroke();});
+     const corners=[[124,74],[124,-174],[-124,-174],[-124,74]].map(([a,b])=>R2(a,b)),posts=[],coils=[];
+     for(let e=0;e<4;e++){const[x0,z0]=corners[e],[x1,z1]=corners[(e+1)%4],L=Math.hypot(x1-x0,z1-z0),a=Math.atan2(-(z1-z0),x1-x0),tx=lnk.clone();tx.wrapS=tx.wrapT=THREE.RepeatWrapping;tx.repeat.set(L/1.6,fh/1.6);tx.needsUpdate=true;
+       const pl=new THREE.Mesh(new THREE.PlaneGeometry(L,fh),std({map:tx,transparent:true,alphaTest:.3,side:THREE.DoubleSide,metalness:.6,roughness:.5}));pl.position.set((x0+x1)/2,fh/2,(z0+z1)/2);pl.rotation.y=a;scene.add(pl);
+       for(let d=0;d<=L;d+=4)posts.push([x0+(x1-x0)*d/L,z0+(z1-z0)*d/L]);for(let d=0;d<L;d+=.32)coils.push([x0+(x1-x0)*d/L,z0+(z1-z0)*d/L,a]);}
+     const pm=new THREE.InstancedMesh(cyl(.09,.09,fh+.6,6),steelM,posts.length);posts.forEach(([x,z],n)=>{M4.compose(V.set(x,(fh+.6)/2,z),Q.identity(),S.set(1,1,1));pm.setMatrixAt(n,M4);});
+     const cm=new THREE.InstancedMesh(new THREE.TorusGeometry(.45,.038,4,14),std({color:0xb8bcc0,metalness:.8,roughness:.35}),coils.length);coils.forEach(([x,z,a],n)=>{M4.compose(V.set(x,fh+.45,z),Q.setFromAxisAngle(YAX,a+Math.PI/2+(n%2?.22:-.22)),S.set(1,1,1));cm.setMatrixAt(n,M4);});
+     pm.castShadow=true;scene.add(pm,cm);}}
 
 await BOOT.step('RICHMOND · SHANE DRIVE',.68);
   // ---- Richmond: ranch houses up the hill, Shane Drive and number 3060, and the refinery down by the freeway
@@ -1436,6 +1446,8 @@ function boltTo(x,z){if(LT.bolt){scene.remove(LT.bolt);LT.bolt.geometry.dispose(
   const d=Math.hypot(camera.position.x-x,camera.position.z-z);sfxThunder(d);G.shake=Math.max(G.shake,clamp(40/(d+10),0,.9));}
 function updateLightning(rdt){LT.flash*=Math.exp(-9*rdt);if(LT.again>0){LT.again-=rdt;if(LT.again<=0)LT.flash=Math.max(LT.flash,.7);}
   if(LT.bolt){LT.boltT-=rdt;LT.bolt.visible=LT.boltT>0&&Math.random()<.8;if(LT.boltT<=0){scene.remove(LT.bolt);LT.bolt.geometry.dispose();LT.bolt=null;}}
+  if(DRIVE&&!G.paused&&G.state==='race'&&(G.sqs||0)>.6&&PL.idx>Z.sq-Math.round(400/SEG)&&PL.idx<Z.rb0+Math.round(300/SEG)){LT.sq=(LT.sq===undefined?3:LT.sq)-rdt;   // lightning over the hills as you come up to the San Rafael bridge, whatever the weather
+    if(LT.sq<=0){LT.sq=R(4,9);if(Math.random()<.5){LT.flash=.8;LT.again=.12;sfxThunder(R(400,1400));}else{const p0=ents.find(e=>e.player);at(Math.min(p0.s+R(150,520),(Z.rb0-10)*SEG),R(60,260),0,V2);boltTo(V2.x,V2.z);}}}
   if(G.weather!=='rain'||wx.wet<.6||G.paused)return;const pe=ents.find(e=>e.player);
   LT.next-=rdt;if(LT.next<=0){LT.next=R(5,13);
     if(Math.random()<.45){LT.flash=.8;LT.again=.12;sfxThunder(R(500,1500));}                                              // sheet lightning, far off
@@ -1684,7 +1696,8 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*(1-(PL.melt||0)*.1)
   let best=1e9,bi=PL.idx;for(let k=-14;k<=14;k++){const i=wrapI(PL.idx+k),dx=PL.x-P[i].x,dz=PL.z-P[i].z,d=dx*dx+dz*dz;if(d<best){best=d;bi=i;}}
   PL.idx=bi;const dx=PL.x-P[bi].x,dz=PL.z-P[bi].z;let lat=dx*Nn[bi].x+dz*Nn[bi].z;const ns=wrapS(bi*SEG+dx*T[bi].x+dz*T[bi].z);
   {const k=clamp((dx*T[bi].x+dz*T[bi].z)/SEG,-1,1),j=wrapI(bi+(k>=0?1:-1));PL.gy=H[bi]+(H[j]-H[bi])*Math.abs(k);
-    if(DRIVE){const e=RW+XW[bi],al=Math.abs(lat);if((KB[bi]&(lat>0?1:2))&&al>e+.25&&al<e+3.1)PL.gy+=.13;}   // up the kerb onto the pavement (KB: which sides have pavement here)PL.slope=(H[wrapI(bi+1)]-H[wrapI(bi-1)])/(2*SEG)*(fx*T[bi].x+fz*T[bi].z);GY=PL.gy;
+    if(DRIVE){const e=RW+XW[bi],al=Math.abs(lat);if((KB[bi]&(lat>0?1:2))&&al>e+.25&&al<e+3.1)PL.gy+=.13;}   // up the kerb onto the pavement (KB: which sides have pavement here)
+    PL.slope=(H[wrapI(bi+1)]-H[wrapI(bi-1)])/(2*SEG)*(fx*T[bi].x+fz*T[bi].z);GY=PL.gy;
     if(PL.cy===undefined||dt<=0){PL.cy=PL.gy;PL.vy=0;PL.air=0;}
     else if(PL.air){PL.vy-=24*dt;PL.cy+=PL.vy*dt;if(PL.cy>PL.gy+3.2){PL.cy=PL.gy+3.2;PL.vy=Math.min(PL.vy,0);}if(PL.cy<=PL.gy){const dn=-PL.vy;PL.cy=PL.gy;PL.air=0;PL.vy=0;if(dn>3){const k=clamp(dn/9,.3,1.6);PL.land=.12*k;G.shake=Math.max(G.shake,.7*k);sfxThump(k);for(let q=0;q<10;q++)spark(V.set(PL.x+R(-.8,.8),PL.gy+.1,PL.z+R(-.8,.8)),PL.vx*.6+R(-3,3),R(.5,3),PL.vz*.6+R(-3,3));}}}
     else{const vg=(PL.gy-PL.cy)/dt;if(vg<PL.vy-24*dt-.05&&v>12){PL.air=1;PL.vy-=24*dt;PL.cy+=PL.vy*dt;}else{PL.vy=vg;PL.cy=PL.gy;}}}   // where the road drops away faster than the car can fall, it flies   // height of the road here, and how steeply it climbs the way the car is pointing
@@ -1795,6 +1808,8 @@ function setTime(h,tm){
 }
 function updateWeather(rdt){const t=WX[G.weather],k=clamp(rdt*.9,0,1);for(const p of['grip','sunK','cov','fn','ff','wet','snow'])wx[p]=lerp(wx[p],t[p],k);
   if(DRIVE&&G.weather==='overcast'){const s=Math.sin(G.t*.021)+.6*Math.sin(G.t*.0137+1.7),dark=sst(s,.75,1.35);wx.cov=lerp(wx.cov,t.cov+.36*dark,k);}
+  if(DRIVE){const i=PL.idx,on=i>=Z.gg1+Math.round(150/SEG)&&i<Z.rb0+Math.round(500/SEG);G.sqs=lerp(G.sqs||0,on?1:0,clamp(rdt*.35,0,1));const q=G.sqs;   // the road to San Quentin is always under a dark grey sky
+    if(q>.01){wx.cov=lerp(wx.cov,Math.max(wx.cov,1.15),q);wx.sunK=lerp(wx.sunK,Math.min(wx.sunK,.3),q);wx.fn=lerp(wx.fn,Math.min(wx.fn,70),q*.7);wx.ff=lerp(wx.ff,Math.min(wx.ff,1300),q*.7);}}
   if(G.qd>0){G.qd=Math.max(0,G.qd-rdt/45);const q=Math.min(1,G.qd*2.5);wx.cov=Math.max(wx.cov,lerp(wx.cov,1.25,q));wx.fn=lerp(wx.fn,40,q);wx.ff=lerp(wx.ff,900,q);}}   // an earthquake turns the sky black almost at once, and it clears over the next minute or so
 
 await BOOT.step('LOADING THE FILM',.92);
@@ -1971,7 +1986,7 @@ const shadeMat=new THREE.MeshBasicMaterial({map:shadeTex,color:0,transparent:tru
   if(DRIVE){span(Z.wt0+120,Z.central,band);band(Z.rb1+20,Z.refinery-20);}else{band(205,NS);band(0,62);}}
 function driveTick(rdt){const zn=zoneOf(PL.idx);leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,zn==='town'&&G.state==='race'&&!G.paused);   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);extrasTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);extrasTick(rdt);sqHydTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -2151,6 +2166,54 @@ function trafficTick(dt,pe){const i0=PL.idx,zn=zoneArr[i0],road=i=>{const c=zone
     t.v+=clamp(v-t.v,-9*dt,3*dt);t.s=wrapS(t.s+t.v*dt);const w=RW+XW[i];t.lt=clamp(t.lt,-.75*w,.75*w);t.lat+=clamp(t.lt-t.lat,-1.5*dt,1.5*dt);placeVehicle(t);
     for(const wh of t.g.wh)wh.rotation.x+=t.v*dt/.4;if(t.g.legs){const q=tmNow()*9;t.g.legs.forEach((l,k)=>{l.rotation.x=Math.sin(q+(k%2?0:Math.PI)+(k>1?.6:0))*.5;});}
     const dx=t.g.position.x-PL.x,dz=t.g.position.z-PL.z,rel=Math.abs(pe.v-t.v);if(dx*dx+dz*dz<(t.r+1)**2&&rel>30&&!PL.crash&&PL.safe<=0&&G.state==='race')crashPlayer(rel*.4,false);}}
+// ---- San Quentin's beach (east of the prison, down to the bay): big surf crashing in and people flying kites. Hyde St: a few people on the pavements, and kids skateboarding down the middle of the road below the crest (solid: steer round them).
+// All made after bakeStatic, with their own seeded numbers so nothing else moves.
+const SQB={g:null,waves:[],kites:[]},HYD={walk:[],kids:[],t:0};
+if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=90210;return()=>(s=(s*16807)%2147483647)/2147483647;})(),LR=(a,b)=>a+lr()*(b-a);
+  const skin=[0xd9a988,0x8a5a3c,0xc48a62,0xf0c8a8,0x5a3a26].map(c=>std({color:c,roughness:.8})),cloth=c=>std({color:c,roughness:.9});
+  const person=(top,leg,sc=1,par=scene)=>{const g=new THREE.Group(),b=new THREE.Group();g.add(b);const bx=(sx,sy,sz,mm,x,y,z,p=b)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mm);o.position.set(x,y,z);o.castShadow=true;p.add(o);return o;};
+    bx(.46,.62,.26,cloth(top),0,1.18,0);const hd=new THREE.Mesh(new THREE.SphereGeometry(.13,10,8),skin[lr()*skin.length|0]);hd.position.y=1.66;b.add(hd);
+    g.legs=[-1,1].map(s=>{const p=new THREE.Group();p.position.set(s*.12,.86,0);bx(.16,.84,.18,cloth(leg),0,-.42,0,p);b.add(p);return p;});
+    g.arms=[-1,1].map(s=>{const p=new THREE.Group();p.position.set(s*.3,1.45,0);bx(.11,.6,.13,cloth(top),0,-.3,0,p);b.add(p);return p;});
+    g.scale.setScalar(sc);g.b=b;par.add(g);return g;};
+  const TOPS=[0x8a2a2a,0x2a4a7a,0xd8d0b8,0x3a5a3a,0xc98a2a,0x5a3a6a,0x1c1c1e,0xe0e0e0],LEGS=[0x2a2f3a,0x3a3a3a,0x6a5a44,0x22324a];
+  for(let k=0;k<9;k++){const g=person(TOPS[k%TOPS.length],LEGS[k%LEGS.length]),o={x:1e9,z:1e9,r:.55};g.visible=false;OBST.push(o);
+    HYD.walk.push({g,o,sd:k%2?1:-1,s:(Z.hyde+m_(LR(40,780)))*SEG,dir:lr()<.5?-1:1,sp:LR(1.1,1.6),lo:(Z.hyde+m_(30))*SEG,hi:(Z.marina-m_(40))*SEG,ph:lr()*6});}
+  const deck=std({color:0x8a4a22,roughness:.7}),whl=std({color:0xe8e0c8,roughness:.6});
+  for(let k=0;k<5;k++){const g=person(TOPS[(k*3+1)%TOPS.length],LEGS[k%LEGS.length],.78),bd=new THREE.Mesh(new THREE.BoxGeometry(.24,.05,.82),deck);bd.position.y=.1;g.add(bd);
+    for(const[x,z]of[[-.09,.28],[.09,.28],[-.09,-.28],[.09,-.28]]){const w=new THREE.Mesh(cyl(.035,.035,.04,8).rotateZ(Math.PI/2),whl);w.position.set(x,.04,z);g.add(w);}
+    g.b.position.y=.13;g.b.rotation.y=Math.PI/2*(k%2?1:-1)*.85;g.legs[0].rotation.x=.25;g.legs[1].rotation.x=-.25;g.arms[0].rotation.z=-.9;g.arms[1].rotation.z=.9;g.visible=false;const o={x:1e9,z:1e9,r:.9};OBST.push(o);
+    HYD.kids.push({g,o,s0:(Z.hyde+m_(480+k*34))*SEG,d:0,sp:LR(2.5,4.5),ph:lr()*6,wf:LR(.35,.6),c:LR(-3.2,3.2)});}
+  // the beach: sand from the edge of the Marin shore (x -5560) down into the bay, with the waterline at about x -5100, right beside the San Rafael bridge
+  const G0=new THREE.Group();G0.visible=false;scene.add(G0);SQB.g=G0;const x0=-5561,x1=-5100,xe=-4950,z0=-9420,z1=-9772,yb=x=>-45*(x-x0)/(x1-x0);SQB.yb=yb;SQB.x1=x1;
+  {const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([x0,.05,z0, x0,.05,z1, xe,yb(xe),z0, xe,yb(xe),z1],3));g.setIndex([0,2,1,1,2,3]);g.computeVertexNormals();
+   const s=new THREE.Mesh(g,std({color:0xcbb68a,roughness:1,side:THREE.DoubleSide}));s.receiveShadow=true;G0.add(s);}
+  const wg=new THREE.CylinderGeometry(1,1,z0-z1,18,1,true,0,Math.PI).rotateX(Math.PI/2).rotateZ(Math.PI/2),fg=new THREE.PlaneGeometry(1,z0-z1).rotateX(-Math.PI/2),wm=std({color:0x4f6e74,roughness:.25,metalness:.2,side:THREE.DoubleSide}),lm=std({color:0xeef2f2,roughness:.6});
+  for(let k=0;k<5;k++){const w=new THREE.Mesh(wg,wm),lip=new THREE.Mesh(new THREE.BoxGeometry(3.2,1.4,z0-z1-6),lm),fm=new THREE.MeshBasicMaterial({color:0xf2f5f5,transparent:true,opacity:0,depthWrite:false}),f=new THREE.Mesh(fg,fm);
+    w.position.z=lip.position.z=f.position.z=(z0+z1)/2;f.rotation.z=-Math.atan(45/(x1-x0));G0.add(w,lip,f);SQB.waves.push({w,lip,f,fm,ph:k/5});}
+  const KC=[0xd8261c,0xf2c230,0x1f6fd8,0x2aa84a,0xe85aa8,0xffffff];
+  for(let k=0;k<5;k++){const x=LR(-5450,-5300),z=LR(z1+40,z0-40),p=person(TOPS[(k+2)%TOPS.length],LEGS[k%LEGS.length],1,G0);p.position.set(x,yb(x),z);p.rotation.y=-Math.PI/2;p.arms[1].rotation.x=-2.2;p.arms[0].rotation.x=-1.4;
+    const kt=new THREE.Mesh(new THREE.PlaneGeometry(2.6,2.6),std({color:KC[k%KC.length],roughness:.7,side:THREE.DoubleSide}));kt.scale.set(.75,1.15,1);const kg=new THREE.Group(),kd=new THREE.Group();kd.rotation.z=Math.PI/4;kd.add(kt);kg.add(kd);
+    const tl=new THREE.Mesh(new THREE.PlaneGeometry(.2,6).translate(0,-4.2,0),std({color:KC[(k+3)%KC.length],side:THREE.DoubleSide}));kg.add(tl);G0.add(kg);
+    const ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0x222222}));ln.frustumCulled=false;G0.add(ln);
+    SQB.kites.push({p,kg,tl,ln,x,y:yb(x),z,ph:lr()*6,L:LR(40,58)});}}
+function sqHydTick(rdt){if(!DRIVE)return;const pe=ents.find(e=>e.player);if(!pe)return;HYD.t+=rdt;const t=HYD.t,i0=PL.idx,city=i0>=Z.b1&&i0<Z.gg0;
+  for(const w of HYD.walk){if(!city){if(w.g.visible){w.g.visible=false;w.o.x=1e9;}continue;}w.s+=w.dir*w.sp*rdt;if(w.s>w.hi){w.s=w.hi;w.dir=-1;}if(w.s<w.lo){w.s=w.lo;w.dir=1;}
+    const i=wrapI(Math.floor(w.s/SEG)),q=Math.sin(t*w.sp*5.5+w.ph)*.5;at(w.s,w.sd*(8.1+XW[i]),.13,w.g.position);w.g.rotation.y=yaw(i)+(w.dir<0?Math.PI:0);w.g.visible=true;
+    w.g.legs[0].rotation.x=q;w.g.legs[1].rotation.x=-q;w.g.arms[0].rotation.x=-q*.8;w.g.arms[1].rotation.x=q*.8;w.o.x=w.g.position.x;w.o.z=w.g.position.z;}
+  const bot=(Z.hyde+Math.round(820/SEG))*SEG;
+  for(const k of HYD.kids){if(!city){if(k.g.visible){k.g.visible=false;k.o.x=1e9;}continue;}
+    let s=k.s0+k.d;const gap=s-pe.s;if((gap<-60||k.d>260)&&Math.abs(gap)>150){k.d=0;s=k.s0;}   /* once well behind the driver, back up the hill to go again */
+    if(s<bot){k.d+=k.sp*rdt;s=k.s0+k.d;}
+    const i=wrapI(Math.floor(s/SEG)),a=t*k.wf+k.ph,lat=clamp(k.c+Math.sin(a)*2.6,-5.4,5.4),dl=Math.cos(a)*2.6*k.wf/Math.max(k.sp,.5),sl=(H[wrapI(i+1)]-H[wrapI(i-1)])/(2*SEG);
+    at(s,lat,0,k.g.position);k.g.rotation.set(-Math.atan(sl),Math.atan2(T[i].x+Nn[i].x*dl,T[i].z+Nn[i].z*dl),0,'YXZ');k.g.visible=true;k.o.x=k.g.position.x;k.o.z=k.g.position.z;}
+  const near=i0>Z.sq-Math.round(300/SEG)&&i0<Z.rb0+Math.round(700/SEG);SQB.g.visible=near;if(!near)return;
+  const yb=SQB.yb,x1=SQB.x1;
+  for(const w of SQB.waves){const p=(t/8+w.ph)%1,x=x1+250-p*245,h=p<.72?lerp(.8,7.5,p/.72):7.5*Math.max(0,1-(p-.72)/.12);   // each wave rolls in, rears up, and breaks on the sand
+    w.w.position.set(x,-45,w.w.position.z);w.w.scale.set(lerp(13,7,p),Math.max(h,.01),1);w.w.visible=h>.05;w.lip.position.set(x-lerp(1,4,p),-45+h,w.lip.position.z);w.lip.rotation.z=p>.6?(p-.6)*4:0;w.lip.visible=h>.3;w.lip.scale.y=lerp(.5,1.6,clamp(p/.72,0,1));
+    const q=p<.8?-1:(p-.8)/.2;w.f.visible=q>=0;if(q>=0){const fx=x1-q*48;w.f.position.set(fx,yb(fx)+.12,w.f.position.z);w.f.scale.x=lerp(30,12,q);w.fm.opacity=.85*(1-q);}}
+  for(const k of SQB.kites){const a=t*.6+k.ph,kx=k.x-k.L*.7+Math.sin(a*.7)*3,ky=k.y+k.L*.75+Math.sin(a)*2.5,kz=k.z+Math.sin(a*.5)*5;k.kg.position.set(kx,ky,kz);k.kg.rotation.set(Math.sin(a*1.3)*.2,Math.PI/2,Math.sin(a*.9)*.35);k.tl.rotation.z=Math.sin(a*3)*.3;
+    const pa=k.ln.geometry.attributes.position;pa.setXYZ(0,k.x,k.y+1.8,k.z);pa.setXYZ(1,kx,ky,kz);pa.needsUpdate=true;}}
 function extrasTick(rdt){const pe=ents.find(e=>e.player);if(!pe)return;const m_=x=>Math.round(x/SEG);
   trafficTick(rdt,pe);
   // fires that keep burning: the ruins before the bridge, the wrecks on it, the refinery flare
