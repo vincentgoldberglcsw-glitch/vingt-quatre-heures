@@ -987,7 +987,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
       g.fillStyle='#d8dde2';const r=v%3===0?60:22;g.beginPath();g.roundRect(cx-105,cy-120,210,190,r);g.fill();g.fillStyle='#8a9198';g.fillRect(cx-128,cy-50,24,60);g.fillRect(cx+104,cy-50,24,60);g.beginPath();g.roundRect(cx-70,cy+78,140,70,14);g.fill();
       g.fillStyle='#10161c';if(v%2){g.beginPath();g.roundRect(cx-80,cy-80,160,70,20);g.fill();g.fillStyle=ac;for(const dx of[-38,38]){g.beginPath();g.arc(cx+dx,cy-45,17,0,7);g.fill();}}else{for(const dx of[-45,45]){g.beginPath();g.arc(cx+dx,cy-45,30,0,7);g.fill();}g.fillStyle=ac;for(const dx of[-45,45]){g.beginPath();g.arc(cx+dx+6,cy-45,13,0,7);g.fill();}}
       g.fillStyle='#10161c';if(v%4<2){for(let q=0;q<6;q++)g.fillRect(cx-56+q*20,cy+18,10,28);}else{g.lineWidth=8;g.strokeStyle='#10161c';g.beginPath();g.arc(cx,cy+12,42,.2,2.94);g.stroke();}
-      g.fillStyle='#f4f6f8';g.textAlign='left';g.font='900 '+(name.length>12?74:96)+'px Arial Black,Arial';g.fillText(name,360,225,620);g.fillStyle=ac;g.font='italic 700 36px Georgia';g.fillText(tag,362,292,620);g.fillRect(362,318,300,6);g.font='700 22px Arial';g.fillStyle='rgba(244,246,248,.6)';g.fillText('artificial intelligence  ·  san francisco',362,372);});
+      g.fillStyle='#f4f6f8';g.textAlign='left';g.font='900 '+(name.length>12?74:96)+'px Arial Black,Arial';g.fillText(name,360,225,620);g.fillStyle=ac;g.font='italic 700 36px Georgia';g.fillText(tag,362,292,620);g.fillRect(362,318,300,6);g.font='700 22px Arial';g.fillStyle='rgba(244,246,248,.6)';g.fillText('artificial intelligence  ·  san francisco',362,372);graffiti(g,w,h,v);});
     const spots=[[Z.b1+m(40),-1],[Z.b1+m(140),1],[Z.b1+m(260),-1],[Z.downtown-m(60),1],[Z.hyde+m(120),1],[Z.hyde+m(300),-1],[Z.marina+m(200),-1],[Z.tu1+m(700),1],[Z.tu1+m(1900),-1],[Z.b0+m(200),1],[Z.i80+m(900),-1],[Z.emeryville+m(100),1],[Z.oakland+m(300),-1],[Z.b0-m(120),-1]];
     spots.forEach(([i,sd],v)=>{const t=tex(ADS[v%ADS.length],v),g=new THREE.Group(),bd=new THREE.Mesh(new THREE.PlaneGeometry(13.5,6),new THREE.MeshStandardMaterial({map:t,emissiveMap:t,emissive:0xffffff,emissiveIntensity:.55,roughness:.6}));bd.position.y=8;g.add(bd);
       B(13.8,6.3,.25,steelM,0,8,-.15,0,g);const leg=8+(H[i]>2?H[i]:0);for(const x of[-5,5])B(.4,leg,.4,steelM,x,8-3-leg/2,-.35,0,g);
@@ -1012,6 +1012,23 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
     [[Z.tu1+m(350),-1],[Z.tu1+m(1100),1],[Z.tu1+m(1500),-1],[Z.tu1+m(2450),1],[Z.i80+m(400),1],[Z.i80+m(1700),-1],[Z.berkeley+m(400),1],[Z.oakland-m(600),1]].forEach(([i,sd],v)=>{const t=rtex(RETRO[v%RETRO.length]),g=new THREE.Group(),bd=new THREE.Mesh(new THREE.PlaneGeometry(13.5,6),new THREE.MeshStandardMaterial({map:t,emissiveMap:t,emissive:0xffffff,emissiveIntensity:.3,roughness:.75}));bd.position.y=8;g.add(bd);
       B(13.9,6.4,.3,mat('woodBoard',{color:0x5a4a38,roughness:.9}),0,8,-.17,0,g);const leg=8+(H[i]>2?H[i]:0);for(const x of[-4.5,0,4.5])B(.35,leg,.35,mat('woodPost',{color:0x6a5440,roughness:.9}),x,8-3-leg/2,-.35,0,g);for(const x of[-4,4]){const lm=B(.6,.25,.6,lampMat,x,11.6,.6,0,g);lm.castShadow=false;}   // gooseneck lamps over the top
       g.traverse(o=>{o.castShadow=true;});off(i,sd*(wallAt[i]+8),0,g.position);g.rotation.y=yaw(i)+Math.PI-sd*.36;scene.add(g);});
+    // past San Quentin: signs for the chemical works, and the first posters for the Leader; past the San Rafael bridge, Richmond is covered in WE LOVE THE LEADER boards
+    const ldr=(title,sub,bg,fg)=>canvas(1024,460,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);const cx=230,cy=250;g.save();g.translate(cx,cy);for(let k=0;k<24;k++){g.rotate(Math.PI/12);g.fillStyle=k%2?fg:bg;g.beginPath();g.moveTo(0,0);g.lineTo(600,-80);g.lineTo(600,80);g.fill();}g.restore();
+      g.fillStyle=bg;g.beginPath();g.arc(cx,cy,150,0,7);g.fill();g.fillStyle='#141414';g.beginPath();g.arc(cx,cy-40,58,0,7);g.fill();g.beginPath();g.ellipse(cx,cy+90,105,80,0,Math.PI,0);g.fill();   // the Leader: a silhouette in a sunburst
+      g.fillStyle='#f4ead2';g.beginPath();g.arc(cx-20,cy-48,7,0,7);g.arc(cx+20,cy-48,7,0,7);g.fill();g.fillStyle='rgba(0,0,0,.55)';g.fillRect(420,110,570,250);g.fillStyle='#f4ead2';g.textAlign='center';g.textBaseline='middle';
+      g.font='900 '+(title.length>16?60:78)+'px Impact,"Arial Black",Arial';g.fillText(title,705,195,550);g.font='700 34px Georgia,serif';g.fillStyle=fg;g.fillText(sub,705,285,550);});
+    const chem=(name,sub,col)=>canvas(1024,460,(g,w,h)=>{g.fillStyle='#e8e6e0';g.fillRect(0,0,w,h);g.fillStyle=col;g.fillRect(0,0,w,90);g.fillRect(0,h-40,w,40);g.fillStyle='#f4f4f4';g.font='900 54px Arial';g.textAlign='left';g.fillText(name,40,62,940);
+      g.save();g.translate(190,270);g.rotate(Math.PI/4);g.fillStyle='#f0c020';g.fillRect(-95,-95,190,190);g.strokeStyle='#141414';g.lineWidth=8;g.strokeRect(-95,-95,190,190);g.restore();g.fillStyle='#141414';g.font='900 120px Arial';g.textAlign='center';g.fillText('!',190,312);
+      g.font='700 40px Arial';g.textAlign='left';g.fillText(sub,360,240,620);g.font='700 28px Arial';g.fillStyle='#5a5a5a';g.fillText('NEXT RIGHT · TRUCK ENTRANCE · NO VISITORS',360,300,620);});
+    const tall=(i,sd,t)=>{const g=new THREE.Group(),bd=new THREE.Mesh(new THREE.PlaneGeometry(13.5,6),new THREE.MeshStandardMaterial({map:t,emissiveMap:t,emissive:0xffffff,emissiveIntensity:.45,roughness:.6}));bd.position.y=8;g.add(bd);
+      B(13.8,6.3,.25,steelM,0,8,-.15,0,g);const leg=8+(H[i]>2?H[i]:0);for(const x of[-5,5])B(.4,leg,.4,steelM,x,8-3-leg/2,-.35,0,g);g.traverse(o=>{o.castShadow=true;});off(i,sd*(wallAt[i]+8),0,g.position);g.rotation.y=yaw(i)+Math.PI-sd*.36;scene.add(g);};
+    tall(Z.sq+m(220),-1,chem('PACIFIC POLYMERS INC.','INDUSTRIAL SOLVENTS & RESINS','#1f4f8a'));tall(Z.sq+m(420),1,ldr('THE LEADER KNOWS THE WAY','Follow. Believe. Belong.','#7a1414','#d8a83a'));
+    tall(Z.sq+m(600),-1,chem('BAYCHEM CHLORINE WORKS','CHLORINE · CAUSTIC SODA · ACIDS','#2f6b45'));tall(Z.sq+m(780),1,chem('TRI-COUNTY PETROCHEMICAL','BENZENE · TOLUENE · XYLENE','#8a3a1a'));
+    [['WE LOVE THE LEADER','Richmond is grateful.'],['WE ♥ THE LEADER','He watches over us.'],['THE LEADER PROVIDES','Thank him tonight.'],['WE LOVE THE LEADER','Obey with joy.'],['ONE CITY · ONE LEADER','Unity is strength.']].forEach(([a,b],k)=>
+      tall(Z.rb1+m(60+k*130),k%2?-1:1,ldr(a,b,['#7a1414','#14284a','#3a1458'][k%3],'#d8a83a')));
+    // the Posey Tube: oil-drum fires along both walls, their smoke hanging under the roof
+    {const drum=std({color:0x4a3a2c,roughness:.8,metalness:.4});for(let k=0;k<8;k++){const i=Z.tu0+m(40)+Math.round(k*(Z.tu1-Z.tu0-m(80))/7),sd=k%2?1:-1;off(i,sd*4.6,0,V);
+      const d=new THREE.Mesh(cyl(.32,.3,.9,12),drum);d.position.set(V.x,V.y+.45,V.z);scene.add(d);OBST.push({x:V.x,z:V.z,r:.7});BURN.push({x:V.x,y:V.y+1,z:V.z,s:.45});}}
     // the board with the giant eyes: it watches the traffic, and now and then it blinks
     const eyeTex=(look,open)=>canvas(1024,460,(g,w,h)=>{g.fillStyle='#0b0d10';g.fillRect(0,0,w,h);g.strokeStyle='#ff4c3a';g.lineWidth=8;g.strokeRect(12,12,w-24,h-24);
       for(const sx of[-1,1]){const cx=w/2+sx*230,cy=200;g.save();g.beginPath();g.moveTo(cx-190,cy);g.quadraticCurveTo(cx,cy-170*open,cx+190,cy);g.quadraticCurveTo(cx,cy+170*open,cx-190,cy);g.closePath();g.fillStyle='#f1ede4';g.fill();g.clip();
@@ -1736,11 +1753,12 @@ function sim(dt){const pe=ents.find(e=>e.player);
       hero.position.set(PL.x,H[i],PL.z);hero.rotation.set(0,PL.h,0);GY=PL.gy=PL.cy=H[i];PL.air=0;PL.vy=0;say(DRIVE?'BACK ON THE ROAD':'BACK IN THE RACE','',1.5);}}
   if(G.state==='race'){G.doomT-=dt;if(G.doomT<=0){G.doomT=R(38,70);const c=ents.filter(e=>!e.player&&e.out<=0&&!e.doom&&wdiff(e.s-pe.s)>45&&wdiff(e.s-pe.s)<230&&e.v>35);if(c.length){const e=c[Math.random()*c.length|0];e.doom=Math.random()<.5?-1:1;}else G.doomT=6;}
     if(!DRIVE&&pe.dist>=LAPS*LEN){G.state='finish';G.finT=0;G.slow=.3;G.slowT=3.2;first=true;sfxCheer();say('DRAPEAU À DAMIER','P'+(standings().indexOf(pe)+1)+' · '+LAPS+' LAPS',4);announce("Le drapeau à damier ! Les vingt-quatre heures sont terminées !");}}
+  driveHome(pe);if(G.state==='finish'&&DRIVE){VS.u*=Math.exp(-1.6*dt);VS.v*=Math.exp(-3*dt);}   // home: the car rolls to a stop at the kerb
   if(G.state==='finish'){if(Math.abs(pe.v)<.5)G.stopT+=dt;if(G.stopT>.6&&$('res').style.display!=='block')showResults();}
 }
 const fmt=t=>{const m=Math.floor(t/60),s=t-m*60;return m+':'+(s<10?'0':'')+s.toFixed(2);};
 function standings(){return [...ents].sort((a,b)=>b.dist-a.dist);}
-function showResults(){const st=standings();$('resList').innerHTML=st.map((e,i)=>`<div class="${e.player?'me':''}">${i+1}. &nbsp;No. ${e.num} &nbsp;${e.name} &nbsp;· ${(Math.max(e.dist,0)/1000).toFixed(2)} km</div>`).join('');$('res').style.display='block';$('msg').innerHTML='';G.msgT=0;$('tl').classList.add('hide');}
+function showResults(){if(DRIVE){document.querySelector('#res h1').textContent='HOME';$('resList').innerHTML=`<div class="me">1611 SAN ANTONIO AVE, ALAMEDA</div><div>Round the bay: 34 km</div><div>Time: ${fmt(G.raceT)}</div>`;$('res').style.display='block';$('msg').innerHTML='';G.msgT=0;$('tl').classList.add('hide');return;}const st=standings();$('resList').innerHTML=st.map((e,i)=>`<div class="${e.player?'me':''}">${i+1}. &nbsp;No. ${e.num} &nbsp;${e.name} &nbsp;· ${(Math.max(e.dist,0)/1000).toFixed(2)} km</div>`).join('');$('res').style.display='block';$('msg').innerHTML='';G.msgT=0;$('tl').classList.add('hide');}
 
 /* ================= TIME OF DAY ================= */
 const cHZD=new THREE.Color(0xd6d4c6),cHZG=new THREE.Color(0xeaa468),cHZN=new THREE.Color(0x0b101c),cZND=new THREE.Color(0x6f98bd),cZNG=new THREE.Color(0x46568a),cZNN=new THREE.Color(0x04060d),cOG=new THREE.Color(0xa9aaa6),cT=new THREE.Color(),cSunLo=new THREE.Color(0xff8a4a),cSunHi=new THREE.Color(0xfff0d8),cMoon=new THREE.Color(0x8fa8d0),cHemiD=new THREE.Color(0xbcd3e2),cHemiN=new THREE.Color(0x2a3550),moonDir=new THREE.Vector3(.4,.7,.3).normalize();
@@ -1753,6 +1771,7 @@ function setTime(h,tm){
   const u=skyMat.uniforms;u.hz.value.copy(cHZD).lerp(cHZG,g).lerp(cOG,wx.cov*.8*(1-g*.5)).lerp(cHZN,1-d);u.zn.value.copy(cZND).lerp(cZNG,g).lerp(cOG,wx.cov*.55).lerp(cZNN,1-d);
   u.night.value=1-d;u.cov.value=wx.cov;u.dayk.value=d;u.dk.value=DRIVE?clamp((wx.cov-.4)*1.6,0,.85):0;
   scene.fog.color.copy(u.hz.value).multiplyScalar(lerp(1,.86,wx.cov));scene.fog.near=wx.fn;scene.fog.far=wx.ff;
+  if(DRIVE&&G.tun>.05&&PL.idx>Z.tu0-60&&PL.idx<Z.tu1+60){const k=G.tun*.85;scene.fog.near=lerp(scene.fog.near,5,k);scene.fog.far=lerp(scene.fog.far,130,k);}   // the drum fires fill the Posey Tube with smoke
   if(el>.02){sun.color.copy(cSunLo).lerp(cSunHi,sst(el,0,.45));sun.intensity=3.5*sst(el,.02,.22)*wx.sunK;V.copy(sunDir);}
   else{sun.color.copy(cMoon);sun.intensity=.32*sst(-el,0,.12)*(1-wx.cov*.6);V.copy(moonDir);}
   sun.target.position.copy(hero.position);sun.position.copy(hero.position).addScaledVector(V,200);
@@ -1807,7 +1826,7 @@ composer.addPass(grade);
 await BOOT.step('DASHBOARD AND CONTROLS',.93);
 /* ================= UI + INPUT ================= */
 function refreshTitle(){const M=MODELS[G.model],W=WX[G.weather];$('oCls').textContent=M.cls?'CLASSIC CARS':'RACING CARS';$('oModel').textContent=`${M.name} · ${M.year}`;$('oDesc').textContent=`${M.desc} Top speed ${Math.round(M.top*3.6)} km/h.`;$('oWx').textContent=W.name;$('oWxD').textContent=W.d;$('wxl').textContent=W.name;$('oLiv').textContent=LIV().name;$('oLivD').textContent=LIV().d;$('oSens').textContent=Math.round(G.sens*100)+'%';}
-function startRace(){initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');$('res').style.display='none';for(const id of['tl','tr','br','lf','map','bl'])$(id).classList.remove('hide');
+function startRace(){clearCrack();initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');$('res').style.display='none';for(const id of['tl','tr','br','lf','map','bl'])$(id).classList.remove('hide');
   seed=7+Math.random()*1000|0;setupGrid();hero.visible=true;G.state='count';G.t=0;G.count=4;PL.lapStart=0;first=true;}
 // ---- free drive: start, zone-by-zone atmosphere, and the bridge's horns and gulls
 const ZLABEL={town:'ALAMEDA',tunnel:'THE TUBE',freeway:'FREEWAY',bridge:'BAY BRIDGE',city:'THE CITY',return:'SHORE ROAD',forest:'MARIN',hills:'RICHMOND',race:''},DA={horn:4,gull:2,zn:''};
@@ -1818,7 +1837,7 @@ const PLACES=DRIVE?(()=>{const m=x=>Math.round(x/SEG);return[[0,'SAN ANTONIO AVE
   [Z.i80,'I-80 SOUTH','BERKELEY HILLS ON THE LEFT'],[Z.berkeley,'BERKELEY','THE UNIVERSITY UP THE HILL'],[Z.emeryville,'EMERYVILLE',''],[Z.oakland,'OAKLAND','NEXT EXIT ALAMEDA'],[Z.wt1,'WEBSTER TUBE','BACK UNDER THE ESTUARY'],[Z.wt0,'ALAMEDA','HOME TO SAN ANTONIO AVE'],[Z.wt0+m(260),'BUENA VISTA AVE','ALAMEDA'],[Z.bv,'GRAND ST','SOUTH TO SAN ANTONIO'],[NS-m(240),'SAN ANTONIO AVE','ALMOST HOME · 1611 ON THE RIGHT']];})():[];
 const placeOf=i=>{let p=PLACES[0];for(const q of PLACES)if(i>=q[0])p=q;return p;};
 const tmNow=()=>performance.now()/1000;
-function startDrive(){initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');for(const id of['tl','br','lf','map','bl'])$(id).classList.remove('hide');
+function startDrive(){clearCrack();initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');for(const id of['tl','br','lf','map','bl'])$(id).classList.remove('hide');
   setupGrid();hero.visible=true;ANN.on=false;G.state='race';first=true;PL.lapStart=0;DA.zn=placeOf(PL.idx)[1];say('1611 SAN ANTONIO AVE','ALAMEDA · PARKED OUT FRONT · AROUND THE BAY AND HOME',4);}
 // Town streets: dead leaves, and now and then a bit of litter, blown about by a gusty wind and thrown up by the car as it passes.
 let LV=null;if(DRIVE){const N=110,m=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,1),new THREE.MeshStandardMaterial({side:THREE.DoubleSide,roughness:.9}),N),c=new THREE.Color(),p=[];m.frustumCulled=false;
@@ -1898,6 +1917,28 @@ function ducksTick(rdt){const i0=PL.idx,on=zoneArr[i0]===3&&i0>Z.tu1+60&&i0<Z.de
     at(s,lat,0,d.g.position);d.g.rotation.set(0,yaw(i)+DUCK.dir*Math.PI/2,Math.sin(tm*9+d.ph)*.12);d.g.position.y+=Math.abs(Math.sin(tm*9+d.ph))*.04;   // the waddle
     const dx=d.g.position.x-PL.x,dz=d.g.position.z-PL.z;if(dx*dx+dz*dz<2.6*2.6&&pe.v>2){d.fly={t:0,v:new THREE.Vector3(R(-3,3)+PL.vx*.15,R(3,5),R(-3,3)+PL.vz*.15)};sfxQuack(2);NOGY=1;puff(d.g.position,R(-1,1),R(1,2),R(-1,1),.3,1,1.2,.5,0xd8c8a0);NOGY=0;}}   // a near miss: up and away in a flurry
   if(done||wdiff(DUCK.s-pe.s)<-150||!on&&wdiff(DUCK.s-pe.s)<-20){DUCK.st=0;DUCK.t=R(45,95);for(const d of DUCK.birds)d.g.visible=false;}}
+// spray-paint over the AI boards: a slogan in drippy capitals, a tag, and now and then a big cross through the robot
+function graffiti(g,w,h,v){let s=v*7919+13;const r=()=>{s=(s*16807)%2147483647;return s/2147483647;};
+  const SL=['AI = SLOP','HUMANS ONLY','UNPLUG IT','NO BOTS','THINK FOR YOURSELF','ROBOTS OUT','FAKE','WE ARE NOT DATA','ASK A PERSON'],col=['#d8261c','#141414','#2fd04a','#f0e020','#e040c0','#f4f4f4'][(r()*6)|0];
+  g.save();g.translate(w*(.35+r()*.3),h*(.45+r()*.35));g.rotate((r()-.5)*.5);g.font='900 '+(70+r()*40|0)+'px Impact,"Arial Black",Arial';g.textAlign='center';g.textBaseline='middle';
+  g.lineJoin='round';g.strokeStyle='rgba(0,0,0,.45)';g.lineWidth=10;const t=SL[(r()*SL.length)|0];g.strokeText(t,0,0);g.fillStyle=col;g.fillText(t,0,0);
+  const tw=g.measureText(t).width;g.fillRect(-tw/2,0,0,0);for(let k=0;k<9;k++){const x=-tw/2+r()*tw,len=10+r()*45;g.fillRect(x,18,3+r()*3,len);g.beginPath();g.arc(x+2.5,18+len,3.5,0,7);g.fill();}g.restore();   // drips
+  if(r()<.55){g.strokeStyle=col==='#141414'?'#d8261c':'#141414';g.lineWidth=16;g.lineCap='round';g.beginPath();g.moveTo(70,90);g.lineTo(320,390);g.moveTo(320,90);g.lineTo(70,390);g.stroke();}
+  g.fillStyle=['#2fd04a','#f0e020','#f4f4f4'][(r()*3)|0];g.font='italic 900 40px "Comic Sans MS",cursive';g.fillText(['K-RAT','ZORP','HUMN','MOSS'][(r()*4)|0],w-200,h-60);}
+// a turkey through the windscreen: a crazed star of cracks stays on the glass until the drive starts again
+function crackScreen(){let el=$('crack');if(!el){el=document.createElement('div');el.id='crack';el.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:5;opacity:0;transition:opacity .08s';
+    const c=document.createElement('canvas');c.width=1600;c.height=1000;const g=c.getContext('2d'),cx=980+Math.random()*200,cy=380+Math.random()*120;g.strokeStyle='rgba(235,240,245,.85)';g.lineCap='round';
+    const br=(x,y,a,len,wd,d)=>{if(d>5||len<12)return;g.lineWidth=wd;g.beginPath();g.moveTo(x,y);let px=x,py=y;for(let k=0;k<5;k++){a+=(Math.random()-.5)*.5;px+=Math.cos(a)*len/5;py+=Math.sin(a)*len/5;g.lineTo(px,py);}g.stroke();
+      for(let k=0;k<2;k++)if(Math.random()<.6)br(px,py,a+(Math.random()-.5)*1.4,len*.6,wd*.7,d+1);};
+    for(let k=0;k<14;k++)br(cx,cy,k/14*6.283+Math.random()*.3,180+Math.random()*420,3,0);for(const rr of[40,85,140])
+      {g.lineWidth=1.6;g.beginPath();for(let k=0;k<=24;k++){const a=k/24*6.283,q=rr*(.85+Math.random()*.3);k?g.lineTo(cx+Math.cos(a)*q,cy+Math.sin(a)*q):g.moveTo(cx+Math.cos(a)*q,cy+Math.sin(a)*q);}g.stroke();}
+    const rg=g.createRadialGradient(cx,cy,0,cx,cy,60);rg.addColorStop(0,'rgba(240,245,250,.75)');rg.addColorStop(1,'rgba(240,245,250,0)');g.fillStyle=rg;g.fillRect(cx-60,cy-60,120,120);
+    el.style.background=`url(${c.toDataURL()}) center/cover no-repeat`;document.body.appendChild(el);}
+  if(el.style.opacity!=='1'){el.style.opacity='1';say('GOBBLE !','A TURKEY HAS CRACKED THE WINDSCREEN',2.6);sfxCrunch(.7);}}
+function clearCrack(){const el=$('crack');if(el)el.style.opacity='0';}
+// the free drive ends where it began: back outside 1611 San Antonio Ave after the whole loop, the car rolls to a stop and the time is shown
+function driveHome(pe){if(!DRIVE||G.state!=='race'||PL.crash||pe.dist<LEN*.97||PL.idx<Z.start-3||PL.idx>Z.start+14)return;
+  G.state='finish';G.finT=0;G.stopT=0;first=true;sfxCheer();say('HOME','1611 SAN ANTONIO AVE · ROUND THE BAY IN '+fmt(G.raceT),6);}
 // the crows on the poles and wires: they look about while they sit; drive past quickly and they go up, flapping and calling, and settle again once you have gone
 let cawT=0;
 function crowsTick(rdt){if(!CROWS.length)return;cawT-=rdt;const v=Math.hypot(PL.vx,PL.vz),tm=tmNow();
@@ -1912,7 +1953,7 @@ function turkeysTick(rdt){const v=Math.hypot(PL.vx,PL.vz);for(const k of TK){con
       at(k.ci*SEG+k.ds,k.lat,0,V);const near=(V.x-PL.x)**2+(V.z-PL.z)**2,sc=near<260&&v>5?3.2:.75;if(sc>1&&Math.abs(k.tl-k.lat)<1)k.tl=clamp(k.lat+(k.lat>=0?9:-9),-14,14);   // they scuttle aside when a car comes
       const dl=k.tl-k.lat,dd=k.td-k.ds,d=Math.hypot(dl,dd);if(d>.2){k.lat+=dl/d*sc*rdt;k.ds+=dd/d*sc*rdt;k.h=Math.atan2(Nn[k.ci].x*dl+T[k.ci].x*dd,Nn[k.ci].z*dl+T[k.ci].z*dd);}
       at(k.ci*SEG+k.ds,k.lat,0,m.position);m.position.y+=d>.2?Math.abs(Math.sin(tmNow()*9+k.ci+k.tl))*.04:0;m.rotation.set(0,k.h,0);m.w[0].rotation.z=m.w[1].rotation.z=0;m.w[0].scale.x=m.w[1].scale.x=.25;
-      if(near<3.2&&v>3&&!PL.crash){k.st=1;k.x=m.position.x;k.z=m.position.z;k.y=m.position.y;k.vx=PL.vx*.55+R(-4,4);k.vz=PL.vz*.55+R(-4,4);k.vy=R(6.5,10.5);k.sp=R(-9,9);k.fly=Math.random()<.35;sfxGobble();G.shake=Math.max(G.shake,.25);
+      if(near<3.2&&v>3&&!PL.crash){k.st=1;crackScreen();k.x=m.position.x;k.z=m.position.z;k.y=m.position.y;k.vx=PL.vx*.55+R(-4,4);k.vz=PL.vz*.55+R(-4,4);k.vy=R(6.5,10.5);k.sp=R(-9,9);k.fly=Math.random()<.35;sfxGobble();G.shake=Math.max(G.shake,.25);
         for(let i=0;i<9;i++)puff(V.set(k.x,k.y+.6,k.z),R(-3,3)+PL.vx*.2,R(1,4),R(-3,3)+PL.vz*.2,.15,.5,R(.6,1.3),.8,i%2?0x6a4426:0xe8e0d0);}
       continue;}
     if(k.st===3){k.tt-=rdt;m.visible=false;if(k.tt<=0){k.st=0;m.visible=true;k.lat=R(-11,11);k.ds=R(-9,9);k.tl=k.lat;k.td=k.ds;k.tt=1;}continue;}
@@ -2237,7 +2278,7 @@ addEventListener('keydown',e=>{const c=codeOf(e);keys[c]=true;if(['ArrowUp','Arr
     if(c==='KeyF'){const q=new URLSearchParams();if(!DRIVE)q.set('mode','drive');q.set('go','1');q.set('model',G.model);q.set('liv',G.liv);q.set('wx',G.weather);location.search=q.toString();}   // switch between the race and the free drive
     return;}
   if(G.state==='intro'){if(c==='Enter'||c==='Space'||c==='Escape')G.t=INTRO.T;return;}   // skip the montage
-  if(c==='Enter'&&G.state==='finish'&&$('res').style.display==='block')startRace();
+  if(c==='Enter'&&G.state==='finish'&&$('res').style.display==='block')(DRIVE?startDrive:startRace)();
   if(c==='KeyC')G.cam=(G.cam+1)%4;
   if(c==='KeyT'){const i=WKEYS.indexOf(G.weather);G.weather=WKEYS[(i+1)%5];refreshTitle();say(WX[G.weather].name,WX[G.weather].d,2.4);announce(WXFR[G.weather]);}
   if(c==='KeyN'){ANN.on=!ANN.on;if(!ANN.on&&window.speechSynthesis)speechSynthesis.cancel();say(ANN.on?'ANNOUNCER ON':'ANNOUNCER OFF','',1);}
