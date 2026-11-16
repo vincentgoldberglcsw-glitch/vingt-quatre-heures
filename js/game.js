@@ -52,7 +52,7 @@ function buildRoute(X80=-600){
   // Corners are swept, not square: every junction on the loop has about twice the radius it had, so it can be driven as a corner rather than stopped for.
   // The two straights into the Posey Tube are trimmed to suit, so that the tube mouth - and with it the port, the bridges and the coastlines - stays exactly where it was.
   const old=routeTurtle(0,0,-90*D2R).S(40).S(260).R(90,24).S(920).L(90,24).S(400).R(70,45).S(560).R(20,200);
-  const lead=(a,b)=>routeTurtle(0,0,-90*D2R).M('t0').S(40).M('start').S(260).R(90,52).M('paru').S(890).L(90,52).M('central').S(a).R(70,90).M('wilma').S(b).R(20,200).M('tu0');
+  const lead=(a,b)=>routeTurtle(0,0,-90*D2R).M('t0').S(40).M('start').S(260).R(90,52).M('paru').S(890).L(90,120).M('central').S(a).R(70,90).M('wilma').S(b).R(20,200).M('tu0');
   const p0=lead(1,1),wd=-160*D2R,wl=1+(old.z-p0.z)/Math.cos(wd),cl=1-(old.x-p0.x-(wl-1)*Math.sin(wd));
   const f=lead(cl,wl);
   f.S(580,40).M('tu1')
@@ -247,7 +247,7 @@ const tuftMat=std({map:tuftTex,alphaTest:.4,side:THREE.DoubleSide,roughness:1});
  const tufts=new THREE.InstancedMesh(tg,tuftMat,NTUFT);
  const pops=new THREE.InstancedMesh(tg,std({map:poppyTex,alphaTest:.4,side:THREE.DoubleSide,roughness:1}),NPOP);
  // in town the tufts keep to the front lawns, behind the pavement, and none grow in the supermarket car park or on the paved crossroads
- const mS=x=>Math.round(x/SEG),bare=DRIVE?[[Z.paru+mS(92)+8,Z.paru+mS(184)-8,1],[Z.paru-mS(82)-6,Z.paru+6,1],[Z.central-mS(82)-6,Z.central+6,-1]]:[];
+ const mS=x=>Math.round(x/SEG),bare=DRIVE?[[Z.paru+mS(92)+8,Z.paru+mS(184)-8,1],[Z.paru-mS(82)-6,Z.paru+6,1]]:[];
  const put=(mesh,k,lo,hi,s0,s1)=>{const i=DRIVE?landIdx[rnd()*landIdx.length|0]:rnd()*NS|0,sd=rnd()<.5?-1:1;let o=sd*(lo+Math.pow(rnd(),1.6)*(hi-lo));
    if(DRIVE&&zoneArr[i]===1){const e=12.4+XW[i];if(Math.abs(o)<e)o=sd*(e+(Math.abs(o)-lo)*.5);}off(i,o,0,V);V.x+=T[i].x*rr(-1,1);V.z+=T[i].z*rr(-1,1);
    Q.setFromAxisAngle(YAX,rr(0,6.3));const s=rr(s0,s1),sx=s*rr(.9,1.5),gone=bare.some(([a,b,ss])=>i>=a&&i<=b&&sd===ss&&Math.abs(o)<60);M4.compose(V,Q,S.set(gone?0:sx,gone?0:s,gone?0:s));mesh.setMatrixAt(k,M4);};
@@ -469,8 +469,9 @@ await BOOT.step('KERBS AND BARRIERS',.26);
   const CROSS=[];for(let k=1;k<=9;k++)CROSS.push(Z.paru+m(92*k));   // the nine cross streets on Paru
   const nearCross=(i,d)=>CROSS.some(c=>Math.abs(i-c)<d);
   // the two corners into Paru and onto Central are crossroads: the road through the turn keeps its pavement only on the inside, the outside is open junction (built with the cross streets below)
-  const JN=[{c:Z.paru,R:52,os:1,name:['SAN ANTONIO AVE','PARU ST']},{c:Z.central,R:52,os:-1,name:['PARU ST','CENTRAL AVE']}];for(const J of JN)J.i0=J.c-Math.round(J.R*Math.PI/2/SEG);   // R: the turn's radius in buildRoute(); os: which side is the outside of the turn (+1 left)
-  {let a=Z.wt0+m(130);for(const c of CROSS){pavement(a,c-8,rnd()<.5);a=c+8;}pavement(a,JN[1].i0,false);pavement(JN[1].i0,Z.central,false,[1]);pavement(Z.central,Z.wilma,false);
+  const JN=[{c:Z.paru,R:52,os:1,name:['SAN ANTONIO AVE','PARU ST']}];   // (the end of Paru is a long gentle curve onto Central, not a crossroads)
+ for(const J of JN)J.i0=J.c-Math.round(J.R*Math.PI/2/SEG);   // R: the turn's radius in buildRoute(); os: which side is the outside of the turn (+1 left)
+  {let a=Z.wt0+m(130);for(const c of CROSS){pavement(a,c-8,rnd()<.5);a=c+8;}pavement(a,Z.wilma,false);
     span(Z.wt0+m(130),0,(a,b)=>pavement(a,b,true));pavement(0,JN[0].i0,true);pavement(JN[0].i0,Z.paru,true,[-1]);pavement(Z.paru,CROSS[0]-8,true);}
   pavement(Z.b1+m(30),Z.gg0-m(320),false);pavement(Z.rb1+m(30),Z.i80-m(20),false);
   const ivy=std({color:0x3e5a2c,roughness:1,side:D2});
@@ -608,7 +609,7 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
         off(i,sd*((shops?14.2:21)+XW[i]),0,V);const rot=faceRoad(i,sd);
         if(shops)shop(V.x,0,V.z,rot);else if(isHome)house(V.x,0,V.z,rot,0x3a3d40,'1611','craft');else if(nearCross(i,m(30))&&rnd()<.35)apt(V.x,0,V.z,rot,pick([0xb8d0b0,0xe8dcc0,0xc9d6c2,0xd9c7b8]));
         else{const cr=rnd()<.55;house(V.x,0,V.z,rot,cr?CRAFT[n++%CRAFT.length]:VIC[n++%VIC.length],'',cr?'craft':'vic');}
-        if(!isHome&&rnd()<.42&&Math.abs(i-homeI)>14&&!nearCross(i+3,m(22)))parked(i+3,sd);}}}
+        if(!isHome&&rnd()<.42&&Math.abs(i-homeI)>14&&!nearCross(i+3,m(22)))parked(wrapI(i+3),sd);}}}
   {// the supermarket on the left of Paru, the block after Encinal: a low stucco box with a raised entrance bay under a tiled roof, the sign, glass doors under a canopy,
    // carts, and a car park in front that the car can drive into
     const a=CROSS[0]+8,b=CROSS[1]-8,ic=Math.round((a+b)/2),g=new THREE.Group(),W=60,D=34,Hh=7.5,F=52;   // F: from the middle of Paru to the shop front
@@ -1758,7 +1759,7 @@ function sim(dt){const pe=ents.find(e=>e.player);
 }
 const fmt=t=>{const m=Math.floor(t/60),s=t-m*60;return m+':'+(s<10?'0':'')+s.toFixed(2);};
 function standings(){return [...ents].sort((a,b)=>b.dist-a.dist);}
-function showResults(){if(DRIVE){document.querySelector('#res h1').textContent='HOME';$('resList').innerHTML=`<div class="me">1611 SAN ANTONIO AVE, ALAMEDA</div><div>Round the bay: 34 km</div><div>Time: ${fmt(G.raceT)}</div>`;$('res').style.display='block';$('msg').innerHTML='';G.msgT=0;$('tl').classList.add('hide');return;}const st=standings();$('resList').innerHTML=st.map((e,i)=>`<div class="${e.player?'me':''}">${i+1}. &nbsp;No. ${e.num} &nbsp;${e.name} &nbsp;· ${(Math.max(e.dist,0)/1000).toFixed(2)} km</div>`).join('');$('res').style.display='block';$('msg').innerHTML='';G.msgT=0;$('tl').classList.add('hide');}
+function showResults(){if(DRIVE){document.querySelector('#res h1').textContent='HOME';document.querySelector('#res .go').textContent='ENTER — DRIVE AGAIN';$('resList').innerHTML=`<div class="me">1611 SAN ANTONIO AVE, ALAMEDA</div><div>Round the bay: 34 km</div><div>Time: ${fmt(G.raceT)}</div>`;$('res').style.display='block';$('msg').innerHTML='';G.msgT=0;$('tl').classList.add('hide');return;}const st=standings();$('resList').innerHTML=st.map((e,i)=>`<div class="${e.player?'me':''}">${i+1}. &nbsp;No. ${e.num} &nbsp;${e.name} &nbsp;· ${(Math.max(e.dist,0)/1000).toFixed(2)} km</div>`).join('');$('res').style.display='block';$('msg').innerHTML='';G.msgT=0;$('tl').classList.add('hide');}
 
 /* ================= TIME OF DAY ================= */
 const cHZD=new THREE.Color(0xd6d4c6),cHZG=new THREE.Color(0xeaa468),cHZN=new THREE.Color(0x0b101c),cZND=new THREE.Color(0x6f98bd),cZNG=new THREE.Color(0x46568a),cZNN=new THREE.Color(0x04060d),cOG=new THREE.Color(0xa9aaa6),cT=new THREE.Color(),cSunLo=new THREE.Color(0xff8a4a),cSunHi=new THREE.Color(0xfff0d8),cMoon=new THREE.Color(0x8fa8d0),cHemiD=new THREE.Color(0xbcd3e2),cHemiN=new THREE.Color(0x2a3550),moonDir=new THREE.Vector3(.4,.7,.3).normalize();
