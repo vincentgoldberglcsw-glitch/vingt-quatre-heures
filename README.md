@@ -45,6 +45,7 @@ The original single-file version of the game is kept, untouched and playable, in
 - The DETOUR exit before the toll plaza: steer into the right-hand exit lane and you come out in Richmond.
 - Burnt-out, smouldering buildings by the toll plaza. The Bay Bridge has traffic (cars, pickups, trucks, motorcycles, horse and buggy) and burning wrecks. The earthquake drops the right-hand lanes: cones, WARNING boards, and the traffic in those lanes goes into the hole. Fall in and you get the kelp forest, the octopus, the manatee and the tanker.
 - San Francisco: downtown with the pyramid tower, AI billboards, the giant blinking eyes, a quake with rubble, then Hyde St up Russian Hill behind the cable car. From the top: Coit Tower right, Alcatraz ahead, the Golden Gate left. Down to Fisherman's Wharf and west along the Marina.
+- Marina Blvd: a long, sweeping left off the foot of Hyde St, cows grazing in a field on the left, and on the right a dark grey sea that breaks over the wall and washes across the road (it drags the car and shoves it sideways), leaving fish, squid and kelp behind.
 - The Golden Gate Bridge (fog), the Marin redwoods with hawks swooping, San Quentin, the Richmond–San Rafael bridge, Richmond and 3060 Shane Dr (lots of wild turkeys), the refinery.
 - I-80 south on a viaduct: the Berkeley hills and the campanile on the left, Emeryville, Oakland, then the Webster Tube back to Alameda, Buena Vista Ave, Grand St and home.
 
@@ -104,3 +105,4 @@ The original single-file version of the game is kept, untouched and playable, in
 - URL options for testing: `?auto=1` skips the home screen, `&drive=1` autopilot, `&cam=0..3`, `&wx=sun|overcast|rain|hail|snow`, `&model=k|o|lh|f512|gt40|m1|p904|ghibli|bb`, `&t=<hour>`, `&mode=drive`, `&go=1` (skip the track choice).
 - `window.__test` exposes `step(n)`, `autopilot(n)`, `goto(index)`, `startDrive()`, and the game state (`G`, `PL`, `ents`, `Z`) for scripted checks.
 - Large edits were made by replacing exact marker strings; always check the browser console after a change, since one stray comment on a shared line can swallow code.
+- Marina Blvd (`MAR`, `marinaTick()`): the turn radius is `MR`; Hyde St and the Marina straight are each shortened by `MR-60` so the Golden Gate does not move, and the Marina is georeferenced at the old corner. `marinaTick` runs per frame, not in `sim()`, so scripted tests call `__MAR.tick(1/60)` after each `__test.autopilot(1)` (and set `__MAR.hold=true` to stop the frame loop moving the waves). `PL.wash` (0..1) is the wave on the car, read in `playerUpdate()`.

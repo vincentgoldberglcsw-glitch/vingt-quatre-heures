@@ -43,6 +43,8 @@ const DRIVE=QS.get('mode')==='drive',RW=DRIVE?6.6:9.5,LAPS=3;   // RW: half-widt
 // downtown San Francisco, up Hyde Street, down to the Marina, the Golden Gate, the Marin redwoods, past San Quentin, the Richmond bridge, Richmond and Shane Drive,
 // I-80 south past Berkeley, Emeryville and Oakland, then the Webster Tube back under the estuary, Buena Vista Avenue, and home.
 const D2R=Math.PI/180;
+// Marina Blvd: the turn off the foot of Hyde St is a wide, smooth sweep (radius MR). Hyde St and the Marina straight are each shortened by MR-60 so the turn ends exactly where the old 60 m corner did, and the Golden Gate, Marin and the rest of the loop do not move.
+const MR=220;
 function routeTurtle(x,z,th){const pts=[],mk={},T={pts,mk,get x(){return x},get z(){return z},get th(){return th},
   push(){pts.push([x,z]);},
   S(len,st=40){const n=Math.max(1,Math.round(len/st));for(let k=0;k<n;k++){x+=Math.sin(th)*len/n;z+=Math.cos(th)*len/n;T.push();}return T;},
@@ -57,7 +59,7 @@ function buildRoute(X80=-600){
   const f=lead(cl,wl);
   f.S(580,40).M('tu1')
    .S(260).L(12,500).M('i880').S(2300,60).M('detour').S(380,60).L(78,420).M('toll').S(520,52).M('b0').S(3500,70).M('b1')
-   .S(391,35).M('downtown').R(90,55).M('hyde').S(860,30).M('marina').L(90,60).S(820,45).R(90,120).M('gg0').S(1560,60).M('gg1')
+   .S(391,35).M('downtown').R(90,55).M('hyde').S(700,30).M('marina').L(90,MR).S(660,45).R(90,120).M('gg0').S(1560,60).M('gg1')
    .S(260).R(25,500).M('woods').S(700,50).R(30,400).S(600,50).M('sq').R(35,300).S(700,50).M('rb0').S(2600,70).M('rb1')
    .S(380,40).M('richmond').L(25,260).S(400,40).M('shane').S(300,40).R(25,260);
   f.S(X80-150-f.x,50).M('refinery').R(90,150).M('i80');
@@ -444,7 +446,8 @@ if(DRIVE){
 
 await BOOT.step('SURVEYING THE BAY · REAL ELEVATION',.21);
 try{await Terrain.load('assets/bay-dem.png');}catch(e){console.warn('no elevation data',e);}
-{const mk={};for(const k in ROUTE.mk){const i=Z[k];mk[k]=[P[i].x,P[i].z];}Terrain.georef(mk);Terrain.setRoad(P,NS);}
+{const mk={};for(const k in ROUTE.mk){const i=Z[k];mk[k]=[P[i].x,P[i].z];}if(mk.marina){const t=T[Z.marina];mk.marina=[mk.marina[0]+t.x*(MR-60),mk.marina[1]+t.z*(MR-60)];}   /* georeference the Marina at the old corner, where Hyde meets Beach St, not at the start of the wider sweep */
+  Terrain.georef(mk);Terrain.setRoad(P,NS);}
 await BOOT.step('LAND AND WATER',.22);
   // ---- land and water: Alameda, the East Bay, San Francisco, Marin, and the islands; the bay is 45 m below the road everywhere
   ground.visible=false;
@@ -813,7 +816,6 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
     const palm=(x,y,z)=>{const h=rr(8,11.5);M4.compose(V.set(x,y+h/2,z),Q.identity(),S.set(1,h,1));tr.setMatrixAt(k++,M4);for(let j=0;j<11;j++){E.set(0,j/11*6.283+rr(-.2,.2),rr(1.9,2.4),'YXZ');Q.setFromEuler(E);M4.compose(V.set(x,y+h,z),Q,S.set(1,rr(.8,1.1),1));fr.setMatrixAt(f++,M4);}};
     for(let q=Z.toll+m(60);q<Z.toll+m(300)&&k<20;q+=8){off(q,11.5+XW[q],0,V2);palm(V2.x,0,V2.z);}
     for(const q of[Z.start-14,Z.start+40,Z.paru+m(200),Z.paru+m(560),Z.wilma+m(100),Z.wilma+m(160),Z.bv+m(300),Z.bv+m(700)]){off(q,(q%2?1:-1)*(12.8+XW[q]),0,V2);palm(V2.x,0,V2.z);}
-    for(let q=Z.marina+m(100);q<Z.gg0-m(400)&&k<np;q+=m(60)){off(q,-(12+XW[q]),0,V2);palm(V2.x,H[q],V2.z);}   // and along the Marina
     tr.count=k;fr.count=f;tr.castShadow=fr.castShadow=true;scene.add(tr,fr);
     const ruinM=std({roughness:.95,map:canvas(256,256,(gg,w,h)=>{gg.fillStyle='#5a5048';gg.fillRect(0,0,w,h);speck(gg,w,h,3000,['rgba(20,16,14,.5)','rgba(120,100,80,.3)'],8);for(let x=10;x<w;x+=40)for(let y=12;y<h;y+=46){gg.fillStyle='#0c0b0a';gg.fillRect(x,y,24,30);gg.fillStyle='rgba(0,0,0,.6)';gg.fillRect(x-4,y-14,32,14);}})});
     for(let q=Z.detour+m(260);q<Z.b0+m(30);q+=m(55))for(const sd of[-1,1]){if(rnd()<.25)continue;gpos(q,sd*rr(40,110),V);if(V.y>.5||!farFromRoad(V.x,V.z,32))continue;const w=rr(14,34),d=rr(12,26),h=rr(7,22),ry=yaw(q)+rr(-.3,.3);
@@ -999,7 +1001,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
       g.fillStyle='#10161c';if(v%2){g.beginPath();g.roundRect(cx-80,cy-80,160,70,20);g.fill();g.fillStyle=ac;for(const dx of[-38,38]){g.beginPath();g.arc(cx+dx,cy-45,17,0,7);g.fill();}}else{for(const dx of[-45,45]){g.beginPath();g.arc(cx+dx,cy-45,30,0,7);g.fill();}g.fillStyle=ac;for(const dx of[-45,45]){g.beginPath();g.arc(cx+dx+6,cy-45,13,0,7);g.fill();}}
       g.fillStyle='#10161c';if(v%4<2){for(let q=0;q<6;q++)g.fillRect(cx-56+q*20,cy+18,10,28);}else{g.lineWidth=8;g.strokeStyle='#10161c';g.beginPath();g.arc(cx,cy+12,42,.2,2.94);g.stroke();}
       g.fillStyle='#f4f6f8';g.textAlign='left';g.font='900 '+(name.length>12?74:96)+'px Arial Black,Arial';g.fillText(name,360,225,620);g.fillStyle=ac;g.font='italic 700 36px Georgia';g.fillText(tag,362,292,620);g.fillRect(362,318,300,6);g.font='700 22px Arial';g.fillStyle='rgba(244,246,248,.6)';g.fillText('artificial intelligence  ·  san francisco',362,372);graffiti(g,w,h,v);});
-    const spots=[[Z.b1+m(40),-1],[Z.b1+m(140),1],[Z.b1+m(260),-1],[Z.downtown-m(60),1],[Z.hyde+m(120),1],[Z.hyde+m(300),-1],[Z.marina+m(200),-1],[Z.tu1+m(700),1],[Z.tu1+m(1900),-1],[Z.b0+m(200),1],[Z.i80+m(900),-1],[Z.emeryville+m(100),1],[Z.oakland+m(300),-1],[Z.b0-m(120),-1]];
+    const spots=[[Z.b1+m(40),-1],[Z.b1+m(140),1],[Z.b1+m(260),-1],[Z.downtown-m(60),1],[Z.hyde+m(120),1],[Z.hyde+m(300),-1],[Z.marina+m(200),1],[Z.tu1+m(700),1],[Z.tu1+m(1900),-1],[Z.b0+m(200),1],[Z.i80+m(900),-1],[Z.emeryville+m(100),1],[Z.oakland+m(300),-1],[Z.b0-m(120),-1]];
     spots.forEach(([i,sd],v)=>{const t=tex(ADS[v%ADS.length],v),g=new THREE.Group(),bd=new THREE.Mesh(new THREE.PlaneGeometry(13.5,6),new THREE.MeshStandardMaterial({map:t,emissiveMap:t,emissive:0xffffff,emissiveIntensity:.55,roughness:.6}));bd.position.y=8;g.add(bd);
       B(13.8,6.3,.25,steelM,0,8,-.15,0,g);const leg=8+(H[i]>2?H[i]:0);for(const x of[-5,5])B(.4,leg,.4,steelM,x,8-3-leg/2,-.35,0,g);
       g.traverse(o=>{o.castShadow=true;});off(i,sd*(wallAt[i]+8),0,g.position);g.rotation.y=yaw(i)+Math.PI-sd*.36;scene.add(g);});
@@ -1686,6 +1688,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*(1-(PL.melt||0)*.1)
   if(G.weather==='hail'){PL.hailT-=dt;if(PL.hailT<0){PL.hailT=R(.12,.5);VS.r+=R(-.05,.05)*(1+f0/60);G.shake=Math.max(G.shake,.12);sfxPing();}}
   {const gl=Math.abs(pe.lat+.72)>ed?g*OFF_MU:g,gr=Math.abs(pe.lat-.72)>ed?g*OFF_MU:g,aq=wx.wet>.8&&f0>62?1-.25*clamp((f0-62)/30,0,1):1,nOff=(gl<g?.5:0)+(gr<g?.5:0);   // each side of the car has its own surface: two wheels on the grass pull it round
    VE.mu[0]=gl*aq;VE.mu[1]=gr*aq;VE.mu[2]=gl;VE.mu[3]=gr;VE.rr=nOff*(2+.05*Math.abs(f0)+wx.snow*2)+(1-nOff)*(wx.snow*.5+wx.wet*.15);}
+  if(PL.wash>0){const w=PL.wash;for(let k=0;k<4;k++)VE.mu[k]*=1-.45*w;VE.rr+=w*(6+.14*Math.abs(f0));VS.v+=w*3.5*dt;VS.r+=Math.sin(G.raceT*3.3)*.3*w*dt;}   /* a wave washing over the Marina: drag, less grip, and a shove towards the field (marinaTick) */
   VE.grade=PL.slope||0;VE.air=PL.air?1:0;VE.aids=G.aids?1:0;VE.sens=G.sens;VI.st=st;VI.thr=thr;VI.brk=brk;VI.rev=rev;VI.analog=G.pad?1:0;
   stepVehicle(VS,M.dyn,VI,VE,dt);
   if(G.state==='finish'&&G.finT>=2.6&&VS.u<.3){VS.u=VS.v=VS.r=0;}
@@ -1986,7 +1989,7 @@ const shadeMat=new THREE.MeshBasicMaterial({map:shadeTex,color:0,transparent:tru
   if(DRIVE){span(Z.wt0+120,Z.central,band);band(Z.rb1+20,Z.refinery-20);}else{band(205,NS);band(0,62);}}
 function driveTick(rdt){const zn=zoneOf(PL.idx);leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,zn==='town'&&G.state==='race'&&!G.paused);   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);extrasTick(rdt);sqHydTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -2178,7 +2181,7 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=90210;return()=>(s=(s*168
     g.scale.setScalar(sc);g.b=b;par.add(g);return g;};
   const TOPS=[0x8a2a2a,0x2a4a7a,0xd8d0b8,0x3a5a3a,0xc98a2a,0x5a3a6a,0x1c1c1e,0xe0e0e0],LEGS=[0x2a2f3a,0x3a3a3a,0x6a5a44,0x22324a];
   for(let k=0;k<9;k++){const g=person(TOPS[k%TOPS.length],LEGS[k%LEGS.length]),o={x:1e9,z:1e9,r:.55};g.visible=false;OBST.push(o);
-    HYD.walk.push({g,o,sd:k%2?1:-1,s:(Z.hyde+m_(LR(40,780)))*SEG,dir:lr()<.5?-1:1,sp:LR(1.1,1.6),lo:(Z.hyde+m_(30))*SEG,hi:(Z.marina-m_(40))*SEG,ph:lr()*6});}
+    HYD.walk.push({g,o,sd:k%2?1:-1,s:(Z.hyde+m_(LR(40,640)))*SEG,dir:lr()<.5?-1:1,sp:LR(1.1,1.6),lo:(Z.hyde+m_(30))*SEG,hi:(Z.marina-m_(40))*SEG,ph:lr()*6});}
   const deck=std({color:0x8a4a22,roughness:.7}),whl=std({color:0xe8e0c8,roughness:.6});
   for(let k=0;k<5;k++){const g=person(TOPS[(k*3+1)%TOPS.length],LEGS[k%LEGS.length],.78),bd=new THREE.Mesh(new THREE.BoxGeometry(.24,.05,.82),deck);bd.position.y=.1;g.add(bd);
     for(const[x,z]of[[-.09,.28],[.09,.28],[-.09,-.28],[.09,-.28]]){const w=new THREE.Mesh(cyl(.035,.035,.04,8).rotateZ(Math.PI/2),whl);w.position.set(x,.04,z);g.add(w);}
@@ -2201,7 +2204,7 @@ function sqHydTick(rdt){if(!DRIVE)return;const pe=ents.find(e=>e.player);if(!pe)
   for(const w of HYD.walk){if(!city){if(w.g.visible){w.g.visible=false;w.o.x=1e9;}continue;}w.s+=w.dir*w.sp*rdt;if(w.s>w.hi){w.s=w.hi;w.dir=-1;}if(w.s<w.lo){w.s=w.lo;w.dir=1;}
     const i=wrapI(Math.floor(w.s/SEG)),q=Math.sin(t*w.sp*5.5+w.ph)*.5;at(w.s,w.sd*(8.1+XW[i]),.13,w.g.position);w.g.rotation.y=yaw(i)+(w.dir<0?Math.PI:0);w.g.visible=true;
     w.g.legs[0].rotation.x=q;w.g.legs[1].rotation.x=-q;w.g.arms[0].rotation.x=-q*.8;w.g.arms[1].rotation.x=q*.8;w.o.x=w.g.position.x;w.o.z=w.g.position.z;}
-  const bot=(Z.hyde+Math.round(820/SEG))*SEG;
+  const bot=(Z.marina-Math.round(40/SEG))*SEG;
   for(const k of HYD.kids){if(!city){if(k.g.visible){k.g.visible=false;k.o.x=1e9;}continue;}
     let s=k.s0+k.d;const gap=s-pe.s;if((gap<-60||k.d>260)&&Math.abs(gap)>150){k.d=0;s=k.s0;}   /* once well behind the driver, back up the hill to go again */
     if(s<bot){k.d+=k.sp*rdt;s=k.s0+k.d;}
@@ -2214,6 +2217,121 @@ function sqHydTick(rdt){if(!DRIVE)return;const pe=ents.find(e=>e.player);if(!pe)
     const q=p<.8?-1:(p-.8)/.2;w.f.visible=q>=0;if(q>=0){const fx=x1-q*48;w.f.position.set(fx,yb(fx)+.12,w.f.position.z);w.f.scale.x=lerp(30,12,q);w.fm.opacity=.85*(1-q);}}
   for(const k of SQB.kites){const a=t*.6+k.ph,kx=k.x-k.L*.7+Math.sin(a*.7)*3,ky=k.y+k.L*.75+Math.sin(a)*2.5,kz=k.z+Math.sin(a*.5)*5;k.kg.position.set(kx,ky,kz);k.kg.rotation.set(Math.sin(a*1.3)*.2,Math.PI/2,Math.sin(a*.9)*.35);k.tl.rotation.z=Math.sin(a*3)*.3;
     const pa=k.ln.geometry.attributes.position;pa.setXYZ(0,k.x,k.y+1.8,k.z);pa.setXYZ(1,kx,ky,kz);pa.needsUpdate=true;}}
+// ---- Marina Blvd: a field of grazing cows on the left; on the right a dark grey sea, heaving behind a sea wall. Now and then a wave breaks over the wall and washes right across the lanes,
+// leaving fish, squid and seaweed on the road for a minute or two (small pieces get kicked about by the car; the odd big fish is solid). Driving into the wash splashes, drags the car and pushes it sideways (PL.wash, read in playerUpdate).
+// All made after bakeStatic, with its own seeded numbers, so nothing else on the loop moves.
+const MAR={on:false,t:0,cows:[],deb:[],waves:[],next:2,g:null,sea:null,a:0,b:0};window.__MAR=MAR;
+if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=4471;return()=>(s=(s*16807)%2147483647)/2147483647;})(),LR=(a,b)=>a+lr()*(b-a),D2=THREE.DoubleSide;
+  const a=Z.marina+m_(150),b=Z.gg0-m_(340),G1=new THREE.Group();MAR.a=a;MAR.b=b;MAR.g=G1;scene.add(G1);
+  const add=o=>{scene.remove(o);G1.add(o);return o;};   /* ribbon() puts its strip straight into the scene: keep the Marina's in one group so the whole stretch can be hidden at once */
+  // the field: rough grass from the back of the pavement out to 95 m, with a post-and-rail fence along the road
+  const grassT=canvas(256,256,(g,w,h)=>{g.fillStyle='#4d682c';g.fillRect(0,0,w,h);const C=['#5d7a34','#41572a','#6c8b3e','#38491f','#7a8a44'];for(let k=0;k<3200;k++){g.fillStyle=C[k%5];g.fillRect(lr()*w,lr()*h,1+lr()*2,2+lr()*6);}});
+  grassT.wrapS=grassT.wrapT=THREE.RepeatWrapping;grassT.repeat.set(8,1);
+  add(ribbon(i=>edgeAt[i]+.3,95,.06,.06,std({map:grassT,roughness:1}),10,a,b));
+  const woodM=std({color:0x6e5a44,roughness:1,side:D2});for(const y of[.62,1.08])add(ribbon(i=>edgeAt[i]+1.4,i=>edgeAt[i]+1.4,y,y+.12,woodM,10,a,b));
+  {const n=Math.ceil((b-a)/2)+2,posts=new THREE.InstancedMesh(new THREE.BoxGeometry(.13,1.35,.13),woodM,n),M=new THREE.Matrix4(),V=new THREE.Vector3();let k=0;
+   for(let i=a;i<=b&&k<n;i+=2){off(i,edgeAt[i]+1.4,.67,V);M.makeTranslation(V.x,V.y,V.z);posts.setMatrixAt(k++,M);}posts.count=k;posts.castShadow=true;G1.add(posts);}
+  // the cows: a small herd in two loose groups, Holsteins and a few browns
+  const hideT=canvas(128,128,(g,w,h)=>{g.fillStyle='#f0ede6';g.fillRect(0,0,w,h);g.fillStyle='#181614';for(let k=0;k<8;k++){g.beginPath();g.ellipse(lr()*w,lr()*h,8+lr()*24,6+lr()*16,lr()*3,0,6.283);g.fill();}});
+  const cowMs=[std({map:hideT,roughness:.9}),std({color:0x6a4026,roughness:.9}),std({map:hideT,roughness:.9}),std({color:0x2a2420,roughness:.9}),std({color:0x9a6a3e,roughness:.9})],
+    pinkM=std({color:0xd89a92,roughness:.8}),hoofM=std({color:0x1c1a18,roughness:.8}),hornM=std({color:0xd8d0b8,roughness:.6});
+  const bx=(sx,sy,sz,mm,x,y,z,p)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mm);o.position.set(x,y,z);o.castShadow=true;p.add(o);return o;};
+  const cow=mm=>{const g=new THREE.Group();bx(.8,.8,1.8,mm,0,1.14,0,g);bx(.46,.14,.42,pinkM,0,.7,-.5,g);
+    const legs=[[-.27,.64],[.27,.64],[-.27,-.64],[.27,-.64]].map(([x,z])=>{const p=new THREE.Group();p.position.set(x,.82,z);bx(.17,.74,.19,mm,0,-.37,0,p);bx(.18,.1,.2,hoofM,0,-.77,0,p);g.add(p);return p;});
+    const nk=new THREE.Group();nk.rotation.order='YXZ';nk.position.set(0,1.34,.82);g.add(nk);bx(.4,.44,.5,mm,0,-.02,.18,nk);bx(.36,.42,.52,mm,0,-.12,.62,nk);bx(.3,.24,.18,pinkM,0,-.24,.94,nk);
+    for(const s of[-1,1]){bx(.2,.08,.12,mm,s*.26,0,.5,nk);const hr=new THREE.Mesh(cyl(.02,.04,.18,6),hornM);hr.position.set(s*.13,.13,.48);hr.rotation.z=-s*.6;nk.add(hr);}
+    const tl=new THREE.Group();tl.position.set(0,1.46,-.9);g.add(tl);bx(.06,.82,.06,mm,0,-.41,0,tl);bx(.1,.2,.1,hoofM,0,-.86,0,tl);
+    G1.add(g);return {g,legs,nk,tl};};
+  for(let k=0;k<12;k++){const grp=k%3,i=Math.round(lerp(a,b,[.22,.5,.78][grp])+LR(-30,30)),lat=edgeAt[i]+LR(5,26),V=off(i,lat,0),c=cow(cowMs[lr()*cowMs.length|0]);
+    const sc=LR(.9,1.08);c.g.scale.setScalar(sc);Object.assign(c,{x:V.x,y:V.y+.06,z:V.z,x0:V.x,z0:V.z,h:LR(0,6.283),dh:0,st:'graze',tm:LR(1,9),th:1.2,ph:lr()*6.283,yw:0});MAR.cows.push(c);}
+  // the sea wall: a plain concrete wall just beyond the lamps, with the water lapping high against it
+  const concM=std({color:0x8c8a84,roughness:.95,side:D2}),w0=i=>-(edgeAt[i]+.6),w1=i=>-(edgeAt[i]+1.3);
+  add(ribbon(w0,w0,0,1.05,concM,8,a,b));add(ribbon(w0,w1,1.05,1.05,concM,8,a,b));add(ribbon(w1,w1,-1,1.05,concM,8,a,b));
+  // the sea: a dark, choppy grey swell rolling in towards the wall; it is lifted to just under the top of the wall (the land beside the Marina is at road level), and drops to the bay at its far edge
+  {const LAT=[0,-2,-6,-12,-21,-34,-52,-76,-105,-140,-180,-222,-272],nc=LAT.length,rows=[];for(let i=a;i<=b;i+=3)rows.push(i);if(rows[rows.length-1]!==b)rows.push(b);
+   const nr=rows.length,pos=new Float32Array(nr*nc*3),col=new Float32Array(nr*nc*3),la=new Float32Array(nr*nc),sa=new Float32Array(nr*nc),idx=[];
+   rows.forEach((i,r)=>{for(let c=0;c<nc;c++){const lat=c===nc-1?LAT[c]:w1(i)+LAT[c],p=off(i,lat,0),q=r*nc+c;pos[q*3]=p.x;pos[q*3+1]=c===nc-1?-45:.7;pos[q*3+2]=p.z;la[q]=lat;sa[q]=i*SEG;
+     if(r<nr-1&&c<nc-1)idx.push(q,q+nc,q+1,q+1,q+nc,q+nc+1);}});
+   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();
+   const m=new THREE.Mesh(g,std({vertexColors:true,roughness:.32,metalness:.3,flatShading:true,side:D2}));m.receiveShadow=true;m.frustumCulled=false;G1.add(m);MAR.sea={g,pos,col,la,sa,nc};}
+  // breakwaters of dark rock at each end, so the sea has edges
+  {const rk=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),std({color:0x3c3a38,roughness:1,flatShading:true}),120),M=new THREE.Matrix4(),Q=new THREE.Quaternion(),E=new THREE.Euler(),S=new THREE.Vector3(),V=new THREE.Vector3();let k=0;
+   for(const i of[a,b])for(let lat=-(edgeAt[i]+2.2);lat>-232&&k<120;lat-=LR(3,4.5)){off(i+Math.round(LR(-1,1)),lat,LR(.2,1.4),V);E.set(LR(0,3),LR(0,3),LR(0,3));Q.setFromEuler(E);const s=LR(1.6,2.8);M.compose(V,Q,S.set(s,s*LR(.6,.9),s));rk.setMatrixAt(k++,M);}
+   rk.count=k;rk.castShadow=true;G1.add(rk);}
+  // the breaking waves: a few, reused. Each is a group set square to the road: local +x is to the left (towards the field), local z is along the road.
+  const LW=40,foamT=canvas(128,256,(g,w,h)=>{g.fillStyle='rgba(120,134,138,.75)';g.fillRect(0,0,w,h);for(let k=0;k<1500;k++){g.fillStyle=`rgba(240,244,245,${.35+lr()*.6})`;g.beginPath();g.ellipse(lr()*w,lr()*h,1+lr()*7,1+lr()*3,lr()*3,0,6.283);g.fill();}},true),
+    sprayT=canvas(128,128,(g,w,h)=>{for(let k=0;k<1600;k++){const y=h*Math.pow(lr(),1.4);g.fillStyle=`rgba(245,248,250,${(.3+lr()*.6)*(1-.7*y/h)})`;g.beginPath();g.arc(lr()*w,h-y,2+lr()*12*(1-.5*y/h),0,6.283);g.fill();}},true);
+  foamT.wrapS=foamT.wrapT=THREE.RepeatWrapping;
+  const crestG=new THREE.CylinderGeometry(1,1,LW,18,1,true,0,Math.PI).rotateX(Math.PI/2).rotateZ(Math.PI/2),crestT=canvas(256,16,(g,w,h)=>{const gr=g.createLinearGradient(0,0,w,0);gr.addColorStop(0,"#2c3836");gr.addColorStop(.3,"#4a5c5a");gr.addColorStop(.46,"#c8d2d2");gr.addColorStop(.52,"#f2f5f5");gr.addColorStop(.62,"#8a9a9a");gr.addColorStop(1,"#3a4846");g.fillStyle=gr;g.fillRect(0,0,w,h);for(let k=0;k<400;k++){g.fillStyle=`rgba(240,244,245,${lr()*.5})`;g.fillRect(lr()*w,lr()*h,1+lr()*6,1);}}),crestM=std({map:crestT,roughness:.3,metalness:.15,side:D2}),lipM=std({color:0xe9eef0,roughness:.6});
+  for(let k=0;k<3;k++){const g=new THREE.Group();g.visible=false;G1.add(g);const crest=new THREE.Mesh(crestG,crestM),lip=new THREE.Mesh(new THREE.BoxGeometry(1.6,.6,LW-3),lipM);
+    const sprayM=new THREE.MeshBasicMaterial({map:sprayT,color:0xeef3f5,transparent:true,opacity:0,depthWrite:false,side:D2}),spray=new THREE.Mesh(new THREE.PlaneGeometry(LW,1).translate(0,.5,0).rotateY(Math.PI/2),sprayM);
+    const ft=foamT.clone();ft.needsUpdate=true;ft.repeat.set(1,LW/12);const foamM=new THREE.MeshBasicMaterial({map:ft,color:0xe4eaeb,transparent:true,opacity:0,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}),
+      foam=new THREE.Mesh(new THREE.PlaneGeometry(1,LW).rotateX(-Math.PI/2).translate(.5,0,0),foamM);foam.position.y=.1;
+    const sp2=new THREE.Mesh(spray.geometry,sprayM);sp2.rotation.z=-.65;spray.add(sp2);g.add(crest,lip,spray,foam);MAR.waves.push({g,crest,lip,spray,sprayM,foam,foamM,ft,t:-1,s0:0,ed:10,hit:false,deb:false,fr:0,bk:0});}
+  // what the waves leave behind: fish (silver, dark, red), squid, tangles of kelp, and now and then a big fish that is solid
+  const fishMs=[std({color:0xa8b2b6,roughness:.3,metalness:.6}),std({color:0x4c5a5c,roughness:.4,metalness:.4}),std({color:0xc0604a,roughness:.4,metalness:.2})],eyeM=std({color:0x0a0a0a,roughness:.2}),
+    sqM=std({color:0xdcaaa0,roughness:.35,transparent:true,opacity:.92}),kelpMs=[std({color:0x3c3a18,roughness:.6,side:D2}),std({color:0x4e4a20,roughness:.6,side:D2}),std({color:0x2c3418,roughness:.6,side:D2})],
+    ball=new THREE.SphereGeometry(.5,12,8),fin=new THREE.ConeGeometry(.5,.5,3).rotateX(-Math.PI/2);
+  const mk=(kind)=>{const g=new THREE.Group(),bd=new THREE.Group();g.add(bd);const M_=(geo,mm,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(geo,mm);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;bd.add(o);return o;};
+    if(kind==='fish'||kind==='big'){const s=kind==='big'?LR(3.6,4.4):LR(.8,1.25),fm=fishMs[lr()*fishMs.length|0];M_(ball,fm,0,.06*s,0,.34*s,.12*s,.9*s);M_(fin,fm,0,.06*s,-.55*s,.34*s,.04*s,.3*s);M_(ball,eyeM,.09*s,.12*s,.32*s,.05*s,.05*s,.05*s);}
+    else if(kind==='squid'){M_(new THREE.ConeGeometry(.5,1,8).rotateX(Math.PI/2),sqM,0,.07,.18,.18,.18,.42);M_(ball,sqM,0,.07,-.06,.17,.14,.2);
+      for(let k=0;k<7;k++){const a=(k/6-.5)*1.4,t=new THREE.Mesh(new THREE.BoxGeometry(.025,.02,.36+lr()*.2),sqM);t.position.set(Math.sin(a)*.12,.02,-.2-Math.cos(a)*.14);t.rotation.y=a;bd.add(t);}}
+    else{const n=3+(lr()*4|0);for(let k=0;k<n;k++){const L=LR(.6,1.8),t=new THREE.Mesh(new THREE.BoxGeometry(LR(.06,.14),.015,L).translate(0,0,L/2),kelpMs[lr()*3|0]);t.position.y=.02+k*.004;t.rotation.y=LR(-1.2,1.2)+k*.9;bd.add(t);}
+      M_(ball,kelpMs[0],0,.05,0,.12,.1,.12);}
+    g.visible=false;G1.add(g);return g;};
+  for(let k=0;k<40;k++){const kind=k<3?'big':['fish','weed','fish','squid','fish','weed'][k%6],g=mk(kind),o=kind==='big'?{x:1e9,z:1e9,r:1.2}:null;if(o)OBST.push(o);
+    MAR.deb.push({g,bd:g.children[0],kind,o,on:false,age:0,life:60,flop:0,ph:0,gy:0,fly:false,vx:0,vy:0,vz:0,sp:0});}
+  G1.visible=false;}
+function marSpawn(big,s,lat){let d=null;for(const q of MAR.deb)if((q.kind==='big')===big&&!q.on){d=q;break;}
+  if(!d){for(const q of MAR.deb)if((q.kind==='big')===big&&(!d||q.age-q.life>d.age-d.life))d=q;}if(!d)return;
+  const i=wrapI(Math.floor(s/SEG));at(s,lat,.02,d.g.position);d.gy=d.g.position.y;d.g.rotation.y=Math.random()*6.283;d.g.scale.setScalar(1);d.g.visible=true;
+  Object.assign(d,{on:true,age:0,life:R(55,120),flop:d.kind==='fish'?R(3,9):d.kind==='big'?R(4,7):0,ph:Math.random()*6,fly:false});if(d.o){d.o.x=d.g.position.x;d.o.z=d.g.position.z;}}
+MAR.tick=rdt=>marinaTick(rdt);   /* for scripted tests: the autopilot only steps sim(), and this runs per frame */
+function marinaTick(rdt){if(!DRIVE||!MAR.g)return;const LW=40;   /* the length of road one wave washes over, as in the build above */
+ const pe=ents.find(e=>e.player);if(!pe)return;
+  const i0=PL.idx,on=i0>Z.hyde&&i0<Z.gg0+Math.round(500/SEG);PL.wash=Math.max(0,(PL.wash||0)-rdt*1.4);
+  if(on!==MAR.on){MAR.on=on;MAR.g.visible=on;if(!on){for(const d of MAR.deb){d.on=false;d.g.visible=false;if(d.o)d.o.x=1e9;}for(const w of MAR.waves){w.t=-1;w.g.visible=false;}}}
+  if(!on)return;MAR.t+=rdt;const t=MAR.t;
+  // the swell
+  {const S=MAR.sea,n=S.la.length,nc=S.nc;for(let q=0;q<n;q++){const c=q%nc;if(c===nc-1)continue;const l=S.la[q],s=S.sa[q],sw=.3*Math.sin(.11*l-1.25*t+.02*s)+.2*Math.sin(.045*s-.7*t+.03*l)+.12*Math.sin(.29*l+.21*s-2.1*t),
+     k=c===0?.4:.62,y=.52+sw*k;S.pos[q*3+1]=y;const f=sst(sw,.2,.55),dk=.075+.03*Math.sin(.013*s+.02*l);S.col[q*3]=dk+f*.6;S.col[q*3+1]=dk+.018+f*.6;S.col[q*3+2]=dk+.03+f*.6;}
+   S.g.attributes.position.needsUpdate=true;S.g.attributes.color.needsUpdate=true;}
+  // a new wave every few seconds: often timed to break just as the car gets there
+  MAR.next-=rdt;if(MAR.next<=0){MAR.next=R(3.5,8);const w=MAR.waves.find(q=>q.t<0);
+    if(w){const s0=pe.s+(Math.random()<.5?Math.max(pe.v,8)*2.6+R(-8,8):R(50,220)),i=wrapI(Math.floor(s0/SEG));
+      if(i>MAR.a+12&&i<MAR.b-12){w.s0=s0;w.ed=edgeAt[i];w.t=0;w.hit=w.deb=false;w.g.position.copy(P[i]);w.g.rotation.y=yaw(i);w.g.visible=true;}}}
+  let wet=false;const V=new THREE.Vector3();
+  for(const w of MAR.waves){if(w.t<0)continue;w.t+=rdt;const u=w.t,ed=w.ed,near=Math.abs(wdiff(w.s0-pe.s));
+    if(u<2.2){const k=u/2.2,h=lerp(.4,3.6,k*k),cx=lerp(-75,-(ed+1.8),k);w.crest.visible=true;w.crest.position.set(cx,.5,0);w.crest.scale.set(lerp(7,2.6,k),h,1);w.lip.visible=k>.35;w.lip.position.set(cx+.4*k,.5+h,0);w.lip.rotation.z=-k*.7;}
+    else w.crest.visible=w.lip.visible=false;
+    if(u>=2.2&&!w.hit){w.hit=true;if(near<320){for(let q=0;q<40;q++){at(w.s0+R(-LW/2,LW/2),-(ed+.9),R(1,2.5),V);puff(V,R(-1,1),R(6,13),R(-1,1),2,R(6,11),R(1.4,2.4),.85,0xe8eef0);}}
+      if(near<170)sfxSplash();if(near<60)G.shake=Math.max(G.shake,.3*(1-near/60));}
+    if(u>=2.2&&u<4.8){const q=(u-2.2)/2.6;w.spray.visible=true;w.spray.position.x=-(ed+.95);w.spray.scale.y=.5+11*Math.sin(Math.min(q*3,1)*Math.PI/2)-q*q*3;w.sprayM.opacity=Math.min(1,1.6*(1-q));}else w.spray.visible=false;
+    if(u>=2.35&&u<7.2){const q=clamp((u-2.35)/1.3,0,1),fr=lerp(-(ed+1.2),ed+2.5,1-(1-q)*(1-q)),bk=-(ed+1.2)+Math.max(0,u-4.6)*3.2;w.fr=fr;w.bk=bk;w.foam.visible=true;w.foam.position.x=bk;w.foam.scale.x=Math.max(.01,fr-bk);
+      w.foamM.opacity=u<5?.92:.92*Math.max(0,1-(u-5)/2.2);w.ft.offset.x=-u*.25;w.ft.offset.y=u*.05;
+      if(u<5.4&&Math.abs(wdiff(pe.s-w.s0))<LW/2+1.5&&pe.lat<fr+.8&&pe.lat>bk-1)wet=true;}else w.foam.visible=false;
+    if(u>=3&&!w.deb){w.deb=true;const n=3+(Math.random()*6|0);for(let k=0;k<n;k++){const lat=R(-ed+.6,Math.min(w.fr,ed)-.6);marSpawn(false,w.s0+R(-LW/2+2,LW/2-2),lat);}
+      if(Math.random()<.35){const lat=Math.random()<.5?R(-ed+1.5,-5):R(5,ed-1.5);marSpawn(true,w.s0+R(-LW/2+4,LW/2-4),lat);}}
+    if(u>7.4){w.t=-1;w.g.visible=false;}}
+  // the car in the wash: a burst of spray as it hits the water, then drag and a shove towards the field side
+  if(wet){if(PL.wash<.35&&!PL.crash){sfxSplash();G.shake=Math.max(G.shake,.35);for(let q=0;q<18;q++)puff(V.set(PL.x+R(-1.5,1.5),.4,PL.z+R(-1.5,1.5)),PL.vx*.3+R(-3,3),R(3,8),PL.vz*.3+R(-3,3),.8,R(3,5),R(.8,1.5),.7,0xe8eef0);}PL.wash=1;}
+  if(PL.wash>.2&&Math.abs(pe.v)>3&&Math.random()<rdt*30)puff(V.set(PL.x+R(-1,1),.3,PL.z+R(-1,1)),PL.vx*.2+R(-1,1),R(1.5,4),PL.vz*.2+R(-1,1),.5,R(2,3.5),R(.5,1),.55*PL.wash,0xe2e8ea);
+  // the catch on the road: fish flop for a while, small things get kicked up by the car, and after a minute or two it all goes
+  for(const d of MAR.deb){if(!d.on)continue;d.age+=rdt;const p=d.g.position;
+    if(d.fly){d.vy-=9.8*rdt;p.x+=d.vx*rdt;p.y+=d.vy*rdt;p.z+=d.vz*rdt;d.bd.rotation.x+=d.sp*rdt;if(p.y<=d.gy){p.y=d.gy;d.fly=false;d.bd.rotation.x=0;}}
+    else if(d.age<d.flop){const k=1-d.age/d.flop,s=Math.sin(d.age*11+d.ph);p.y=d.gy+Math.abs(s)*(d.kind==='big'?.05:.1)*k;d.bd.rotation.z=s*.35*k;}
+    if(d.kind!=='big'&&!d.fly&&Math.abs(pe.v)>4){const dx=p.x-PL.x,dz=p.z-PL.z;if(dx*dx+dz*dz<1.7*1.7){d.fly=true;d.vy=R(3,6)+Math.abs(pe.v)*.04;d.vx=PL.vx*.55+R(-2,2);d.vz=PL.vz*.55+R(-2,2);d.sp=R(-12,12);}}
+    if(d.age>d.life){const s=Math.max(0,1-(d.age-d.life)/3);d.g.scale.setScalar(s);if(s<=0){d.on=false;d.g.visible=false;if(d.o)d.o.x=1e9;}}}
+  // the cows: heads down grazing, now and then a look up (at a passing car, often) or a slow step or two
+  for(const c of MAR.cows){c.tm-=rdt;
+    if(c.tm<=0){if(c.st==='graze'){const r=Math.random();if(r<.45){c.st='step';c.tm=R(1.4,2.8);const dh=Math.hypot(c.x-c.x0,c.z-c.z0)>5?Math.atan2(c.x0-c.x,c.z0-c.z):c.h+R(-.8,.8);c.dh=Math.atan2(Math.sin(dh-c.h),Math.cos(dh-c.h))/c.tm;}
+        else if(r<.75){c.st='look';c.tm=R(2,4.5);c.yw=R(-.6,.6);if(AC&&Math.random()<.35){const dx=c.x-PL.x,dz=c.z-PL.z;if(dx*dx+dz*dz<70*70){const t0=AC.currentTime;tone('sawtooth',R(120,150),t0,1.3,.05,master,{to:R(90,105)});}}}else c.tm=R(3,8);}
+      else{c.st='graze';c.tm=R(5,13);}}
+    const tg=c.st==='graze'?1.2:c.st==='step'?.8:-.08;c.th+=(tg-c.th)*Math.min(1,rdt*(c.st==='look'?2.6:1.3));
+    c.nk.rotation.x=c.th+(c.st==='graze'?Math.sin(t*5+c.ph)*.05:0);c.nk.rotation.y+=((c.st==='look'?c.yw:0)-c.nk.rotation.y)*Math.min(1,rdt*2);
+    let lg=0;if(c.st==='step'){c.h+=c.dh*rdt;c.x+=Math.sin(c.h)*.5*rdt;c.z+=Math.cos(c.h)*.5*rdt;lg=Math.sin(t*5.5+c.ph)*.32;}
+    c.legs[0].rotation.x=c.legs[3].rotation.x=lg;c.legs[1].rotation.x=c.legs[2].rotation.x=-lg;
+    c.tl.rotation.z=Math.sin(t*1.7+c.ph)*.3+(Math.sin(t*.37+c.ph)>.75?Math.sin(t*9)*.45:0);c.g.position.set(c.x,c.y,c.z);c.g.rotation.y=c.h;}}
 function extrasTick(rdt){const pe=ents.find(e=>e.player);if(!pe)return;const m_=x=>Math.round(x/SEG);
   trafficTick(rdt,pe);
   // fires that keep burning: the ruins before the bridge, the wrecks on it, the refinery flare
