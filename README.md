@@ -72,16 +72,27 @@ The original single-file version of the game is kept, untouched and playable, in
 | R | put the car back on the road |
 | Esc | back to the home screen |
 
+## Changes on 15 November 2026
+
+- **Home screen:** *Les 24 Heures du Mans* (The 24 Hours of Le Mans) and *Alameda* (Around the Bay and Back). Classic cars carry no race numbers.
+- **Weather and time:** the Alameda drive is slightly overcast by default, with darker cloud rolling over now and then; the day runs a third as fast (dusk about 20 minutes in).
+- **Bugs fixed:** the Bay Bridge earthquake now opens a real hole onto the water and drops the car straight through it ("THE BRIDGE GAVE WAY"); traffic caught in it recovers its speed; the manatee scene no longer goes black (its camera could end up inside a bridge pier).
+- **Driving:** the turns onto Paru St and Central Ave are crossroads (both streets carry on, the junction is paved and open on the outside of the turn). In town and the city the car can drive up the kerb and along the pavement; street trees, shop-front planters and benches are solid.
+- **McQueen:** shorter (about 1.66 m), stands with his weight on one leg, sways, glances about, smokes at irregular moments; the helmet under his arm has a visor.
+- **Alameda:** a neighbourhood of plain houses fills the blocks behind Paru to the shore; a supermarket ("Safemart", a lookalike, with a car park you can drive into) on the left of Paru after Encinal; the Central Ave shops are all different; crows on the poles and wires take off as you pass; more trees on Wilma Chan Way; a new face on the Fuzzy Caterpillar sign; about one parked car in seven is an angular stainless pickup.
+- **Freeways and bridges:** newspapers blow about in the tubes; ducks with ducklings cross I-880 now and then; I-880 and San Rafael bridge traffic is lighter and quicker; street lamps with pools of light along I-880, I-80 and the San Rafael bridge; old-fashioned billboards (old-time candy, a robot lollipop, a roller rink, a drive-in, a tyre shop); a refinery with gas flares at the Richmond end of the San Rafael bridge, and oil tankers at anchor.
+
 ## Still to do
 
-1. Make the classic cars look like the real cars. They are all built from one smooth racing-car body, so they have no proper roofline, windows, bumpers or lights. They need their own body builder.
-2. Extend San Francisco with a steep street of Victorian houses, then a drop to the wharf.
-3. An option to board a ferry to Alcatraz.
-4. More Le Mans ad boards, once the owner supplies the images.
-5. Nothing in the game's sound has been checked by ear. The engine note now follows the real revs and gear changes, but the sound itself is the old synthesiser.
-6. The road's own height profile is still hand-made (the climbs onto the bridges, Hyde Street and so on); only the land beside it comes from the survey.
-7. The world's models are still built in code. Imported 3D models (buildings from OpenStreetMap, Blender-made cars) would be the next step up in looks.
-8. Manual gears, and a steering wheel with force feedback.
+1. Make the classic cars look like the real cars. They are all built from one smooth racing-car body, so they have no proper roofline, windows, bumpers or lights. They need their own body builder. (Assessed at about 2 to 3 hours; paused by the owner.)
+2. The owner's list, not yet done: an earthquake on the San Rafael bridge with a falling deck panel you can drop through; crashing off that bridge into a whirlpool that pulls you down; better visuals for Richmond. The supermarket was built without the owner's photo; it should be checked against it.
+3. Extend San Francisco with a steep street of Victorian houses, then a drop to the wharf.
+4. An option to board a ferry to Alcatraz.
+5. More Le Mans ad boards, once the owner supplies the images.
+6. Nothing in the game's sound has been checked by ear. The engine note now follows the real revs and gear changes, but the sound itself is the old synthesiser.
+7. The road's own height profile is still hand-made (the climbs onto the bridges, Hyde Street and so on); only the land beside it comes from the survey.
+8. The world's models are still built in code. Imported 3D models (buildings from OpenStreetMap, Blender-made cars) would be the next step up in looks.
+9. Manual gears, and a steering wheel with force feedback.
 
 ## Notes for whoever works on this next
 
