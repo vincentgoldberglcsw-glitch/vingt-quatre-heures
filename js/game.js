@@ -110,7 +110,7 @@ const Z=DRIVE?(()=>{const z={};for(const k in ROUTE.mk){const[x,zz]=DRIVE_PTS[RO
 const XW=new Float32Array(NS+1),H=new Float32Array(NS+1);
 if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SEG),z=Z,xwT=new Float32Array(NS),WL=z.tu0-z.wilma;
   for(let i=0;i<NS;i++){const c=zoneArr[i];xwT[i]=c===1?2.2:c===3?(i<z.tu0?1.4:2.4):c===5?1.2:c===8?.6:0;if((i>z.tu0-m(220)&&i<z.tu1+m(220))||(i>z.wt1-m(220)&&i<z.wt0+m(220)))xwT[i]=0;}
-  for(let i=0;i<NS;i++){let s=0;for(let j=-25;j<=25;j++)s+=xwT[wrapI(i+j)];XW[i]=s/51+4.6*bump(i,z.toll+m(70),z.toll+m(120),z.toll+m(240),z.toll+m(290));
+  for(let i=0;i<NS;i++){let s=0;for(let j=-25;j<=25;j++)s+=xwT[wrapI(i+j)];XW[i]=s/51+4.6*bump(i,z.toll+m(70),z.toll+m(120),z.toll+m(240),z.toll+m(290))+1.3*bump(i,z.detour+m(170),z.detour+m(260),z.toll+m(110),z.toll+m(170));   /* the approach to the toll plaza is a little wider, with lane lines */
     H[i]=7*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.6,z.wilma+WL*.76)
       +18*bump(i,z.tu1+m(160),z.tu1+m(340),z.toll-m(520),z.toll-m(260))
       +22*bump(i,z.b0-m(240),z.b0-m(10),z.b1-m(460),z.b1-m(120))
@@ -1769,7 +1769,7 @@ function sim(dt){const pe=ents.find(e=>e.player);
   if(wx.wet>.5&&!PL.crash&&pe.v>20&&Math.random()<dt*26)puff(V.set(PL.x-Math.sin(PL.h)*2.6,.5,PL.z-Math.cos(PL.h)*2.6),R(-1.5,1.5),R(1,3),R(-1.5,1.5),1.2,5.5,R(.7,1.2),.34,0xd0d6da);
   if(PL.crash&&PL.crash.dive)diveTick(dt,pe);
   else if(PL.crash){const w=hero.wreck,still=!w||(Math.hypot(w.vx,w.vz)<1&&w.y<=0&&!w.wr);
-    if(PL.crash.t>8||(PL.crash.t>5&&still)){const i=PL.idx=wrapI((w?w.idx:PL.idx)+35);if(w)endWreck(w);pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;PL.safe=3;resetVehicle(VS,hero.M.dyn,0);
+    if(PL.crash.t>8||(PL.crash.t>5&&still)){const i=PL.idx=wrapI((w?w.idx:PL.idx)+35);if(w)endWreck(w);pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();
       hero.position.set(PL.x,H[i],PL.z);hero.rotation.set(0,PL.h,0);GY=PL.gy=PL.cy=H[i];PL.air=0;PL.vy=0;say(DRIVE?'BACK ON THE ROAD':'BACK IN THE RACE','',1.5);}}
   if(G.state==='race'){G.doomT-=dt;if(G.doomT<=0){G.doomT=R(38,70);const c=ents.filter(e=>!e.player&&e.out<=0&&!e.doom&&wdiff(e.s-pe.s)>45&&wdiff(e.s-pe.s)<230&&e.v>35);if(c.length){const e=c[Math.random()*c.length|0];e.doom=Math.random()<.5?-1:1;}else G.doomT=6;}
     if(!DRIVE&&pe.dist>=LAPS*LEN){G.state='finish';G.finT=0;G.slow=.3;G.slowT=3.2;first=true;sfxCheer();say('DRAPEAU À DAMIER','P'+(standings().indexOf(pe)+1)+' · '+LAPS+' LAPS',4);announce("Le drapeau à damier ! Les vingt-quatre heures sont terminées !");}}
@@ -1813,7 +1813,7 @@ function setTime(h,tm){
   groundMat.emissive.setScalar(sn*.8);for(const m of LANDM)m.emissive.setScalar(sn*.8);dirtMat.emissive.setScalar(sn*.7);leafMat.emissive.setScalar(sn*.3);tuftMat.emissive.setScalar(sn*.6);
 }
 function updateWeather(rdt){const t=WX[G.weather],k=clamp(rdt*.9,0,1);for(const p of['grip','sunK','cov','fn','ff','wet','snow'])wx[p]=lerp(wx[p],t[p],k);
-  if(DRIVE&&G.weather==='overcast'){const s=Math.sin(G.t*.021)+.6*Math.sin(G.t*.0137+1.7),dark=sst(s,.75,1.35);wx.cov=lerp(wx.cov,t.cov+.36*dark,k);}
+  if(DRIVE&&G.weather==='overcast'){const s=Math.sin(G.t*.021)+.6*Math.sin(G.t*.0137+1.7),dark=sst(s,.75,1.35),s2=Math.sin(G.t*.0127+4.1)+.55*Math.sin(G.t*.029+.4),sunny=sst(s2,.65,1.25)*(1-dark);wx.cov=lerp(wx.cov,t.cov+.36*dark-.42*sunny,k);wx.sunK=lerp(wx.sunK,t.sunK*(1+.3*sunny),k);}   /* and, on a slower cycle of its own, the cloud thins and the sun breaks through */
   if(DRIVE){const i=PL.idx,on=i>=Z.gg1+Math.round(150/SEG)&&i<Z.rb0+Math.round(500/SEG);G.sqs=lerp(G.sqs||0,on?1:0,clamp(rdt*.35,0,1));const q=G.sqs;   // the road to San Quentin is always under a dark grey sky
     if(q>.01){wx.cov=lerp(wx.cov,Math.max(wx.cov,1.15),q);wx.sunK=lerp(wx.sunK,Math.min(wx.sunK,.3),q);wx.fn=lerp(wx.fn,Math.min(wx.fn,70),q*.7);wx.ff=lerp(wx.ff,Math.min(wx.ff,1300),q*.7);}}
   if(G.qd>0){G.qd=Math.max(0,G.qd-rdt/45);const q=Math.min(1,G.qd*2.5);wx.cov=Math.max(wx.cov,lerp(wx.cov,1.25,q));wx.fn=lerp(wx.fn,40,q);wx.ff=lerp(wx.ff,900,q);}}   // an earthquake turns the sky black almost at once, and it clears over the next minute or so
@@ -1859,7 +1859,7 @@ const PLACES=DRIVE?(()=>{const m=x=>Math.round(x/SEG);return[[0,'SAN ANTONIO AVE
   [Z.i80,'I-80 SOUTH','BERKELEY HILLS ON THE LEFT'],[Z.berkeley,'BERKELEY','THE UNIVERSITY UP THE HILL'],[Z.emeryville,'EMERYVILLE',''],[Z.oakland,'OAKLAND','NEXT EXIT ALAMEDA'],[Z.wt1,'WEBSTER TUBE','BACK UNDER THE ESTUARY'],[Z.wt0,'ALAMEDA','HOME TO SAN ANTONIO AVE'],[Z.wt0+m(260),'BUENA VISTA AVE','ALAMEDA'],[Z.bv,'GRAND ST','SOUTH TO SAN ANTONIO'],[NS-m(240),'SAN ANTONIO AVE','ALMOST HOME · 1611 ON THE RIGHT']];})():[];
 const placeOf=i=>{let p=PLACES[0];for(const q of PLACES)if(i>=q[0])p=q;return p;};
 const tmNow=()=>performance.now()/1000;
-function startDrive(){clearCrack();initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');for(const id of['tl','br','lf','map','bl'])$(id).classList.remove('hide');
+function startDrive(){clearCrack();fqArm();initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');for(const id of['tl','br','lf','map','bl'])$(id).classList.remove('hide');
   setupGrid();hero.visible=true;ANN.on=false;G.state='race';first=true;PL.lapStart=0;const J=JUMPS[JUMP];if(J)jumpTo(J[0]);DA.zn=placeOf(PL.idx)[1];
   if(J)say(J[1],J[2],4);else say('1611 SAN ANTONIO AVE','ALAMEDA · PARKED OUT FRONT · AROUND THE BAY AND HOME',4);}
 // Jump points: the Alameda drive can start partway round instead of at the house (chosen on the home screen, ?from=bb|sf|gg|i80). The car sits stopped in the right-hand lane,
@@ -2001,7 +2001,7 @@ const shadeMat=new THREE.MeshBasicMaterial({map:shadeTex,color:0,transparent:tru
   if(DRIVE){span(Z.wt0+120,Z.central,band);band(Z.rb1+20,Z.refinery-20);}else{band(205,NS);band(0,62);}}
 function driveTick(rdt){const zn=zoneOf(PL.idx);leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,zn==='town'&&G.state==='race'&&!G.paused);   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -2096,16 +2096,19 @@ function debrisTick(rdt){for(let k=DEB.length-1;k>=0;k--){const d=DEB[k];if(d.do
       if(dx*dx+dz*dz<(d.sz+1.6)**2&&!PL.crash){G.shake=Math.max(G.shake,.9);PL.vx*=.55;PL.vz*=.55;sfxScrape(1);}}   // landed on the car, or just in front of it
     else if(d.water&&p.y<-44){d.done=true;d.m.visible=false;if(d.sz>.5){sfxSplash();NOGY=1;for(let q=0;q<10;q++)puff(V.set(p.x,-44.6,p.z),R(-3,3),R(4,10),R(-3,3),.8,R(3,6),R(1.2,2.2),.7,0xeef2f4);NOGY=0;}}}}
 function clearDeb(){for(const d of DEB){scene.remove(d.m);d.m.geometry.dispose();if(d.ob){const k=OBST.indexOf(d.ob);if(k>=0)OBST.splice(k,1);}}DEB.length=0;}
-function quakeTick(rdt){const q=QK,i=PL.idx;if(!q)return;
+function quakeTick(rdt){const q=QK,i=PL.idx;G.roll=0;if(!q)return;
   if(q.st===0){if(i>q.a-330&&i<q.a-40&&!PL.crash){q.st=1;q.t=0;q.cr=0;q.side=-1;q.jolt=0;say('EARTHQUAKE !','THE BRIDGE IS BREAKING UP AHEAD - KEEP TO THE LEFT RAIL',6);sfxQuake();quakeStart(q);G.qd=1;for(let k=0;k<10;k++)crackRoad((q.a-R(4,70))*SEG,R(-RW,RW));
       // concrete shaken off the upper deck and the towers: some lands on the lanes that are left, some goes down through the gap
       for(let k=0;k<18;k++){const j=q.a-50+Math.random()*(q.b-q.a+90),inGap=j>q.a&&j<q.b,lat=inGap?R(-RW,q.ls-1):R(-RW,RW),over=inGap;spawnDeb(j*SEG,lat,R(18,45),Math.random()<.7?'chunk':'brick',R(1.8,7),over);}}return;}
-  q.t+=rdt;const m=q.half[1];G.shake=Math.max(G.shake,q.t<8?.65*(1-q.t/8)+.15:0);
-  if(q.t>2.2){const u=q.t-2.2;m.position.y=-Math.min(70,9*u*u);m.rotation.z=0;if(!q.cr){q.cr=1;sfxCrunch(1);G.shake=1;}
+  q.t+=rdt;const m=q.half[1],sw=sst(q.t,.5,1.1)*(1-sst(q.t,1.7,2.1))+sst(q.t,5.4,6.2)*(1-sst(q.t,10.5,12.5)),ph=Math.sin(q.t*2.4);G.shake=Math.max(G.shake,q.t<8?(.65*(1-q.t/8)+.15)*(1-.8*sw):0);   // the rumble and the sway take turns
+  {const lat=.55*sw*ph,d=lat-(q.sw||0);q.sw=lat;if(!PL.crash){const n=Nn[i];PL.x+=n.x*d;PL.z+=n.z*d;}G.roll=.035*sw*Math.sin(q.t*2.4+.5);   // the deck rolls a little from side to side, carrying the car and the view with it
+    const ax=QK.ax||(QK.ax=new THREE.Vector3()),pv=QK.pv||(QK.pv=new THREE.Vector3()),qq=QK.qq||(QK.qq=new THREE.Quaternion()),c=(q.a+q.b)>>1;ax.set(T[c].x,0,T[c].z).normalize();pv.copy(P[c]);qq.setFromAxisAngle(ax,.014*sw*ph);
+    for(const h of q.t<2.2?q.half:[q.half[0]]){h.quaternion.copy(qq);h.position.copy(pv).sub(V.copy(pv).applyQuaternion(qq));}}
+  if(q.t>2.2){const u=q.t-2.2;m.position.set(0,-Math.min(70,9*u*u),0);m.quaternion.identity();if(!q.cr){q.cr=1;sfxCrunch(1);G.shake=1;}
     if(u<3&&Math.random()<rdt*40){const j=q.a+(Math.random()*(q.b-q.a)|0);puff(off(j,R(-RW,q.ls),R(-3,1),V),R(-2,2),R(1,4),R(-2,2),2,6,R(1.5,3),.5,0x9a968c);}}
   if(q.t>4.5&&!q.jolt){q.jolt=1;sfxQuake();G.shake=.8;say('AFTERSHOCK !','',2);}   // a second jolt, as you come up to the gap
   if(q.t>2.8&&i>=q.a-1&&i<=q.b&&!PL.crash&&PL.safe<=0){const pe=ents.find(e=>e.player);if(pe.lat<q.ls-.3)startDive(q.side,1.2,i,{room:(q.b-i)*SEG-6});}   // anywhere but the strip along the left rail, down you go
-  if(!PL.crash&&(i>q.b+260||i<q.a-360)){q.st=0;m.position.y=0;quakeEnd();clearDeb();clearCracks();}}
+  if(!PL.crash&&(i>q.b+260||i<q.a-360)){q.st=0;q.sw=0;for(const h of q.half){h.position.set(0,0,0);h.quaternion.identity();}quakeEnd();clearDeb();clearCracks();}}
 // the tanker that breaks up the manatee's pipe
 if(DRIVE){const tk=new THREE.Group(),A=(geo,m,x,y,z)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);tk.add(o);return o;},bx=(a,b,c)=>new THREE.BoxGeometry(a,b,c),wh=std({color:0xeeeae0,roughness:.6});
   A(bx(150,11,24),std({color:0x1c1c1e,roughness:.7}),0,5.5,0);A(bx(150.4,3.4,24.4),std({color:0x8a2a20,roughness:.8}),0,.6,0);A(bx(120,1.2,20),std({color:0x8a3a2a,roughness:.8}),10,11.4,0);
@@ -2114,7 +2117,7 @@ if(DRIVE){const tk=new THREE.Group(),A=(geo,m,x,y,z)=>{const o=new THREE.Mesh(ge
   tk.visible=false;scene.add(tk);SEA.tk=tk;}
 // ---- free drive extras: traffic on the freeways and bridges (horse and buggy among it), fires that never go out, the watching eyes, the cable car on Hyde St,
 // hawks in the redwoods, the port train, the detour to Richmond, and the cones and falling traffic when the Bay Bridge gives way
-const TRAF=[];let CABLE=null,TRAIN=null,CONES=null;const FADE={k:0,t:0,go:null};
+const TRAF=[],FQ={list:[]};let CABLE=null,TRAIN=null,CONES=null;const FADE={k:0,t:0,go:null};
 if(DRIVE){const m_=x=>Math.round(x/SEG),D2=THREE.DoubleSide;
   const box=(g,sx,sy,sz,c,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),c);o.position.set(x,y,z);o.castShadow=true;g.add(o);return o;};
   const paint=c=>std({color:c,roughness:.45,metalness:.35}),tyre=std({color:0x141414,roughness:.9}),glass=std({color:0x1b2328,roughness:.1}),skin=std({color:0xd9a988,roughness:.8}),dark=std({color:0x1c1c1e,roughness:.8});
@@ -2137,9 +2140,16 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),D2=THREE.DoubleSide;
       for(const s of[-1,1]){const sh=box(g,.06,.06,2.6,dark,s*.55,1.25,2.3);sh.rotation.x=.08;}
       const bg=std({color:0x1a1a1a,roughness:.6});box(g,1.4,.5,1.8,bg,0,1.1,.2);box(g,1.4,.7,.12,bg,0,1.55,-.65);const top=box(g,1.6,.06,2,bg,0,2.75,0);for(const x of[-.7,.7])for(const z of[-.8,.8])box(g,.05,1.3,.05,bg,x,2.1,z);
       for(const s of[-1,1]){const w=new THREE.Mesh(new THREE.TorusGeometry(.72,.05,6,18),bg);w.rotation.y=Math.PI/2;w.position.set(s*.82,.72,.1);g.add(w);g.wh.push(w);}
-      rider(g,0,1.3,.1,0x22222a,'hat');return{g,len:6,r:1.7,vb:R(6,8)};}};
+      rider(g,0,1.3,.1,0x22222a,'hat');return{g,len:6,r:1.7,vb:R(6,8)};},
+    truck2:()=>{const g=new THREE.Group();g.wh=[];const pk=a=>a[Math.random()*a.length|0],c=paint(pk([0xe8e4d8,0xb3241c,0x2f5f7a,0xd8cfb0,0x3a5a3a])),tr=paint(pk([0xe8e6de,0xc9ccd0,0xd8cfb0]));   /* a cab pulling two trailers */
+      box(g,2.3,2.3,2.4,c,0,1.65,7.4);box(g,2.2,.8,.1,glass,0,2.3,8.62);box(g,2.5,3.1,6.6,tr,0,2.25,2.6);box(g,2.5,3.1,6.6,tr,0,2.25,-4.9);box(g,.3,.3,1.2,dark,0,.9,-1.15);
+      for(const z of[7.6,5.2,.1,-1.1,-2.4,-7.4,-6.3])for(const x of[-1.05,1.05])wheel(g,x,z,.5);return{g,len:17.2,r:2.8,vb:R(14,18)};},
+    police:()=>{const g=new THREE.Group();g.wh=[];if(!TRAF.pol)TRAF.pol=[std({color:0x501010,emissive:0xff2020,emissiveIntensity:.2,roughness:.4}),std({color:0x101850,emissive:0x2050ff,emissiveIntensity:.2,roughness:.4})];   /* black and white, with a light bar flashing red and blue */
+      const blk=paint(0x111214),wht=paint(0xf2f2ee);box(g,1.8,.62,4.6,blk,0,.62,0);box(g,1.84,.5,2.1,wht,0,.66,-.1);box(g,1.6,.52,2.3,glass,0,1.17,-.2);box(g,1.62,.06,1.6,wht,0,1.45,-.2);
+      box(g,1.25,.12,.32,dark,0,1.53,0);box(g,.55,.17,.3,TRAF.pol[0],-.33,1.62,0);box(g,.55,.17,.3,TRAF.pol[1],.33,1.62,0);for(const[x,z]of[[-.85,1.4],[.85,1.4],[-.85,-1.4],[.85,-1.4]])wheel(g,x,z,.33);return{g,len:4.7,r:2,vb:R(26,31)};}};
   const KINDS=['car','pickup','buggy','moto','truck','car','pickup','moto','buggy','car','truck','pickup','car','moto','buggy','pickup','car','truck','car','pickup'];
   KINDS.forEach((k,n)=>{const v=MK[k]();v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r}};TRAF.push(t);OBST.push(t.ob);});
+  [['police',1],['truck2',3],['police',6],['truck2',8],['police',10]].forEach(([k,n])=>{const v=MK[k]();v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,extra:true,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r}};TRAF.push(t);OBST.push(t.ob);});   // double-trailer trucks and police cars, added after the others and using Math.random, so the seeded scenery stays put
   // the cable car: red and cream, open at the ends, with passengers hanging on
   {const g=new THREE.Group(),red=std({color:0xa8241c,roughness:.6}),crm=std({color:0xe8dcb8,roughness:.7}),wd=std({color:0x5a3a22,roughness:.8});g.wh=[];
     box(g,2.5,1,8.4,red,0,.9,0);box(g,2.4,1.3,4.4,crm,0,2.05,0);box(g,2.6,.18,8.8,wd,0,3.3,0);box(g,2.2,.4,8.2,crm,0,3.55,0);for(const z of[-3.9,-2.3,2.3,3.9])for(const x of[-1.15,1.15])box(g,.08,1.6,.08,wd,x,2.1,z);
@@ -2159,26 +2169,27 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),D2=THREE.DoubleSide;
     cone.visible=band.visible=false;scene.add(cone,band);CONES={list:[cone,band,...boards]};}}
 function sfxBell(){if(!AC)return;let t=AC.currentTime;for(let k=0;k<2;k++){for(const[f,v]of[[1760,.22],[2640,.1],[4400,.05]])tone('sine',f,t,.9,v,master,{a:.002,h:.08});t+=.24;}}
 function sfxScreech(){if(!AC)return;const t=AC.currentTime;tone('sawtooth',2300,t,.9,.12,master,{to:1300,a:.05,h:.4,lp:3200,ft:'bandpass',q:6});}
-function quakeStart(q){for(const o of CONES.list)o.visible=true;let n=0;   // traffic already on the bridge runs on into the gap: a few vehicles in the right-hand lanes, timed to reach it as it goes
-  for(const t of TRAF){if(n>=5)break;if(t.kind==='moto'&&n<4)continue;t.act=true;t.fall=null;t.g.visible=true;if(t.vb0==null)t.vb0=t.vb;t.s=q.a*SEG-(t.vb>10?16:7)*(2.3+n*.9)-R(0,6);t.v=t.vb=t.kind==='buggy'?7:16;t.lt=n%2?-RW*.75:-RW*.25;t.lat=t.lt;t.g.rotation.set(0,0,0);n++;}}
-function quakeEnd(){for(const o of CONES.list)o.visible=false;for(const t of TRAF)if(t.vb0!=null){t.vb=t.vb0;t.vb0=null;}}   // the vehicles slowed for the collapse go back to their own speeds
+function quakeStart(q){for(const o of CONES.list)o.visible=true;let n=0;   // traffic already on the bridge runs on into the gap: five vehicles in the right-hand lanes, timed to reach it just after it goes
+  for(const t of TRAF){if(n>=5)break;if(t.kind==='moto'||t.kind==='buggy')continue;t.act=true;t.qf=true;t.fall=null;t.g.visible=true;if(t.vb0==null)t.vb0=t.vb;t.s=q.a*SEG-16*(2.5+n*.85)-R(0,4);t.v=t.vb=16;t.lt=n%2?-RW*.75:-RW*.25;t.lat=t.lt;t.g.rotation.set(0,0,0);n++;}}   // qf: kept running whatever the rest of the traffic is doing
+function quakeEnd(){for(const o of CONES.list)o.visible=false;for(const t of TRAF){t.qf=false;if(t.vb0!=null){t.vb=t.vb0;t.vb0=null;}}}   // the vehicles slowed for the collapse go back to their own speeds
 function placeVehicle(t){const i=wrapI(Math.floor(t.s/SEG)),j=wrapI(i+1);at(t.s,t.lat,0,t.g.position);const sl=(H[wrapI(i+1)]-H[wrapI(i-1)])/(2*SEG);t.g.rotation.set(-Math.atan(sl),yaw(i),0);t.ob.x=t.g.position.x;t.ob.z=t.g.position.z;}
-function trafficTick(dt,pe){const i0=PL.idx,zn=zoneArr[i0],road=i=>{const c=zoneArr[i];return(c===3&&i>Z.tu1+40&&!(i>Z.detour-60&&i<Z.detour+90))||c===4;},on=road(i0),bay=i0>=Z.b0-250&&i0<=Z.b1,
+function trafficTick(dt,pe){if(TRAF.pol){const f=(tmNow()*7|0)%2;TRAF.pol[0].emissiveIntensity=f?4:.15;TRAF.pol[1].emissiveIntensity=f?.15:4;}const i0=PL.idx,zn=zoneArr[i0],road=i=>{const c=zoneArr[i];return(c===3&&i>Z.tu1+40&&!(i>Z.detour-60&&i<Z.detour+90))||c===4;},on=road(i0),bay=i0>=Z.b0-250&&i0<=Z.b1,
     rsr=i0>=Z.rb0-250&&i0<=Z.rb1,i880=i0>Z.tu1&&i0<Z.b0-250,gap=bay?48:rsr?90:70,spd=bay?1:1.2;   // I-880 and the San Rafael bridge: fewer vehicles, further apart and a bit quicker; the Bay Bridge stays busy for the earthquake
   for(const t of TRAF){
     if(t.fall){const F=t.fall;F.vy-=20*dt;t.g.position.x+=F.vx*dt;t.g.position.z+=F.vz*dt;t.g.position.y+=F.vy*dt;t.g.rotation.x+=F.w*dt;t.g.rotation.z+=F.w*.3*dt;t.ob.x=1e9;
       if(t.g.position.y<-44&&!F.sp){F.sp=1;sfxSplash();NOGY=1;for(let k=0;k<26;k++){const a=R(0,6.283),sp=R(2,8);puff(V.set(t.g.position.x,-44.6,t.g.position.z),Math.cos(a)*sp,R(5,16),Math.sin(a)*sp,R(.8,1.6),R(4,7),R(1.2,2.4),.8,0xeef2f4);}NOGY=0;}
-      if(t.g.position.y<-60){t.fall=null;t.act=false;t.g.visible=false;}continue;}
+      if(t.g.position.y<-60){t.fall=null;t.act=false;t.qf=false;t.g.visible=false;}continue;}
     const want=on&&t.n<(bay?11:rsr?4:i880?5:9);
-    if(t.act){const ds=wdiff(t.s-pe.s),i=wrapI(Math.floor(t.s/SEG));if(ds<-160||ds>1000||(!want&&ds>-40)||!road(i)){t.act=false;t.g.visible=false;t.ob.x=1e9;}}
-    if(!t.act){if(want&&Math.random()<dt*1.5){const s=wrapS(pe.s+R(300,850)),i=wrapI(Math.floor(s/SEG));if(road(i)&&!(QK.st&&i>QK.a-200&&i<QK.b+10)){const w=RW+XW[i],ln=[-.75,-.25,.25,.75][Math.random()*4|0]*w;
+    if(t.act){const ds=wdiff(t.s-pe.s),i=wrapI(Math.floor(t.s/SEG));if(!t.qf&&(ds<-160||ds>1000||(!want&&ds>-40)||!road(i))){t.act=false;t.g.visible=false;t.ob.x=1e9;}}
+    if(!t.act){if(want&&Math.random()<dt*1.5){const s=wrapS(pe.s+R(300,850)),i=wrapI(Math.floor(s/SEG));if(road(i)&&!(QK.st&&i>QK.a-200&&i<QK.b+10)&&!FQ.list.some(q=>q.F&&Math.abs(wdiff(q.F.s-s))<160)){const w=RW+XW[i],ln=[-.75,-.25,.25,.75][Math.random()*4|0]*w;
         if(TRAF.every(o=>!o.act||Math.abs(wdiff(o.s-s))>gap||Math.abs(o.lt-ln)>1.5)){t.act=true;t.s=s;t.lt=t.lat=ln;t.v=t.vb*spd;t.g.visible=true;}}}continue;}
     let v=t.kind==='buggy'?t.vb:t.vb*spd;for(const o of TRAF){if(o===t||!o.act||o.fall||Math.abs(o.lt-t.lt)>1.5)continue;const d=wdiff(o.s-t.s);if(d>0&&d<(t.len+o.len)/2+14)v=Math.min(v,o.v*.9);}
     if(DUCK.st===1){const dd=wdiff(DUCK.s-t.s);if(dd>0&&dd<55)v=Math.min(v,Math.max(0,(dd-t.len/2-7)*.5));}   // everyone stops for the ducks
+    t.sw=0;for(const q of FQ.list){const F=q.F;if(!F||F.kL<.05)continue;const dd=wdiff(F.s-t.s);if(dd>-6&&dd<170&&t.lat>F.lo-1.6&&t.lat<F.hi+1.6){t.lt=F.free;t.sw=1;if(Math.abs(t.lat-F.free)>1.2)v=Math.min(v,Math.sqrt(12*Math.max(0,dd-t.len/2-5)));}}   // and for a fissure: brake hard, and squeeze past in the open lane
     const dp=wdiff(pe.s-t.s);if(dp>0&&dp<(t.len/2+16)&&Math.abs(pe.lat-t.lat)<2.6)v=Math.min(v,Math.max(0,pe.v-2));   // don't run into the player from behind
     const i=wrapI(Math.floor(t.s/SEG));
     if(QK&&QK.st&&QK.t>2.2&&t.lat<QK.ls-.4&&i>=QK.a&&i<=QK.b){const tg=T[i];t.fall={vx:tg.x*Math.max(t.v,5),vz:tg.z*Math.max(t.v,5),vy:1,w:R(.8,1.5)};sfxCrunch(.5);continue;}   // the road has gone from under it
-    t.v+=clamp(v-t.v,-9*dt,3*dt);t.s=wrapS(t.s+t.v*dt);const w=RW+XW[i];t.lt=clamp(t.lt,-.75*w,.75*w);t.lat+=clamp(t.lt-t.lat,-1.5*dt,1.5*dt);placeVehicle(t);
+    t.v+=clamp(v-t.v,-9*dt,3*dt);t.s=wrapS(t.s+t.v*dt);const w=RW+XW[i];t.lt=clamp(t.lt,-.75*w,.75*w);t.lat+=clamp(t.lt-t.lat,-(t.sw?3:1.5)*dt,(t.sw?3:1.5)*dt);placeVehicle(t);
     for(const wh of t.g.wh)wh.rotation.x+=t.v*dt/.4;if(t.g.legs){const q=tmNow()*9;t.g.legs.forEach((l,k)=>{l.rotation.x=Math.sin(q+(k%2?0:Math.PI)+(k>1?.6:0))*.5;});}
     const dx=t.g.position.x-PL.x,dz=t.g.position.z-PL.z,rel=Math.abs(pe.v-t.v);if(dx*dx+dz*dz<(t.r+1)**2&&rel>30&&!PL.crash&&PL.safe<=0&&G.state==='race')crashPlayer(rel*.4,false);}}
 // ---- San Quentin's beach (east of the prison, down to the bay): big surf crashing in and people flying kites. Hyde St: a few people on the pavements, and kids skateboarding down the middle of the road below the crest (solid: steer round them).
@@ -2405,6 +2416,55 @@ function cityQuakeTick(rdt){const i=PL.idx,a=Z.b1+70;
   if(CQ.t<20&&!PL.crash){CQ.nx-=rdt;if(CQ.nx<=0){CQ.nx=R(1.1,2.4);drop(Math.max(50,pe.v*2.4)+R(0,80),1);if(Math.random()<.35)crackRoad(pe.s+R(60,140),R(-RW,RW));}}
   if(CQ.t>12&&CQ.t<12.2&&!CQ.af){CQ.af=1;say('AFTERSHOCK !','',2);sfxQuake();G.shake=.7;}
   if(zoneOf(i)!=='city'&&!PL.crash){clearDeb();clearCracks();CQ.st=0;CQ.af=0;}}
+// ---- freeway earthquakes (free drive): one strong quake on each freeway stretch (I-880, I-80, the Marin freeway), once per drive, at a random point.
+// A rumble that builds, the sky going dark, cracks running across the lanes ahead, then the road splits open in a jagged fissure across all but one lane.
+// Traffic brakes and squeezes past in the open lane; hit the fissure and the car takes a hard jolt, or at speed it crashes. A short aftershock follows.
+// Each quake keeps its own lists of the cracks and debris it lays (q.cr, q.deb), so clearing it never touches the Bay Bridge's or the city's.
+function sfxRumble(){if(!AC)return;const t=AC.currentTime;tone('sine',30,t,7,.9,master,{to:44,a:4.5,h:.85});tone('triangle',52,t+.6,6,.3,master,{to:46,a:4,h:.85});for(let k=0;k<6;k++)hit(t+k*.85,1.7,.12+.13*k,70+k*12,'lowpass',master);}
+if(DRIVE){FQ.list=[[Z.tu1,Z.detour,'I-880'],[Z.i80,Z.wt1,'I-80'],[Z.gg1,Z.sq,'MARIN']].map(([a,b,nm])=>({a,b,nm,st:0,t:0,ti:0,cr:[],deb:[],F:null}));fqArm();
+  // lane lines on the approach to the toll plaza: dashes between the four lanes
+  {const m_=x=>Math.round(x/SEG),a=Z.detour+m_(170),b=Z.toll+m_(110),n=(Math.ceil((b-a)/6)+1)*2,up=new THREE.Vector3(0,1,0),im=new THREE.InstancedMesh(new THREE.PlaneGeometry(.16,3.2).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xe6e2d2,transparent:true,opacity:.82,polygonOffset:true,polygonOffsetFactor:-3}),n);let k=0;
+    for(let i=a;i<b&&k<n-1;i+=6)for(const sd of[-1,1]){at(i*SEG,sd*(RW+XW[i])*.5,.05,V);Q.setFromAxisAngle(up,yaw(i));M4.compose(V,Q,S.set(1,1,1));im.setMatrixAt(k++,M4);}im.count=k;im.frustumCulled=false;scene.add(im);FQ.lines=im;}}
+function fqCrack(q,s,lat){crackRoad(s,lat);q.cr.push(CRACKS[CRACKS.length-1]);}
+function fqDeb(q,s,lat,h,delay,sc,vy){spawnDeb(s,lat,h,'chunk',delay,false,0,sc);const d=DEB[DEB.length-1];d.vy=vy;q.deb.push(d);}
+function fqClear(q){for(const m of q.cr){const k=CRACKS.indexOf(m);if(k>=0)CRACKS.splice(k,1);scene.remove(m);m.geometry.dispose();}q.cr.length=0;
+  for(const d of q.deb){const k=DEB.indexOf(d);if(k>=0)DEB.splice(k,1);scene.remove(d.m);d.m.geometry.dispose();if(d.ob){const j=OBST.indexOf(d.ob);if(j>=0)OBST.splice(j,1);}}q.deb.length=0;
+  if(q.F){for(const o of q.F.parts){scene.remove(o);if(o.geometry!==FQ.slabG)o.geometry.dispose();}q.F=null;}}
+function fqArm(){const m_=x=>Math.round(x/SEG);for(const q of FQ.list){fqClear(q);const lo=q.a+m_(250),hi=Math.max(lo,q.b-m_(900));q.ti=Math.round(lo+Math.random()*(hi-lo));q.st=0;q.t=0;}}   // a new drive: a new place for each quake
+function fqAfterReset(){for(const q of FQ.list)if(q.st===1&&q.t>5){fqClear(q);q.st=2;}}
+// the fissure: N points across the road from beyond the far edge to just short of the open lane, each with a jag (c, metres along the road) and a width;
+// a black core inside a dark brown rim, and plates of broken asphalt tipped up along both lips
+function fqFissure(q,s,sd){const i=wrapI(Math.floor(s/SEG)),w=RW+XW[i],edge=-sd*(w+.8),tip=sd*(w*.5-.35),N=18,pts=[];let c=0;
+  for(let j=0;j<N;j++){const u=j/(N-1);c=clamp(c+R(-.6,.6),-1.7,1.7);pts.push({lat:lerp(edge,tip,u),c,u,hw:R(1.1,1.7)*Math.min(1,(1-u)*N/2.5+.06),h:0});}
+  const strip=(col,po)=>{const g=new THREE.BufferGeometry(),idx=[];g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(N*6),3));for(let j=0;j<N-1;j++){const a=j*2;idx.push(a,a+2,a+1,a+1,a+2,a+3);}g.setIndex(idx);
+    const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:col,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:po}));m.frustumCulled=false;scene.add(m);return m;};
+  const rim=strip(0x2c2620,-5),core=strip(0x060505,-9),parts=[rim,core],slabs=[];
+  if(!FQ.slabG){FQ.slabG=new THREE.BoxGeometry(1,.2,1);FQ.slabM=std({color:0x46474a,roughness:.95});}
+  for(let j=0;j<N;j++)for(const side of[-1,1]){if(Math.random()<.3)continue;const o=new THREE.Mesh(FQ.slabG,FQ.slabM);o.scale.set(R(.7,1.4),1.2,R(.6,1.1));o.castShadow=true;o.visible=false;scene.add(o);parts.push(o);slabs.push({o,j,side,tilt:R(.35,.75),dl:R(-.4,.4),sp:R(0,6)});}
+  return{s,sd,pts,rim,core,slabs,parts,kL:0,kW:0,wid:1,t0:q.t,prev:null,ch:0,lo:Math.min(edge,tip),hi:Math.max(edge,tip),free:sd*w*.75,edge,tip};}
+function fqShape(F){const N=F.pts.length,rp=F.rim.geometry.attributes.position,cp=F.core.geometry.attributes.position;
+  for(let j=0;j<N;j++){const p=F.pts[j],vis=clamp((F.kL-p.u)*6,0,1),h=p.hw*F.kW*vis*F.wid;p.h=h;
+    for(const[e,sg]of[[0,1],[1,-1]]){at(F.s+p.c+sg*(h+.45*Math.min(1,h*4)),p.lat,.05,V);rp.setXYZ(j*2+e,V.x,V.y,V.z);at(F.s+p.c+sg*h*.72,p.lat,.06,V);cp.setXYZ(j*2+e,V.x,V.y,V.z);}}
+  rp.needsUpdate=cp.needsUpdate=true;const i=wrapI(Math.floor(F.s/SEG)),yw=yaw(i);
+  for(const b of F.slabs){const p=F.pts[b.j];b.o.visible=p.h>.06;if(!b.o.visible)continue;at(F.s+p.c+b.side*(p.h+.32),p.lat+b.dl,.08+b.tilt*.35*Math.min(1,p.h*2),b.o.position);b.o.rotation.set(-b.side*b.tilt*Math.min(1,p.h*2),yw+b.sp*.05,b.sp*.03,'YXZ');}}
+function fqTick(rdt){if(!FQ.list.length)return;const pe=ents.find(e=>e.player);if(!pe)return;
+  for(const q of FQ.list){
+    if(q.st===0){if(G.state==='race'&&!PL.crash&&PL.idx>=q.ti&&PL.idx<q.ti+80){q.st=1;q.t=0;q.n=0;q.af=0;q.sd=Math.random()<.5?-1:1;q.fs=wrapS(pe.s+Math.max(280,pe.v*9));sfxRumble();say('EARTHQUAKE !','THE GROUND IS SHAKING - EASE OFF',4);}continue;}
+    if(q.st!==1)continue;q.t+=rdt;const t=q.t,w=RW+XW[PL.idx];
+    if(t<8)G.shake=Math.max(G.shake,.06+.72*sst(t,0,5));G.qd=Math.max(G.qd||0,.45*sst(t,1,4.5));   // the shaking grows and the sky goes dark
+    if(t>2.4&&t<5.6){q.n-=rdt;if(q.n<=0){q.n=.12;const u=(t-2.4)/3.2;fqCrack(q,lerp(pe.s+40,q.fs+20,u)+R(-14,14),R(-w,w));}}   // cracks run across the road ahead, out towards where it will split
+    if(t>=5.4&&!q.F){q.F=fqFissure(q,q.fs,q.sd);sfxQuake();sfxCrunch(1);G.shake=1;say('THE ROAD IS SPLITTING !','KEEP TO THE '+(q.sd>0?'LEFT':'RIGHT')+' LANE',4);}
+    const F=q.F;
+    if(F){const u=t-F.t0;F.kL=sst(u,0,1.4);F.kW=sst(u,.15,3);F.wid+=((q.af?1.25:1)-F.wid)*Math.min(1,rdt*1.5);fqShape(F);
+      if(u<3.6&&Math.random()<rdt*40){const p=F.pts[Math.random()*F.pts.length|0];if(p.h>.05){NOGY=1;puff(at(F.s+p.c,p.lat,.3,V),R(-2,2),R(1.5,5),R(-2,2),1,R(3,6),R(1.4,3),.55,0x9a9080);NOGY=0;}}   // dust out of the split
+      if(u>.3&&!F.ch){F.ch=1;for(let k=0;k<8;k++){const p=F.pts[Math.random()*F.pts.length*.7|0];fqDeb(q,F.s+p.c+R(-1.5,1.5),p.lat,R(.4,1.2),R(0,1.4),R(.22,.4),R(4,9));}}   // chunks of road thrown up
+      if(!PL.crash&&PL.safe<=0&&G.state==='race'){const f=(pe.lat-F.edge)/(F.tip-F.edge),p=f>=0&&f<=1?F.pts[Math.round(f*(F.pts.length-1))]:null,ds=p?wdiff(F.s+p.c-pe.s):null;
+        if(p&&F.prev!=null&&F.prev>0&&ds<=0&&p.h>.15){const v=pe.v;G.shake=1;sfxCrunch(1);NOGY=1;for(let k=0;k<12;k++)puff(V.set(PL.x+R(-1,1),P[PL.idx].y+.3,PL.z+R(-1,1)),R(-3,3),R(1,4),R(-3,3),1,R(3,6),R(1.2,2.4),.55,0x8a8070);NOGY=0;
+          if(v>26)crashPlayer(v*.4,false);else{PL.vx*=.45;PL.vz*=.45;sfxScrape(1);}}   // over the fissure: a hard jolt, and at speed a crash
+        F.prev=ds;}else F.prev=null;}
+    if(t>12.5&&!q.af){q.af=1;sfxQuake();G.shake=Math.max(G.shake,.75);say('AFTERSHOCK !','',2);for(let k=0;k<4;k++)fqCrack(q,q.fs+R(-40,40),R(-w,w));}
+    if(q.af&&t<14.5)G.shake=Math.max(G.shake,.4*(1-(t-12.5)/2));
+    const past=wdiff(pe.s-q.fs);if(!PL.crash&&t>14.5&&(past>220||past<-1500)){fqClear(q);q.st=2;}}}   // gone once you are well past it
 // hole: the road has opened under the car (the earthquake), {room: metres of gap left ahead}. The car then drops straight through, keeping only as much speed as keeps it inside the gap, instead of being thrown out over the side rail
 function startDive(sd,vn,bi,hole){ohNo();{const e=ents.find(e=>e.player);if(e)e.v=0;}const n=Nn[bi],out=hole?vn:Math.max(vn,9),fs=Math.hypot(PL.vx,PL.vz)||1,kf=hole?Math.min(.75,Math.max(1,hole.room)/2.4/fs):.75;
   PL.crash={t:0,dive:1,ph:0,tt:0,sd,x:PL.x,z:PL.z,y:H[bi],vx:PL.vx*kf+n.x*sd*out,vz:PL.vz*kf+n.z*sd*out,vy:hole?0:5.5,idx:bi,dir:PL.x<2350?-1:1};PL.vx=PL.vz=0;
@@ -2428,7 +2488,7 @@ function diveTick(dt,pe){const D=PL.crash;D.tt+=dt;
   if(u>S+6.5&&!D.m6){D.m6=1;say('A TANKER !','COMING STRAIGHT AT THEM',2);sfxHorn();}
   if(u>S+8.3&&!D.said){D.said=1;say('THEY SWIM FOR THE SHORE','',4);}
   if(u>S+8.5){D.wx+=D.dir*15*dt*sst(u,S+8.5,S+9.6);if(Math.random()<dt*10)puff(V.set(D.wx-D.dir*2.2,-44.9,D.wz+R(-.6,.6)),0,.4,0,.5,1.8,R(.8,1.4),.5,0xeef2f4);}
-  if(u>S+14){const i=PL.idx=wrapI((Z.BR.find(r=>D.idx>=r[0]&&D.idx<=r[1])||[Z.b0])[0]-45);pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;PL.safe=3;resetVehicle(VS,hero.M.dyn,0);first=true;G.uw=0;
+  if(u>S+14){const i=PL.idx=wrapI((Z.BR.find(r=>D.idx>=r[0]&&D.idx<=r[1])||[Z.b0])[0]-45);pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();first=true;G.uw=0;
     hero.visible=true;hero.position.set(PL.x,H[i],PL.z);hero.rotation.set(0,PL.h,0);mcq.rotation.set(0,0,0);manatee.visible=false;manatee.pipe.visible=false;SEA.g.visible=SEA.oc.visible=SEA.dome.visible=SEA.tk.visible=false;SEA.light.intensity=0;say('BACK ON DRY LAND','',2);}}
 function diveScene(tm){const D=PL.crash,S=9.2;if(D.ph<1){manatee.visible=false;SEA.g.visible=SEA.oc.visible=false;G.uw=0;return;}
   const u=D.tt-D.t1,bob=Math.sin(tm*1.6)*.07,th=D.dir>0?Math.PI/2:-Math.PI/2;
@@ -2578,7 +2638,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={CROWS,DUCK,DEB,CQ,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={CROWS,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
@@ -2639,7 +2699,7 @@ function frame(manual){
   else if(G.cam===2){camera.position.set(PL.x+Math.sin(tm*.07)*34,52+(PL.gy||0),PL.z+Math.cos(tm*.07)*34);camera.fov=30;look.set(PL.x+fx*6,PL.gy||0,PL.z+fz*6);}
   else{if(G.tvS===null||wdiff(G.tvS-pe.s)<-22||wdiff(G.tvS-pe.s)>240){G.tvS=wrapS(pe.s+150+Math.random()*40);G.tvSide=Math.random()<.5?-1:1;}
     at(G.tvS,G.tvSide*8.4,1.4+((G.tvS*7)%3),camera.position);const dd=camera.position.distanceTo(hero.position);camera.fov=clamp(2*Math.atan(5.5/dd)*57.3,7,42);look.copy(hero.position).setY(hero.position.y+.6);look.x+=jx;}
-  camera.updateProjectionMatrix();camera.lookAt(look);first=false;
+  camera.updateProjectionMatrix();camera.lookAt(look);if(G.roll)camera.rotateZ(G.roll);first=false;
   if(rdt>0){camVel.copy(camera.position).sub(camPrev).divideScalar(rdt);if(camVel.length()>200)camVel.set(0,0,0);camPrev.copy(camera.position);}
   setTime(hour,tm);if(DRIVE){if(G.uw>0)underwater(G.uw);else if(SEA.dome.visible){SEA.dome.visible=false;SEA.light.intensity=0;}
     if(G.smk>.01&&G.tun>.2){const k=G.smk*G.tun;scene.fog.color.multiplyScalar(1-k*.93);scene.fog.near=lerp(scene.fog.near,1.5,k);scene.fog.far=lerp(scene.fog.far,26,k);}   // black smoke building up in the tube
