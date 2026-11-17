@@ -2554,18 +2554,22 @@ function fqAfterReset(){for(const q of FQ.list)if(q.st===1&&q.t>5){fqClear(q);q.
 // the fissure: N points across the road from beyond the far edge to just short of the open lane, each with a jag (c, metres along the road) and a width;
 // a black core inside a dark brown rim, and plates of broken asphalt tipped up along both lips
 function fqFissure(q,s,sd){const i=wrapI(Math.floor(s/SEG)),w=RW+XW[i],edge=-sd*(w+.8),tip=sd*(w*.5-.35),N=18,pts=[];let c=0;
-  for(let j=0;j<N;j++){const u=j/(N-1);c=clamp(c+R(-.6,.6),-1.7,1.7);pts.push({lat:lerp(edge,tip,u),c,u,hw:R(1.1,1.7)*Math.min(1,(1-u)*N/2.5+.06),h:0});}
+  for(let j=0;j<N;j++){const u=j/(N-1);c=clamp((j%2?1:-1)*R(.8,2.2)+c*.3,-3,3);pts.push({lat:lerp(edge,tip,u),c,u,hw:R(1.5,2.3)*Math.min(1,(1-u)*N/2.5+.06),h:0});}
   const strip=(col,po)=>{const g=new THREE.BufferGeometry(),idx=[];g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(N*6),3));for(let j=0;j<N-1;j++){const a=j*2;idx.push(a,a+2,a+1,a+1,a+2,a+3);}g.setIndex(idx);
     const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:col,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:po}));m.frustumCulled=false;scene.add(m);return m;};
   const rim=strip(0x2c2620,-5),core=strip(0x060505,-9),parts=[rim,core],slabs=[];
-  if(!FQ.slabG){FQ.slabG=new THREE.BoxGeometry(1,.2,1);FQ.slabM=std({color:0x46474a,roughness:.95});}
-  for(let j=0;j<N;j++)for(const side of[-1,1]){if(Math.random()<.3)continue;const o=new THREE.Mesh(FQ.slabG,FQ.slabM);o.scale.set(R(.7,1.4),1.2,R(.6,1.1));o.castShadow=true;o.visible=false;scene.add(o);parts.push(o);slabs.push({o,j,side,tilt:R(.35,.75),dl:R(-.4,.4),sp:R(0,6)});}
+  if(!FQ.slabG){FQ.slabG=new THREE.BoxGeometry(1,.2,1);FQ.slabM=std({color:0x2c2d30,roughness:.95});}
+  for(let j=0;j<N;j++)for(const side of[-1,1]){if(Math.random()<.08)continue;const o=new THREE.Mesh(FQ.slabG,FQ.slabM);o.scale.set(R(1,2),1.4,R(.8,1.5));o.castShadow=true;o.visible=false;scene.add(o);parts.push(o);slabs.push({o,j,side,tilt:R(.55,1.15),dl:R(-.4,.4),sp:R(0,6)});}
   return{s,sd,pts,rim,core,slabs,parts,kL:0,kW:0,wid:1,t0:q.t,prev:null,ch:0,lo:Math.min(edge,tip),hi:Math.max(edge,tip),free:sd*w*.75,edge,tip};}
 function fqShape(F){const N=F.pts.length,rp=F.rim.geometry.attributes.position,cp=F.core.geometry.attributes.position;
   for(let j=0;j<N;j++){const p=F.pts[j],vis=clamp((F.kL-p.u)*6,0,1),h=p.hw*F.kW*vis*F.wid;p.h=h;
     for(const[e,sg]of[[0,1],[1,-1]]){at(F.s+p.c+sg*(h+.45*Math.min(1,h*4)),p.lat,.05,V);rp.setXYZ(j*2+e,V.x,V.y,V.z);at(F.s+p.c+sg*h*.72,p.lat,.06,V);cp.setXYZ(j*2+e,V.x,V.y,V.z);}}
   rp.needsUpdate=cp.needsUpdate=true;const i=wrapI(Math.floor(F.s/SEG)),yw=yaw(i);
-  for(const b of F.slabs){const p=F.pts[b.j];b.o.visible=p.h>.06;if(!b.o.visible)continue;at(F.s+p.c+b.side*(p.h+.32),p.lat+b.dl,.08+b.tilt*.35*Math.min(1,p.h*2),b.o.position);b.o.rotation.set(-b.side*b.tilt*Math.min(1,p.h*2),yw+b.sp*.05,b.sp*.03,'YXZ');}}
+  for(const b of F.slabs){const p=F.pts[b.j];b.o.visible=p.h>.06;if(!b.o.visible)continue;at(F.s+p.c+b.side*(p.h+.32),p.lat+b.dl,.08+b.tilt*.6*Math.min(1,p.h*2),b.o.position);b.o.rotation.set(-b.side*b.tilt*Math.min(1,p.h*2),yw+b.sp*.05,b.sp*.03,'YXZ');}}
+// each step of the split: a jolt, a deep rumble, a burst of dust and chunks of road thrown up
+function fqStep(q,F){G.shake=1;sfxCrunch(1);if(AC){const t=AC.currentTime;tone('sine',32,t,1.6,.9,master,{to:24,a:.04,h:.4});hit(t,1.3,1.1,90,'lowpass',master);}
+  NOGY=1;for(let k=0;k<16;k++){const p=F.pts[Math.random()*F.pts.length|0];puff(at(F.s+p.c,p.lat,.3,V),R(-3,3),R(3,8),R(-3,3),1.2,R(4,8),R(1.6,3.2),.65,0x9a9080);}NOGY=0;
+  for(let k=0;k<4;k++){const p=F.pts[Math.random()*F.pts.length*.8|0];fqDeb(q,F.s+p.c+R(-1.5,1.5),p.lat,R(.3,.9),0,R(.2,.4),R(5,11));}}
 function fqTick(rdt){if(!FQ.list.length)return;const pe=ents.find(e=>e.player);if(!pe)return;
   for(const q of FQ.list){
     if(q.st===0){if(G.state==='race'&&!PL.crash&&PL.idx>=q.ti&&PL.idx<q.ti+80){q.st=1;q.t=0;q.n=0;q.af=0;q.sd=Math.random()<.5?-1:1;q.fs=wrapS(pe.s+Math.max(280,pe.v*9));sfxRumble();say('EARTHQUAKE !','THE GROUND IS SHAKING - EASE OFF',4);}continue;}
@@ -2574,8 +2578,8 @@ function fqTick(rdt){if(!FQ.list.length)return;const pe=ents.find(e=>e.player);i
     if(t>2.4&&t<5.6){q.n-=rdt;if(q.n<=0){q.n=.12;const u=(t-2.4)/3.2;fqCrack(q,lerp(pe.s+40,q.fs+20,u)+R(-14,14),R(-w,w));}}   // cracks run across the road ahead, out towards where it will split
     if(t>=5.4&&!q.F){q.F=fqFissure(q,q.fs,q.sd);sfxQuake();sfxCrunch(1);G.shake=1;say('THE ROAD IS SPLITTING !','KEEP TO THE '+(q.sd>0?'LEFT':'RIGHT')+' LANE',4);}
     const F=q.F;
-    if(F){const u=t-F.t0;F.kL=sst(u,0,1.4);F.kW=sst(u,.15,3);F.wid+=((q.af?1.25:1)-F.wid)*Math.min(1,rdt*1.5);fqShape(F);
-      if(u<3.6&&Math.random()<rdt*40){const p=F.pts[Math.random()*F.pts.length|0];if(p.h>.05){NOGY=1;puff(at(F.s+p.c,p.lat,.3,V),R(-2,2),R(1.5,5),R(-2,2),1,R(3,6),R(1.4,3),.55,0x9a9080);NOGY=0;}}   // dust out of the split
+    if(F){const u=t-F.t0;F.kL=sst(u,0,1.4);{let kw=0;for(let n=0;n<4;n++)kw+=.25*sst(u,.15+n*1.1,.4+n*1.1);F.kW=kw;const ns=Math.min(4,Math.floor((u-.15)/1.1)+1);if(ns>(F.stp||0)){F.stp=ns;fqStep(q,F);}}   /* it opens in four violent steps */F.wid+=((q.af?1.25:1)-F.wid)*Math.min(1,rdt*1.5);fqShape(F);
+      if(u<5&&Math.random()<rdt*40){const p=F.pts[Math.random()*F.pts.length|0];if(p.h>.05){NOGY=1;puff(at(F.s+p.c,p.lat,.3,V),R(-2,2),R(1.5,5),R(-2,2),1,R(3,6),R(1.4,3),.55,0x9a9080);NOGY=0;}}   // dust out of the split
       if(u>.3&&!F.ch){F.ch=1;for(let k=0;k<8;k++){const p=F.pts[Math.random()*F.pts.length*.7|0];fqDeb(q,F.s+p.c+R(-1.5,1.5),p.lat,R(.4,1.2),R(0,1.4),R(.22,.4),R(4,9));}}   // chunks of road thrown up
       if(!PL.crash&&PL.safe<=0&&G.state==='race'){const f=(pe.lat-F.edge)/(F.tip-F.edge),p=f>=0&&f<=1?F.pts[Math.round(f*(F.pts.length-1))]:null,ds=p?wdiff(F.s+p.c-pe.s):null;
         if(p&&F.prev!=null&&F.prev>0&&ds<=0&&p.h>.15){const v=pe.v;G.shake=1;sfxCrunch(1);NOGY=1;for(let k=0;k<12;k++)puff(V.set(PL.x+R(-1,1),P[PL.idx].y+.3,PL.z+R(-1,1)),R(-3,3),R(1,4),R(-3,3),1,R(3,6),R(1.2,2.4),.55,0x8a8070);NOGY=0;
