@@ -1774,7 +1774,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*(1-(PL.melt||0)*.1)
   for(const o of OBST){const ox=PL.x-o.x,oz=PL.z-o.z,d2=ox*ox+oz*oz,R0=o.r||2.5;if(d2<R0*R0&&d2>.01){const d=Math.sqrt(d2),k=(R0-d)/d;PL.x+=ox*k;PL.z+=oz*k;if(v>3){PL.vx*=.7;PL.vz*=.7;sfxScrape(clamp(v/20,.3,1));G.shake=Math.max(G.shake,.3);}}}   // parked cars
   for(const hl of HOLES){if(hl.cd>0){hl.cd-=dt;continue;}const hx=PL.x-hl.x,hz=PL.z-hl.z;if(v>6&&hx*hx+hz*hz<(hl.r+.8)**2){hl.cd=.7;const k=clamp(v/50,.3,1.5);PL.h+=R(-.03,.03)*k;PL.vx*=1-.035*k;PL.vz*=1-.035*k;PL.bump=.09*k;G.shake=Math.max(G.shake,.6*k);sfxThump(k);}}
   if(PL.land){PL.bump=Math.max(PL.bump||0,PL.land);PL.land=0;}PL.bump=(PL.bump||0)*Math.exp(-9*dt);
-  const ln=Math.floor(pe.dist/LEN);if(pe.dist>=0&&ln>PL.lapN){PL.last=G.raceT-PL.lapStart;PL.lapStart=G.raceT;PL.lapN=ln;if(!PL.best||PL.last<PL.best)PL.best=PL.last;if(ln<LAPS)say(ln===LAPS-1?'DERNIER TOUR':'LAP '+(ln+1),ln===LAPS-1?'FINAL LAP · '+fmt(PL.last):fmt(PL.last),2);announce(`McQueen boucle son tour en ${Math.round(PL.last)} secondes.`);}
+  const ln=Math.floor(pe.dist/LEN);if(!DRIVE&&pe.dist>=0&&ln>PL.lapN){PL.last=G.raceT-PL.lapStart;PL.lapStart=G.raceT;PL.lapN=ln;if(!PL.best||PL.last<PL.best)PL.best=PL.last;if(ln<LAPS)say(ln===LAPS-1?'DERNIER TOUR':'LAP '+(ln+1),ln===LAPS-1?'FINAL LAP · '+fmt(PL.last):fmt(PL.last),2);announce(`McQueen boucle son tour en ${Math.round(PL.last)} secondes.`);}
   // pose: the body pitches under braking, rolls in corners, and the front wheels turn
   hero.position.set(PL.x,PL.cy-PL.bump*.25,PL.z);hero.rotation.set(VS.pitch+PL.bump*.1-Math.atan(PL.air?clamp(PL.vy/Math.max(Math.abs(VS.u),5),(PL.slope||0)-(PL.cy-PL.gy+.05)/2.3,(PL.slope||0)+(PL.cy-PL.gy+.05)/2.5):PL.slope||0),PL.h,VS.roll);   /* in the air the body follows its flight path, but never tips its nose or tail into the road below */
   for(const w of hero.wheels)w.rotation.y+=w.userData.dir*f*dt/.33;for(const k of hero.knuckles)k.rotation.y=clamp(delta*1.5+PL.steer*.06,-.5,.5);
@@ -1821,7 +1821,7 @@ function sim(dt){const pe=ents.find(e=>e.player);
   if(G.state==='race'){G.doomT-=dt;if(G.doomT<=0){G.doomT=R(38,70);const c=ents.filter(e=>!e.player&&e.out<=0&&!e.doom&&wdiff(e.s-pe.s)>45&&wdiff(e.s-pe.s)<230&&e.v>35);if(c.length){const e=c[Math.random()*c.length|0];e.doom=Math.random()<.5?-1:1;}else G.doomT=6;}
     if(!DRIVE&&pe.dist>=LAPS*LEN){G.state='finish';G.finT=0;G.slow=.3;G.slowT=3.2;first=true;sfxCheer();say('DRAPEAU À DAMIER','P'+(standings().indexOf(pe)+1)+' · '+LAPS+' LAPS',4);announce("Le drapeau à damier ! Les vingt-quatre heures sont terminées !");}}
   driveHome(pe);if(G.state==='finish'&&DRIVE){VS.u*=Math.exp(-1.6*dt);VS.v*=Math.exp(-3*dt);}   // home: the car rolls to a stop at the kerb
-  if(G.state==='finish'){if(Math.abs(pe.v)<.5)G.stopT+=dt;if(G.stopT>.6&&$('res').style.display!=='block')showResults();}
+  if(G.state==='finish'){if(Math.abs(pe.v)<.5&&!(PL.auto&&!PL.auto.fin))G.stopT+=dt;if(G.stopT>.6&&$('res').style.display!=='block')showResults();}
 }
 const fmt=t=>{const m=Math.floor(t/60),s=t-m*60;return m+':'+(s<10?'0':'')+s.toFixed(2);};
 function standings(){return [...ents].sort((a,b)=>b.dist-a.dist);}
@@ -1831,6 +1831,7 @@ function showResults(){if(DRIVE){document.querySelector('#res h1').textContent='
 const cHZD=new THREE.Color(0xd6d4c6),cHZG=new THREE.Color(0xeaa468),cHZN=new THREE.Color(0x0b101c),cZND=new THREE.Color(0x6f98bd),cZNG=new THREE.Color(0x46568a),cZNN=new THREE.Color(0x04060d),cOG=new THREE.Color(0xa9aaa6),cT=new THREE.Color(),cSunLo=new THREE.Color(0xff8a4a),cSunHi=new THREE.Color(0xfff0d8),cMoon=new THREE.Color(0x8fa8d0),cHemiD=new THREE.Color(0xbcd3e2),cHemiN=new THREE.Color(0x2a3550),moonDir=new THREE.Vector3(.4,.7,.3).normalize();
 let az0;{const t=T[125];az0=Math.atan2(t.z*.6+t.x*.7,t.x*.6-t.z*.7);}
 let dayK=1;
+const cMist=new THREE.Color();
 function setTime(h,tm){
   const inDay=h>=5.5&&h<=21.5,el=inDay?Math.sin(Math.PI*(h-5.5)/16):-Math.sin(Math.PI*((h>21.5?h-21.5:h+2.5)/8))*.5;
   const alt=el*1.02,az=az0+(h-16)/24*Math.PI*2;sunDir.set(Math.cos(az)*Math.cos(alt),Math.sin(alt),Math.sin(az)*Math.cos(alt));
@@ -1839,6 +1840,8 @@ function setTime(h,tm){
   u.night.value=1-d;u.cov.value=wx.cov;u.dayk.value=d;u.dk.value=DRIVE?clamp((wx.cov-.4)*1.6,0,.85):0;
   scene.fog.color.copy(u.hz.value).multiplyScalar(lerp(1,.86,wx.cov));scene.fog.near=wx.fn;scene.fog.far=wx.ff;
   if(DRIVE&&G.tun>.05&&PL.idx>Z.tu0-60&&PL.idx<Z.tu1+60){const k=G.tun*.85;scene.fog.near=lerp(scene.fog.near,5,k);scene.fog.far=lerp(scene.fog.far,130,k);}   // the drum fires fill the Posey Tube with smoke
+  if(DRIVE&&G.mist){const pe=ents.find(e=>e.player),dT=wrapI(Z.tu0-START_I)*SEG,d=pe?pe.dist:0;if(d>dT&&d<dT+2000)G.mist=0;const k=G.mist?1-sst(d,dT-700,dT):0;   /* morning fog from the driveway at 1611 until the Posey Tube */
+    if(k>0){scene.fog.color.lerp(cMist.setRGB(.86,.88,.9).multiplyScalar(.3+.7*dayK),k*.9);scene.fog.near=lerp(scene.fog.near,3,k);scene.fog.far=lerp(scene.fog.far,110,k);}}
   if(el>.02){sun.color.copy(cSunLo).lerp(cSunHi,sst(el,0,.45));sun.intensity=3.5*sst(el,.02,.22)*wx.sunK;V.copy(sunDir);}
   else{sun.color.copy(cMoon);sun.intensity=.32*sst(-el,0,.12)*(1-wx.cov*.6);V.copy(moonDir);}
   sun.target.position.copy(hero.position);sun.position.copy(hero.position).addScaledVector(V,200);
@@ -1906,7 +1909,7 @@ const PLACES=DRIVE?(()=>{const m=x=>Math.round(x/SEG);return[[0,'SAN ANTONIO AVE
   [Z.i80,'I-80 SOUTH','BERKELEY HILLS ON THE LEFT'],[Z.berkeley,'BERKELEY','THE UNIVERSITY UP THE HILL'],[Z.emeryville,'EMERYVILLE',''],[Z.oakland,'OAKLAND','NEXT EXIT ALAMEDA'],[Z.wt1,'WEBSTER TUBE','BACK UNDER THE ESTUARY'],[Z.wt0,'ALAMEDA','HOME TO SAN ANTONIO AVE'],[Z.wt0+m(260),'BUENA VISTA AVE','ALAMEDA'],[Z.bv,'GRAND ST','SOUTH TO SAN ANTONIO'],[NS-m(240),'SAN ANTONIO AVE','ALMOST HOME · 1611 ON THE RIGHT']];})():[];
 const placeOf=i=>{let p=PLACES[0];for(const q of PLACES)if(i>=q[0])p=q;return p;};
 const tmNow=()=>performance.now()/1000;
-function startDrive(){clearCrack();fqArm();initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');for(const id of['tl','br','lf','map','bl'])$(id).classList.remove('hide');
+function startDrive(){clearCrack();fqArm();initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');$('res').style.display='none';for(const id of['tl','br','lf','map','bl'])$(id).classList.remove('hide');
   setupGrid();hero.visible=true;ANN.on=false;G.state='race';first=true;PL.lapStart=0;const J=JUMPS[JUMP];if(J)jumpTo(J[0]);else homeStart();DA.zn=placeOf(PL.idx)[1];
   if(J)say(J[1],J[2],4);else say('1611 SAN ANTONIO AVE','ALAMEDA · BACKING OUT OF THE DRIVEWAY · AROUND THE BAY AND HOME',4);}
 // Jump points: the Alameda drive can start partway round instead of at the house (chosen on the home screen, ?from=bb|sf|gg|i80). The car sits stopped in the right-hand lane,
@@ -1915,7 +1918,7 @@ const JUMPS=DRIVE?{bb:[Z.b0-Math.round(200/SEG),'BAY BRIDGE','THE TOLL PLAZA BEH
   gg:[Z.gg0-Math.round(250/SEG),'GOLDEN GATE BRIDGE','NORTH TO MARIN'],i80:[Z.i80,'I-80 SOUTH','BERKELEY, EMERYVILLE, OAKLAND · THEN HOME']}:{};
 const JUMPN={'':'THE HOUSE',bb:'THE BAY BRIDGE',sf:'SAN FRANCISCO',gg:'THE GOLDEN GATE',i80:'I-80'};
 let JUMP=JUMPS[QS.get('from')]?QS.get('from'):'';
-function jumpTo(j){j=wrapI(j);PL.auto=null;const pe=ents.find(e=>e.player),lat=-(RW+XW[j])/2;pe.s=j*SEG;pe.lat=lat;pe.v=0;pe.dist=wrapI(j-START_I)*SEG;at(pe.s,lat,0,V);
+function jumpTo(j){j=wrapI(j);PL.auto=null;G.mist=0;const pe=ents.find(e=>e.player),lat=-(RW+XW[j])/2;pe.s=j*SEG;pe.lat=lat;pe.v=0;pe.dist=wrapI(j-START_I)*SEG;at(pe.s,lat,0,V);
   PL.x=V.x;PL.z=V.z;PL.idx=j;PL.h=G.camH=yaw(j);PL.vx=PL.vz=0;PL.cy=PL.gy=H[j];PL.air=0;PL.vy=0;PL.steer=0;resetVehicle(VS,hero.M.dyn,0);placeAll(0);first=true;}
 // Town streets: dead leaves, and now and then a bit of litter, blown about by a gusty wind and thrown up by the car as it passes.
 let LV=null;if(DRIVE){const N=110,m=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,1),new THREE.MeshStandardMaterial({side:THREE.DoubleSide,roughness:.9}),N),c=new THREE.Color(),p=[];m.frustumCulled=false;
@@ -2016,20 +2019,21 @@ function crackScreen(){let el=$('crack');if(!el){el=document.createElement('div'
 function clearCrack(){const el=$('crack');if(el)el.style.opacity='0';}
 // the free drive ends where it began: back outside 1611 San Antonio Ave after the whole loop, the car rolls to a stop and the time is shown
 function driveHome(pe){const H0=Z.home;if(!DRIVE||!H0||G.state!=='race'||PL.crash||PL.auto||pe.dist<LEN*.97)return;const ahead=wdiff(H0.s-pe.s);if(ahead<14||ahead>150)return;
-  const kerb=-(RW+XW[wrapI(Math.round(H0.s/SEG))]-1.3),v0=Math.max(8,Math.abs(pe.v)),c=Math.min(ahead/3,30);   // pull in to the kerb at the foot of the driveway and roll to a stop
-  PL.auto={t:0,T:clamp(2*ahead/v0,2.5,9),ease:'out',fin:true,rev:false,p:[[pe.s,pe.lat],[pe.s+c,pe.lat],[pe.s+ahead-c,kerb],[pe.s+ahead,kerb]]};
+  const lane=-(RW+XW[wrapI(Math.round(H0.s/SEG))])/2,v0=Math.max(8,Math.abs(pe.v)),go=ahead+12,c=Math.min(go/3,30),e=pe.s+go;   // pull up past the driveway, then back into it (the start's reverse-out, run the other way)
+  PL.auto={t:0,T:clamp(2*go/v0,2.5,9),ease:'out',hold:.5,rev:false,p:[[pe.s,pe.lat],[pe.s+c,pe.lat],[e-c,lane],[e,lane]],
+    next:{t:0,T:6.5,rev:true,fin:true,p:[[e,lane],[e-12,lane-.4],[e-12,H0.lat+5.5],[e-12,H0.lat]]}};
   G.state='finish';G.finT=0;G.stopT=0;sfxCheer();say('HOME','1611 SAN ANTONIO AVE · ROUND THE BAY IN '+fmt(G.raceT),6);}
 // the start of the free drive: the car is in the driveway at 1611, nose to the house, and backs out across the pavement, swinging into the lane facing the right way.
 // PL.auto runs a path in track coordinates (a Bézier over s and lateral), and the player takes over when it ends. driveHome() uses the same thing to bring the car in.
 function homeStart(){const H0=Z.home;if(!DRIVE||!H0)return;const pe=ents.find(e=>e.player),lane=-(RW+XW[wrapI(Math.round(H0.s/SEG))])/2;
-  PL.auto={t:0,T:6.5,hold:.4,rev:true,p:[[H0.s,H0.lat],[H0.s,H0.lat+5.5],[H0.s,lane-.4],[H0.s-10,lane]]};autoPlace(0,pe,true);pe.v=0;PL.vx=PL.vz=0;PL.steer=0;G.camH=PL.h;first=true;}
+  PL.auto={t:0,T:6.5,hold:.4,rev:true,p:[[H0.s,H0.lat],[H0.s,H0.lat+5.5],[H0.s,lane-.4],[H0.s-10,lane]]};autoPlace(0,pe,true);pe.v=0;PL.vx=PL.vz=0;PL.steer=0;G.camH=PL.h;first=true;G.mist=1;}
 function bez(p,u,k){const a=1-u;return a*a*a*p[0][k]+3*a*a*u*p[1][k]+3*a*u*u*p[2][k]+u*u*u*p[3][k];}
 function autoPlace(u,pe,init){const A=PL.auto,s=bez(A.p,u,0),lat=bez(A.p,u,1),u2=Math.min(1,u+.002),u1=u2-.002,ds=bez(A.p,u2,0)-bez(A.p,u1,0),dl=bez(A.p,u2,1)-bez(A.p,u1,1),ns=wrapS(s),i=wrapI(Math.floor(ns/SEG));
   at(ns,lat,0,V);const sg=A.rev?-1:1,fx=sg*(T[i].x*ds+Nn[i].x*dl),fz=sg*(T[i].z*ds+Nn[i].z*dl);PL.x=V.x;PL.z=V.z;if(fx||fz)PL.h=Math.atan2(fx,fz);PL.idx=i;pe.lat=lat;
   pe.dist=init?wdiff(ns-S0):pe.dist+wdiff(ns-pe.s);pe.s=ns;PL.gy=PL.cy=H[i];PL.vy=0;PL.air=0;}
 function autoDrive(dt,pe){const A=PL.auto;if(dt<=0)return true;A.t+=dt;const k=clamp(A.t/A.T,0,1),u=A.ease==='out'?1-(1-k)*(1-k):k*k*(3-2*k),px=PL.x,pz=PL.z;autoPlace(u,pe,false);
   PL.vx=(PL.x-px)/dt;PL.vz=(PL.z-pz)/dt;const v=Math.hypot(PL.vx,PL.vz);pe.v=A.rev?-v:v;PL.steer=A.rev?clamp(Math.sin(k*Math.PI)*.8,0,1)*Math.sign(-A.p[3][0]+A.p[0][0]||1)*.6:0;
-  if(k<1)return true;PL.vx=PL.vz=0;pe.v=0;if(A.fin)return true;A.hold-=dt;if(A.hold>0)return true;PL.auto=null;PL.steer=0;resetVehicle(VS,hero.M.dyn,0);return true;}
+  if(k<1)return true;PL.vx=PL.vz=0;pe.v=0;if(A.fin)return true;A.hold-=dt;if(A.hold>0)return true;if(A.next){PL.auto=A.next;G.stopT=0;return true;}PL.auto=null;PL.steer=0;resetVehicle(VS,hero.M.dyn,0);return true;}
 // the crows on the poles and wires: they look about while they sit; drive past quickly and they go up, flapping and calling, and settle again once you have gone
 let cawT=0;
 function crowsTick(rdt){if(!CROWS.length)return;cawT-=rdt;const v=Math.hypot(PL.vx,PL.vz),tm=tmNow();
@@ -2620,8 +2624,8 @@ addEventListener('resize',()=>{if(!innerWidth||!innerHeight)return;renderer.setS
 const mapC=$('map').getContext('2d');let mb;{let a=1e9,b=-1e9,c=1e9,d=-1e9;for(const p of P){a=Math.min(a,p.x);b=Math.max(b,p.x);c=Math.min(c,p.z);d=Math.max(d,p.z);}const sc=130/Math.max(b-a,d-c);mb=p=>[10+(p.x-a)*sc,10+(p.z-c)*sc];}
 function drawMap(){mapC.clearRect(0,0,150,150);mapC.strokeStyle='rgba(239,233,214,.75)';mapC.lineWidth=3;mapC.beginPath();for(let i=0;i<=NS;i+=6){const[x,y]=mb(P[i%NS]);i?mapC.lineTo(x,y):mapC.moveTo(x,y);}mapC.closePath();mapC.stroke();
   for(const e of ents){if(e.out>0&&!e.car.wreck)continue;const[x,y]=mb(e.car.position);mapC.fillStyle=e.player?'#e9a13a':e.car.wreck?'#ff5a3a':'#efe9d6';mapC.beginPath();mapC.arc(x,y,e.player?4.5:2.6,0,7);mapC.fill();}}
-function hud(pe,hour){const st=standings();$('pos').textContent=DRIVE?placeOf(PL.idx)[1]:'P'+(st.indexOf(pe)+1);$('lap').textContent=Math.min(LAPS,Math.max(1,Math.floor(Math.max(pe.dist,0)/LEN)+1))+' / '+LAPS;
-  $('last').textContent=PL.last?fmt(PL.last):'–';$('best').textContent=PL.best?fmt(PL.best):'–';
+function hud(pe,hour){const st=standings();$('pos').textContent=DRIVE?placeOf(PL.idx)[1]:'P'+(st.indexOf(pe)+1);if(DRIVE)$('tr').textContent=(clamp(pe.dist,0,LEN)/1000).toFixed(1)+' / '+Math.round(LEN/1000)+' KM';   /* the free drive is one lap: distance round the bay instead of laps */
+  else{$('lap').textContent=Math.min(LAPS,Math.max(1,Math.floor(Math.max(pe.dist,0)/LEN)+1))+' / '+LAPS;$('last').textContent=PL.last?fmt(PL.last):'–';$('best').textContent=PL.best?fmt(PL.best):'–';}
   const hh=Math.floor(hour),mm=Math.floor((hour-hh)*60);$('clk').textContent=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm;$('hr').textContent=DRIVE?'':'HOUR '+Math.min(24,Math.floor(clamp(pe.dist/(LAPS*LEN),0,1)*24)+1)+' OF 24';
   $('spd').textContent=Math.round(Math.abs(pe.v)*3.6);$('mph').textContent=Math.round(Math.abs(pe.v)*2.23694);$('gear').textContent=PL.gear<0?'R':PL.gear;$('rpmN').textContent=Math.round(PL.rpm/50)*50;$('rev').firstChild.style.width=clamp((PL.rpm-1000)/7400*100,0,100)+'%';
   $('steer').firstChild.style.left=clamp(50-PL.steer*50,0,100)+'%';$('pedT').style.height=PL.thr*100+'%';$('pedB').style.height=PL.brk*100+'%';
