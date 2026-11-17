@@ -1752,7 +1752,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*(1-(PL.melt||0)*.1)
     if(DRIVE){const e=RW+XW[bi],al=Math.abs(lat);if((KB[bi]&(lat>0?1:2))&&al>e+.25&&al<e+3.1)PL.gy+=.13;}   // up the kerb onto the pavement (KB: which sides have pavement here)
     PL.slope=(H[wrapI(bi+1)]-H[wrapI(bi-1)])/(2*SEG)*(fx*T[bi].x+fz*T[bi].z);GY=PL.gy;
     if(PL.cy===undefined||dt<=0){PL.cy=PL.gy;PL.vy=0;PL.air=0;}
-    else if(PL.air){PL.vy-=24*dt;PL.cy+=PL.vy*dt;if(PL.cy>PL.gy+3.2){PL.cy=PL.gy+3.2;PL.vy=Math.min(PL.vy,0);}if(PL.cy<=PL.gy){const dn=-PL.vy;PL.cy=PL.gy;PL.air=0;PL.vy=0;if(dn>3){const k=clamp(dn/9,.3,1.6);PL.land=.12*k;G.shake=Math.max(G.shake,.7*k);sfxThump(k);for(let q=0;q<10;q++)spark(V.set(PL.x+R(-.8,.8),PL.gy+.1,PL.z+R(-.8,.8)),PL.vx*.6+R(-3,3),R(.5,3),PL.vz*.6+R(-3,3));}}}
+    else if(PL.air){PL.vy-=24*dt;PL.cy+=PL.vy*dt;if(PL.cy>PL.gy+3.2){PL.cy=PL.gy+3.2;PL.vy=Math.min(PL.vy,0);}if(PL.cy<=PL.gy){const dn=(PL.slope||0)*f-PL.vy;/* how hard it meets the road, not how fast it falls */PL.cy=PL.gy;PL.air=0;PL.vy=(PL.slope||0)*f;/* land moving with the road, so it does not hop straight off again */if(dn>3){const k=clamp(dn/9,.3,1.6);PL.land=.12*k;G.shake=Math.max(G.shake,.7*k);sfxThump(k);for(let q=0;q<10;q++)spark(V.set(PL.x+R(-.8,.8),PL.gy+.1,PL.z+R(-.8,.8)),PL.vx*.6+R(-3,3),R(.5,3),PL.vz*.6+R(-3,3));}}}
     else{const vg=(PL.gy-PL.cy)/dt;if(vg<PL.vy-24*dt-.05&&v>12){PL.air=1;PL.vy-=24*dt;PL.cy+=PL.vy*dt;}else{PL.vy=vg;PL.cy=PL.gy;}}}   // where the road drops away faster than the car can fall, it flies   // height of the road here, and how steeply it climbs the way the car is pointing
   pe.dist+=wdiff(ns-pe.s);pe.s=ns;pe.v=f;PL.warn=racing&&f>vcp[wrapI(bi+3)]*Math.sqrt(g*M.dyn.gk)*1.03&&f>25;
   // guardrail: a glancing touch scrapes and bounces, a real hit is a crash
@@ -1776,7 +1776,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*(1-(PL.melt||0)*.1)
   if(PL.land){PL.bump=Math.max(PL.bump||0,PL.land);PL.land=0;}PL.bump=(PL.bump||0)*Math.exp(-9*dt);
   const ln=Math.floor(pe.dist/LEN);if(pe.dist>=0&&ln>PL.lapN){PL.last=G.raceT-PL.lapStart;PL.lapStart=G.raceT;PL.lapN=ln;if(!PL.best||PL.last<PL.best)PL.best=PL.last;if(ln<LAPS)say(ln===LAPS-1?'DERNIER TOUR':'LAP '+(ln+1),ln===LAPS-1?'FINAL LAP · '+fmt(PL.last):fmt(PL.last),2);announce(`McQueen boucle son tour en ${Math.round(PL.last)} secondes.`);}
   // pose: the body pitches under braking, rolls in corners, and the front wheels turn
-  hero.position.set(PL.x,PL.cy-PL.bump*.5,PL.z);hero.rotation.set(VS.pitch+PL.bump*.35+(PL.air?clamp(-PL.vy*.012,-.05,.16):-Math.atan(PL.slope||0)),PL.h,VS.roll);
+  hero.position.set(PL.x,PL.cy-PL.bump*.25,PL.z);hero.rotation.set(VS.pitch+PL.bump*.1-Math.atan(PL.air?clamp(PL.vy/Math.max(Math.abs(VS.u),5),(PL.slope||0)-(PL.cy-PL.gy+.05)/2.3,(PL.slope||0)+(PL.cy-PL.gy+.05)/2.5):PL.slope||0),PL.h,VS.roll);   /* in the air the body follows its flight path, but never tips its nose or tail into the road below */
   for(const w of hero.wheels)w.rotation.y+=w.userData.dir*f*dt/.33;for(const k of hero.knuckles)k.rotation.y=clamp(delta*1.5+PL.steer*.06,-.5,.5);
   hero.tail.emissiveIntensity=brk?7:1.8;
   const onRoad=!offroad&&dt>0;
