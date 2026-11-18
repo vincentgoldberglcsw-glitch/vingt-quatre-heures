@@ -2018,14 +2018,14 @@ function crackScreen(){let el=$('crack');if(!el){el=document.createElement('div'
   if(el.style.opacity!=='1'){el.style.opacity='1';say('GOBBLE !','A TURKEY HAS CRACKED THE WINDSCREEN',2.6);sfxCrunch(.7);}}
 function clearCrack(){const el=$('crack');if(el)el.style.opacity='0';}
 // the free drive ends where it began: back outside 1611 San Antonio Ave after the whole loop, the car rolls to a stop and the time is shown
-function driveHome(pe){const H0=Z.home;if(!DRIVE||!H0||G.state!=='race'||PL.crash||PL.auto||pe.dist<LEN*.97)return;const ahead=wdiff(H0.s-pe.s);if(ahead<14||ahead>150)return;
+function driveHome(pe){if(!DRIVE)return;const H0=Z.home;if(!H0||G.state!=='race'||PL.crash||PL.auto||pe.dist<LEN*.97)return;const ahead=wdiff(H0.s-pe.s);if(ahead<14||ahead>150)return;
   const lane=-(RW+XW[wrapI(Math.round(H0.s/SEG))])/2,v0=Math.max(8,Math.abs(pe.v)),go=ahead+12,c=Math.min(go/3,30),e=pe.s+go;   // pull up past the driveway, then back into it (the start's reverse-out, run the other way)
   PL.auto={t:0,T:clamp(2*go/v0,2.5,9),ease:'out',hold:.5,rev:false,p:[[pe.s,pe.lat],[pe.s+c,pe.lat],[e-c,lane],[e,lane]],
     next:{t:0,T:6.5,rev:true,fin:true,p:[[e,lane],[e-12,lane-.4],[e-12,H0.lat+5.5],[e-12,H0.lat]]}};
   G.state='finish';G.finT=0;G.stopT=0;sfxCheer();say('HOME','1611 SAN ANTONIO AVE · ROUND THE BAY IN '+fmt(G.raceT),6);}
 // the start of the free drive: the car is in the driveway at 1611, nose to the house, and backs out across the pavement, swinging into the lane facing the right way.
 // PL.auto runs a path in track coordinates (a Bézier over s and lateral), and the player takes over when it ends. driveHome() uses the same thing to bring the car in.
-function homeStart(){const H0=Z.home;if(!DRIVE||!H0)return;const pe=ents.find(e=>e.player),lane=-(RW+XW[wrapI(Math.round(H0.s/SEG))])/2;
+function homeStart(){if(!DRIVE)return;const H0=Z.home;if(!H0)return;const pe=ents.find(e=>e.player),lane=-(RW+XW[wrapI(Math.round(H0.s/SEG))])/2;
   PL.auto={t:0,T:6.5,hold:.4,rev:true,p:[[H0.s,H0.lat],[H0.s,H0.lat+5.5],[H0.s,lane-.4],[H0.s-10,lane]]};autoPlace(0,pe,true);pe.v=0;PL.vx=PL.vz=0;PL.steer=0;G.camH=PL.h;first=true;G.mist=1;}
 function bez(p,u,k){const a=1-u;return a*a*a*p[0][k]+3*a*a*u*p[1][k]+3*a*u*u*p[2][k]+u*u*u*p[3][k];}
 function autoPlace(u,pe,init){const A=PL.auto,s=bez(A.p,u,0),lat=bez(A.p,u,1),u2=Math.min(1,u+.002),u1=u2-.002,ds=bez(A.p,u2,0)-bez(A.p,u1,0),dl=bez(A.p,u2,1)-bez(A.p,u1,1),ns=wrapS(s),i=wrapI(Math.floor(ns/SEG));
