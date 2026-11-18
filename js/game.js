@@ -1226,8 +1226,8 @@ const MODELS={
   p904:{cls:1,name:'Porsche 904 Carrera GTS',year:'1964',desc:'Small, light and curvy, with round wings. Not the fastest, but nimble.',CL:4.09,B:[.40,.47,.51,.51,.47,.41,.37,.37,.37,.31,.12],W:[.80,.88,.93,.95,.94,.92,.93,.95,.94,.86,.62],rb:.26,fb:.3,top:71,grip:.97,acc:.74,twitch:0,cy:1.02,cw:.92,lamp:'round',int:{dash:0xb8201a,panel:0xb8201a,rim:0x8a5a2a,spoke:0xc9cbc8,hub:0x141414}},
   ghibli:{cls:1,name:'Maserati Ghibli',year:'1967',desc:'Front-engined grand tourer: a very long bonnet and a fastback tail. Fast, heavy, likes a straight.',CL:4.59,B:[.40,.48,.53,.55,.53,.48,.45,.43,.41,.37,.20],W:[.84,.90,.93,.94,.94,.93,.93,.93,.92,.88,.72],rb:.09,fb:.07,top:75,grip:.86,acc:.76,twitch:0,cy:1,cw:1,cz:-.55,lamp:'rect',int:{dash:0x1c1c1e,panel:0x3a3a3c,rim:0x8a5a2a,spoke:0xc9cbc8,hub:0x141414}},
   bb:{cls:1,name:'Ferrari 512 BB',year:'1976',desc:'Flat-twelve berlinetta: low wedge, black below the waist. The fastest of the classics.',CL:4.4,B:[.47,.51,.52,.51,.47,.42,.37,.32,.28,.22,.09],W:[.92,.95,.96,.96,.95,.94,.95,.96,.95,.91,.78],rb:.1,fb:.1,top:81,grip:.92,acc:.86,twitch:0,cy:1,cw:1.03,cz:.05,lamp:'rect',int:{dash:0x121212,panel:0x1a1a1a,rim:0x101010,spoke:0xc9cbc8,hub:0x141414}},
-  lp400:{cls:1,name:'Lamborghini Countach LP400',year:'1974',desc:'Periscopio. A flat, sharp wedge with a periscope in the roof. The fastest of the classics, and twitchy with it.',CL:4.14,B:[.42,.46,.46,.43,.39,.35,.32,.28,.22,.145,.05],W:[.95,.98,.99,.99,.98,.96,.95,.95,.93,.88,.76],rb:.12,fb:.06,top:84,grip:.9,acc:.9,twitch:1,cy:.93,cw:1.06,cz:.2,lamp:'rect',wh:'dial',int:{dash:0x121212,panel:0x1a1a1a,rim:0x101010,spoke:0x2a2a2a,hub:0x141414}},
-  f400:{cls:1,name:'Ferrari 400 Superamerica',year:'1962',desc:'Coupé aerodinamico: a long nose with covered lamps and a fastback tail. Smooth, stable and quick.',CL:4.7,B:[.26,.42,.50,.53,.52,.49,.47,.46,.45,.41,.24],W:[.66,.84,.91,.93,.93,.92,.92,.92,.91,.86,.64],rb:.07,fb:.12,top:77,grip:.88,acc:.78,twitch:0,cy:1.01,cw:.94,cz:-.5,cs:1.14,wh:'wire',int:{dash:0x2a1a12,panel:0x3a3a3c,rim:0x8a5a2a,spoke:0xc9cbc8,hub:0x141414}}};
+  lp400:{cls:1,name:'Lamborghini Countach LP400',year:'1974',desc:'Periscopio. A flat, sharp wedge with a periscope in the roof. The fastest of the classics, and twitchy with it.',CL:4.14,B:[.42,.46,.46,.43,.39,.35,.32,.28,.23,.17,.1],W:[.95,.98,.99,.99,.98,.96,.95,.95,.93,.88,.76],rb:.12,fb:.06,top:84,grip:.9,acc:.9,twitch:1,cy:1.12,cw:1.04,cz:.2,lamp:'rect',wh:'dial',road:.85,int:{dash:0x121212,panel:0x1a1a1a,rim:0x101010,spoke:0x2a2a2a,hub:0x141414}},
+  f400:{cls:1,name:'Ferrari 400 Superamerica',year:'1962',desc:'Coupé aerodinamico: a long nose with covered lamps and a fastback tail. Smooth, stable and quick.',CL:4.7,B:[.2,.46,.56,.60,.60,.58,.57,.56,.54,.48,.30],W:[.66,.84,.91,.93,.93,.92,.92,.92,.91,.86,.64],rb:.07,fb:.12,top:77,grip:.88,acc:.78,twitch:0,cy:1.45,cw:.9,cz:-.55,cs:1.3,wh:'wire',road:.62,int:{dash:0x2a1a12,panel:0x3a3a3c,rim:0x8a5a2a,spoke:0xc9cbc8,hub:0x141414}}};
 buildTables();for(const k in MODELS)MODELS[k].dyn=makeDyn(k,MODELS[k]);   // tyre and engine tables, and each car's weights, gearing and aerodynamics (js/sim/vehicle.js)
 const RACERS=['o','k','lh','f512','gt40'],CLASSICS=['m1','p904','ghibli','bb','lp400','f400'],ZF=2.2,WZ=[1.25,-1.3];let MKEYS=RACERS;
 function arch(z){for(const zw of WZ){const d=z-zw;if(Math.abs(d)<.41)return .33+Math.sqrt(.41*.41-d*d);}return 0;}
@@ -1300,8 +1300,8 @@ function livery(o,M,res){const ky=4.4/M.CL;
     for(const[x,y]of[[112,350],[400,350]]){g.fillStyle='#b9b6aa';g.beginPath();g.arc(x,y,9,0,7);g.fill();g.strokeStyle='#33352f';g.lineWidth=2;g.stroke();g.beginPath();g.moveTo(x-6,y);g.lineTo(x+6,y);g.stroke();}
     g.fillStyle='#c9c6b8';for(const[x,y]of[[170,300],[342,300],[60,326],[452,326],[170,700],[342,700],[30,700],[482,700]]){g.beginPath();g.arc(x,y,3.2,0,7);g.fill();}
     const stick=(x,y,t,bg,fg,ww=44)=>{g.save();g.translate(x,y);g.rotate(Math.PI);g.fillStyle=bg;g.fillRect(-ww/2,-8,ww,16);g.fillStyle=fg;g.font='900 11px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(t,0,1);g.restore();};
-    stick(52,250,'HUILES','#f2ead2','#a3301f');stick(460,250,'PNEUS','#e3b63a','#111');stick(44,292,'BOUGIES','#1f4f8a','#f2ead2',50);stick(468,292,'FREINS','#f2ead2','#111');
-    g.fillStyle='#0e0f10';for(let y=792;y<980;y+=11){g.fillRect(168,y,74,5);g.fillRect(270,y,74,5);}
+    if(!M.road){stick(52,250,'HUILES','#f2ead2','#a3301f');stick(460,250,'PNEUS','#e3b63a','#111');stick(44,292,'BOUGIES','#1f4f8a','#f2ead2',50);stick(468,292,'FREINS','#f2ead2','#111');}
+    g.fillStyle='#0e0f10';if(!M.road)for(let y=792;y<980;y+=11){g.fillRect(168,y,74,5);g.fillRect(270,y,74,5);}
     for(const x of[60,452]){for(let y=742;y<800;y+=9)g.fillRect(x-22,y,44,4);}
     liveryLines(g,w,h,'rgba(18,26,34,.6)',1.6);g.restore();
     for(const x of[0,1]){const gr=g.createLinearGradient(x?w:0,0,x?w-50:50,0);gr.addColorStop(0,'rgba(60,52,40,.55)');gr.addColorStop(1,'rgba(60,52,40,0)');g.fillStyle=gr;g.fillRect(x?w-50:0,0,50,h);}
@@ -1309,7 +1309,7 @@ function livery(o,M,res){const ky=4.4/M.CL;
     for(let i=0;i<5200;i++){g.fillStyle=`rgba(64,54,40,${Math.random()*.11})`;g.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*4,2+Math.random()*16);}
   });
   const bump=canvas(512,1024,(g,w,h)=>{g.fillStyle='#808080';g.fillRect(0,0,w,h);g.scale(1,ky);liveryLines(g,w,h,'#101010',3);g.fillStyle='#202020';g.beginPath();g.ellipse(256,34,92,10,0,0,7);g.fill();
-    for(let y=792;y<980;y+=11){g.fillRect(168,y,74,5);g.fillRect(270,y,74,5);}g.fillStyle='#c8c8c8';for(const x of[92,420]){g.beginPath();g.ellipse(x,150,34,58,0,0,7);g.fill();}},false);
+    if(!M.road)for(let y=792;y<980;y+=11){g.fillRect(168,y,74,5);g.fillRect(270,y,74,5);}g.fillStyle='#c8c8c8';for(const x of[92,420]){g.beginPath();g.ellipse(x,150,34,58,0,0,7);g.fill();}},false);
   const emis=canvas(256,512,(g,w,h)=>{g.fillStyle='#000';g.fillRect(0,0,w,h);g.scale(1,ky);g.fillStyle='#fff';
     for(const[x,y,r]of(M.lamp==='rect'?[[42,85,11],[214,85,11],[118,15,6],[138,15,6]]:M.lamp==='round'?[[44,46,10],[44,75,10],[212,46,10],[212,75,10]]:[[46,64,7.5],[46,86,7.5],[210,64,7.5],[210,86,7.5]])){g.beginPath();g.arc(x,y,r,0,7);g.fill();}});
   return new THREE.MeshPhysicalMaterial({map,bumpMap:bump,bumpScale:2.5,emissiveMap:emis,emissive:0xffe6b0,emissiveIntensity:5,roughness:.34,metalness:.05,clearcoat:.8,clearcoatRoughness:.2,side:THREE.DoubleSide});
@@ -1351,13 +1351,13 @@ function makeCar(o){
   const can=add(new THREE.Mesh(CANOPY,new THREE.MeshPhysicalMaterial({map:canopyTex(o,o.res||1),roughness:.14,metalness:.1,clearcoat:1,clearcoatRoughness:.05})),0,0,0);
   if(M.cy){can.scale.y=M.cy;can.position.y=CYB*(1-M.cy);}if(M.cw)can.scale.x=M.cw;if(M.cz)can.position.z=M.cz;if(M.cs)can.scale.z=M.cs;
   if(o.model==='lp400'){   // Countach: periscope channel in the roof, airboxes behind the side windows, NACA ducts in the flanks, a thin black nose strip
-    add(new THREE.Mesh(new THREE.BoxGeometry(.4,.03,.55),dark),0,.87,-.3,false);
+    add(new THREE.Mesh(new THREE.BoxGeometry(.4,.03,.55),dark),0,.965,-.3,false);
     const naca=new THREE.ShapeGeometry((()=>{const s=new THREE.Shape();s.moveTo(0,.03);s.lineTo(.55,-.02);s.lineTo(.55,.1);s.closePath();return s;})());
     for(const sd of[-1,1]){const ab=add(new THREE.Mesh(new THREE.BoxGeometry(.2,.17,.6),paint),sd*.74,.64,-.88);add(new THREE.Mesh(new THREE.BoxGeometry(.16,.11,.02),dark),sd*.74,.65,-.575,false);
       add(new THREE.Mesh(naca,dark),sd*.965,.4,-.38,false).rotation.y=Math.PI/2;}
     add(new THREE.Mesh(new THREE.BoxGeometry(1.42,.045,.06),dark),0,.165,ZF);}
   if(o.model==='f400'){   // Superamerica: bonnet scoop, oval egg-crate grille with fog lamps, chrome bumpers, vents behind the front wheels, twin round tail lamps
-    add(new THREE.Mesh(new THREE.BoxGeometry(.34,.06,.5),paint),0,.6,1.42).rotation.x=.15;add(new THREE.Mesh(new THREE.BoxGeometry(.28,.035,.02),dark),0,.6,1.67,false);
+    add(new THREE.Mesh(new THREE.BoxGeometry(.34,.06,.5),paint),0,.71,1.42).rotation.x=.15;add(new THREE.Mesh(new THREE.BoxGeometry(.28,.035,.02),dark),0,.71,1.67,false);
     const gr=add(new THREE.Mesh(cyl(.25,.25,.05,28),dark),0,.255,ZF-.01,false);gr.rotation.x=Math.PI/2;gr.scale.z=.42;
     const rg=add(new THREE.Mesh(new THREE.TorusGeometry(.25,.013,6,32),chrome),0,.255,ZF+.016,false);rg.scale.y=.42;
     for(const y of[-.04,0,.04])add(new THREE.Mesh(new THREE.BoxGeometry(.44,.006,.01),chrome),0,.255+y,ZF+.016,false);
@@ -1366,7 +1366,7 @@ function makeCar(o){
     for(const sd of[-1,1]){add(new THREE.Mesh(new THREE.SphereGeometry(.04,12,8),fogM),sd*.16,.25,ZF+.025,false);
       add(new THREE.Mesh(new THREE.BoxGeometry(.42,.035,.06),chrome),sd*.47,.19,ZF-.07,false).rotation.y=sd*.3;
       add(new THREE.Mesh(new THREE.BoxGeometry(.6,.035,.06),chrome),sd*.32,.22,zR+.03,false).rotation.y=-sd*.22;
-      add(new THREE.Mesh(new THREE.BoxGeometry(.06,.09,.24),dark),sd*.89,.4,.72,false);for(const y of[-.025,0,.025])add(new THREE.Mesh(new THREE.BoxGeometry(.065,.008,.24),chrome),sd*.89,.4+y,.72,false);
+      add(new THREE.Mesh(new THREE.BoxGeometry(.06,.09,.24),dark),sd*.9,.46,.72,false);for(const y of[-.025,0,.025])add(new THREE.Mesh(new THREE.BoxGeometry(.065,.008,.24),chrome),sd*.9,.46+y,.72,false);
       const tl2=add(new THREE.Mesh(cyl(.045,.045,.03,14),std({color:0x5a0d08,emissive:0xff2a12,emissiveIntensity:1.8})),sd*.44,.14+M.B[0]*.62,zR+.02,false);tl2.rotation.x=Math.PI/2;}}
   if(o.model==='f512')for(const sd of[-1,1]){   // the Ferrari's tall stalk mirrors
     const stk=add(new THREE.Mesh(new THREE.BoxGeometry(.05,.36,.07),paintOf(o.base)),sd*.56,.9,.86);stk.rotation.x=-.25;const mh=add(new THREE.Mesh(new THREE.SphereGeometry(.1,14,10),paintOf(o.base)),sd*.56,1.1,.8);mh.scale.set(1,.72,.6);}
@@ -1384,7 +1384,7 @@ function makeCar(o){
     if(o.model==='lh'){const f=add(new THREE.Mesh(FING,paint),sd*(tw-.1)-.012,tailY-.04,zR+1.05);f.rotation.y=Math.PI/2;f.scale.set(1.05,1.05,1);}
     if(o.model==='o')add(new THREE.Mesh(new THREE.BoxGeometry(.5,.02,.2),acc),sd*.5,tailY+.03,zR+.08).rotation.x=.35;
     if(!M.cls){const rd=decal(o.rt,.4,.4);add(rd,sd*.985,.36,-.12,false);rd.rotation.order='YXZ';rd.rotation.set(-.12,sd*Math.PI/2,0);}
-    [[.5,.3,0],[.5,.2,1],[-.62,.3,2]].forEach(([z,y,k])=>{const d=decal(DEC[k],.24,.08);add(d,sd*.99,y,z,false);d.rotation.order='YXZ';d.rotation.set(-.1,sd*Math.PI/2,0);});
+    if(!M.road)[[.5,.3,0],[.5,.2,1],[-.62,.3,2]].forEach(([z,y,k])=>{const d=decal(DEC[k],.24,.08);add(d,sd*.99,y,z,false);d.rotation.order='YXZ';d.rotation.set(-.1,sd*Math.PI/2,0);});
     const tl=add(new THREE.Mesh(cyl(.055,.055,.03,14),tailM),sd*tw*.42,.14+M.B[0]*.62,zR-.005,false);tl.rotation.x=Math.PI/2;
     const ex=add(new THREE.Mesh(new THREE.CylinderGeometry(.075,.04,.42,14,1,true),std({color:0x6a665c,metalness:.85,roughness:.35,side:THREE.DoubleSide})),sd*.2,.24,zR-.1);ex.rotation.x=-Math.PI/2+.12;}
   if(o.model==='k')add(new THREE.Mesh(new THREE.BoxGeometry(1.5,.02,.2),paint),0,tailY+.045,zR+.1).rotation.x=.25;
@@ -1397,7 +1397,7 @@ function makeCar(o){
   const pool=new THREE.Mesh(new THREE.PlaneGeometry(9,22),new THREE.MeshBasicMaterial({map:glowTex,color:0xffe2a8,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0}));pool.rotation.x=-Math.PI/2;pool.position.set(0,.06,ZF+9);car.add(pool);car.pool=pool.material;
   car.wheels=[];car.knuckles=[];car.corners=[];car.tail=tailM;
   WZ.forEach((z,k)=>{for(const sd of[-1,1]){const wd=k?.42:.32,kn=new THREE.Group(),holder=new THREE.Group();kn.position.set(sd*(.965-wd/2),.33,z);holder.rotation.z=-sd*Math.PI/2;
-    const w=wheel(k,o.rim==='gold'?rimGold:rimSilver,M.wh);holder.add(w);kn.add(holder);car.add(kn);w.userData.dir=sd;car.wheels.push(w);car.corners.push(kn);if(!k)car.knuckles.push(kn);}});
+    const w=wheel(k,o.rim==='gold'?rimGold:rimSilver,M.wh);if(M.road){w.children.pop();w.scale.y=M.road;}holder.add(w);kn.add(holder);car.add(kn);w.userData.dir=sd;car.wheels.push(w);car.corners.push(kn);if(!k)car.knuckles.push(kn);}});
   car.bodyMat=bodyMat;car.canopy=can;car.M=M;car.o=o;scene.add(car);return car;
 }
 // the colours the player can choose for their own car
