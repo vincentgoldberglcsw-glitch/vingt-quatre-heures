@@ -810,7 +810,7 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
     ids.forEach((i,n)=>{const g=new THREE.Group(),A=(geo,mm,x,y,z)=>{const o=new THREE.Mesh(geo,mm);o.position.set(x,y,z);o.castShadow=true;g.add(o);return o;};
       A(cyl(.12,.16,9.6,8),wd,0,4.8,0);A(new THREE.BoxGeometry(2.7,.14,.14),wd,0,8.6,0);A(new THREE.BoxGeometry(1.9,.12,.12),wd,0,7.8,0);
       off(i,-(10.7+XW[i]),0,g.position);g.rotation.y=yaw(i);scene.add(g);g.updateMatrixWorld(true);
-      const nc=[3,1,4,2,0,3,2][n%7];for(let c=0;c<nc;c++){const x=(c-(nc-1)/2)*.62+(nc===1?.5:0),f=(n+c)%2?1:-1;crow(new THREE.Vector3(x,8.67,0).applyMatrix4(g.matrixWorld),yaw(i)+(f>0?0:Math.PI)+R(-.4,.4));}});
+      const nc=[4,2,5,3,1,4,3][n%7];for(let c=0;c<nc;c++){const x=(c-(nc-1)/2)*.62+(nc===1?.5:0),f=(n+c)%2?1:-1;crow(new THREE.Vector3(x,8.67,0).applyMatrix4(g.matrixWorld),yaw(i)+(f>0?0:Math.PI)+R(-.4,.4));}});
     for(let k=0;k+1<ids.length;k++)for(const s of[-1.2,1.2]){const a=off(ids[k],-(10.7+XW[ids[k]]),8.68),b=off(ids[k+1],-(10.7+XW[ids[k+1]]),8.68),mid=a.clone().lerp(b,.5);mid.y-=.5;
       const ry=yaw(ids[k]),sh=new THREE.Vector3(Math.cos(ry)*s,0,-Math.sin(ry)*s),cu=new THREE.QuadraticBezierCurve3(a,mid,b);const w=new THREE.Mesh(new THREE.TubeGeometry(cu,8,.025,3,false),wire);w.position.copy(sh);scene.add(w);
       if((k*7+(s>0?3:0))%5<2){const nw=1+(k%3);for(let q=0;q<nw;q++)crow(cu.getPoint(.25+q*.18+((k*13)%7)*.02).add(sh).setY(cu.getPoint(.25+q*.18).y-.05),ry+(s>0?1:-1)*Math.PI/2+R(-.3,.3));}}}   // and a few on the wires, facing the street or away from it
@@ -1751,7 +1751,7 @@ function announcerTick(rdt,pe){if(G.state!=='race'||G.paused)return;ANN.idle-=rd
   if(ANN.idle<=0)announce(FILL[Math.random()*FILL.length|0]);}
 
 /* ================= GAME ================= */
-const G={state:'title',t:0,raceT:0,RACE:DRIVE?1e9:+(QS.get('len')||360),tun:0,brg:0,slow:1,slowT:0,cam:+(QS.get('cam')||0),model:QS.get('model')||'k',weather:QS.get('wx')||'overcast',paused:false,doomT:30,shake:0,msgT:0,tvS:null,tvSide:1,stopT:0,camH:0,finT:0,sens:clamp(+(localStorage.getItem('vqh-sens')||.5),.1,1),aids:localStorage.getItem('vqh-aids')!=='0',pad:false,liv:+(QS.get('liv')||0),titleClose:0};
+const G={state:'title',t:0,raceT:0,RACE:DRIVE?1e9:+(QS.get('len')||360),tun:0,brg:0,slow:1,slowT:0,cam:+(QS.get('cam')||0),model:QS.get('model')||'k',weather:QS.get('wx')||(DRIVE?['sun','sun','overcast','overcast','rain','rain','hail','snow'][Math.random()*8|0]:'overcast'),paused:false,doomT:30,shake:0,msgT:0,tvS:null,tvSide:1,stopT:0,camH:0,finT:0,sens:clamp(+(localStorage.getItem('vqh-sens')||.5),.1,1),aids:localStorage.getItem('vqh-aids')!=='0',pad:false,liv:+(QS.get('liv')||0),titleClose:0};
 const PL={x:0,z:0,h:0,vx:0,vz:0,idx:0,steer:0,delta:0,yawR:0,rpm:1200,gear:1,thr:0,brk:0,slip:0,under:0,warn:false,crash:null,safe:0,lapStart:0,last:0,best:0,lapN:0,hailT:0,wasThr:0};
 const keys={};
 const VS=createVehicle(),VI=createInput(),VE=createEnv(),OFF_MU=.55;   // the player's car: state, pedals and wheel, and the road under each tyre (see js/sim/vehicle.js)
@@ -2011,7 +2011,11 @@ function sfxCough(){if(!AC)return;let t=AC.currentTime+.02;const n=2+(Math.rando
 const JZ={next:0,beat:0,say:R(16,28),bus:null},JCH=[[38,[62,65,69,72]],[43,[59,62,65,69]],[36,[60,64,67,71]],[45,[61,64,67,70]]],mf=m=>440*Math.pow(2,(m-69)/12);
 const RADIO=["You're listening to Radio Alameda. Smooth jazz for the East Bay.","That was the quartet, recorded live. Stay cool out there.","It's a foggy one on the bay tonight. Drive easy.","Radio Alameda. Jazz, all night long.","Coming up, more music, and no news whatsoever."];
 function radioSay(){try{if(!window.speechSynthesis||speechSynthesis.speaking||G.paused)return;const u=new SpeechSynthesisUtterance(RADIO[Math.random()*RADIO.length|0]);u.rate=.78;u.pitch=.5;u.volume=.85;const v=speechSynthesis.getVoices().find(v=>/^en/i.test(v.lang));if(v){u.voice=v;u.lang=v.lang;}speechSynthesis.speak(u);}catch(e){}}
-function jazzTick(rdt,on){if(!AC)return;if(!JZ.bus){const g=AC.createGain(),f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=1100;f.Q.value=.6;g.gain.value=0;g.connect(f);f.connect(master);JZ.bus=g;}
+// The car radio in Alameda is the real thing now: KCSM, live from San Mateo (jazz). It plays for the whole drive, from backing out of the driveway; paused with the game.
+const KCSM='https://ice5.securenetsystems.net/KCSM';let radioEl=null,radioT=0;
+function jazzTick(rdt,on){if(!on){if(radioEl&&!radioEl.paused)radioEl.pause();return;}if(!radioEl){radioEl=new Audio();radioEl.preload='none';}radioEl.volume=G.tun>.5?.35:.55;
+  if(radioEl.paused){radioT-=rdt;if(radioT<=0){radioT=5;radioEl.src=KCSM+'?t='+Date.now();radioEl.play().catch(()=>{});}}}
+function jazzSynth(rdt,on){if(!AC)return;if(!JZ.bus){const g=AC.createGain(),f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=1100;f.Q.value=.6;g.gain.value=0;g.connect(f);f.connect(master);JZ.bus=g;}
   JZ.bus.gain.setTargetAtTime(on?(G.cam===1?1.15:.85):0,AC.currentTime,.6);if(!on)return;
   const B=60/126;if(JZ.next<AC.currentTime)JZ.next=AC.currentTime+.05;
   while(JZ.next<AC.currentTime+.3){const t=JZ.next,b=JZ.beat++,bar=Math.floor(b/4)%4,[root,ch]=JCH[bar],k=b%4,bn=[root,ch[1]-24,ch[2]-24,JCH[(bar+1)%4][0]+1][k];
@@ -2035,8 +2039,8 @@ let PAPERS=null;
 function papersTick(rdt){const inT=zoneArr[PL.idx]===2;if(!PAPERS){if(!inT)return;
     const tx=canvas(256,180,(g,w,h)=>{g.fillStyle='#e9e4d4';g.fillRect(0,0,w,h);g.fillStyle='#1c1c1c';g.font='900 26px Georgia,serif';g.textAlign='center';g.fillText('THE ISLAND TIMES',w/2,28);g.fillRect(10,36,w-20,2);
       g.font='900 19px Georgia,serif';g.fillText('BRIDGE QUAKE: LANES LOST',w/2,60,w-20);g.fillStyle='#8a8a84';g.fillRect(14,72,100,60);for(let c=0;c<3;c++)for(let y=72+(c?0:68);y<h-8;y+=7)g.fillRect(c?122+(c-1)*66:14,y,c?58:100,3);});
-    const mm=std({map:tx,side:THREE.DoubleSide,roughness:.9,emissiveMap:tx,emissive:0xfff2d8,emissiveIntensity:.35}),geo=new THREE.PlaneGeometry(.95,.66,3,1);PAPERS=[];
-    for(let k=0;k<40;k++){const m=new THREE.Mesh(geo,mm);m.castShadow=false;m.visible=false;scene.add(m);PAPERS.push({m,s:0,lat:0,y:0,vs:0,vl:0,vy:0,sp:new THREE.Vector3(),live:false});}}
+    const mm=std({map:tx,side:THREE.DoubleSide,roughness:.9,emissiveMap:tx,emissive:0xfff2d8,emissiveIntensity:.35}),geo=new THREE.PlaneGeometry(.95,.66,3,1);PAPERS=[];   // fewer sheets than before
+    for(let k=0;k<14;k++){const m=new THREE.Mesh(geo,mm);m.castShadow=false;m.visible=false;scene.add(m);PAPERS.push({m,s:0,lat:0,y:0,vs:0,vl:0,vy:0,sp:new THREE.Vector3(),live:false});}}
   const pe=ents.find(e=>e.player),v=Math.hypot(PL.vx,PL.vz);
   for(const p of PAPERS){if(!inT){p.live=false;p.m.visible=false;continue;}
     const ds=wdiff(p.s-pe.s);if(!p.live||ds<-40||ds>170){const s=wrapS(pe.s+(p.live?R(90,165):R(-10,150))),i=wrapI(Math.floor(s/SEG));if(zoneArr[i]!==2){p.live=false;p.m.visible=false;continue;}
@@ -2109,7 +2113,8 @@ let cawT=0;
 function crowsTick(rdt){if(!CROWS.length)return;cawT-=rdt;const v=Math.hypot(PL.vx,PL.vz),tm=tmNow();
   for(const c of CROWS){const g=c.g,dx=c.h.x-PL.x,dz=c.h.z-PL.z,d2=dx*dx+dz*dz;
     if(c.st===0){if(d2>180*180)continue;c.t-=rdt;if(c.t<0){c.t=R(.5,2.8);c.hy=Math.random()<.3?0:R(-1,1);}c.hd.rotation.y+=(c.hy-c.hd.rotation.y)*clamp(rdt*9,0,1);c.hd.rotation.x=Math.max(0,Math.sin(tm*1.3+c.h.x))**8*.5;   // a look round, now and then a peck
-      if(d2<28*28&&v>8){if(!c.dl)c.dl=R(.05,.9);c.dl-=rdt;if(c.dl<=0){const d=Math.sqrt(d2)||1;c.st=1;c.t=0;c.dl=0;c.v.set(dx/d*R(3,6)+R(-2,2),R(3.5,5.5),dz/d*R(3,6)+R(-2,2));if(cawT<=0){sfxCaw();cawT=R(1,2.2);}}}}
+      if(d2<140*140&&Math.random()<rdt*.015){c.st=1;c.t=0;c.v.set(R(-5,5),R(2.5,4.5),R(-5,5));if(cawT<=0&&d2<60*60){sfxCaw();cawT=R(1,2.2);}}   // now and then one just takes off and flaps about
+      else if(d2<40*40&&v>8){if(!c.dl)c.dl=R(.05,.9);c.dl-=rdt;if(c.dl<=0){const d=Math.sqrt(d2)||1;c.st=1;c.t=0;c.dl=0;c.v.set(dx/d*R(3,6)+R(-2,2),R(3.5,5.5),dz/d*R(3,6)+R(-2,2));if(cawT<=0){sfxCaw();cawT=R(1,2.2);}}}}
     else if(c.st===1){c.t+=rdt;c.v.y+=(1.2-c.v.y)*clamp(rdt*.6,0,1);g.position.addScaledVector(c.v,rdt);g.rotation.y=Math.atan2(c.v.x,c.v.z);g.rotation.x=-.25;
       const fl=Math.sin(c.t*15+c.h.z);for(let k=0;k<2;k++)c.wings[k].rotation.z=fl*.85;if(c.t>9){c.st=2;g.visible=false;}}
     else if(d2>170*170){c.st=0;g.visible=true;g.position.copy(c.h);g.rotation.set(0,c.ry,0);for(const w of c.wings)w.rotation.z=-1.35;}}}   // home again, out of sight
@@ -2133,25 +2138,31 @@ function birdsTick(rdt){const B=BIRDS,pe=ents.find(e=>e.player);if(!pe)return;
 // stops, turns its back to the car, raises its tail and sprays a big yellow-green mist, then scurries on across or back. Not solid; no tint over the view.
 const SKUNK={l:[],cd:4,V:new THREE.Vector3(),W:new THREE.Vector3()};
 function skunksTick(rdt){const K=SKUNK,pe=ents.find(e=>e.player);if(!pe)return;
-  if(!K.l.length){const blk=std({color:0x121214,roughness:1}),wht=std({color:0xf4f4ee,roughness:1});
-    const mk=sc=>{const g=new THREE.Group(),b=new THREE.Group();g.add(b);
-      const bd=new THREE.Mesh(new THREE.SphereGeometry(1,10,8),blk);bd.scale.set(.2,.17,.34);bd.position.y=.24;b.add(bd);
-      for(const x of[-.06,.06]){const st=new THREE.Mesh(new THREE.BoxGeometry(.05,.035,.6),wht);st.position.set(x,.4,-.02);b.add(st);}   // the two white stripes down the back
-      const hd=new THREE.Mesh(new THREE.SphereGeometry(.11,8,6),blk);hd.scale.set(1,.9,1.3);hd.position.set(0,.24,.36);b.add(hd);
-      const bz=new THREE.Mesh(new THREE.BoxGeometry(.03,.02,.16),wht);bz.position.set(0,.33,.38);b.add(bz);
-      for(const[x,z]of[[-.11,.2],[.11,.2],[-.11,-.2],[.11,-.2]]){const lg=new THREE.Mesh(new THREE.BoxGeometry(.06,.14,.06),blk);lg.position.set(x,.07,z);b.add(lg);}
-      const tp=new THREE.Group();tp.position.set(0,.3,-.3);b.add(tp);const tl=new THREE.Mesh(new THREE.SphereGeometry(1,8,6),blk);tl.scale.set(.16,.15,.36);tl.position.z=-.3;tp.add(tl);
-      const tw=new THREE.Mesh(new THREE.SphereGeometry(1,8,6),wht);tw.scale.set(.1,.08,.3);tw.position.set(0,.11,-.3);tp.add(tw);
-      g.scale.setScalar(sc);g.visible=false;scene.add(g);return{g,b,tp,st:0,t:0,s:0,lat:0,side:1,tg:0,ry:0,mv:0,sp:0,ma:null,n:0,baby:sc<1};};
-    for(let n=0;n<10;n++)K.l.push(mk(1.5));for(let n=0;n<24;n++)K.l.push(mk(.85));}
+  if(!K.l.length){const blk=std({color:0x121214,roughness:1}),wht=std({color:0xf4f4ee,roughness:1}),gry=std({color:0x9a968c,roughness:1}),pf=std({color:0xece6da,roughness:1}),pk=std({color:0xd9a0a0,roughness:.8}),rg=std({color:0x6e6a62,roughness:1}),rh=std({color:0x9a958a,roughness:1});
+    // kind 0 a skunk, 1 a possum (grizzled grey, white face, long bare pink tail), 2 a raccoon (grey, black mask, ringed bushy tail)
+    const mk=(sc,kd)=>{const g=new THREE.Group(),b=new THREE.Group();g.add(b);const S=(r,mm,sx,sy,sz,x,y,z,p=b)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,8,6),mm);o.scale.set(sx,sy,sz);o.position.set(x,y,z);p.add(o);return o;};
+      const bm=[blk,gry,rg][kd],hm=[blk,pf,rh][kd];
+      S(1,bm,kd===2?.22:.2,kd===2?.19:.17,kd===1?.38:.34,0,.24,0);
+      if(kd===0){for(const x of[-.06,.06]){const st=new THREE.Mesh(new THREE.BoxGeometry(.05,.035,.6),wht);st.position.set(x,.4,-.02);b.add(st);}const bz=new THREE.Mesh(new THREE.BoxGeometry(.03,.02,.16),wht);bz.position.set(0,.33,.38);b.add(bz);}   // the two white stripes down the back
+      S(.11,hm,1,.9,kd===1?1.7:1.3,0,.24,kd===1?.4:.36);
+      if(kd===1){S(.03,pk,1,1,1,0,.23,.58);for(const x of[-.06,.06])S(.035,blk,1,1,.4,x,.34,.36);}   // pink nose, dark round ears
+      if(kd===2){const mask=new THREE.Mesh(new THREE.BoxGeometry(.23,.05,.1),blk);mask.position.set(0,.27,.44);b.add(mask);S(.03,blk,1,1,1,0,.22,.5);for(const x of[-.07,.07])S(.04,rg,1,1.2,.5,x,.35,.34);}
+      for(const[x,z]of[[-.11,.2],[.11,.2],[-.11,-.2],[.11,-.2]]){const lg=new THREE.Mesh(new THREE.BoxGeometry(.06,.14,.06),kd===1?pf:blk);lg.position.set(x,.07,z);b.add(lg);}
+      const tp=new THREE.Group();tp.position.set(0,.3,-.3);b.add(tp);
+      if(kd===0){S(1,blk,.16,.15,.36,0,0,-.3,tp);S(1,wht,.1,.08,.3,0,.11,-.3,tp);}
+      else if(kd===1){const tl=new THREE.Mesh(cyl(.012,.035,.55,6),pk);tl.rotation.x=Math.PI/2;tl.position.z=-.28;tp.add(tl);}
+      else for(let q=0;q<5;q++)S(.075,q%2?blk:rh,1,1,1.1,0,-.02*q,-.08-q*.1,tp);
+      g.scale.setScalar(sc);g.visible=false;scene.add(g);return{g,b,tp,kd,st:0,t:0,s:0,lat:0,side:1,tg:0,ry:0,mv:0,sp:0,ma:null,n:0,baby:sc<1};};
+    for(let kd=0;kd<3;kd++){for(let n=0;n<6;n++)K.l.push(mk(1.5,kd));for(let n=0;n<10;n++)K.l.push(mk(.85,kd));}}
   const town=zoneArr[PL.idx]===1&&G.state==='race',v=Math.abs(pe.v),act=K.l.filter(o=>o.st&&!o.baby).length;
-  if(town){K.cd-=rdt;if(K.cd<=0){K.cd=R(2,4.5);const k=K.l.find(o=>!o.st&&!o.baby);
-    if(k&&act<10){const s=pe.s+Math.max(42,v*3.4)+R(0,30),i=wrapI(Math.floor(s/SEG)),w=RW+XW[i];k.st=1;k.t=0;k.sp=0;k.s=s;k.side=Math.random()<.5?-1:1;k.mv=R(2.4,3.4);const fam=Math.random()<.55;k.cross=fam?Math.random()<.8:Math.random()<.55;   // only some of them spray; the rest (most families) just trot across
-      if(k.cross){k.mv=R(1.8,2.6);k.lat=Math.random()<.3?k.side*R(1,w-1.5):k.side*(w+1.6);k.tg=-k.side*(w+9);}
+  if(town){K.cd-=rdt;if(K.cd<=0){K.cd=R(2,4.5);const kd=Math.random()*3|0,k=K.l.find(o=>!o.st&&!o.baby&&o.kd===kd);
+    if(k&&act<10){const s=pe.s+Math.max(42,v*3.4)+R(0,30),i=wrapI(Math.floor(s/SEG)),w=RW+XW[i];k.st=1;k.t=0;k.sp=0;k.s=s;k.side=Math.random()<.5?-1:1;k.mv=R(2.4,3.4);const grp=Math.random(),fam=grp>.65,pair=!fam&&grp>.35;   // alone, a pair, or a family
+      k.cross=kd?true:fam?Math.random()<.8:Math.random()<.55;   // only skunks spray, and only some of them; the rest just trot across
+      if(k.cross){k.mv=kd===1?R(1.3,1.9):R(1.8,2.6);k.lat=Math.random()<.3?k.side*R(1,w-1.5):k.side*(w+1.6);k.tg=-k.side*(w+9);}
       else if(Math.random()<.15){k.lat=k.side*R(1,w-1.5);k.tg=-k.side*R(0,w-2);}   // already out in the road, crossing
       else{k.lat=k.side*(w+1.6);k.tg=k.side*(w-R(2,5));}
-      k.g.visible=true;k.tp.rotation.x=.55;
-      if(fam){const nb=2+(Math.random()*3|0);let c=0;for(const b of K.l){if(c>=nb)break;if(b.baby&&!b.st){b.st=1;b.ma=k;b.n=c++;b.t=R(0,1);b.s=k.s+R(-.35,.35);b.lat=k.lat+k.side*(b.n+1)*.55;b.g.visible=true;b.tp.rotation.x=.7;}}}}}}
+      const up=kd===0?.55:kd===1?.1:.2;k.g.visible=true;k.tp.rotation.x=up;
+      if(fam||pair){const nb=pair?1:2+(Math.random()*3|0);let c=0;for(const b of K.l){if(c>=nb)break;if(b.baby&&!b.st&&b.kd===kd){b.st=1;b.ma=k;b.n=c++;b.t=R(0,1);b.s=k.s+R(-.35,.35);b.lat=k.lat+k.side*(b.n+1)*.55;b.g.scale.setScalar(pair?1.45:.85);b.g.visible=true;b.tp.rotation.x=up+.15;}}}}}}
   for(const k of K.l){if(!k.st)continue;k.t+=rdt;
     if(k.baby){const m=k.ma;if(!m||!m.st){k.st=0;k.ma=null;k.g.visible=false;continue;}   // babies trot along behind their mother and hide behind her while she sprays
       const dir=Math.sign(m.tg-m.lat)||-m.side,want=m.lat-dir*(k.n+1)*.55,d=want-k.lat;k.lat+=Math.sign(d)*Math.min(Math.abs(d),(m.mv+1)*rdt);k.s+=(m.s+(k.n-1)*.25-k.s)*clamp(rdt*3,0,1);
@@ -2206,18 +2217,19 @@ function pennyTick(rdt){const P_=PENNY,pe=ents.find(e=>e.player);if(!pe||!DRIVE)
     else if(k.bt<=0&&k.v>5.5)k.v=Math.max(R(3.5,5.5),k.v-rdt*3);}}
 function tumbleTick(rdt){const T_=TUMB,pe=ents.find(e=>e.player);if(!pe)return;
   if(!T_.l.length){const mats=[0x9c7a48,0x86663a,0xb08c58].map(c=>new THREE.MeshBasicMaterial({color:c,wireframe:true}));
-    for(let k=0;k<10;k++){const g=new THREE.Group(),r=R(.55,.95);for(let q=0;q<3;q++){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r*R(.7,1),1),mats[q]);m.rotation.set(R(0,6),R(0,6),R(0,6));g.add(m);}
+    for(let k=0;k<14;k++){const g=new THREE.Group(),r=k%3===0?R(1.1,1.7):k%3===1?R(.6,1):R(.3,.5);   // small, middling and big ones
+     for(let q=0;q<3;q++){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r*R(.7,1),1),mats[q]);m.rotation.set(R(0,6),R(0,6),R(0,6));g.add(m);}
       const core=new THREE.Mesh(new THREE.IcosahedronGeometry(r*.45,0),new THREE.MeshStandardMaterial({color:0x6e5530,roughness:1,transparent:true,opacity:.55}));g.add(core);
       g.visible=false;scene.add(g);T_.l.push({g,r,st:0,s:0,lat:0,dir:1,v:0,y:0,vy:0,ds:0});}}
   const i=PL.idx,m_=x=>Math.round(x/SEG),on=G.state==='race'&&(zoneArr[i]===1||(DRIVE&&Z.toll&&i>Z.toll-m_(400)&&i<Z.toll+m_(320)));
   if(on){T_.cd-=rdt;if(T_.cd<=0){T_.cd=R(1.5,4);const k=T_.l.find(o=>!o.st);
-    if(k){const v=Math.abs(pe.v),s=pe.s+Math.max(35,v*3)+R(0,60),j=wrapI(Math.floor(s/SEG)),w=RW+XW[j];k.st=1;k.s=s;k.dir=Math.random()<.5?-1:1;k.lat=-k.dir*(w+R(4,10));k.v=R(4,8);k.y=0;k.vy=R(1,3);k.ds=R(-1.5,1.5);k.g.visible=true;}}}
+    if(k){const v=Math.abs(pe.v),s=pe.s+Math.max(35,v*3)+R(0,60),j=wrapI(Math.floor(s/SEG)),w=RW+XW[j];k.st=1;k.s=s;k.dir=Math.random()<.5?-1:1;k.lat=-k.dir*(w+R(4,10));k.v=R(4,8);k.y=0;k.vy=R(1,3);k.ds=R(-1.5,1.5);if(Math.random()<.35){k.s=pe.s+Math.max(70,v*4)+R(0,80);k.lat=R(-w+1,w-1);k.v=R(0,1.5);k.ds=-R(4,9);}   /* some roll down the road towards the car */k.g.visible=true;}}}
   for(const k of T_.l){if(!k.st)continue;const dsP=wdiff(k.s-pe.s),j=wrapI(Math.floor(k.s/SEG)),w=RW+XW[j];
     if(dsP<-40||dsP>320||Math.abs(k.lat)>w+16||(!on&&dsP<0)){k.st=0;k.g.visible=false;continue;}
     k.lat+=k.dir*k.v*rdt;k.s+=k.ds*rdt;k.vy-=14*rdt;k.y+=k.vy*rdt;if(k.y<=0){k.y=0;k.vy=R(1.5,3.8)*(Math.random()<.2?1.6:1);}   // gusts carry it across in bounces
     at(k.s,k.lat,k.y+k.r,T_.V);k.g.position.copy(T_.V);
     const dx=T_.V.x-PL.x,dz=T_.V.z-PL.z;if(dx*dx+dz*dz<(k.r+1.6)**2&&k.y<1.2){k.vy=R(6,9);k.ds=pe.v*.6;}   // bounced up over the car
-    at(k.s,k.lat+k.dir,0,T_.W);at(k.s,k.lat,0,T_.A);T_.W.sub(T_.A);T_.A.set(T_.W.z,0,-T_.W.x).normalize();T_.Q.setFromAxisAngle(T_.A,k.v*rdt/k.r);k.g.quaternion.premultiply(T_.Q);}}
+    const mv=Math.hypot(k.v,k.ds)||1;at(k.s+k.ds/mv,k.lat+k.dir*k.v/mv,0,T_.W);at(k.s,k.lat,0,T_.A);T_.W.sub(T_.A);T_.A.set(T_.W.z,0,-T_.W.x).normalize();T_.Q.setFromAxisAngle(T_.A,mv*rdt/k.r);k.g.quaternion.premultiply(T_.Q);}}
 function turkeysTick(rdt){const v=Math.hypot(PL.vx,PL.vz);for(const k of TK){const m=k.m,gy=H[k.ci];
     if(k.st===0){k.tt-=rdt;if(k.tt<=0){k.tt=R(2,7);k.tl=clamp(k.lat+R(-7,7),-13,13);k.td=clamp(k.ds+R(-6,6),-22,22);}
       at(k.ci*SEG+k.ds,k.lat,0,V);const near=(V.x-PL.x)**2+(V.z-PL.z)**2,sc=near<260&&v>5?3.2:.75;if(sc>1&&Math.abs(k.tl-k.lat)<1)k.tl=clamp(k.lat+(k.lat>=0?9:-9),-14,14);   // they scuttle aside when a car comes
@@ -2238,7 +2250,9 @@ const shadeTex=canvas(256,1024,(g,w,h)=>{g.clearRect(0,0,w,h);for(const[y0,n]of[
 const shadeMat=new THREE.MeshBasicMaterial({map:shadeTex,color:0,transparent:true,opacity:.4,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4});
 {const band=(a,b)=>{if(b-a>4)ribbon(i=>-RW-XW[i]-2.5,i=>RW+XW[i]+2.5,.045,.045,shadeMat,170,a,b).receiveShadow=false;};
   if(DRIVE){span(Z.wt0+120,Z.central,band);band(Z.rb1+20,Z.refinery-20);}else{band(205,NS);band(0,62);}}
-function driveTick(rdt){const zn=zoneOf(PL.idx);leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,zn==='town'&&G.state==='race'&&!G.paused);   // on the bridge you drive through banks of fog and out into the sun again
+function driveTick(rdt){const zn=zoneOf(PL.idx);
+  if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
+  leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
   {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);tumbleTick(rdt);pennyTick(rdt);snapTick(rdt);millTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
@@ -2844,14 +2858,14 @@ function showHome(){$('title').classList.toggle('home',HOME);$('trk1').classList
   for(const b of document.querySelectorAll('#jmp button'))b.classList.toggle('on',DRIVE&&b.dataset.j===JUMP);
   if(DRIVE)document.querySelector('#title h2').textContent=JUMP?'A FREE DRIVE FROM '+JUMPN[JUMP]+' TO 1611 SAN ANTONIO AVE':'A FREE DRIVE FROM 1611 SAN ANTONIO AVE AND HOME AGAIN';}
 // from: where the Alameda drive starts ('' the house, or a jump point)
-function pickTrack(drive,from=''){if(drive===DRIVE){if(drive)JUMP=from;HOME=false;showHome();return;}const q=new URLSearchParams();if(drive){q.set('mode','drive');if(from)q.set('from',from);}q.set('go','1');q.set('model',G.model);q.set('liv',G.liv);q.set('wx',G.weather);location.search=q.toString();}
+function pickTrack(drive,from=''){if(drive===DRIVE){if(drive)JUMP=from;HOME=false;showHome();return;}const q=new URLSearchParams();if(drive){q.set('mode','drive');if(from)q.set('from',from);}q.set('go','1');q.set('model',G.model);q.set('liv',G.liv);if(!drive)q.set('wx',G.weather);location.search=q.toString();}
 $('trk1').onclick=()=>pickTrack(false);$('trk2').onclick=()=>pickTrack(true);for(const b of document.querySelectorAll('#jmp button,#bonus button'))b.onclick=()=>pickTrack(true,b.dataset.j);showHome();
 const JKEY={Digit3:'bb',Numpad3:'bb',Digit4:'sf',Numpad4:'sf',Digit5:'gg',Numpad5:'gg',Digit6:'i80',Numpad6:'i80',KeyH:''};
 if(MODELS[G.model]&&MODELS[G.model].cls)MKEYS=CLASSICS;
 function setSens(d){G.sens=clamp(Math.round((G.sens+d)*10)/10,.1,1);try{localStorage.setItem('vqh-sens',G.sens);}catch(e){}$('oSens').textContent=Math.round(G.sens*100)+'%';say('STEERING '+Math.round(G.sens*100)+'%','[ LESS SENSITIVE · MORE SENSITIVE ]',1.4);}
 addEventListener('keydown',e=>{const c=codeOf(e);keys[c]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(c))e.preventDefault();if(e.repeat)return;
   initAudio();if(AC&&AC.state==='suspended')AC.resume();                                                    // any key wakes the sound, however the game was opened
-  if(c==='Escape'&&G.state!=='title'&&G.state!=='intro'){if(window.speechSynthesis)speechSynthesis.cancel();const q=new URLSearchParams();if(DRIVE)q.set('mode','drive');q.set('model',G.model);q.set('liv',G.liv);q.set('wx',G.weather);location.search=q.toString();return;}   // Esc: back to the title screen
+  if(c==='Escape'&&G.state!=='title'&&G.state!=='intro'){if(window.speechSynthesis)speechSynthesis.cancel();const q=new URLSearchParams();if(DRIVE)q.set('mode','drive');q.set('model',G.model);q.set('liv',G.liv);if(!DRIVE)q.set('wx',G.weather);location.search=q.toString();return;}   // Esc: back to the title screen
   if(c==='BracketLeft'||e.key==='[')setSens(-.1);if(c==='BracketRight'||e.key===']')setSens(.1);
   if(G.state==='title'){
     if(HOME){if(c==='ArrowRight'||c==='ArrowLeft'||c==='ArrowUp'||c==='ArrowDown'){trkSel=1-trkSel;showHome();}if(c==='Enter'||c==='Space')pickTrack(trkSel===1);if(e.key==='1')pickTrack(false);if(e.key==='2')pickTrack(true);if(c in JKEY)pickTrack(true,JKEY[c]);return;}
