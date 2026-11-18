@@ -52,6 +52,8 @@ const SPEC = {
   p904:   { m: 760,  hp: 180, cla: 0.10, wf: 0.44, mu: 1.12, h: 0.44 },
   ghibli: { m: 1650, hp: 330, cla: 0.05, wf: 0.52, mu: 1.08, h: 0.52 },
   bb:     { m: 1580, hp: 360, cla: 0.12, wf: 0.43, mu: 1.12, h: 0.47 },
+  lp400:  { m: 1310, hp: 375, cla: 0.08, wf: 0.42, mu: 1.12, h: 0.45, aeroF: 0.62 },   // light, little rear downforce: quick to rotate
+  f400:   { m: 1480, hp: 340, cla: 0.06, wf: 0.52, mu: 1.10, h: 0.50 },
 };
 export const MU_REF = 1.45;
 const GEAR_V = [0.30, 0.46, 0.63, 0.83, 1.07];   // road speed at the redline in each gear, as a share of top speed
