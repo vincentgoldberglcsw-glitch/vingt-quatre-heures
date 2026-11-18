@@ -1342,6 +1342,7 @@ function livery(o,M,res){const ky=4.4/M.CL;
       g.strokeStyle=o.pin;g.lineWidth=2.2;g.beginPath();g.moveTo(w/2-41,150*ky);g.lineTo(w/2-41,h*.82);g.lineTo(w/2-122,h);g.moveTo(w/2+41,150*ky);g.lineTo(w/2+41,h*.82);g.lineTo(w/2+122,h);g.stroke();}
     if(o.edge){g.fillStyle=o.edge;g.fillRect(0,0,16,h);g.fillRect(w-16,0,16,h);}
     if(o.swoop){g.fillStyle=o.swoop;for(const sx of[-1,1]){const X=v=>w/2+sx*v;g.beginPath();g.moveTo(X(8),0);g.bezierCurveTo(X(40),110*ky,X(192),170*ky,X(198),330*ky);g.lineTo(X(198),h);g.lineTo(X(142),h);g.lineTo(X(142),340*ky);g.bezierCurveTo(X(136),235*ky,X(60),195*ky,X(8),150*ky);g.closePath();g.fill();}}
+    if(o.sideF){g.fillStyle=o.sideF;for(const x of[0,1]){const X=v=>x?w-v:v;g.beginPath();g.moveTo(X(0),0);g.lineTo(X(40),0);g.lineTo(X(40),300/ky);g.lineTo(X(0),430/ky);g.fill();}}   // white front wings running down the sides, red behind
     if(o.twin){g.fillStyle=o.twin;g.fillRect(w/2-70,0,26,h);g.fillRect(w/2+44,0,26,h);}
     if(o.swirl){let sd=11;const q=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};g.strokeStyle=o.swirl;g.lineCap='round';
       for(let i=0;i<16;i++){g.lineWidth=14+q()*22;const x=q()*w,y=q()*h;g.beginPath();g.moveTo(x,y);g.bezierCurveTo(x+(q()-.5)*300,y+q()*160,x+(q()-.5)*300,y+160+q()*160,x+(q()-.5)*120,y+320+q()*120);g.stroke();}
@@ -1371,6 +1372,7 @@ function livery(o,M,res){const ky=4.4/M.CL;
     g.fillStyle='#0e0f10';if(!M.road)for(let y=792;y<980;y+=11){g.fillRect(168,y,74,5);g.fillRect(270,y,74,5);}
     for(const x of[60,452]){for(let y=742;y<800;y+=9)g.fillRect(x-22,y,44,4);}
     liveryLines(g,w,h,'rgba(18,26,34,.6)',1.6);g.restore();}
+    if(o.logos){g.fillStyle='#f3efe2';g.beginPath();g.arc(w/2,h-44,34,0,7);g.fill();g.strokeStyle='rgba(0,0,0,.4)';g.lineWidth=1.5;g.stroke();g.fillStyle='#111';g.font='900 40px Arial Black,Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(o.num,w/2,h-41);}   // the number again on the tail
     for(const x of[0,1]){const gr=g.createLinearGradient(x?w:0,0,x?w-50:50,0);gr.addColorStop(0,'rgba(60,52,40,.55)');gr.addColorStop(1,'rgba(60,52,40,0)');g.fillStyle=gr;g.fillRect(x?w-50:0,0,50,h);}
     const tg=g.createLinearGradient(0,h,0,h-140);tg.addColorStop(0,'rgba(20,18,16,.6)');tg.addColorStop(1,'rgba(20,18,16,0)');g.fillStyle=tg;g.fillRect(0,h-140,w,140);
     for(let i=0;i<5200;i++){g.fillStyle=`rgba(64,54,40,${Math.random()*.11})`;g.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*4,2+Math.random()*16);}
@@ -1487,12 +1489,12 @@ function makeCar(o){
   const pool=new THREE.Mesh(new THREE.PlaneGeometry(9,22),new THREE.MeshBasicMaterial({map:glowTex,color:0xffe2a8,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0}));pool.rotation.x=-Math.PI/2;pool.position.set(0,.06,ZF+9);car.add(pool);car.pool=pool.material;
   car.wheels=[];car.knuckles=[];car.corners=[];car.tail=tailM;
   WZ.forEach((z,k)=>{for(const sd of[-1,1]){const wd=k?.42:.32,kn=new THREE.Group(),holder=new THREE.Group();kn.position.set(sd*(.965-wd/2),.33,z);holder.rotation.z=-sd*Math.PI/2;
-    const w=wheel(k,o.rim==='gold'?rimGold:rimSilver,M.wh);if(M.road){w.children.pop();w.scale.y=M.road;}holder.add(w);kn.add(holder);car.add(kn);w.userData.dir=sd;car.wheels.push(w);car.corners.push(kn);if(!k)car.knuckles.push(kn);}});
+    const w=wheel(k,o.rim==='gold'?rimGold:o.rim==='black'?rimDark:rimSilver,M.wh);if(M.road){w.children.pop();w.scale.y=M.road;}holder.add(w);kn.add(holder);car.add(kn);w.userData.dir=sd;car.wheels.push(w);car.corners.push(kn);if(!k)car.knuckles.push(kn);}});
   car.bodyMat=bodyMat;car.canopy=can;car.M=M;car.o=o;scene.add(car);return car;
 }
 // the colours the player can choose for their own car
 const GULF={name:'BLEU CIEL ET ORANGE',d:'Pale blue with the orange stripe.',base:'#a9cbdd',stripe:'#e0612a',pin:'#1c2f55',helmet:'#1d3a6a'};
-const GULF20={...GULF,name:'GULF',d:'Gulf light blue, orange stripe down the middle, Gulf badges. No. 20.',base:'#94c6e4',num:'20',logos:'gulf'},SALZ23={name:'SALZBURG',d:'Red with white sweeps, Shell and PORSCHE. No. 23.',base:'#c4281c',swoop:'#f3efe2',num:'23',helmet:'#e6e1d0',logos:'shell'};   // the two famous 917 schemes
+const GULF20={...GULF,name:'GULF',d:'Gulf light blue, orange stripe down the middle, Gulf badges. No. 20.',base:'#94c6e4',num:'20',logos:'gulf',rim:'black'},SALZ23={name:'SALZBURG',d:'Red with white sweeps, Shell and PORSCHE. No. 23.',base:'#c4281c',swoop:'#f3efe2',num:'23',helmet:'#e6e1d0',logos:'shell',rim:'black',sideF:'#f3efe2'};   // the two famous 917 schemes
 const LIVS={   // each car has its own set of colours
   k:[GULF20,SALZ23,{name:'BLANC ET BLEU',d:'White with a dark blue stripe. No. 21.',base:'#eae6d8',stripe:'#1f3358',pin:'#b3241c',num:'21',helmet:'#b3241c'}],
   o:[{name:'BLANC USINE',d:'Works white with a red nose and sills. No. 12.',base:'#ece8dc',nose:'#b3241c',edge:'#b3241c',num:'12',helmet:'#b3241c'},{name:'BLEU NUIT',d:'Midnight blue with a yellow stripe. No. 14.',base:'#1f3358',stripe:'#e3c94a',pin:'#0e1830',num:'14',helmet:'#e3c94a'},{name:'VERT ANGLAIS',d:'Dark green with a white nose. No. 15.',base:'#23492f',nose:'#ece8dc',edge:'#ece8dc',num:'15',helmet:'#ece8dc'},SALZ23,GULF20],
