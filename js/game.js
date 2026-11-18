@@ -2348,7 +2348,7 @@ function pennyTick(rdt){const P_=PENNY,pe=ents.find(e=>e.player);if(!pe||!DRIVE)
       for(const s of[-1,1]){const a=bx(.08,.42,.09,coat,s*.21,1.9,.22);a.rotation.x=-.9;}
       const legs=[-1,1].map(s=>{const p=new THREE.Group();p.position.set(s*.11,1.72,.15);bx(.12,.75,.13,std({color:0x2a2622,roughness:.9}),0,-.36,0,p);b.add(p);return p;});
       g.visible=false;scene.add(g);P_.l.push({g,b,big,sm,legs,st:0,s:0,lat:0,v:0,y:0,vy:0,wob:0,bt:0,t:0});}}
-  const i=PL.idx,zn=zoneArr[i],on=G.state==='race'&&(zn===1||zn===5)&&!(zn===5&&i>Z.hyde-20&&i<Z.marina);
+  const i=PL.idx,zn=zoneArr[i],on=G.state==='race'&&(zn===1||zn===5||zn===7)&&!(zn===5&&i>Z.hyde-20&&i<Z.marina);
   if(on){P_.cd-=rdt;if(P_.cd<=0){P_.cd=R(5,11);const k=P_.l.find(o=>!o.st),act=P_.l.filter(o=>o.st).length;
     if(k&&act<3){const s=pe.s+Math.max(60,Math.abs(pe.v)*4)+R(0,60),j=wrapI(Math.floor(s/SEG)),w=RW+XW[j];k.st=1;k.s=s;k.lat=-(w-1.6)*(Math.random()<.8?1:-1)*PENNY.rs;k.v=R(3.5,5.5);k.y=0;k.vy=0;k.wob=0;k.bt=0;k.t=R(0,6);k.g.visible=true;}}}
   for(const k of P_.l){if(!k.st)continue;k.t+=rdt;const ds=wdiff(k.s-pe.s);if(ds<-60||ds>400){k.st=0;k.g.visible=false;continue;}
@@ -2359,6 +2359,15 @@ function pennyTick(rdt){const P_=PENNY,pe=ents.find(e=>e.player);if(!pe||!DRIVE)
     const dx=PENNY.V.x-PL.x,dz=PENNY.V.z-PL.z;
     if(dx*dx+dz*dz<2.6*2.6&&!(k.bt>0)&&!PL.crash){k.bt=.8;k.vy=R(3,4.5);k.wob=1;k.s+=2;k.v=Math.max(k.v,Math.abs(pe.v)+R(2,4));PL.vx*=.97;PL.vz*=.97;G.shake=Math.max(G.shake,.15);sfxBoing(.7);}   // boing: bounced on ahead, never run over
     else if(k.bt<=0&&k.v>5.5)k.v=Math.max(R(3.5,5.5),k.v-rdt*3);}}
+// Shooting stars: at night (clear sky only) an occasional bright streak crosses the sky. One pooled line, child of the sky dome, vertices rewritten in place.
+const SHOOT={t:0,dur:1,len:600,cd:6,l:null,p:null,o:new THREE.Vector3(),d:new THREE.Vector3(),h:new THREE.Vector3(),q:new THREE.Vector3()};
+function shootTick(rdt){const S_=SHOOT,u=skyMat.uniforms;if(!S_.l){const g=new THREE.BufferGeometry();S_.p=new Float32Array(6);g.setAttribute('position',new THREE.BufferAttribute(S_.p,3));
+    S_.l=new THREE.Line(g,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0,fog:false,depthWrite:false}));S_.l.frustumCulled=false;S_.l.visible=false;sky.add(S_.l);}
+  if(S_.t>0){S_.t-=rdt;const k=clamp(1-S_.t/S_.dur,0,1);S_.h.copy(S_.o).addScaledVector(S_.d,k*S_.len);S_.q.copy(S_.o).addScaledVector(S_.d,Math.max(0,k-.25)*S_.len);
+    S_.p[0]=S_.q.x;S_.p[1]=S_.q.y;S_.p[2]=S_.q.z;S_.p[3]=S_.h.x;S_.p[4]=S_.h.y;S_.p[5]=S_.h.z;S_.l.geometry.attributes.position.needsUpdate=true;S_.l.material.opacity=Math.sin(Math.PI*k)*.9;if(S_.t<=0)S_.l.visible=false;return;}
+  if(!(u.night.value>.9&&u.cov.value<.6))return;S_.cd-=rdt;if(S_.cd>0)return;S_.cd=R(8,25);
+  const az=R(0,6.283),el=R(.35,1.0);S_.o.set(Math.cos(az)*Math.cos(el),Math.sin(el),Math.sin(az)*Math.cos(el)).multiplyScalar(3300);
+  S_.d.set(R(-1,1),R(-.5,-.2),R(-1,1)).normalize();S_.len=R(500,900);S_.dur=R(.5,.9);S_.t=S_.dur;S_.l.visible=true;}
 function tumbleTick(rdt){const T_=TUMB,pe=ents.find(e=>e.player);if(!pe)return;
   if(!T_.l.length){const mats=[0x9c7a48,0x86663a,0xb08c58].map(c=>new THREE.MeshBasicMaterial({color:c,wireframe:true}));
     for(let k=0;k<14;k++){const g=new THREE.Group(),r=k%3===0?R(1.1,1.7):k%3===1?R(.6,1):R(.3,.5);   // small, middling and big ones
@@ -2407,7 +2416,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);tumbleTick(rdt);pennyTick(rdt);snapTick(rdt);millTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);tumbleTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
