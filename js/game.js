@@ -57,7 +57,7 @@ function buildRoute(X80=-600){
   // Corners are swept, not square: every junction on the loop has about twice the radius it had, so it can be driven as a corner rather than stopped for.
   // The two straights into the Posey Tube are trimmed to suit, so that the tube mouth - and with it the port, the bridges and the coastlines - stays exactly where it was.
   const old=routeTurtle(0,0,-90*D2R).S(40).S(260).R(90,24).S(920).L(90,24).S(400).R(70,45).S(560).R(20,200);
-  const lead=(a,b)=>routeTurtle(0,0,-90*D2R).M('t0').S(40).M('start').S(260-(PR-52)).R(90,PR).M('paru').S(890).L(90,CR).M('central').S(a).R(70,WR).M('wilma').S(b).R(20,200).M('tu0');
+  const lead=(a,b)=>routeTurtle(0,0,-90*D2R).M('t0').S(40).M('start').S(260-(PR-52)).R(90,PR).M('paru').S(890).L(90,CR).M('central').S(a).R(70,WR).M('wilma').S(b).R(20,420).M('tu0');   // the last bend into the Posey Tube: a long, wide, banked sweep
   const p0=lead(1,1),wd=-160*D2R,wl=1+(old.z-p0.z)/Math.cos(wd),cl=1-(old.x-p0.x-(wl-1)*Math.sin(wd));
   const f=lead(cl,wl);
   f.S(580,40).M('tu1')
@@ -80,13 +80,14 @@ const ROUTE=DRIVE?buildRoute():null,DRIVE_PTS=DRIVE?ROUTE.pts:null;
 const ctrl=(DRIVE?DRIVE_PTS:[[0,0],[300,0],[600,0],[900,0],[1200,0],[1500,0],[1690,50],[1800,210],[1790,420],[1650,545],[1400,570],[1120,566],[840,562],[560,560],[420,500],[280,540],[120,610],[-140,600],[-360,470],[-430,240],[-340,60],[-170,0]]).map(p=>new THREE.Vector3(p[0],0,p[1]));
 const curve=new THREE.CatmullRomCurve3(ctrl,true,'centripetal'); curve.arcLengthDivisions=DRIVE?30000:3000;
 const LEN=curve.getLength(), NS=Math.floor(LEN/2), SEG=LEN/NS;
+const BK=new Float32Array(NS+1),bkY=(i,o)=>{const b=BK[i];if(!b)return 0;const s=b>0?1:-1,q=s>0?Math.max(-7,Math.min(11,o)):Math.min(7,Math.max(-11,o));return(q+7*s)*b;};   // banked curves: BK is the rise per metre across the road (+ raises the left-hand side). The road tilts up from its low edge (7 m out on the inside of the bend), so nothing sinks below the ground; anything built along it tilts too, out to 11 m
 const P=[],T=[],Nn=[];
 for(let i=0;i<=NS;i++){const u=(i%NS)/NS;const p=curve.getPointAt(u),t=curve.getTangentAt(u);P.push(p);T.push(t);Nn.push(new THREE.Vector3(t.z,0,-t.x));}
 const yaw=i=>Math.atan2(T[i].x,T[i].z);
-const off=(i,o,y=0,out=new THREE.Vector3())=>out.set(P[i].x+Nn[i].x*o,y+P[i].y,P[i].z+Nn[i].z*o);   // y is height above the road at that point
+const off=(i,o,y=0,out=new THREE.Vector3())=>out.set(P[i].x+Nn[i].x*o,y+P[i].y+bkY(i,o),P[i].z+Nn[i].z*o);   // y is height above the road at that point
 const wrapI=i=>((i%NS)+NS)%NS, wrapS=s=>((s%LEN)+LEN)%LEN, wdiff=d=>((d+LEN*1.5)%LEN)-LEN/2;
 // position on track by arc length + lateral offset
-function at(s,lat,y=0,out=new THREE.Vector3()){s=wrapS(s);const f=s/SEG,i=Math.floor(f)%NS,k=f-Math.floor(f),a=P[i],b=P[i+1],n=Nn[i];return out.set(lerp(a.x,b.x,k)+n.x*lat,y+lerp(a.y,b.y,k),lerp(a.z,b.z,k)+n.z*lat);}
+function at(s,lat,y=0,out=new THREE.Vector3()){s=wrapS(s);const f=s/SEG,i=Math.floor(f)%NS,k=f-Math.floor(f),a=P[i],b=P[i+1],n=Nn[i];return out.set(lerp(a.x,b.x,k)+n.x*lat,y+lerp(a.y,b.y,k)+lerp(bkY(i,lat),bkY(i+1,lat),k),lerp(a.z,b.z,k)+n.z*lat);}
 // curvature, racing line, speed limits
 const kS=[],vc=[],line=[];
 {const raw=[];for(let i=0;i<NS;i++){const b=T[(i+1)%NS],a=T[i];raw.push(((b.x-a.x)*Nn[i].x+(b.z-a.z)*Nn[i].z)/SEG);}
@@ -101,10 +102,10 @@ const wallAt=new Float32Array(NS).fill(8.75),edgeAt=new Float32Array(NS).fill(RW
 const Z=DRIVE?(()=>{const z={};for(const k in ROUTE.mk){const[x,zz]=DRIVE_PTS[ROUTE.mk[k]];let b=0,bd=1e18;for(let i=0;i<NS;i++){const d=(P[i].x-x)**2+(P[i].z-zz)**2;if(d<bd){bd=d;b=i;}}z[k]=b;}z.t0=0;
   const fill=(a,b,code,wall,edge)=>{for(let i=a;i!==b;i=(i+1)%NS){zoneArr[i]=code;wallAt[i]=wall;edgeAt[i]=edge;}};
   // town and city streets: the wall stands at the back of the pavement, so the car can mount the kerb and run along the pavement (trees, hedges and parked cars are still in the way)
-  fill(0,z.wilma,1,8.6,9.5);fill(z.wilma,z.tu0,3,7.2,6.7);fill(z.tu0,z.tu1,2,5.4,9);fill(z.tu1,z.b0,3,7.2,6.7);fill(z.b0,z.b1,4,7.2,9);fill(z.b1,z.gg0,5,8.6,9.5);fill(z.gg0,z.gg1,4,7.2,9);
+  fill(0,z.wilma,1,8.6,9.5);fill(z.wilma,z.tu0,3,7.2,6.7);fill(z.tu0,z.tu1,2,5.8,9);fill(z.tu1,z.b0,3,7.2,6.7);fill(z.b0,z.b1,4,7.2,9);fill(z.b1,z.gg0,5,8.6,9.5);fill(z.gg0,z.gg1,4,7.2,9);
   fill(z.gg1,z.rb0,7,11,6.7);fill(z.rb0,z.rb1,4,7.2,9);fill(z.rb1,z.i80,8,9,6.7);fill(z.i80,z.wt1,3,7.2,6.7);fill(z.wt1,z.wt0,2,5.4,9);fill(z.wt0,0,1,8.6,9.5);
   for(let k=1;k<=Math.round(320/SEG);k++){wallAt[z.gg0-k]=8.2;edgeAt[z.gg0-k]=6.7;}   // the approach to the Golden Gate has concrete barriers, not pavement
-  for(const[a,b]of[[z.tu0,z.tu1],[z.wt1,z.wt0]])for(let k=1;k<=50;k++){wallAt[a-k]=Math.min(wallAt[a-k],5.4+k*.056);wallAt[b+k]=Math.min(wallAt[b+k],5.4+k*.036);}
+  for(const[a,b,w0]of[[z.tu0,z.tu1,5.8],[z.wt1,z.wt0,5.4]])for(let k=1;k<=50;k++){wallAt[a-k]=Math.min(wallAt[a-k],w0+k*.056);wallAt[b+k]=Math.min(wallAt[b+k],w0+k*.036);}
   z.BR=[[z.b0,z.b1],[z.gg0,z.gg1],[z.rb0,z.rb1]];return z;})():null;
 const BRH=[];   // the suspension spans (where the hanging cables are) and the height of the main cable along them, for the quakes' snapping cables
 // Free drive only: H is the height of the road at each point (Wilma Chan's overpass, the freeway viaducts, the climbs onto the bridges, Hyde Street, the Marin headlands, Shane Drive), XW is extra half-width (avenues, freeways, the toll plaza).
@@ -112,7 +113,7 @@ const XW=new Float32Array(NS+1),H=new Float32Array(NS+1);
 if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SEG),z=Z,xwT=new Float32Array(NS),WL=z.tu0-z.wilma;
   for(let i=0;i<NS;i++){const c=zoneArr[i];xwT[i]=c===1?2.2:c===3?(i<z.tu0?1.4:2.4):c===4?1.8:c===5?1.2:c===8?.6:0;if((i>z.tu0-m(220)&&i<z.tu1+m(220))||(i>z.wt1-m(220)&&i<z.wt0+m(220)))xwT[i]=0;}
   for(let i=0;i<NS;i++){let s=0;for(let j=-25;j<=25;j++)s+=xwT[wrapI(i+j)];XW[i]=s/51+4.6*bump(i,z.toll+m(70),z.toll+m(120),z.toll+m(240),z.toll+m(290))+1.3*bump(i,z.detour+m(170),z.detour+m(260),z.toll+m(110),z.toll+m(170));   /* the approach to the toll plaza is a little wider, with lane lines */
-    H[i]=7*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.6,z.wilma+WL*.76)
+    H[i]=5.4*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.5,z.wilma+WL*.665)+1.6*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.685,z.wilma+WL*.705)   /* Wilma Chan overpass: comes down to a short level lip and drops off it - a small jump on the way to the tube */
       +18*bump(i,z.tu1+m(160),z.tu1+m(340),z.toll-m(520),z.toll-m(260))
       +22*bump(i,z.b0-m(240),z.b0-m(10),z.b1-m(460),z.b1-m(120))
       +78*bump(i,z.hyde+m(50),z.hyde+m(380),z.hyde+m(450),z.hyde+m(690))   /* Hyde St: a long, very steep climb, a short crest, then a sharp drop towards the Wharf */
@@ -123,6 +124,9 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
       +12*bump(i,z.i80+m(150),z.i80+m(330),z.wt1-m(600),z.wt1-m(380));
     wallAt[i]+=XW[i];edgeAt[i]+=XW[i];if(i>=z.wilma+m(10)&&i<=z.wilma+m(75))wallAt[i]=edgeAt[i]=38;   // the drive-in lot on Wilma Chan Way is open ground
     if(i>=z.detour-m(30)&&i<=z.detour+m(150))wallR[i]=RW+XW[i]+14;}   // the detour exit lane opens on the right
+  // banked bends: the outside of the curve raised, by how tightly the road turns (from the tangents), faded in and out at the ends of each stretch
+  const bankOn=(a,b,amt)=>{const fd=m(25);for(let i=a;i<=b;i++){let c=0;for(let q=-8;q<8;q++){const u=wrapI(i+q),v=wrapI(u+1);c+=(T[v].x-T[u].x)*Nn[u].x+(T[v].z-T[u].z)*Nn[u].z;}const env=sst(i,a,a+fd)*(1-sst(i,b-fd,b));BK[wrapI(i)]=clamp(-c/(16*SEG)*45,-amt,amt)*env;}};
+  bankOn(z.tu0-m(200),z.tu0-m(10),.1);   // into the Posey Tube
   XW[NS]=XW[0];H[NS]=H[0];for(let i=0;i<=NS;i++)P[i].y=H[i];
   for(let i=0;i<NS;i++){const c=zoneArr[i];if((c===1||c===3||c===7||c===8)&&H[i]<.5)landIdx.push(i);}}
 const span=(a,b,fn)=>{if(a<b)fn(a,b);else{fn(a,NS);fn(0,b);}};   // vc: rivals, vcp: the player's own limit (drives the brake warning)
@@ -131,7 +135,7 @@ function ribbon(o1,o2,y1,y2,mat,vScale=12,i0=0,i1=NS){
   const pos=[],uv=[],idx=[];
   const fv=(v,i)=>typeof v==='function'?v(i):v;   // offsets and heights may vary along the road
   for(let i=i0;i<=i1;i++){const p=P[i],n=Nn[i],a=fv(o1,i),b=fv(o2,i);
-    pos.push(p.x+n.x*a,fv(y1,i)+p.y,p.z+n.z*a, p.x+n.x*b,fv(y2,i)+p.y,p.z+n.z*b);uv.push(0,i*2/vScale,1,i*2/vScale);
+    pos.push(p.x+n.x*a,fv(y1,i)+p.y+bkY(i,a),p.z+n.z*a, p.x+n.x*b,fv(y2,i)+p.y+bkY(i,b),p.z+n.z*b);uv.push(0,i*2/vScale,1,i*2/vScale);
     if(i<i1){const q=(i-i0)*2;idx.push(q,q+2,q+1,q+1,q+2,q+3);}}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
   g.setIndex(idx);g.computeVertexNormals();const m=new THREE.Mesh(g,mat);m.receiveShadow=true;scene.add(m);return m;
@@ -418,6 +422,7 @@ await BOOT.step('ROADSIDE',.20);
 /* ================= FREE DRIVE WORLD ================= */
 // A quiet island town street, the tube under the estuary with its portal buildings, a freeway past the port, then a long suspension bridge.
 // The whole route is level: the bay is simply 45 m below the road, so the bridge is high without the engine needing hills.
+let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
 const cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null;const BURN=[];   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
 if(!DRIVE){ // roadside advertising boards, as on the old circuit: cigarettes, wine and bread, by turns
   const ad=(kind,name,sub)=>canvas(1024,460,(g,w,h)=>{const bg={cig:'#1d4f8a',wine:'#efe6cc',bread:'#f0c23a'}[kind],ink={cig:'#f4f1e8',wine:'#7a1626',bread:'#3a2412'}[kind];g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=ink;g.lineWidth=10;g.strokeRect(14,14,w-28,h-28);
@@ -490,7 +495,7 @@ await BOOT.step('KERBS AND BARRIERS',.26);
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const me=new THREE.Mesh(g,mm);me.castShadow=me.receiveShadow=true;scene.add(me);return me;};
   // elevated roads: deck edge, soffit and columns wherever the road stands more than 3 m above flat ground
   const conc=std({color:0x9a968c,roughness:.9,side:D2});
-  const deck=(a,b)=>{for(const sd of[-1,1])ribbon(i=>sd*(8.45+XW[i]),i=>sd*(8.45+XW[i]),i=>H[i]>2?-1.6:-H[i]-.02,0,conc,8,a,b).castShadow=true;ribbon(i=>8.45+XW[i],i=>-8.45-XW[i],i=>-Math.min(1.6,H[i]),i=>-Math.min(1.6,H[i]),conc,8,a,b);
+  const deck=(a,b)=>{for(const sd of[-1,1])ribbon(i=>sd*(8.45+XW[i]),i=>sd*(8.45+XW[i]),i=>(H[i]>2?-1.6:-H[i]-.02)-(H[i]>2?0:bkY(i,sd*(8.45+XW[i]))),0,conc,8,a,b).castShadow=true;ribbon(i=>8.45+XW[i],i=>-8.45-XW[i],i=>-Math.min(1.6,H[i]),i=>-Math.min(1.6,H[i]),conc,8,a,b);
     for(let i=a;i<b;i+=14){if(H[i]<3)continue;const hh=H[i]-1.6;B(2.2,hh,2.4,conc,P[i].x,hh/2,P[i].z,yaw(i));B(15+XW[i]*2,1.2,2.6,conc,P[i].x,hh-.6,P[i].z,yaw(i));}};
   deck(Z.wilma,Z.tu0-60);deck(Z.tu1+60,Z.toll);deck(Z.i80,Z.wt1-60);deck(Z.gg0-m(320),Z.gg0);
 
@@ -509,19 +514,28 @@ await BOOT.step('BORING THE TUBES',.29);
   const pSh=new THREE.Shape();pSh.moveTo(-15,0);pSh.lineTo(15,0);pSh.lineTo(15,11.5);pSh.lineTo(9.6,11.5);pSh.lineTo(9.6,16);pSh.lineTo(-9.6,16);pSh.lineTo(-9.6,11.5);pSh.lineTo(-15,11.5);pSh.lineTo(-15,0);
   {const ho=new THREE.Path();ho.moveTo(-6.5,0);ho.lineTo(-6.5,3.2);ho.bezierCurveTo(-6.5,6.25,6.5,6.25,6.5,3.2);ho.lineTo(6.5,0);ho.lineTo(-6.5,0);pSh.holes.push(ho);}
   const pGeo=new THREE.ExtrudeGeometry(pSh,{depth:9,bevelEnabled:false}),tileR=std({color:0xa8492f,roughness:.8}),lampGreen=std({color:0x2f5a3a,roughness:.5,metalness:.4});
-  const tube=(a,b,name)=>{loft(a,b,[[-6.5,0],[-6.5,3.2],[-5.6,4.6],[-3.5,5.3],[0,5.5],[3.5,5.3],[5.6,4.6],[6.5,3.2],[6.5,0]],tileM,8);loft(a+3,b-3,[[-15,0],[-9,6.4],[9,6.4],[15,0]],groundMat,60);
-    for(const sd of[-1,1]){ribbon(sd*6.42,sd*6.42,2.85,3.35,tunLamp,3.4,a+2,b-2).receiveShadow=false;ribbon(sd*5.95,sd*5.95,.55,1.15,railM,2,a,b);ribbon(sd*6.5,sd*5.9,.5,.5,side,3,a,b);}
+  const tube=(a,b,name,w=1,h=1,lm=tunLamp)=>{loft(a,b,[[-6.5,0],[-6.5,3.2],[-5.6,4.6],[-3.5,5.3],[0,5.5],[3.5,5.3],[5.6,4.6],[6.5,3.2],[6.5,0]].map(([x,y])=>[x*w,y*h]),tileM,8);loft(a+3,b-3,[[-15,0],[-9,6.4],[9,6.4],[15,0]].map(([x,y])=>[x*w,y*h]),groundMat,60);   // w, h: how much wider and taller than the old bore
+    const wi=w>1?6.3:5.9;for(const sd of[-1,1]){ribbon(sd*6.42*w,sd*6.42*w,2.85*h,3.35*h,lm,3.4,a+2,b-2).receiveShadow=false;ribbon(sd*(wi+.05),sd*(wi+.05),.55,1.15,railM,2,a,b);ribbon(sd*6.5*w,sd*wi,.5,.5,side,3,a,b);}
     // open cuts leading down to each mouth: cream retaining walls with a balustrade, and the green lamp standards of the old approach
-    const cut=(c0,c1,rise)=>{for(const sd of[-1,1]){const pos=[],uv=[],idx=[];for(let i=c0;i<=c1;i++){const k=(i-c0)/(c1-c0),hgt=.9+(rise>0?k:1-k)*6.3,o=sd*7.1,p=P[i],nn=Nn[i];pos.push(p.x+nn.x*o,p.y,p.z+nn.z*o,p.x+nn.x*o,p.y+hgt,p.z+nn.z*o);uv.push(0,i/4,hgt/7,i/4);if(i<c1){const q=(i-c0)*2;idx.push(q,q+2,q+1,q+1,q+2,q+3);}}
+    const cut=(c0,c1,rise)=>{for(const sd of[-1,1]){const pos=[],uv=[],idx=[];for(let i=c0;i<=c1;i++){const k=(i-c0)/(c1-c0),hgt=.9+(rise>0?k:1-k)*(6.3*h+.6*(h-1)),o=sd*7.1*w,p=P[i],nn=Nn[i];pos.push(p.x+nn.x*o,p.y+bkY(i,o),p.z+nn.z*o,p.x+nn.x*o,p.y+hgt+bkY(i,o),p.z+nn.z*o);uv.push(0,i/4,hgt/7,i/4);if(i<c1){const q=(i-c0)*2;idx.push(q,q+2,q+1,q+1,q+2,q+3);}}
         const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const me=new THREE.Mesh(g,cream);me.castShadow=me.receiveShadow=true;scene.add(me);
-        ribbon(sd*6.6,sd*6.6,.5,1.2,railM,2,c0,c1);ribbon(sd*7.1,sd*6.6,.012,.012,side,3,c0,c1);
-        for(let i=c0+4;i<c1;i+=11){const k=(i-c0)/(c1-c0),top=.9+(rise>0?k:1-k)*6.3,lp=new THREE.Group();B(.22,4.2,.22,lampGreen,0,2.1,0,0,lp);B(.5,.5,.5,lampGreen,0,.25,0,0,lp);const gl=new THREE.Mesh(new THREE.SphereGeometry(.34,10,8),lampMat);gl.position.y=4.5;lp.add(gl);B(.7,.12,.7,lampGreen,0,4.9,0,0,lp);
-          off(i,sd*7.6,top,lp.position);scene.add(lp);}}};
+        ribbon(sd*6.6*w,sd*6.6*w,.5,1.2,railM,2,c0,c1);ribbon(sd*7.1*w,sd*6.6,.012,.012,side,3,c0,c1);
+        for(let i=c0+4;i<c1;i+=11){const k=(i-c0)/(c1-c0),top=.9+(rise>0?k:1-k)*(6.3*h+.6*(h-1)),lp=new THREE.Group();B(.22,4.2,.22,lampGreen,0,2.1,0,0,lp);B(.5,.5,.5,lampGreen,0,.25,0,0,lp);const gl=new THREE.Mesh(new THREE.SphereGeometry(.34,10,8),lampMat);gl.position.y=4.5;lp.add(gl);B(.7,.12,.7,lampGreen,0,4.9,0,0,lp);
+          off(i,sd*7.6*w,top,lp.position);scene.add(lp);}}};
     cut(a-52,a,1);cut(b,b+52,-1);
     const face=portalFace(name);for(const[i,flip]of[[a,0],[b,1]]){const g=new THREE.Group();g.add(new THREE.Mesh(pGeo,face));
       for(const x of[-7.2,7.2]){B(5.2,4.6,6,cream,x,18.3,4.2,0,g);const r=new THREE.Mesh(new THREE.ConeGeometry(4.3,2.6,4),tileR);r.position.set(x,21.9,4.2);r.rotation.y=Math.PI/4;g.add(r);}
-      for(const x of[-12.3,12.3])B(5.4,1,9,tileR,x,11.9,4.5,0,g);g.traverse(o=>{o.castShadow=o.receiveShadow=true;});g.position.copy(P[i]);g.rotation.y=yaw(i)+(flip?Math.PI:0);scene.add(g);}};
-  tube(Z.tu0,Z.tu1,'P O S E Y   T U B E');tube(Z.wt1,Z.wt0,'W E B S T E R   T U B E');
+      for(const x of[-12.3,12.3])B(5.4,1,9,tileR,x,11.9,4.5,0,g);g.traverse(o=>{o.castShadow=o.receiveShadow=true;});g.scale.set(w,h,1);g.position.copy(P[i]);g.rotation.y=yaw(i)+(flip?Math.PI:0);scene.add(g);}};
+  tunLampB=new THREE.MeshBasicMaterial({map:lampT,color:new THREE.Color(.8,1.15,1.8),transparent:true,side:D2,depthWrite:false,fog:false});   // the Posey Tube's own lamps: cold and bluish, and they flicker
+  tube(Z.tu0,Z.tu1,'P O S E Y   T U B E',1.2,1.3,tunLampB);tube(Z.wt1,Z.wt0,'W E B S T E R   T U B E');
+  {// graffiti along the Posey Tube's walls, above the railing: tags and big letters in spray paint, with drips
+    const TAGS=['OAKTOWN','24H','McQ','VQH','ESTUARY','ZORRO','RIP','POSEY','510','KRUSH','BAYSIDE','LE MANS','TUBE RAT','ALAMEDA'],COL=['#e8432e','#2fb7e8','#f2c230','#7ad13a','#e85bd0','#f4f1e8','#ff8a1c'];
+    const gm=TAGS.map((s,n)=>{const tx=canvas(512,192,(g,w,h)=>{g.clearRect(0,0,w,h);const c1=COL[n%COL.length],c2=COL[(n*3+2)%COL.length];g.save();g.translate(w/2,h/2);g.rotate(R(-.12,.08));
+      g.font=`900 ${s.length>6?78:110}px Impact, "Arial Black", sans-serif`;g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';
+      g.lineWidth=22;g.strokeStyle='#111';g.strokeText(s,0,0);g.lineWidth=9;g.strokeStyle=c2;g.strokeText(s,0,0);g.fillStyle=c1;g.fillText(s,0,0);
+      for(let k=0;k<7;k++)g.fillRect(R(-w*.38,w*.38),R(14,34),3,R(14,48));g.restore();});return std({map:tx,emissiveMap:tx,emissive:0xffffff,emissiveIntensity:.6,transparent:true,alphaTest:.1,roughness:.7,polygonOffset:true,polygonOffsetFactor:-2,side:D2});});   // a little self-lit, so the paint reads in the gloom
+    let n=0;for(let i=Z.tu0+m(20);i<Z.tu1-m(15);i+=m(R(9,20))){const sd=Math.random()<.5?1:-1,len=R(5,7.5),me=new THREE.Mesh(new THREE.PlaneGeometry(len,len*.375),gm[(n*5)%gm.length]);
+      off(i,sd*(6.5*1.2-.05),2.6,me.position);me.rotation.y=Math.atan2(-sd*Nn[i].x,-sd*Nn[i].z);scene.add(me);n++;}}
   tunL=new THREE.PointLight(0xffc27a,0,46,1.3);scene.add(tunL);
 
 await BOOT.step('BUILDING ALAMEDA · HOUSE BY HOUSE',.33);
@@ -1750,7 +1764,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*(1-(PL.melt||0)*.1)
   // where are we on the track
   let best=1e9,bi=PL.idx;for(let k=-14;k<=14;k++){const i=wrapI(PL.idx+k),dx=PL.x-P[i].x,dz=PL.z-P[i].z,d=dx*dx+dz*dz;if(d<best){best=d;bi=i;}}
   PL.idx=bi;const dx=PL.x-P[bi].x,dz=PL.z-P[bi].z;let lat=dx*Nn[bi].x+dz*Nn[bi].z;const ns=wrapS(bi*SEG+dx*T[bi].x+dz*T[bi].z);
-  {const k=clamp((dx*T[bi].x+dz*T[bi].z)/SEG,-1,1),j=wrapI(bi+(k>=0?1:-1));PL.gy=H[bi]+(H[j]-H[bi])*Math.abs(k);
+  {const k=clamp((dx*T[bi].x+dz*T[bi].z)/SEG,-1,1),j=wrapI(bi+(k>=0?1:-1));PL.gy=H[bi]+(H[j]-H[bi])*Math.abs(k)+bkY(bi,lat);
     if(DRIVE){const e=RW+XW[bi],al=Math.abs(lat);if((KB[bi]&(lat>0?1:2))&&al>e+.25&&al<e+3.1)PL.gy+=.13;}   // up the kerb onto the pavement (KB: which sides have pavement here)
     PL.slope=(H[wrapI(bi+1)]-H[wrapI(bi-1)])/(2*SEG)*(fx*T[bi].x+fz*T[bi].z);GY=PL.gy;
     if(PL.cy===undefined||dt<=0){PL.cy=PL.gy;PL.vy=0;PL.air=0;}
@@ -1778,7 +1792,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*(1-(PL.melt||0)*.1)
   if(PL.land){PL.bump=Math.max(PL.bump||0,PL.land);PL.land=0;}PL.bump=(PL.bump||0)*Math.exp(-9*dt);
   const ln=Math.floor(pe.dist/LEN);if(!DRIVE&&pe.dist>=0&&ln>PL.lapN){PL.last=G.raceT-PL.lapStart;PL.lapStart=G.raceT;PL.lapN=ln;if(!PL.best||PL.last<PL.best)PL.best=PL.last;if(ln<LAPS)say(ln===LAPS-1?'DERNIER TOUR':'LAP '+(ln+1),ln===LAPS-1?'FINAL LAP · '+fmt(PL.last):fmt(PL.last),2);announce(`McQueen boucle son tour en ${Math.round(PL.last)} secondes.`);}
   // pose: the body pitches under braking, rolls in corners, and the front wheels turn
-  hero.position.set(PL.x,PL.cy-PL.bump*.25,PL.z);hero.rotation.set(VS.pitch+PL.bump*.1-Math.atan(PL.air?clamp(PL.vy/Math.max(Math.abs(VS.u),5),(PL.slope||0)-(PL.cy-PL.gy+.05)/2.3,(PL.slope||0)+(PL.cy-PL.gy+.05)/2.5):PL.slope||0),PL.h,VS.roll);   /* in the air the body follows its flight path, but never tips its nose or tail into the road below */
+  hero.position.set(PL.x,PL.cy-PL.bump*.25,PL.z);hero.rotation.set(VS.pitch+PL.bump*.1-Math.atan(PL.air?clamp(PL.vy/Math.max(Math.abs(VS.u),5),(PL.slope||0)-(PL.cy-PL.gy+.05)/2.3,(PL.slope||0)+(PL.cy-PL.gy+.05)/2.5):PL.slope||0),PL.h,VS.roll+(BK[PL.idx]?Math.atan(BK[PL.idx])*(Nn[PL.idx].x*Math.cos(PL.h)-Nn[PL.idx].z*Math.sin(PL.h)):0));   /* in the air the body follows its flight path, but never tips its nose or tail into the road below */
   for(const w of hero.wheels)w.rotation.y+=w.userData.dir*f*dt/.33;for(const k of hero.knuckles)k.rotation.y=clamp(delta*1.5+PL.steer*.06,-.5,.5);
   hero.tail.emissiveIntensity=brk?7:1.8;
   const onRoad=!offroad&&dt>0;
@@ -1852,7 +1866,11 @@ function setTime(h,tm){
   if(DRIVE){const b=G.brg,tn=G.tun;   // the bridge sits in thick bay fog whatever the weather; the tube is lit only by its own lamps
     scene.fog.near=lerp(scene.fog.near,10,b);scene.fog.far=lerp(scene.fog.far,200,b);u.cov.value=lerp(wx.cov,1,b);scene.fog.color.lerp(cT.setRGB(.6,.63,.66).multiplyScalar(lerp(.1,1,d)),b*.85);sun.intensity*=(1-b*.65)*(1-tn);
     hemi.intensity*=lerp(1,.2,tn);if(tn>.01){scene.fog.color.lerp(cT.setRGB(.07,.05,.025),tn*.95);scene.fog.near=lerp(scene.fog.near,60,tn);scene.fog.far=lerp(scene.fog.far,700,tn);}
-    hills.material.opacity=1-b*.94;tunL.intensity=tn*38;tunL.position.set(hero.position.x,3.4,hero.position.z);for(const m of cityMats)m.emissiveIntensity=(1-d)*1.6;}
+    hills.material.opacity=1-b*.94;tunL.intensity=tn*38;tunL.position.set(hero.position.x,3.4,hero.position.z);
+    {const pz=PL.idx>Z.tu0-30&&PL.idx<Z.tu1+30,F=TFL;tunL.color.setHex(pz?0x9fc4ff:0xffc27a);   // the Posey Tube: cold blue light that flickers, now and then dies for a moment, and now and then flashes white
+      if(pz){const t=performance.now()/1000;F.cd-=1/60;if(F.cd<=0){F.cd=R(.6,2.6);F.kind=Math.random()<.35?2:1;F.t=0;F.T=F.kind===2?R(.06,.14):R(.15,.6);}F.t+=1/60;
+        let k=.82+.12*Math.sin(t*41)*Math.sin(t*7.3)+.06*(Math.random()-.5);if(F.t<F.T){if(F.kind===1)k*=Math.random()<.5?.08:.4;else{k=2.6;tunL.color.setHex(0xe8f0ff);}}
+        tunL.intensity=tn*38*k;tunLampB.color.setRGB(.8*k,1.15*k,1.8*Math.min(k,1.6));if(F.kind===2&&F.t<F.T)hemi.intensity+=tn*.6;}}for(const m of cityMats)m.emissiveIntensity=(1-d)*1.6;}
   renderer.toneMappingExposure=lerp(.95,1.16,d)*(1-.5*Math.min(1,(G.qd||0)*2.5));shadeMat.opacity=.44*d;   // (an earthquake darkens everything for a while)
   if(tm-envT>4){envT=tm;const old=scene.environment;scene.environment=pmr.fromScene(es).texture;if(old)old.dispose();}
   scene.environmentIntensity=lerp(.14,.8,d)*(1-G.tun*.85);
@@ -2806,7 +2824,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={CROWS,BIRDS,SKUNK,SNAP,BRH,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={CROWS,BIRDS,SKUNK,SNAP,BRH,BK,TFL,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
