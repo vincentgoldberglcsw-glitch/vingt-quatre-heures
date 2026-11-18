@@ -875,7 +875,8 @@ await BOOT.step('SPANNING THE BAY · THREE BRIDGES',.49);
   // ---- the three bridges. The Bay Bridge: a riveted truss for the eastern half, then a suspension span on tall towers. The Golden Gate in international orange. The Richmond bridge: long, low, with two humped truss spans.
   {const trussT=canvas(128,128,(g)=>{g.clearRect(0,0,128,128);g.strokeStyle='#fff';g.lineWidth=11;g.strokeRect(5,5,118,118);g.beginPath();g.moveTo(0,0);g.lineTo(128,128);g.moveTo(128,0);g.lineTo(0,128);g.stroke();});trussT.wrapS=trussT.wrapT=THREE.RepeatWrapping;
     const bridge=(a,b,o)=>{const col=o.col,sm=std({color:col,roughness:.55,metalness:.5}),trussM=std({map:trussT,color:col,alphaTest:.4,side:D2,roughness:.6,metalness:.4}),cableM=std({color:o.cable||0x767c81,roughness:.5,metalness:.6}),TH=o.TH;
-      for(const sd of[-1,1]){ribbon(sd*8.4,sd*6.6,.14,.14,side,3,a,b);ribbon(sd*8.3,sd*8.3,.14,1.2,o.rail?std({color:col,roughness:.6,side:D2}):railM,2,a,b).castShadow=true;ribbon(sd*8.5,sd*8.5,-6,0,trussM,6,a,b);}
+      const openT=o.open?canvas(64,128,g=>{g.clearRect(0,0,64,128);g.fillStyle="#fff";g.fillRect(0,0,64,14);g.fillRect(0,0,7,128);g.fillRect(28,0,6,128);g.fillRect(55,0,9,128);}):null;if(openT)openT.wrapS=openT.wrapT=THREE.RepeatWrapping;   // an open rail: three thin bars and a post each few metres, so you see the bay through it
+      for(const sd of[-1,1]){ribbon(sd*8.4,sd*6.6,.14,.14,side,3,a,b);const rl=ribbon(sd*8.3,sd*8.3,.14,1.2,o.open?std({map:openT,color:0x9aa1a6,alphaTest:.5,side:D2,roughness:.5,metalness:.6}):o.rail?std({color:col,roughness:.6,side:D2}):railM,2,a,b);rl.castShadow=!o.open;ribbon(sd*8.5,sd*8.5,-6,0,trussM,6,a,b);}
       const und=std({color:0x4a4e52,roughness:.8,side:D2}),gap=QK&&a<QK.a&&b>QK.b;   // the underside of the deck; where the Bay Bridge's right-hand lanes fall away it stops at the centre line, so the hole opens onto the water
       if(gap){ribbon(8.5,-8.5,-6,-6,und,6,a,QK.a);ribbon(8.5,-8.5,-6,-6,und,6,QK.b,b);ribbon(8.5,QK.ls,-6,-6,und,6,QK.a,QK.b);}else ribbon(8.5,-8.5,-6,-6,und,6,a,b);
       for(let i=a+m(30);i<b-m(20);i+=m(o.pier||60)){if(gap&&i>QK.a-m(12)&&i<QK.b+m(12))continue;const h=45+H[i]-6;B(4,h,15,mat('pier',{color:0x8a8a84,roughness:.9}),P[i].x,-45+h/2,P[i].z,yaw(i));}
@@ -893,7 +894,7 @@ await BOOT.step('SPANNING THE BAY · THREE BRIDGES',.49);
         for(const y of o.deco?[TH*.34,TH*.59,TH*.81,TH]:[11.5,34,57,TH])B(20.6,o.deco?5:2.2,o.deco?3.4:2.8,sm,0,y,0,0,g);
         if(!o.deco){for(const[y0,y1]of[[12.6,33],[35,56],[58,TH-1]])for(const s of[-1,1]){const x=B(Math.hypot(18,y1-y0),.9,.9,sm,0,(y0+y1)/2,0,0,g);x.rotation.z=s*Math.atan2(y1-y0,18);}}
         for(const sd of[-1,1]){const bc=new THREE.Mesh(new THREE.SphereGeometry(.8,8,6),beacon);bc.position.set(sd*10.3,TH+3.2,0);g.add(bc);}g.position.copy(P[i]);g.rotation.y=yaw(i);scene.add(g);}};
-    bridge(Z.b0,Z.b1,{col:0x8b9196,TH:80,sup:[.4,.55,.7,.85,1],truss:[[.004,.36,9.5]],pier:70});
+    bridge(Z.b0,Z.b1,{col:0x8b9196,TH:80,open:1,sup:[.4,.55,.7,.85,1],truss:[[.004,.36,9.5]],pier:70});
     bridge(Z.gg0,Z.gg1,{col:0xc0392b,cable:0xb8402e,TH:150,sup:[0,.18,.82,1],deco:1,leg:4.2,legD:5,cr:.9,rail:1,pier:90});
     bridge(Z.rb0,Z.rb1,{col:0x8a7f6a,TH:0,truss:[[.17,.39,14],[.58,.77,14]],pier:40});
     // street lights for the freeways and the San Rafael bridge: tall poles with an arm and a cobra head, and under each a pool of light on the road at night
@@ -1758,8 +1759,8 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*(1-(PL.melt||0)*.1)
   // guardrail: a glancing touch scrapes and bounces, a real hit is a crash
   const WLL=lat<0&&wallR[bi]?wallR[bi]:wallAt[bi];
   if(Math.abs(lat)>WLL){const sd=Math.sign(lat),vn=(PL.vx*Nn[bi].x+PL.vz*Nn[bi].z)*sd,spd=Math.hypot(PL.vx,PL.vz);
-    if(racing&&DRIVE&&zoneArr[bi]===4&&PL.safe<=0&&(vn>6||(spd>40&&vn>3.5))){startDive(sd,vn,bi);return;}   // on the bridge a real hit takes you through the rail
-    if(racing&&DRIVE&&zoneArr[bi]===3&&H[bi]>6&&PL.safe<=0&&(vn>6||(spd>40&&vn>3.5))){pe.lat=lat;fallOff(sd,vn,bi);return;}   // and off the elevated freeway
+    if(racing&&DRIVE&&zoneArr[bi]===4&&PL.safe<=0&&spd>44.7&&vn>3.5){startDive(sd,vn,bi);return;}   // on the bridge the rail holds the car up to 100 mph (44.7 m/s); a real hit above that takes you through
+    if(racing&&DRIVE&&zoneArr[bi]===3&&H[bi]>6&&PL.safe<=0&&spd>44.7&&vn>3.5){pe.lat=lat;fallOff(sd,vn,bi);return;}   // and off the elevated freeway
     if(racing&&PL.safe<=0&&spd>50&&vn>7){pe.lat=lat;crashPlayer(vn,true);return;}                              // only a hit at real speed wrecks the car
     PL.x-=Nn[bi].x*sd*(Math.abs(lat)-WLL);PL.z-=Nn[bi].z*sd*(Math.abs(lat)-WLL);lat=WLL*sd;
     if(vn>0){PL.vx-=Nn[bi].x*sd*vn*1.35;PL.vz-=Nn[bi].z*sd*vn*1.35;PL.vx*=.9;PL.vz*=.9;VS.r*=.4;let dh=((yaw(bi)-PL.h+Math.PI*3)%(Math.PI*2))-Math.PI;if(Math.abs(dh)<1.6)PL.h+=dh*.22;
@@ -1840,7 +1841,7 @@ function setTime(h,tm){
   u.night.value=1-d;u.cov.value=wx.cov;u.dayk.value=d;u.dk.value=DRIVE?clamp((wx.cov-.4)*1.6,0,.85):0;
   scene.fog.color.copy(u.hz.value).multiplyScalar(lerp(1,.86,wx.cov));scene.fog.near=wx.fn;scene.fog.far=wx.ff;
   if(DRIVE&&G.tun>.05&&PL.idx>Z.tu0-60&&PL.idx<Z.tu1+60){const k=G.tun*.85;scene.fog.near=lerp(scene.fog.near,5,k);scene.fog.far=lerp(scene.fog.far,130,k);}   // the drum fires fill the Posey Tube with smoke
-  if(DRIVE&&G.mist){const pe=ents.find(e=>e.player),dT=wrapI(Z.tu0-START_I)*SEG,d=pe?pe.dist:0;if(d>dT&&d<dT+2000)G.mist=0;const k=G.mist?1-sst(d,dT-700,dT):0;   /* morning fog from the driveway at 1611 until the Posey Tube */
+  if(DRIVE&&G.mist){const u=G.raceT;if(u>21)G.mist=0;const k=G.mist?1-sst(u,15,21):0;   /* morning fog at the driveway at 1611; it lifts about ten seconds after the car has backed out (the reverse-out takes ~7 s) */
     if(k>0){scene.fog.color.lerp(cMist.setRGB(.86,.88,.9).multiplyScalar(.3+.7*dayK),k*.9);scene.fog.near=lerp(scene.fog.near,3,k);scene.fog.far=lerp(scene.fog.far,110,k);}}
   if(el>.02){sun.color.copy(cSunLo).lerp(cSunHi,sst(el,0,.45));sun.intensity=3.5*sst(el,.02,.22)*wx.sunK;V.copy(sunDir);}
   else{sun.color.copy(cMoon);sun.intensity=.32*sst(-el,0,.12)*(1-wx.cov*.6);V.copy(moonDir);}
@@ -2059,37 +2060,50 @@ function birdsTick(rdt){const B=BIRDS,pe=ents.find(e=>e.player);if(!pe)return;
     at(sAl+cz,lat+cx,h+cy,B.V);B.E.set(pt,hd+Math.sin(a)*.3,Math.sin(a)*.4);B.Q.setFromEuler(B.E);
     const fl=Math.sin(tm*(14+k%5)+b.ph);B.S.set(1.3,fl*1.3,1.3);B.M.compose(B.V,B.Q,B.S);B.im.setMatrixAt(k,B.M);}
   B.im.count=B.n;B.im.instanceMatrix.needsUpdate=true;}
-// Skunks on the Alameda streets: one waddles out at the kerb ahead; drive up close and it turns its back, raises its tail and sprays (a yellow-green cloud, a green tint over the view), then scuttles off. Not solid.
-const SKUNK={l:[],cd:12,tint:0,el:null,V:new THREE.Vector3(),W:new THREE.Vector3()};
+// Skunks on the Alameda streets, lots of them: every few seconds one (sometimes a mother with two or three babies trotting behind) runs out from either kerb into the road ahead,
+// stops, turns its back to the car, raises its tail and sprays a big yellow-green mist, then scurries on across or back. Not solid; no tint over the view.
+const SKUNK={l:[],cd:4,V:new THREE.Vector3(),W:new THREE.Vector3()};
 function skunksTick(rdt){const K=SKUNK,pe=ents.find(e=>e.player);if(!pe)return;
-  if(!K.l.length){const blk=std({color:0x121214,roughness:1}),wht=std({color:0xeeeee8,roughness:1});
-    for(let n=0;n<3;n++){const g=new THREE.Group(),b=new THREE.Group();g.add(b);
+  if(!K.l.length){const blk=std({color:0x121214,roughness:1}),wht=std({color:0xf4f4ee,roughness:1});
+    const mk=sc=>{const g=new THREE.Group(),b=new THREE.Group();g.add(b);
       const bd=new THREE.Mesh(new THREE.SphereGeometry(1,10,8),blk);bd.scale.set(.2,.17,.34);bd.position.y=.24;b.add(bd);
-      const st=new THREE.Mesh(new THREE.BoxGeometry(.07,.03,.6),wht);st.position.set(0,.41,-.02);b.add(st);
+      for(const x of[-.06,.06]){const st=new THREE.Mesh(new THREE.BoxGeometry(.05,.035,.6),wht);st.position.set(x,.4,-.02);b.add(st);}   // the two white stripes down the back
       const hd=new THREE.Mesh(new THREE.SphereGeometry(.11,8,6),blk);hd.scale.set(1,.9,1.3);hd.position.set(0,.24,.36);b.add(hd);
       const bz=new THREE.Mesh(new THREE.BoxGeometry(.03,.02,.16),wht);bz.position.set(0,.33,.38);b.add(bz);
       for(const[x,z]of[[-.11,.2],[.11,.2],[-.11,-.2],[.11,-.2]]){const lg=new THREE.Mesh(new THREE.BoxGeometry(.06,.14,.06),blk);lg.position.set(x,.07,z);b.add(lg);}
-      const tp=new THREE.Group();tp.position.set(0,.3,-.3);b.add(tp);const tl=new THREE.Mesh(new THREE.SphereGeometry(1,8,6),blk);tl.scale.set(.13,.12,.3);tl.position.z=-.26;tp.add(tl);
-      const tw=new THREE.Mesh(new THREE.SphereGeometry(1,8,6),wht);tw.scale.set(.07,.06,.24);tw.position.set(0,.09,-.26);tp.add(tw);
-      g.scale.setScalar(1.25);g.visible=false;scene.add(g);K.l.push({g,b,tp,st:0,t:0,s:0,lat:0,side:1,tg:0,ry:0});}
-    const el=document.createElement('div');el.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:40;opacity:0;background:radial-gradient(ellipse at center,rgba(150,190,40,.35),rgba(90,140,20,.75))';document.body.appendChild(el);K.el=el;}
-  if(K.tint>0){K.tint=Math.max(0,K.tint-rdt*.45);K.el.style.opacity=(Math.min(1,K.tint)*.8).toFixed(3);}
-  const town=zoneArr[PL.idx]===1&&G.state==='race';
-  if(town){K.cd-=rdt;if(K.cd<=0){const k=K.l.find(o=>!o.st);K.cd=R(15,35);if(k){const s=pe.s+R(35,60),i=wrapI(Math.floor(s/SEG)),w=RW+XW[i];k.st=1;k.t=0;k.s=s;k.side=Math.random()<.5?-1:1;k.lat=k.side*(w+1.6);k.tg=k.side*(w-R(1.5,3));k.g.visible=true;k.tp.rotation.x=.55;}}}
-  for(const k of K.l){if(!k.st)continue;k.t+=rdt;const ds=wdiff(k.s-pe.s),dl=k.lat-pe.lat;
-    if(ds<-40||ds>250||(!town&&k.st!==3)){k.st=0;k.g.visible=false;continue;}
-    let mv=0,face=-k.side;
-    if(k.st===1){mv=.7;if(Math.abs(ds)<14&&Math.abs(dl)<13){k.st=2;k.t=0;}}
-    else if(k.st===2){face=0;const tr=clamp(k.t/.35,0,1);k.tp.rotation.x=lerp(.55,1.55,tr);
-      if(k.t>.4&&!k.sp){k.sp=1;at(k.s,k.lat,.5,K.V);const dx=PL.x-K.V.x,dz=PL.z-K.V.z,d=Math.hypot(dx,dz)||1;
-        for(let n=0;n<14;n++)puff(K.V,dx/d*R(2,6)+R(-1.5,1.5),R(.4,2.2),dz/d*R(2,6)+R(-1.5,1.5),.8,R(4,8),R(2,3.5),.6,n%2?0xb8c84a:0x8fae2c);
-        K.tint=1.6;say('PHEW! SKUNK!','',2.4);}
-      if(k.t>1.7){k.st=3;k.t=0;k.sp=0;k.tg=k.side*(RW+XW[wrapI(Math.floor(k.s/SEG))]+9);}}
-    else if(k.st===3){mv=3.2;face=k.side;k.tp.rotation.x=lerp(k.tp.rotation.x,.4,clamp(rdt*3,0,1));if(Math.abs(k.lat-k.tg)<.2){k.st=0;k.g.visible=false;continue;}}
-    if(mv){const d=k.tg-k.lat;k.lat+=Math.sign(d)*Math.min(Math.abs(d),mv*rdt);if(k.st===1&&Math.abs(d)<.05)face=Math.sign(pe.lat-k.lat)||1;}
+      const tp=new THREE.Group();tp.position.set(0,.3,-.3);b.add(tp);const tl=new THREE.Mesh(new THREE.SphereGeometry(1,8,6),blk);tl.scale.set(.16,.15,.36);tl.position.z=-.3;tp.add(tl);
+      const tw=new THREE.Mesh(new THREE.SphereGeometry(1,8,6),wht);tw.scale.set(.1,.08,.3);tw.position.set(0,.11,-.3);tp.add(tw);
+      g.scale.setScalar(sc);g.visible=false;scene.add(g);return{g,b,tp,st:0,t:0,s:0,lat:0,side:1,tg:0,ry:0,mv:0,sp:0,ma:null,n:0,baby:sc<1};};
+    for(let n=0;n<10;n++)K.l.push(mk(1.5));for(let n=0;n<9;n++)K.l.push(mk(.85));}
+  const town=zoneArr[PL.idx]===1&&G.state==='race',v=Math.abs(pe.v),act=K.l.filter(o=>o.st&&!o.baby).length;
+  if(town){K.cd-=rdt;if(K.cd<=0){K.cd=R(2,4.5);const k=K.l.find(o=>!o.st&&!o.baby);
+    if(k&&act<10){const s=pe.s+Math.max(42,v*3.4)+R(0,30),i=wrapI(Math.floor(s/SEG)),w=RW+XW[i];k.st=1;k.t=0;k.sp=0;k.s=s;k.side=Math.random()<.5?-1:1;k.mv=R(2.4,3.4);
+      if(Math.random()<.15){k.lat=k.side*R(1,w-1.5);k.tg=-k.side*R(0,w-2);}   // already out in the road, crossing
+      else{k.lat=k.side*(w+1.6);k.tg=k.side*(w-R(2,5));}
+      k.g.visible=true;k.tp.rotation.x=.55;
+      if(Math.random()<.3){const nb=2+(Math.random()<.5?1:0);let c=0;for(const b of K.l){if(c>=nb)break;if(b.baby&&!b.st){b.st=1;b.ma=k;b.n=c++;b.t=R(0,1);b.s=k.s+R(-.35,.35);b.lat=k.lat+k.side*(b.n+1)*.55;b.g.visible=true;b.tp.rotation.x=.7;}}}}}}
+  for(const k of K.l){if(!k.st)continue;k.t+=rdt;
+    if(k.baby){const m=k.ma;if(!m||!m.st){k.st=0;k.ma=null;k.g.visible=false;continue;}   // babies trot along behind their mother and hide behind her while she sprays
+      const dir=Math.sign(m.tg-m.lat)||-m.side,want=m.lat-dir*(k.n+1)*.55,d=want-k.lat;k.lat+=Math.sign(d)*Math.min(Math.abs(d),(m.mv+1)*rdt);k.s+=(m.s+(k.n-1)*.25-k.s)*clamp(rdt*3,0,1);
+      at(k.s,k.lat,0,K.V);k.g.position.copy(K.V);const mov=Math.abs(d)>.03;
+      if(mov){at(k.s,k.lat+Math.sign(d),0,K.W);k.ry=Math.atan2(K.W.x-K.V.x,K.W.z-K.V.z);}k.g.rotation.y=k.ry;
+      k.b.rotation.z=mov?Math.sin(k.t*26)*.14:0;k.b.position.y=mov?Math.abs(Math.sin(k.t*26))*.03:0;continue;}
+    const ds=wdiff(k.s-pe.s);
+    if(ds<-40||ds>260||(!town&&k.st!==3)){k.st=0;k.g.visible=false;continue;}
+    let mv=0,face=Math.sign(k.tg-k.lat)||-k.side;
+    if(k.st===1){mv=k.mv;if(Math.abs(k.tg-k.lat)<.05){k.st=2;k.t=0;}}   // run out into the road
+    else if(k.st===2){face=0;const tr=clamp((k.t-.25)/.35,0,1);k.tp.rotation.x=lerp(.55,1.6,tr);k.b.rotation.x=-tr*.12;   // stop, turn round, tail up...
+      if(k.t>.6&&!k.sp){k.sp=1;at(k.s,k.lat,.55,K.V);const dx=PL.x-K.V.x,dz=PL.z-K.V.z,d=Math.hypot(dx,dz)||1;   // ...and spray: a jet towards the car and a cloud that hangs over the road
+        for(let n=0;n<22;n++)puff(K.V,dx/d*R(3,9)+R(-1.8,1.8),R(.3,2.4),dz/d*R(3,9)+R(-1.8,1.8),.9,R(5,10),R(2.5,4.5),.7,n%3?0xc2d24e:0x8fb02a);
+        for(let n=0;n<10;n++)puff(K.V,R(-1.2,1.2),R(.2,.9),R(-1.2,1.2),1.4,R(6,11),R(3.5,5.5),.45,0xd4dc7a);
+        if(Math.abs(ds)<45){say('PHEW! SKUNK!','',2);sfxHiss();}}
+      if(k.t>2){k.st=3;k.t=0;k.sp=0;const w=RW+XW[wrapI(Math.floor(k.s/SEG))];k.tg=(Math.random()<.6?-k.side:k.side)*(w+9);k.mv=R(3,4.2);}}
+    else if(k.st===3){mv=k.mv;k.b.rotation.x=0;k.tp.rotation.x=lerp(k.tp.rotation.x,.45,clamp(rdt*3,0,1));if(Math.abs(k.lat-k.tg)<.2){k.st=0;k.g.visible=false;continue;}}   // move on, off the road
+    if(mv){const d=k.tg-k.lat;k.lat+=Math.sign(d)*Math.min(Math.abs(d),mv*rdt);}
     at(k.s,k.lat,0,K.V);k.g.position.copy(K.V);
     if(face){at(k.s,k.lat+face,0,K.W);k.ry=Math.atan2(K.W.x-K.V.x,K.W.z-K.V.z);}else k.ry=Math.atan2(K.V.x-PL.x,K.V.z-PL.z);   /* spraying: back to the car */
-    k.g.rotation.y=k.ry;const wd=mv&&Math.abs(k.tg-k.lat)>.05?1:0;k.b.rotation.z=wd*Math.sin(k.t*(mv>2?22:11))*.12;k.b.position.y=wd*Math.abs(Math.sin(k.t*(mv>2?22:11)))*.03;}}
+    k.g.rotation.y=k.ry;const wd=mv&&Math.abs(k.tg-k.lat)>.05?1:0;k.b.rotation.z=wd*Math.sin(k.t*22)*.12;k.b.position.y=wd*Math.abs(Math.sin(k.t*22))*.035;}}
+function sfxHiss(){if(!AC)return;const t=AC.currentTime;hit(t,.9,.35,4200,'highpass',master);hit(t+.05,.7,.25,2200,'bandpass',master);}
 function turkeysTick(rdt){const v=Math.hypot(PL.vx,PL.vz);for(const k of TK){const m=k.m,gy=H[k.ci];
     if(k.st===0){k.tt-=rdt;if(k.tt<=0){k.tt=R(2,7);k.tl=clamp(k.lat+R(-7,7),-13,13);k.td=clamp(k.ds+R(-6,6),-22,22);}
       at(k.ci*SEG+k.ds,k.lat,0,V);const near=(V.x-PL.x)**2+(V.z-PL.z)**2,sc=near<260&&v>5?3.2:.75;if(sc>1&&Math.abs(k.tl-k.lat)<1)k.tl=clamp(k.lat+(k.lat>=0?9:-9),-14,14);   // they scuttle aside when a car comes
@@ -2193,24 +2207,25 @@ function sfxQuake(){if(!AC)return;const t=AC.currentTime;hit(t,4.5,1.4,70,'lowpa
 // and lands: on the road it stays as an obstacle with a burst of dust; over a hole or the bay it carries on down into the water.
 const DEB=[];let debM=null;
 function debMats(){if(debM)return debM;const fac=canvas(128,128,(g,w,h)=>{g.fillStyle='#c8bfae';g.fillRect(0,0,w,h);g.fillStyle='#2a3238';for(let y=10;y<h;y+=40)for(let x=10;x<w;x+=34)g.fillRect(x,y,20,26);g.strokeStyle='rgba(0,0,0,.4)';g.lineWidth=3;g.beginPath();g.moveTo(0,h*.3);g.lineTo(w*.6,h*.55);g.lineTo(w,h*.4);g.stroke();});
-  debM={con:[0x8a8d90,0x9a968c,0x6f7477,0xa8a094].map(c=>std({color:c,roughness:.95})),fac:std({map:fac,roughness:.9}),brick:std({color:0x8a4a38,roughness:.95}),glass:std({color:0xa8c8d8,roughness:.05,metalness:.6,transparent:true,opacity:.7,side:THREE.DoubleSide})};return debM;}
+  debM={con:[0x8a8d90,0x9a968c,0x6f7477,0xa8a094].map(c=>std({color:c,roughness:.95})),fac:std({map:fac,roughness:.9}),brick:std({color:0x8a4a38,roughness:.95}),metal:[0x7f868b,0x6b5446,0x8b9196,0x5a5f63].map(c=>std({color:c,roughness:.5,metalness:.7})),glass:std({color:0xa8c8d8,roughness:.05,metalness:.6,transparent:true,opacity:.7,side:THREE.DoubleSide})};return debM;}
 function spawnDeb(s,lat,h,kind,delay,water,inward=0,sc=1){const M=debMats();let geo,mm,sz;
   if(kind==='slab'){const w=R(3,6);geo=new THREE.BoxGeometry(w,R(2.5,4.5),.45);mm=M.fac;sz=w*.45;}else if(kind==='brick'){geo=new THREE.BoxGeometry(.45,.22,.22);mm=M.brick;sz=.2;}
+  else if(kind==='metal'){const t=Math.random()*4|0;geo=t===0?new THREE.CylinderGeometry(.07,.07,R(2.5,4.5),6):t===1?new THREE.CylinderGeometry(.09,.12,R(4,6),6):t===2?new THREE.CylinderGeometry(.04,.04,R(4,7),5):new THREE.BoxGeometry(R(1.4,2.8),.32,.14);mm=pick(M.metal);sz=t===3?.16:.12;}   // bent poles, lamp standards, cable, girder bits: small, never in the way
   else if(kind==='glass'){geo=new THREE.PlaneGeometry(R(.4,1.1),R(.4,1.1));mm=M.glass;sz=.05;}else{const k=R(1.2,3);geo=new THREE.BoxGeometry(k*R(.8,1.3),k*R(.6,1),k*R(.8,1.3));mm=pick(M.con);sz=k*.42;}
   sz*=sc;const m=new THREE.Mesh(geo,mm);m.scale.setScalar(sc);m.castShadow=kind!=='glass';at(s,lat,h,m.position);m.rotation.set(R(0,6),R(0,6),R(0,6));m.visible=delay<=0;scene.add(m);
   const i=wrapI(Math.floor(s/SEG)),n=Nn[i];DEB.push({m,kind,t:delay,vy:0,vx:-n.x*inward,vz:-n.z*inward,w:R(-3,3),gy:H[i],sz,water,ob:null,done:false});}
 function debrisTick(rdt){for(let k=DEB.length-1;k>=0;k--){const d=DEB[k];if(d.done)continue;if(d.t>0){d.t-=rdt;if(d.t>0)continue;d.m.visible=true;}
     d.vy-=(d.kind==='glass'?9:20)*rdt;d.m.position.x+=d.vx*rdt;d.m.position.z+=d.vz*rdt;d.m.position.y+=d.vy*rdt;d.m.rotation.x+=d.w*rdt;d.m.rotation.z+=d.w*.7*rdt;
     const p=d.m.position,dx=p.x-PL.x,dz=p.z-PL.z;
-    if(!d.water&&p.y<=d.gy+d.sz){p.y=d.gy+d.sz;d.done=true;if(d.kind==='glass'){d.m.rotation.x=-Math.PI/2;continue;}if(d.kind!=='brick'&&d.sz>.5){d.ob={x:p.x,z:p.z,r:d.sz*1.6+.4};OBST.push(d.ob);}
+    if(!d.water&&p.y<=d.gy+d.sz){p.y=d.gy+d.sz;d.done=true;if(d.kind==='glass'){d.m.rotation.x=-Math.PI/2;continue;}if(d.kind==='metal'){d.m.rotation.set(R(-.15,.15),R(0,6.3),d.m.geometry.type==='CylinderGeometry'?Math.PI/2:0);if(dx*dx+dz*dz<900)sfxScrape(.35);continue;}if(d.kind!=='brick'&&d.sz>.5){d.ob={x:p.x,z:p.z,r:d.sz*1.6+.4};OBST.push(d.ob);}
       if(d.sz>.5){sfxCrunch(clamp(d.sz*.35,.25,.8));NOGY=1;for(let q=0;q<9;q++)puff(V.set(p.x+R(-1,1),p.y,p.z+R(-1,1)),R(-4,4),R(1,4),R(-4,4),1,R(4,7),R(1.5,3),.55,0xa8a094);NOGY=0;}
       if(dx*dx+dz*dz<(d.sz+1.6)**2&&!PL.crash){G.shake=Math.max(G.shake,.9);PL.vx*=.55;PL.vz*=.55;sfxScrape(1);}}   // landed on the car, or just in front of it
     else if(d.water&&p.y<-44){d.done=true;d.m.visible=false;if(d.sz>.5){sfxSplash();NOGY=1;for(let q=0;q<10;q++)puff(V.set(p.x,-44.6,p.z),R(-3,3),R(4,10),R(-3,3),.8,R(3,6),R(1.2,2.2),.7,0xeef2f4);NOGY=0;}}}}
 function clearDeb(){for(const d of DEB){scene.remove(d.m);d.m.geometry.dispose();if(d.ob){const k=OBST.indexOf(d.ob);if(k>=0)OBST.splice(k,1);}}DEB.length=0;}
 function quakeTick(rdt){const q=QK,i=PL.idx;G.roll=0;if(!q)return;
   if(q.st===0){if(i>q.a-330&&i<q.a-40&&!PL.crash){q.st=1;q.t=0;q.cr=0;q.side=-1;q.jolt=0;say('EARTHQUAKE !','THE BRIDGE IS BREAKING UP AHEAD - KEEP TO THE LEFT RAIL',6);sfxQuake();quakeStart(q);G.qd=1;for(let k=0;k<10;k++)crackRoad((q.a-R(4,70))*SEG,R(-RW,RW));
-      // concrete shaken off the upper deck and the towers: some lands on the lanes that are left, some goes down through the gap
-      for(let k=0;k<18;k++){const j=q.a-50+Math.random()*(q.b-q.a+90),inGap=j>q.a&&j<q.b,lat=inGap?R(-RW,q.ls-1):R(-RW,RW),over=inGap;spawnDeb(j*SEG,lat,R(18,45),Math.random()<.7?'chunk':'brick',R(1.8,7),over);}}return;}
+      // metal shaken off the bridge (bent poles, lamp standards, cable, girder bits) and some bricks: some lands on the lanes that are left, some goes down through the gap
+      for(let k=0;k<18;k++){const j=q.a-50+Math.random()*(q.b-q.a+90),inGap=j>q.a&&j<q.b,lat=inGap?R(-RW,q.ls-1):R(-RW,RW),over=inGap;spawnDeb(j*SEG,lat,R(18,45),Math.random()<.8?'metal':'brick',R(1.8,7),over);}}return;}
   q.t+=rdt;const m=q.half[1],sw=sst(q.t,.5,1.1)*(1-sst(q.t,1.7,2.1))+sst(q.t,5.4,6.2)*(1-sst(q.t,10.5,12.5)),ph=Math.sin(q.t*2.4);G.shake=Math.max(G.shake,q.t<8?(.65*(1-q.t/8)+.15)*(1-.8*sw):0);   // the rumble and the sway take turns
   {const lat=.55*sw*ph,d=lat-(q.sw||0);q.sw=lat;if(!PL.crash){const n=Nn[i];PL.x+=n.x*d;PL.z+=n.z*d;}G.roll=.035*sw*Math.sin(q.t*2.4+.5);   // the deck rolls a little from side to side, carrying the car and the view with it
     const ax=QK.ax||(QK.ax=new THREE.Vector3()),pv=QK.pv||(QK.pv=new THREE.Vector3()),qq=QK.qq||(QK.qq=new THREE.Quaternion()),c=(q.a+q.b)>>1;ax.set(T[c].x,0,T[c].z).normalize();pv.copy(P[c]);qq.setFromAxisAngle(ax,.014*sw*ph);
@@ -2307,7 +2322,8 @@ function trafficTick(dt,pe){if(TRAF.pol){const f=(tmNow()*7|0)%2;TRAF.pol[0].emi
     placeVehicle(t);
     for(const wh of t.g.wh)wh.rotation.x+=t.v*dt/.4;if(t.g.legs){const q=tmNow()*9;t.g.legs.forEach((l,k)=>{l.rotation.x=Math.sin(q+(k%2?0:Math.PI)+(k>1?.6:0))*.5;});}
     if(t.bt>0)t.bt-=dt;const dx=t.g.position.x-PL.x,dz=t.g.position.z-PL.z,rel=Math.abs(pe.v-t.v);
-    if(dx*dx+dz*dz<(t.r+1)**2&&!PL.crash&&G.state==='race'){if(pe.v>44.7&&PL.safe<=0)crashPlayer(Math.max(rel,20)*.4,false);   // over 100 mph, a crash
+    if(dx*dx+dz*dz<(t.r+1)**2&&!PL.crash&&G.state==='race'){const two=t.kind==='moto'||t.kind==='bike';if(two&&!(t.bt>0)){t.bt=.6;t.s+=1.5;t.v=Math.max(t.v,pe.v+R(3,6));t.kv=0;PL.vx*=.97;PL.vz*=.97;G.shake=Math.max(G.shake,.25);sfxThump(.6);}   // motorcycles and bicycles: never a crash, at any speed, just shoved on ahead
+      else if(two);else if(pe.v>44.7&&PL.safe<=0)crashPlayer(Math.max(rel,20)*.4,false);   // over 100 mph, a crash
       else if(!(t.bt>0)){t.bt=.7;const n=Nn[i],sd=(dx*n.x+dz*n.z)>=0?1:-1;t.kv=sd*clamp(rel*.35+3,3,11);t.v*=.7;PL.vx*=.82;PL.vz*=.82;PL.x-=n.x*sd*.4;PL.z-=n.z*sd*.4;G.shake=Math.max(G.shake,.55);sfxCrunch(clamp(rel/25+.35,.35,.9));}}}}   // below that a bump: both cars pushed apart and slowed, the other one knocked sideways
 // ---- San Quentin's beach (east of the prison, down to the bay): big surf crashing in and people flying kites. Hyde St: a few people on the pavements, and kids skateboarding down the middle of the road below the crest (solid: steer round them).
 // All made after bakeStatic, with their own seeded numbers so nothing else moves.
