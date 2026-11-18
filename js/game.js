@@ -114,7 +114,7 @@ const BRH=[];   // the suspension spans (where the hanging cables are) and the h
 const XW=new Float32Array(NS+1),H=new Float32Array(NS+1);
 if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SEG),z=Z,xwT=new Float32Array(NS),WL=z.tu0-z.wilma;
   for(let i=0;i<NS;i++){const c=zoneArr[i];xwT[i]=c===1?2.2:c===3?(i<z.tu0?1.4:2.4):c===4?1.8:c===5?1.2:c===8?.6:0;if((i>z.tu0-m(220)&&i<z.tu1+m(220))||(i>z.wt1-m(220)&&i<z.wt0+m(220)))xwT[i]=0;}
-  for(let i=0;i<NS;i++){let s=0;for(let j=-25;j<=25;j++)s+=xwT[wrapI(i+j)];XW[i]=s/51+4.6*bump(i,z.toll+m(70),z.toll+m(120),z.toll+m(240),z.toll+m(290))+1.3*bump(i,z.detour+m(170),z.detour+m(260),z.toll+m(110),z.toll+m(170));   /* the approach to the toll plaza is a little wider, with lane lines */
+  for(let i=0;i<NS;i++){let s=0;for(let j=-25;j<=25;j++)s+=xwT[wrapI(i+j)];XW[i]=s/51+4.6*bump(i,z.toll+m(70),z.toll+m(120),z.toll+m(240),z.toll+m(290))+1.3*bump(i,z.detour+m(170),z.detour+m(260),z.toll+m(110),z.toll+m(170))+2.4*bump(i,z.hyde-m(20),z.hyde+m(40),z.marina-m(70),z.marina-m(10));   /* the approach to the toll plaza is a little wider, with lane lines */
     H[i]=5.4*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.5,z.wilma+WL*.665)+1.6*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.685,z.wilma+WL*.705)   /* Wilma Chan overpass: comes down to a short level lip and drops off it - a small jump on the way to the tube */
       +18*bump(i,z.tu1+m(160),z.tu1+m(560),z.toll-m(520),z.toll-m(260))
       +22*bump(i,z.b0-m(240),z.b0-m(10),z.b1-m(460),z.b1-m(120))
@@ -982,11 +982,19 @@ await BOOT.step('SAN FRANCISCO',.55);
     // Victorians up and over the hill, stepped like the real ones, bay windows and cornices
     const vt=canvas(128,256,(g,w,h)=>{g.fillStyle='#fff';g.fillRect(0,0,w,h);for(let fl=0;fl<3;fl++){const y=20+fl*78;g.fillStyle='#f4f1e8';g.fillRect(8,y-6,112,4);for(const x of[18,74]){g.fillStyle='#f4f1e8';g.fillRect(x-4,y-4,44,64);g.fillStyle='#2a343c';g.fillRect(x,y,36,56);}}});
     const cols=[0xe6c9a8,0xb8c9d6,0xd8b7b0,0xc9d6c2,0xf0ead8,0xe8dcc0,0xc7c3d8,0x9fb8a8,0xe8b8a0];
-    for(let i=Z.hyde+m(30);i<Z.marina-m(30);i+=6)for(const sd of[-1,1]){if(rnd()<.08||(i>Z.hyde+m(340)&&i<Z.hyde+m(445)))continue;   /* open at the crest, for the view */off(i,sd*(15+XW[i]),0,V);const w=rr(7.5,9),h=rr(10,13),d=12,g=new THREE.Group(),c=pick(cols),mm=mat('vt'+c,{map:vt,color:c,roughness:.85});
-      B(w,h,d,mm,0,h/2,0,0,g);B(w+.5,.6,d+.4,white,0,h+.3,0,0,g);B(w*.45,h*.7,1.4,mm,w*.2,h*.42,d/2+.6,0,g);B(w+.3,h,d,mat('step',{color:0x9a968c}),0,-h/2+.05,0,0,g);
+    // fewer of them, spaced out, in mixed shapes, colours and heights: Victorians with bay windows, flat-topped apartment blocks, narrow towers with steep roofs, and now and then a crumbled ruin, some still burning
+    const char=mat('hydeRuin',{color:0x3a3430,roughness:1}),soot=mat('hydeSoot',{color:0x1c1916,roughness:1}),roofM=mat('hydeRoof',{color:0x4a3c36,roughness:.9});
+    for(const sd of[-1,1])for(let i=Z.hyde+m(30+rr(0,15));i<Z.marina-m(30);i+=m(rr(17,28))){if(i>Z.hyde+m(340)&&i<Z.hyde+m(445))continue;   /* open at the crest, for the view */
+      const t=rnd(),w=rr(7,12),d=rr(9,12),g=new THREE.Group(),c=pick(cols),mm=mat('vt'+c,{map:vt,color:c,roughness:.85});off(i,sd*(10.2+d/2+XW[i]),0,V);
+      if(t<.13){let top=0;for(let q=0;q<3;q++){const hh=rr(2,7)*(q?.7:1),ww=w*rr(.3,.55);top=Math.max(top,hh);B(ww,hh,d*rr(.5,.9),q?soot:char,(q-1)*w*.3,hh/2,rr(-1.5,1.5),rr(-.2,.2),g);}   // a ruin: broken walls and rubble
+        B(w*.9,.8,d*.8,soot,0,.4,0,rr(-.3,.3),g);if(rnd()<.6){off(i,sd*(10.2+d/2+XW[i]),top*.6,V2);BURN.push({x:V2.x,y:V2.y,z:V2.z,s:rr(.6,1.1)});}}
+      else{const h=t<.55?rr(9,15):t<.82?rr(14,24):rr(16,28),ww=t>=.82?w*.7:w;B(ww,h,d,mm,0,h/2,0,0,g);B(ww+.5,.6,d+.4,white,0,h+.3,0,0,g);
+        if(t<.55)B(ww*.45,h*.7,1.4,mm,ww*.2,h*.42,d/2+.6,0,g);   // Victorian bay window
+        else if(t>=.82){const r=new THREE.Mesh(new THREE.ConeGeometry(.72,1,4).rotateY(Math.PI/4),roofM);r.scale.set(ww*1.02,rr(4,7),d*1.02);r.position.y=h+.6+r.scale.y/2;r.castShadow=true;g.add(r);}}   // a steep roof on the narrow ones
+      B(w+.3,40,d,mat('step',{color:0x9a968c}),0,-20+.05,0,0,g);   // the footing, down the slope of the hill
       g.position.copy(V);g.rotation.y=faceRoad(i,sd);scene.add(g);}
-    // cable car slot and rails in the left lane
-    const sl=std({color:0x2a2a2a,roughness:.4,metalness:.6});for(const o of[2.6,3.3,4.0])ribbon(o-.05,o+.05,.03,.03,sl,4,Z.hyde+4,Z.marina-m(40));
+    // the cable car slots and rails: two tracks down the middle of the street, up on the right, down on the left
+    const sl=std({color:0x2a2a2a,roughness:.4,metalness:.6});for(const c of[-2.4,2.4])for(const o of[c-.7,c,c+.7])ribbon(o-.05,o+.05,.03,.03,sl,4,Z.hyde+4,Z.marina-m(40));
     // Coit Tower on its hill to the right of the view, Alcatraz straight ahead in the bay, and the Golden Gate off to the left
     const wht=std({color:0xe8e4d6,roughness:.8}),grn=std({color:0x4f6238,roughness:1});const cx=-6000,cz=-6250;
     {const h=new THREE.Mesh(new THREE.SphereGeometry(1,20,12),grn);h.scale.set(110,48,110);h.position.set(cx,-6,cz);scene.add(h);const t=new THREE.Mesh(cyl(5,5.8,52,24),wht);t.position.set(cx,68,cz);t.castShadow=true;scene.add(t);
@@ -2407,10 +2415,10 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),D2=THREE.DoubleSide;
   KINDS.forEach((k,n)=>{const v=MK[k]();v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r,soft:1}};TRAF.push(t);OBST.push(t.ob);});
   [['police',1],['truck2',3],['police',6],['truck2',8],['police',10]].forEach(([k,n])=>{const v=MK[k]();v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,extra:true,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r,soft:1}};TRAF.push(t);OBST.push(t.ob);});   // double-trailer trucks and police cars, added after the others and using Math.random, so the seeded scenery stays put
   // the cable car: red and cream, open at the ends, with passengers hanging on
-  {const g=new THREE.Group(),red=std({color:0xa8241c,roughness:.6}),crm=std({color:0xe8dcb8,roughness:.7}),wd=std({color:0x5a3a22,roughness:.8});g.wh=[];
+  CABLE=[];const red=std({color:0xa8241c,roughness:.6}),crm=std({color:0xe8dcb8,roughness:.7}),wd=std({color:0x5a3a22,roughness:.8});for(const dir of[1,-1]){const g=new THREE.Group();g.wh=[];
     box(g,2.5,1,8.4,red,0,.9,0);box(g,2.4,1.3,4.4,crm,0,2.05,0);box(g,2.6,.18,8.8,wd,0,3.3,0);box(g,2.2,.4,8.2,crm,0,3.55,0);for(const z of[-3.9,-2.3,2.3,3.9])for(const x of[-1.15,1.15])box(g,.08,1.6,.08,wd,x,2.1,z);
     for(let k=0;k<7;k++)rider(g,(k%2?1:-1)*1.25,1,-3.4+k*1.1,pick([0x2a3a5a,0x8a3a30,0xc9a84a,0x3a5a3a,0xe8e4d6]),k===3);const sg=new THREE.Mesh(new THREE.PlaneGeometry(2,.4),new THREE.MeshBasicMaterial({map:canvas(256,52,(c)=>{c.fillStyle='#e8dcb8';c.fillRect(0,0,256,52);c.fillStyle='#a8241c';c.font='900 30px Georgia';c.textAlign='center';c.fillText('HYDE & BEACH',128,36);})}));sg.position.set(0,3.3,4.42);g.add(sg);
-    for(const[x,z]of[[-.8,3],[.8,3],[-.8,-3],[.8,-3]])wheel(g,x,z,.35);g.visible=false;scene.add(g);CABLE={g,s:0,act:false,bell:2,obs:[{x:1e9,z:1e9,r:2},{x:1e9,z:1e9,r:2},{x:1e9,z:1e9,r:2}]};CABLE.obs.forEach(o=>OBST.push(o));}
+    for(const[x,z]of[[-.8,3],[.8,3],[-.8,-3],[.8,-3]])wheel(g,x,z,.35);g.rotation.order='YXZ';g.visible=false;scene.add(g);const cc={g,dir,lat:-2.4*dir,s:0,act:false,bell:2+dir,obs:[{x:1e9,z:1e9,r:2},{x:1e9,z:1e9,r:2},{x:1e9,z:1e9,r:2}]};cc.obs.forEach(o=>OBST.push(o));CABLE.push(cc);}   // two cars: one climbing in the right-hand track, one coming down in the left
   // the passenger train beside I-880: a locomotive and double-deck cars
   {const g=new THREE.Group(),st=std({color:0xc9ccd0,roughness:.45,metalness:.5}),stripe=std({color:0x22407a,roughness:.5}),red=std({color:0xb3241c,roughness:.5}),win=std({color:0x1b2328,roughness:.15});g.cars=[];
     for(let k=0;k<7;k++){const c=new THREE.Group();box(c,3,4.6,24,st,0,2.8,0);box(c,3.04,.5,24,stripe,0,1.4,0);box(c,3.04,.25,24,red,0,1.8,0);for(const y of[2.6,4])box(c,3.06,.7,22,win,0,y,0);if(!k){box(c,3.05,1.6,3,red,0,3.4,11.2);}g.add(c);g.cars.push(c);}
@@ -2632,10 +2640,11 @@ function extrasTick(rdt){const pe=ents.find(e=>e.player);if(!pe)return;const m_=
     if(!f.flare&&Math.random()<rdt*3.5*k)puff(V.set(f.x+R(-1,1),f.y+2*f.s,f.z+R(-1,1)),R(.6,2),R(4,7),R(-.5,.5),3*f.s,R(16,30)*f.s,R(6,10),.62,0x121010);}NOGY=0;
   // the eyes: they look about, and blink
   {const E_=EYES;E_.t-=rdt;if(E_.t<=0){const set=k=>{for(const mm of E_.mats){mm.map=mm.emissiveMap=E_.tex[k];}};if(E_.seq&&E_.seq.length){set(E_.seq.shift());E_.t=.07;}else if(Math.random()<.45){E_.seq=[3,4,4,3,E_.look];E_.t=0;}else{E_.look=Math.random()*3|0;set(E_.look);E_.t=R(1.2,3.5);}}}
-  // the cable car climbs Hyde Street ahead of you, bell going
-  {const c=CABLE,inCity=PL.idx>=Z.b1&&PL.idx<Z.gg0;if(inCity&&!c.act&&PL.idx<Z.hyde){c.act=true;c.s=(Z.hyde+m_(70))*SEG;}if(!inCity&&c.act){c.act=false;c.g.visible=false;for(const o of c.obs)o.x=1e9;}
-    if(c.act){c.g.visible=true;const near=Math.abs(wdiff(c.s-pe.s));c.s+=(c.s<(Z.marina-m_(60))*SEG?5:0)*rdt;const i=wrapI(Math.floor(c.s/SEG));at(c.s,3.3,0,c.g.position);const sl=(H[wrapI(i+1)]-H[wrapI(i-1)])/(2*SEG);c.g.rotation.set(-Math.atan(sl),yaw(i),0);
-      c.obs.forEach((o,k)=>{at(c.s+(k-1)*3,3.3,0,V);o.x=V.x;o.z=V.z;});c.bell-=rdt;if(c.bell<=0&&near<90){c.bell=R(2.5,4.5);sfxBell();}}}
+  // the cable cars on Hyde Street, bells going: one climbs ahead of you in the right-hand track, one comes down the left. Each sits on its wheels: the height is the road under the front and back trucks, the tilt the line between them.
+  {const inCity=PL.idx>=Z.b1&&PL.idx<Z.gg0,lo=(Z.hyde+m_(70))*SEG,hi=(Z.marina-m_(70))*SEG;for(const c of CABLE){if(inCity&&!c.act&&PL.idx<Z.hyde){c.act=true;c.s=c.dir>0?lo:hi;}if(!inCity&&c.act){c.act=false;c.g.visible=false;for(const o of c.obs)o.x=1e9;}
+    if(c.act){c.g.visible=true;const near=Math.abs(wdiff(c.s-pe.s));if(c.dir>0?c.s<hi:c.s>lo)c.s+=5*c.dir*rdt;const i=wrapI(Math.floor(c.s/SEG)),yf=at(c.s+3*c.dir,c.lat,0,V).y,yb=at(c.s-3*c.dir,c.lat,0,V).y;
+      at(c.s,c.lat,0,c.g.position).y=(yf+yb)/2+.05;c.g.rotation.set(-Math.atan2(yf-yb,6),yaw(i)+(c.dir<0?Math.PI:0),0);
+      c.obs.forEach((o,k)=>{at(c.s+(k-1)*3,c.lat,0,V);o.x=V.x;o.z=V.z;});c.bell-=rdt;if(c.bell<=0&&near<90){c.bell=R(2.5,4.5);sfxBell();}}}}
   // hawks swoop across the road in the redwoods
   {const S_=SWOOP,inF=zoneArr[PL.idx]===7;DA.sw=(DA.sw??4)-rdt;if(!S_.f&&inF&&DA.sw<=0&&!PL.crash){const sd=Math.random()<.5?-1:1,s0=pe.s+30+Math.max(pe.v,10)*1.4;S_.f={t:0,dur:2.8,a:at(s0+30,sd*40,40),b:at(s0,0,2.8),c:at(s0-10,-sd*45,34)};S_.visible=true;sfxScreech();DA.sw=R(7,14);}
     if(S_.f){const F=S_.f;F.t+=rdt;const u=F.t/F.dur;if(u>=1||!inF){S_.f=null;S_.visible=false;}else{const a=F.a,b=F.b,c=F.c,p=(1-u)*(1-u),q2=2*u*(1-u),r=u*u;S_.position.set(a.x*p+b.x*q2+c.x*r,a.y*p+b.y*q2+c.y*r,a.z*p+b.z*q2+c.z*r);
