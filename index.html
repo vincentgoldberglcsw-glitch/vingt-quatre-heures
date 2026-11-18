@@ -63,16 +63,19 @@
   #res div{font-size:15px;line-height:1.7;font-variant-numeric:tabular-nums}#res .me{color:#e9a13a;font-weight:700}
   .hide{display:none!important}
   /* home screen: a slideshow of scenes from both drives, and the bonus Alameda drive with four of its sights */
-  #show{display:none;position:fixed;z-index:5;right:3vw;top:11vh;width:min(50vw,640px);aspect-ratio:16/9;border:2px solid rgba(239,233,214,.35);box-shadow:0 8px 30px rgba(0,0,0,.6);overflow:hidden;background:#08080a}
-  #title.home:not(.hide)~#show{display:block}
-  #show img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s}#show img.on{opacity:1}
-  #show p{position:absolute;left:0;right:0;bottom:0;margin:0;padding:22px 14px 9px;font-size:12px;letter-spacing:.24em;background:linear-gradient(transparent,rgba(8,10,12,.85));text-shadow:0 2px 6px rgba(0,0,0,.8)}
+  #show{display:none;position:fixed;inset:0;z-index:15;overflow:hidden;background:#050506;cursor:pointer;transition:opacity .8s}#show.on{display:block}#show.out{opacity:0;pointer-events:none}
+  #show img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s;transform-origin:50% 55%}#show img.on{opacity:1;animation:kb 5.5s linear both}
+  @keyframes kb{from{transform:scale(1.02) translate(1.5%,.5%)}to{transform:scale(1.16) translate(-1.5%,-1%)}}
+  #show::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,transparent 45%,rgba(0,0,0,.6)),linear-gradient(transparent 60%,rgba(0,0,0,.75))}
+  #show h1{position:absolute;z-index:1;left:4vw;top:7vh;margin:0;font-size:min(9vw,76px);line-height:.95;font-weight:800;letter-spacing:.02em;text-shadow:0 3px 12px rgba(0,0,0,.8)}
+  #show p{position:absolute;z-index:1;left:4vw;bottom:13vh;margin:0;font-size:min(4vw,22px);font-weight:800;letter-spacing:.2em;text-shadow:0 2px 8px rgba(0,0,0,.9)}#show p em{display:block;font-style:normal;font-weight:400;font-size:.6em;color:#e9c98a;margin-top:6px}
+  #show p b{color:#14110c;background:#e9a13a;padding:1px 8px;margin-right:8px}
+  #show u{position:absolute;z-index:1;left:0;right:0;bottom:5vh;text-align:center;text-decoration:none;font-size:13px;letter-spacing:.32em;color:#e9a13a;animation:blink 1.6s ease-in-out infinite}@keyframes blink{50%{opacity:.35}}
   #bonus{display:none;flex:0 0 100%;margin-top:6px;border-top:1px solid rgba(233,161,58,.5);padding-top:10px;font-size:11px;letter-spacing:.08em;line-height:1.5}
   #title.home #bonus{display:block}#bonus b{color:#14110c;background:#e9a13a;padding:1px 7px;margin-right:7px;letter-spacing:.2em}
   #bonus div{display:flex;gap:5px;margin-top:7px}#title #trk #bonus button{flex:1;padding:0;border:1px solid rgba(239,233,214,.35);background:none;cursor:pointer;position:relative;aspect-ratio:16/10;overflow:hidden}
   #bonus button:hover{border-color:#e9a13a}#bonus img{width:100%;height:100%;object-fit:cover;display:block}
   #bonus button span{position:absolute;left:0;right:0;bottom:0;font-size:8px;letter-spacing:.1em;color:#efe9d6;background:rgba(8,10,12,.7);padding:2px 0;text-align:center}
-  @media (max-width:900px){#title.home:not(.hide)~#show{display:none}}
   /* ---- loading screen: drawn by the browser before any of the game has arrived. Its moving parts are transforms and
      opacity only, which keep running smoothly while the world is being built. */
   #load{position:fixed;inset:0;z-index:20;background:#050506;overflow:hidden;transition:opacity 1s ease .1s;opacity:1}
@@ -144,10 +147,14 @@ if(new URLSearchParams(location.search).get('mode')==='drive')document.getElemen
   <div class="go">PRESS ENTER TO START</div>
   <div class="keys">ESC — BACK TO TRACK CHOICE<br>DRIVER: S. McQUEEN<br>Three laps through 24 hours of light. First across the line wins.</div>
 </div>
-<div id="show"><p id="showC"></p></div>
-<script>{const S=[['lm1','LE MANS · THE MULSANNE STRAIGHT'],['bb','BONUS · THE BAY BRIDGE'],['lm2','LE MANS · EVENING'],['tube','BONUS · THE POSEY TUBE'],['lm3','LE MANS · RAIN IN THE NIGHT'],['gg','BONUS · THE GOLDEN GATE'],['sf','BONUS · DOWNTOWN SAN FRANCISCO']],box=document.getElementById('show'),cap=document.getElementById('showC');
-  const im=S.map(s=>{const i=document.createElement('img');i.src='assets/shot-'+s[0]+'.jpg';i.alt='';box.insertBefore(i,cap);return i;});let k=0;
-  const go=()=>{im.forEach((i,j)=>i.classList.toggle('on',j===k));cap.textContent=S[k][1];k=(k+1)%S.length;};go();setInterval(()=>{if(box.getClientRects().length)go();},4500);}</script>
+<div id="show"><h1>VINGT-QUATRE<br>HEURES</h1><p id="showC"></p><u>PRESS ANY KEY · OR CLICK</u></div>
+<script>{// the opening: full-screen moments from both drives, before the track choice. Any key or a click goes on to the choices.
+  const S=[['lm1','LES 24 HEURES DU MANS','Three laps through 24 hours of light'],['lm2','LES 24 HEURES DU MANS','Evening falls on the circuit'],['bb','ALAMEDA · THE BAY BRIDGE','Around the Bay and back',1],['lm3','LES 24 HEURES DU MANS','Rain in the night'],['tube','ALAMEDA · THE POSEY TUBE','Under the estuary',1],['gg','ALAMEDA · THE GOLDEN GATE','A free drive round the Bay',1],['sf','ALAMEDA · SAN FRANCISCO','Downtown, then up Hyde St',1]],box=document.getElementById('show'),cap=document.getElementById('showC');
+  const q=new URLSearchParams(location.search);if(!q.has('go')&&!q.has('auto')&&!q.has('render')){box.classList.add('on');
+  const im=S.map(s=>{const i=document.createElement('img');i.src='assets/shot-'+s[0]+'.jpg';i.alt='';box.insertBefore(i,box.firstChild);return i;});let k=0;
+  const go=()=>{im.forEach((i,j)=>i.classList.toggle('on',j===k));const s=S[k];cap.innerHTML=(s[3]?'<b>BONUS</b>':'')+s[1]+'<em>'+s[2]+'</em>';k=(k+1)%S.length;};go();const iv=setInterval(go,4500);
+  const end=e=>{if(box.classList.contains('out'))return;if(e){e.preventDefault();e.stopImmediatePropagation();}box.classList.add('out');clearInterval(iv);removeEventListener('keydown',end,true);setTimeout(()=>box.remove(),900);};
+  addEventListener('keydown',end,true);box.addEventListener('click',end);}}</script>
 <div id="res"><h1>CLASSEMENT</h1><div id="resList"></div><div class="go">ENTER — RACE AGAIN</div></div>
 <script type="module" src="js/game.js"></script>
 </body>
