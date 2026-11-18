@@ -2902,7 +2902,7 @@ function startIntro(){initAudio();if(AC&&AC.state==='suspended')AC.resume();wind
   shots.push({type:'run',t0:t,d:2.6,v:0});t+=2.6;shots.push({type:'clock',t0:t,d:1.15,v:99});t+=1.15;
   INTRO={shots,T:t,i:-1};G.state='intro';G.t=0;}
 function beginRace(){INTRO=null;cutC.style.display='none';for(const id of['tl','tr','br','lf','map','bl'])$(id).classList.remove('hide');runners.forEach(r=>{r.visible=false;});
-  G.state='race';first=true;PL.lapStart=0;PL.rpm=1200;say('PARTEZ !','',1.2);sfxRoar();announce("Et c'est parti pour les vingt-quatre heures !");}
+  G.state='race';first=true;PL.lapStart=0;PL.rpm=1200;say('PARTEZ !','',1.2);sfxRoar();G.waveT=tm+5;announce("Et c'est parti pour les vingt-quatre heures !");}
 function introTick(rdt){const I=INTRO;if(!I.hold)G.t+=rdt;if(G.t>=I.T){beginRace();return null;}
   let i=Math.max(I.i,0);while(i+1<I.shots.length&&I.shots[i+1].t0<=G.t)i++;const s=I.shots[i];
   if(i!==I.i){I.i=i;if(s.type==='clock'&&s.v!==99)sfxTick();}
@@ -2948,7 +2948,8 @@ function drawClock(g,w,h,v,sec){g.setTransform(1,0,0,1,0,0);g.fillStyle='#16181a
   g.fillStyle='#b8261c';g.beginPath();g.arc(0,0,20,0,7);g.fill();
   g.setTransform(1,0,0,1,0,0);const vg=g.createRadialGradient(w/2,h/2,h*.3,w/2,h/2,w*.65);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=vg;g.fillRect(0,0,w,h);}
 function sfxHeart(v){if(!AC)return;const t=AC.currentTime;tone('sine',66,t,.17,1.1*v,master,{to:34,h:.2});tone('sine',110,t,.07,.5*v,master,{to:60});hit(t,.06,.35*v,300,'lowpass',master);tone('sine',56,t+.18,.15,.8*v,master,{to:32,h:.2});hit(t+.18,.05,.22*v,260,'lowpass',master);}
-function sfxRoar(){if(!AC)return;const t=AC.currentTime;hit(t,2.6,1.2,700,'lowpass',master);for(const f of[48,71,96,143,190])tone('sawtooth',f,t,2.6,.34,master,{to:f*2.7,a:.04,h:.85,lp:2200});}   // the whole grid firing up at once
+function sfxRoar(){if(!AC)return;const t=AC.currentTime;hit(t,6.5,1.1,420,'lowpass',master);hit(t+.1,3.2,.5,1600,'bandpass',master);   // the whole grid firing up at once: a pack of engines, each a little apart, that pulls away and fades
+  for(let i=0;i<18;i++){const d=Math.random()*.45,f=38+Math.random()*40,far=i>9,dur=(far?7.5:5.5)+Math.random()*1.5;tone(i%3?'sawtooth':'square',f,t+d,dur,far?.05:.075,master,{to:f*(2.4+Math.random()*1.2),a:.08+Math.random()*.2,h:.28,lp:far?700:1900,lpTo:far?260:500,det:(Math.random()-.5)*30});}}
 function sfxCheer(){if(!AC)return;const t=AC.currentTime;hit(t,4.5,.5,1400,'bandpass',master);hit(t+.2,4,.35,2600,'bandpass',master);}
 function sfxTick(){if(!AC)return;const t=AC.currentTime;tone('square',2100,t,.018,.14,master);hit(t,.02,.12,5000,'highpass',master);}
 
@@ -2978,7 +2979,7 @@ function frame(manual){
   if(G.slowT>0){G.slowT-=rdt;if(G.slowT<=0)G.slow=1;}
   let dt=rdt*G.slow;if(G.paused||G.state==='title')dt=0;
   const pe=ents.find(e=>e.player);
-  if(G.state==='count'){G.t+=rdt;const n=3-Math.floor(G.t);if(n!==G.count){G.count=n;if(n>0){say(''+n,'',1);sfxBeep(false);}else{say('PARTEZ !','',1.2);sfxBeep(true);G.state='race';first=true;announce("Et c'est parti pour les vingt-quatre heures !");}}placeAll(0);
+  if(G.state==='count'){G.t+=rdt;const n=3-Math.floor(G.t);if(n!==G.count){G.count=n;if(n>0){say(''+n,'',1);sfxBeep(false);}else{say('PARTEZ !','',1.2);sfxBeep(true);sfxRoar();G.waveT=tm+5;G.state='race';first=true;announce("Et c'est parti pour les vingt-quatre heures !");}}placeAll(0);
     // drivers sprint across the road to their cars; engines fire and smoke as they arrive
     runStart(clamp(G.t/2.7,0,1),rdt);}
   else if(G.state!=='intro'&&runners[0].visible)runners.forEach(r=>{r.visible=false;});
@@ -2990,7 +2991,7 @@ function frame(manual){
   updateLightning(rdt);announcerTick(rdt,pe);if(DRIVE)driveTick(rdt);
   const hour=QS.has('t')?+QS.get('t'):DRIVE?(15.5+G.raceT/4200*24)%24:(()=>{const p=clamp(pe.dist/(LAPS*LEN),0,1);return (p<.5?16+p/.5*4.6:p<.74?20.6+(p-.5)/.24*8.6:29.2+(p-.74)/.26*10.8)%24;})();   // the three laps span the full 24 hours of light
   if(G.state==='finish')G.finT+=rdt;
-  if(flagman){const near=wdiff(S0-pe.s),wave=G.state==='finish'||(PL.lapN>=LAPS-1&&near<320&&near>-30);flagman.arm.rotation.z=wave?Math.sin(tm*9)*.75:lerp(flagman.arm.rotation.z,2.5,.1);flagman.flag.rotation.y=wave?Math.sin(tm*13)*.5:0;}
+  if(flagman){const near=wdiff(S0-pe.s),wave=G.state==='finish'||tm<(G.waveT||0)||G.state==='count'||(PL.lapN>=LAPS-1&&near<320&&near>-30);flagman.arm.rotation.z=wave?Math.sin(tm*9)*.75:lerp(flagman.arm.rotation.z,2.5,.1);flagman.flag.rotation.y=wave?Math.sin(tm*13)*.5:0;}
   // McQueen is out of the car, smoking, whenever he is not driving
   const w=hero.wreck,idle=G.state==='title'||(G.paused&&!w)||(G.state==='finish'&&G.stopT>.6&&!w),after=!!(PL.crash&&w&&PL.crash.t>2.4&&Math.hypot(w.vx,w.vz)<1.5&&w.y<=0);
   mcq.visible=idle||after;
