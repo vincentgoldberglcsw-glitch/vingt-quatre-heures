@@ -1829,7 +1829,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*(1-(PL.melt||0)*.1)
       if(racing&&close>30&&v>45&&PL.safe<=0){if(!isW)crashAI(e,close*.5);crashPlayer(close*.5,false);return;}
       const push=(1.95-Math.abs(dxs))*.5*Math.sign(dxs||1);PL.x-=fz*push;PL.z+=fx*push;if(!isW)e.lat+=push*(Nn[bi].x*fz-Nn[bi].z*fx>0?1:-1)*.5;
       if(close>0){if(dzf>0){const nf=Math.max(0,ev-1.5),k=f>1?nf/f:1;PL.vx*=k;PL.vz*=k;if(!isW)e.v+=1.2;}else if(!isW)e.v=Math.max(0,f-1.5);sfxScrape(.5);G.shake=Math.max(G.shake,.3);}}}
-  for(const o of OBST){const ox=PL.x-o.x,oz=PL.z-o.z,d2=ox*ox+oz*oz,R0=o.r||2.5;if(d2<R0*R0&&d2>.01){const d=Math.sqrt(d2),k=(R0-d)/d;PL.x+=ox*k;PL.z+=oz*k;if(v>3){PL.vx*=.7;PL.vz*=.7;sfxScrape(clamp(v/20,.3,1));G.shake=Math.max(G.shake,.3);}}}   // parked cars
+  for(const o of OBST){const ox=PL.x-o.x,oz=PL.z-o.z,d2=ox*ox+oz*oz,R0=o.r||2.5;if(d2<R0*R0&&d2>.01){const d=Math.sqrt(d2),k=(R0-d)/d;PL.x+=ox*k;PL.z+=oz*k;if(o.soft){PL.vx*=.995;PL.vz*=.995;}else if(v>3){PL.vx*=.7;PL.vz*=.7;sfxScrape(clamp(v/20,.3,1));G.shake=Math.max(G.shake,.3);}}}   // parked cars
   for(const hl of HOLES){if(hl.cd>0){hl.cd-=dt;continue;}const hx=PL.x-hl.x,hz=PL.z-hl.z;if(v>6&&hx*hx+hz*hz<(hl.r+.8)**2){hl.cd=.7;const k=clamp(v/50,.3,1.5);PL.h+=R(-.03,.03)*k;PL.vx*=1-.035*k;PL.vz*=1-.035*k;PL.bump=.09*k;G.shake=Math.max(G.shake,.6*k);sfxThump(k);}}
   if(PL.land){PL.bump=Math.max(PL.bump||0,PL.land);PL.land=0;}PL.bump=(PL.bump||0)*Math.exp(-9*dt);
   const ln=Math.floor(pe.dist/LEN);if(!DRIVE&&pe.dist>=0&&ln>PL.lapN){PL.last=G.raceT-PL.lapStart;PL.lapStart=G.raceT;PL.lapN=ln;if(!PL.best||PL.last<PL.best)PL.best=PL.last;if(ln<LAPS)say(ln===LAPS-1?'DERNIER TOUR':'LAP '+(ln+1),ln===LAPS-1?'FINAL LAP · '+fmt(PL.last):fmt(PL.last),2);announce(`McQueen boucle son tour en ${Math.round(PL.last)} secondes.`);}
@@ -2135,14 +2135,15 @@ function skunksTick(rdt){const K=SKUNK,pe=ents.find(e=>e.player);if(!pe)return;
       const tp=new THREE.Group();tp.position.set(0,.3,-.3);b.add(tp);const tl=new THREE.Mesh(new THREE.SphereGeometry(1,8,6),blk);tl.scale.set(.16,.15,.36);tl.position.z=-.3;tp.add(tl);
       const tw=new THREE.Mesh(new THREE.SphereGeometry(1,8,6),wht);tw.scale.set(.1,.08,.3);tw.position.set(0,.11,-.3);tp.add(tw);
       g.scale.setScalar(sc);g.visible=false;scene.add(g);return{g,b,tp,st:0,t:0,s:0,lat:0,side:1,tg:0,ry:0,mv:0,sp:0,ma:null,n:0,baby:sc<1};};
-    for(let n=0;n<10;n++)K.l.push(mk(1.5));for(let n=0;n<9;n++)K.l.push(mk(.85));}
+    for(let n=0;n<10;n++)K.l.push(mk(1.5));for(let n=0;n<24;n++)K.l.push(mk(.85));}
   const town=zoneArr[PL.idx]===1&&G.state==='race',v=Math.abs(pe.v),act=K.l.filter(o=>o.st&&!o.baby).length;
   if(town){K.cd-=rdt;if(K.cd<=0){K.cd=R(2,4.5);const k=K.l.find(o=>!o.st&&!o.baby);
-    if(k&&act<10){const s=pe.s+Math.max(42,v*3.4)+R(0,30),i=wrapI(Math.floor(s/SEG)),w=RW+XW[i];k.st=1;k.t=0;k.sp=0;k.s=s;k.side=Math.random()<.5?-1:1;k.mv=R(2.4,3.4);
-      if(Math.random()<.15){k.lat=k.side*R(1,w-1.5);k.tg=-k.side*R(0,w-2);}   // already out in the road, crossing
+    if(k&&act<10){const s=pe.s+Math.max(42,v*3.4)+R(0,30),i=wrapI(Math.floor(s/SEG)),w=RW+XW[i];k.st=1;k.t=0;k.sp=0;k.s=s;k.side=Math.random()<.5?-1:1;k.mv=R(2.4,3.4);const fam=Math.random()<.55;k.cross=fam?Math.random()<.8:Math.random()<.55;   // only some of them spray; the rest (most families) just trot across
+      if(k.cross){k.mv=R(1.8,2.6);k.lat=Math.random()<.3?k.side*R(1,w-1.5):k.side*(w+1.6);k.tg=-k.side*(w+9);}
+      else if(Math.random()<.15){k.lat=k.side*R(1,w-1.5);k.tg=-k.side*R(0,w-2);}   // already out in the road, crossing
       else{k.lat=k.side*(w+1.6);k.tg=k.side*(w-R(2,5));}
       k.g.visible=true;k.tp.rotation.x=.55;
-      if(Math.random()<.3){const nb=2+(Math.random()<.5?1:0);let c=0;for(const b of K.l){if(c>=nb)break;if(b.baby&&!b.st){b.st=1;b.ma=k;b.n=c++;b.t=R(0,1);b.s=k.s+R(-.35,.35);b.lat=k.lat+k.side*(b.n+1)*.55;b.g.visible=true;b.tp.rotation.x=.7;}}}}}}
+      if(fam){const nb=2+(Math.random()*3|0);let c=0;for(const b of K.l){if(c>=nb)break;if(b.baby&&!b.st){b.st=1;b.ma=k;b.n=c++;b.t=R(0,1);b.s=k.s+R(-.35,.35);b.lat=k.lat+k.side*(b.n+1)*.55;b.g.visible=true;b.tp.rotation.x=.7;}}}}}}
   for(const k of K.l){if(!k.st)continue;k.t+=rdt;
     if(k.baby){const m=k.ma;if(!m||!m.st){k.st=0;k.ma=null;k.g.visible=false;continue;}   // babies trot along behind their mother and hide behind her while she sprays
       const dir=Math.sign(m.tg-m.lat)||-m.side,want=m.lat-dir*(k.n+1)*.55,d=want-k.lat;k.lat+=Math.sign(d)*Math.min(Math.abs(d),(m.mv+1)*rdt);k.s+=(m.s+(k.n-1)*.25-k.s)*clamp(rdt*3,0,1);
@@ -2152,7 +2153,7 @@ function skunksTick(rdt){const K=SKUNK,pe=ents.find(e=>e.player);if(!pe)return;
     const ds=wdiff(k.s-pe.s);
     if(ds<-40||ds>260||(!town&&k.st!==3)){k.st=0;k.g.visible=false;continue;}
     let mv=0,face=Math.sign(k.tg-k.lat)||-k.side;
-    if(k.st===1){mv=k.mv;if(Math.abs(k.tg-k.lat)<.05){k.st=2;k.t=0;}}   // run out into the road
+    if(k.st===1){mv=k.mv;if(Math.abs(k.tg-k.lat)<.05){if(k.cross){k.st=0;k.g.visible=false;continue;}k.st=2;k.t=0;}}   // run out into the road
     else if(k.st===2){face=0;const tr=clamp((k.t-.25)/.35,0,1);k.tp.rotation.x=lerp(.55,1.6,tr);k.b.rotation.x=-tr*.12;   // stop, turn round, tail up...
       if(k.t>.6&&!k.sp){k.sp=1;at(k.s,k.lat,.55,K.V);const dx=PL.x-K.V.x,dz=PL.z-K.V.z,d=Math.hypot(dx,dz)||1;   // ...and spray: a jet towards the car and a cloud that hangs over the road
         for(let n=0;n<22;n++)puff(K.V,dx/d*R(3,9)+R(-1.8,1.8),R(.3,2.4),dz/d*R(3,9)+R(-1.8,1.8),.9,R(5,10),R(2.5,4.5),.7,n%3?0xc2d24e:0x8fb02a);
@@ -2165,6 +2166,22 @@ function skunksTick(rdt){const K=SKUNK,pe=ents.find(e=>e.player);if(!pe)return;
     if(face){at(k.s,k.lat+face,0,K.W);k.ry=Math.atan2(K.W.x-K.V.x,K.W.z-K.V.z);}else k.ry=Math.atan2(K.V.x-PL.x,K.V.z-PL.z);   /* spraying: back to the car */
     k.g.rotation.y=k.ry;const wd=mv&&Math.abs(k.tg-k.lat)>.05?1:0;k.b.rotation.z=wd*Math.sin(k.t*22)*.12;k.b.position.y=wd*Math.abs(Math.sin(k.t*22))*.035;}}
 function sfxHiss(){if(!AC)return;const t=AC.currentTime;hit(t,.9,.35,4200,'highpass',master);hit(t+.05,.7,.25,2200,'bandpass',master);}
+// Tumbleweeds blowing across the Alameda streets and the toll plaza: dry wiry balls that bounce and roll from one side of the road to the other. Not solid; one that meets the car hops up over it.
+const TUMB={l:[],cd:2,V:new THREE.Vector3(),W:new THREE.Vector3(),A:new THREE.Vector3(),Q:new THREE.Quaternion()};
+function tumbleTick(rdt){const T_=TUMB,pe=ents.find(e=>e.player);if(!pe)return;
+  if(!T_.l.length){const mats=[0x9c7a48,0x86663a,0xb08c58].map(c=>new THREE.MeshBasicMaterial({color:c,wireframe:true}));
+    for(let k=0;k<10;k++){const g=new THREE.Group(),r=R(.55,.95);for(let q=0;q<3;q++){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r*R(.7,1),1),mats[q]);m.rotation.set(R(0,6),R(0,6),R(0,6));g.add(m);}
+      const core=new THREE.Mesh(new THREE.IcosahedronGeometry(r*.45,0),new THREE.MeshStandardMaterial({color:0x6e5530,roughness:1,transparent:true,opacity:.55}));g.add(core);
+      g.visible=false;scene.add(g);T_.l.push({g,r,st:0,s:0,lat:0,dir:1,v:0,y:0,vy:0,ds:0});}}
+  const i=PL.idx,m_=x=>Math.round(x/SEG),on=G.state==='race'&&(zoneArr[i]===1||(DRIVE&&Z.toll&&i>Z.toll-m_(400)&&i<Z.toll+m_(320)));
+  if(on){T_.cd-=rdt;if(T_.cd<=0){T_.cd=R(1.5,4);const k=T_.l.find(o=>!o.st);
+    if(k){const v=Math.abs(pe.v),s=pe.s+Math.max(35,v*3)+R(0,60),j=wrapI(Math.floor(s/SEG)),w=RW+XW[j];k.st=1;k.s=s;k.dir=Math.random()<.5?-1:1;k.lat=-k.dir*(w+R(4,10));k.v=R(4,8);k.y=0;k.vy=R(1,3);k.ds=R(-1.5,1.5);k.g.visible=true;}}}
+  for(const k of T_.l){if(!k.st)continue;const dsP=wdiff(k.s-pe.s),j=wrapI(Math.floor(k.s/SEG)),w=RW+XW[j];
+    if(dsP<-40||dsP>320||Math.abs(k.lat)>w+16||(!on&&dsP<0)){k.st=0;k.g.visible=false;continue;}
+    k.lat+=k.dir*k.v*rdt;k.s+=k.ds*rdt;k.vy-=14*rdt;k.y+=k.vy*rdt;if(k.y<=0){k.y=0;k.vy=R(1.5,3.8)*(Math.random()<.2?1.6:1);}   // gusts carry it across in bounces
+    at(k.s,k.lat,k.y+k.r,T_.V);k.g.position.copy(T_.V);
+    const dx=T_.V.x-PL.x,dz=T_.V.z-PL.z;if(dx*dx+dz*dz<(k.r+1.6)**2&&k.y<1.2){k.vy=R(6,9);k.ds=pe.v*.6;}   // bounced up over the car
+    at(k.s,k.lat+k.dir,0,T_.W);at(k.s,k.lat,0,T_.A);T_.W.sub(T_.A);T_.A.set(T_.W.z,0,-T_.W.x).normalize();T_.Q.setFromAxisAngle(T_.A,k.v*rdt/k.r);k.g.quaternion.premultiply(T_.Q);}}
 function turkeysTick(rdt){const v=Math.hypot(PL.vx,PL.vz);for(const k of TK){const m=k.m,gy=H[k.ci];
     if(k.st===0){k.tt-=rdt;if(k.tt<=0){k.tt=R(2,7);k.tl=clamp(k.lat+R(-7,7),-13,13);k.td=clamp(k.ds+R(-6,6),-22,22);}
       at(k.ci*SEG+k.ds,k.lat,0,V);const near=(V.x-PL.x)**2+(V.z-PL.z)**2,sc=near<260&&v>5?3.2:.75;if(sc>1&&Math.abs(k.tl-k.lat)<1)k.tl=clamp(k.lat+(k.lat>=0?9:-9),-14,14);   // they scuttle aside when a car comes
@@ -2187,7 +2204,7 @@ const shadeMat=new THREE.MeshBasicMaterial({map:shadeTex,color:0,transparent:tru
   if(DRIVE){span(Z.wt0+120,Z.central,band);band(Z.rb1+20,Z.refinery-20);}else{band(205,NS);band(0,62);}}
 function driveTick(rdt){const zn=zoneOf(PL.idx);leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,zn==='town'&&G.state==='race'&&!G.paused);   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);snapTick(rdt);millTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);tumbleTick(rdt);snapTick(rdt);millTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -2286,7 +2303,7 @@ function clearDeb(){for(const d of DEB){scene.remove(d.m);d.m.geometry.dispose()
 function quakeTick(rdt){const q=QK,i=PL.idx;G.roll=0;if(!q)return;
   if(q.st===0){if(i>q.a-330&&i<q.a-40&&!PL.crash){q.st=1;q.t=0;q.cr=0;q.side=-1;q.jolt=0;say('EARTHQUAKE !','THE BRIDGE IS BREAKING UP AHEAD - KEEP TO THE LEFT RAIL',6);sfxQuake();quakeStart(q);G.qd=1;for(let k=0;k<10;k++)crackRoad((q.a-R(4,70))*SEG,R(-RW,RW));
       // metal shaken off the bridge (bent poles, lamp standards, cable, girder bits) and some bricks: some lands on the lanes that are left, some goes down through the gap
-      for(let k=0;k<18;k++){const j=q.a-50+Math.random()*(q.b-q.a+90),inGap=j>q.a&&j<q.b,lat=inGap?R(-RW,q.ls-1):R(-RW,RW),over=inGap;spawnDeb(j*SEG,lat,R(18,45),Math.random()<.8?'metal':'brick',R(1.8,7),over);}}return;}
+      for(let k=0;k<40;k++){const j=q.a-60+Math.random()*(q.b-q.a+110),inGap=j>q.a&&j<q.b,lat=inGap?R(-RW,q.ls-1):R(-RW,RW),over=inGap;spawnDeb(j*SEG,lat,R(18,45),'metal',R(1.2,9),over,0,R(.6,1.1));}}return;}   // only metal: no lumps of concrete
   q.t+=rdt;const m=q.half[1],sw=sst(q.t,.5,1.1)*(1-sst(q.t,1.7,2.1))+sst(q.t,5.4,6.2)*(1-sst(q.t,10.5,12.5)),ph=Math.sin(q.t*2.4);G.shake=Math.max(G.shake,q.t<8?(.65*(1-q.t/8)+.15)*(1-.8*sw):0);   // the rumble and the sway take turns
   {const lat=.85*sw*ph,d=lat-(q.sw||0);q.sw=lat;if(!PL.crash){const n=Nn[i];PL.x+=n.x*d;PL.z+=n.z*d;}G.roll=.05*sw*Math.sin(q.t*2.4+.5);   // the deck rolls a little from side to side, carrying the car and the view with it
     const ax=QK.ax||(QK.ax=new THREE.Vector3()),pv=QK.pv||(QK.pv=new THREE.Vector3()),qq=QK.qq||(QK.qq=new THREE.Quaternion()),c=(q.a+q.b)>>1;ax.set(T[c].x,0,T[c].z).normalize();pv.copy(P[c]);qq.setFromAxisAngle(ax,.022*sw*ph);
@@ -2337,8 +2354,8 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),D2=THREE.DoubleSide;
       const blk=paint(0x111214),wht=paint(0xf2f2ee);box(g,1.8,.62,4.6,blk,0,.62,0);box(g,1.84,.5,2.1,wht,0,.66,-.1);box(g,1.6,.52,2.3,glass,0,1.17,-.2);box(g,1.62,.06,1.6,wht,0,1.45,-.2);
       box(g,1.25,.12,.32,dark,0,1.53,0);box(g,.55,.17,.3,TRAF.pol[0],-.33,1.62,0);box(g,.55,.17,.3,TRAF.pol[1],.33,1.62,0);for(const[x,z]of[[-.85,1.4],[.85,1.4],[-.85,-1.4],[.85,-1.4]])wheel(g,x,z,.33);return{g,len:4.7,r:2,vb:R(26,31)};}};
   const KINDS=['car','pickup','buggy','moto','truck','car','pickup','moto','buggy','car','truck','pickup','car','moto','buggy','pickup','car','truck','car','pickup'];
-  KINDS.forEach((k,n)=>{const v=MK[k]();v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r}};TRAF.push(t);OBST.push(t.ob);});
-  [['police',1],['truck2',3],['police',6],['truck2',8],['police',10]].forEach(([k,n])=>{const v=MK[k]();v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,extra:true,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r}};TRAF.push(t);OBST.push(t.ob);});   // double-trailer trucks and police cars, added after the others and using Math.random, so the seeded scenery stays put
+  KINDS.forEach((k,n)=>{const v=MK[k]();v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r,soft:1}};TRAF.push(t);OBST.push(t.ob);});
+  [['police',1],['truck2',3],['police',6],['truck2',8],['police',10]].forEach(([k,n])=>{const v=MK[k]();v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,extra:true,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r,soft:1}};TRAF.push(t);OBST.push(t.ob);});   // double-trailer trucks and police cars, added after the others and using Math.random, so the seeded scenery stays put
   // the cable car: red and cream, open at the ends, with passengers hanging on
   {const g=new THREE.Group(),red=std({color:0xa8241c,roughness:.6}),crm=std({color:0xe8dcb8,roughness:.7}),wd=std({color:0x5a3a22,roughness:.8});g.wh=[];
     box(g,2.5,1,8.4,red,0,.9,0);box(g,2.4,1.3,4.4,crm,0,2.05,0);box(g,2.6,.18,8.8,wd,0,3.3,0);box(g,2.2,.4,8.2,crm,0,3.55,0);for(const z of[-3.9,-2.3,2.3,3.9])for(const x of[-1.15,1.15])box(g,.08,1.6,.08,wd,x,2.1,z);
@@ -2384,10 +2401,14 @@ function trafficTick(dt,pe){if(TRAF.pol){const f=(tmNow()*7|0)%2;TRAF.pol[0].emi
         t.lat=Math.sign(t.lat)*wl;t.kv=0;}}
     placeVehicle(t);
     for(const wh of t.g.wh)wh.rotation.x+=t.v*dt/.4;if(t.g.legs){const q=tmNow()*9;t.g.legs.forEach((l,k)=>{l.rotation.x=Math.sin(q+(k%2?0:Math.PI)+(k>1?.6:0))*.5;});}
-    if(t.bt>0)t.bt-=dt;const dx=t.g.position.x-PL.x,dz=t.g.position.z-PL.z,rel=Math.abs(pe.v-t.v);
-    if(dx*dx+dz*dz<(t.r+1)**2&&!PL.crash&&G.state==='race'){const two=t.kind==='moto'||t.kind==='bike';if(two&&!(t.bt>0)){t.bt=.6;t.s+=1.5;t.v=Math.max(t.v,pe.v+R(3,6));t.kv=0;PL.vx*=.97;PL.vz*=.97;G.shake=Math.max(G.shake,.25);sfxThump(.6);}   // motorcycles and bicycles: never a crash, at any speed, just shoved on ahead
-      else if(two);else if(pe.v>44.7&&PL.safe<=0)crashPlayer(Math.max(rel,20)*.4,false);   // over 100 mph, a crash
-      else if(!(t.bt>0)){t.bt=.7;const n=Nn[i],sd=(dx*n.x+dz*n.z)>=0?1:-1;t.kv=sd*clamp(rel*.35+3,3,11);t.v*=.7;PL.vx*=.82;PL.vz*=.82;PL.x-=n.x*sd*.4;PL.z-=n.z*sd*.4;G.shake=Math.max(G.shake,.55);sfxCrunch(clamp(rel/25+.35,.35,.9));}}}}   // below that a bump: both cars pushed apart and slowed, the other one knocked sideways
+    if(t.bt>0)t.bt-=dt;
+    if(t.wob>0){t.wob=Math.max(0,t.wob-dt*1.6);const q=Math.sin(t.wob*34)*t.wob*.22;t.g.scale.set(1+q,1-q,1+q*.6);if(!t.wob)t.g.scale.set(1,1,1);}   // rubbery: it squashes and springs back a few times after a bump
+    const dx=t.g.position.x-PL.x,dz=t.g.position.z-PL.z,rel=Math.abs(pe.v-t.v);
+    if(dx*dx+dz*dz<(t.r+1)**2&&!PL.crash&&G.state==='race'){const two=t.kind==='moto'||t.kind==='bike',n=Nn[i],sd=(dx*n.x+dz*n.z)>=0?1:-1;
+      if(two){if(!(t.bt>0)){t.bt=.6;t.wob=1;t.s+=1.5;t.v=Math.max(t.v,pe.v+R(3,6));t.kv=sd*R(2,4);PL.vx*=.98;PL.vz*=.98;G.shake=Math.max(G.shake,.15);sfxBoing(.6);}}   // motorcycles and bicycles: never a crash, at any speed, just bounced on ahead
+      else if(pe.v>44.7&&PL.safe<=0)crashPlayer(Math.max(rel,20)*.4,false);   // over 100 mph, a crash
+      else if(!(t.bt>0)){t.bt=.7;t.wob=1;t.kv=sd*clamp(rel*.4+4,4,13);t.v=Math.max(t.v*.85,t.v+(pe.v>t.v?rel*.3:0));PL.vx*=.93;PL.vz*=.93;PL.x-=n.x*sd*.6;PL.z-=n.z*sd*.6;G.shake=Math.max(G.shake,.25);sfxBoing(clamp(rel/20+.45,.45,1));}}}}   // below that a soft, rubbery bump: both bounce apart, hardly slowed, and the other one wobbles like jelly
+function sfxBoing(k){if(!AC)return;const t=AC.currentTime;tone('sine',R(150,190),t,.32,.5*k,master,{to:R(330,420),a:.004,h:.15});tone('sine',R(90,110),t+.06,.28,.3*k,master,{to:60,h:.2});}
 // ---- San Quentin's beach (east of the prison, down to the bay): big surf crashing in and people flying kites. Hyde St: a few people on the pavements, and kids skateboarding down the middle of the road below the crest (solid: steer round them).
 // All made after bakeStatic, with their own seeded numbers so nothing else moves.
 const SQB={g:null,waves:[],kites:[]},HYD={walk:[],kids:[],t:0};
@@ -2667,9 +2688,9 @@ const SNAP={l:[],cd:0};
 function sfxTwang(v){if(!AC)return;const t=AC.currentTime;tone('sawtooth',R(380,560),t,.7,.22*v,master,{to:R(70,110),a:.003,h:.2,lp:2600});hit(t,.12,.45*v,3200,'bandpass',master);}
 function snapTick(rdt){const S=SNAP,pe=ents.find(e=>e.player);if(!pe||!BRH.length)return;
   if(!S.l.length){const M=std({color:0x767c81,roughness:.5,metalness:.6}),geo=new THREE.CylinderGeometry(.08,.08,1,5).translate(0,-.5,0);
-    for(let k=0;k<12;k++){const g=new THREE.Group(),m=new THREE.Mesh(geo,M);g.add(m);g.visible=false;scene.add(g);S.l.push({g,m,st:0});}}
+    for(let k=0;k<26;k++){const g=new THREE.Group(),m=new THREE.Mesh(geo,M);g.add(m);g.visible=false;scene.add(g);S.l.push({g,m,st:0});}}
   const on=(QK&&QK.st===1&&QK.t>.4&&QK.t<9)||(GGQ.st===1&&GGQ.t>1&&GGQ.t<13);
-  if(on){S.cd-=rdt;if(S.cd<=0){S.cd=R(.3,.9);const s=pe.s+R(18,90),i=wrapI(Math.floor(s/SEG)+3),br=BRH.find(b=>i>b.c0+4&&i<b.c1-4),k=S.l.find(o=>!o.st);
+  if(on){S.cd-=rdt;if(S.cd<=0){S.cd=QK&&QK.st===1?R(.12,.4):R(.3,.9);const s=pe.s+R(18,90),i=wrapI(Math.floor(s/SEG)+3),br=BRH.find(b=>i>b.c0+4&&i<b.c1-4),k=S.l.find(o=>!o.st);
     if(br&&k){const top=br.hgt(i),L=top-1.2;if(L>3){const sd=Math.random()<.5?-1:1;k.st=1;k.t=0;k.L=L;k.i=i;k.drop=Math.random()<.4;k.vy=0;k.a=0;k.w=sd*R(1.4,2.6);
       off(i,sd*(10.3+XW[i]),top,k.g.position);k.g.rotation.set(0,yaw(i),0);k.m.scale.set(1,L,1);k.m.rotation.set(0,0,0);k.g.visible=true;
       sfxTwang(clamp(50/(Math.abs(wdiff(i*SEG-pe.s))+15),.25,1));}}}}
@@ -2910,7 +2931,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={CROWS,BIRDS,SKUNK,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={CROWS,BIRDS,SKUNK,TUMB,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
