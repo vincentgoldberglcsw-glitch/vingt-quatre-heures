@@ -63,8 +63,8 @@ function buildRoute(X80=-600){
   const p0=lead(1,1),wd=-160*D2R,wl=1+(old.z-p0.z)/Math.cos(wd),cl=1-(old.x-p0.x-(wl-1)*Math.sin(wd));
   const f=lead(cl,wl);
   f.S(580,40).M('tu1')
-   .S(260).L(12,500).M('i880').S(2300,60).M('detour').S(380,60).L(78,420).M('toll').S(520,52).M('b0').S(3500,70).M('b1')
-   .S(591,35).M('downtown').R(90,100).M('hyde').S(655,30).M('marina').L(90,MR).S(415,45).R(90,120).M('gg0').S(1560,60).M('gg1')
+   .S(260).L(12,500).M('i880').S(2300,60).M('detour').S(380,60).L(78,420).M('toll').S(520,52).M('b0').S(3300,70).M('b1')
+   .S(791,35).M('downtown').R(90,100).M('hyde').S(655,30).M('marina').L(90,MR).S(415,45).R(90,120).M('gg0').S(1560,60).M('gg1')
    .S(260).R(25,500).M('woods').S(700,50).R(30,400).S(600,50).M('sq').R(35,300).S(700,50).M('rb0').S(2600,70).M('rb1')
    .S(380,40).M('richmond').L(25,260).S(400,40).M('shane').S(300,40).R(25,260);
   f.S(X80-150-f.x,50).M('refinery').R(90,150).M('i80');
@@ -1164,6 +1164,13 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
     // the Posey Tube: oil-drum fires along both walls, their smoke hanging under the roof
     {const drum=std({color:0x4a3a2c,roughness:.8,metalness:.4});for(let k=0;k<8;k++){const i=Z.tu0+m(40)+Math.round(k*(Z.tu1-Z.tu0-m(80))/7),sd=k%2?1:-1;off(i,sd*4.6,0,V);
       const d=new THREE.Mesh(cyl(.32,.3,.9,12),drum);d.position.set(V.x,V.y+.45,V.z);scene.add(d);OBST.push({x:V.x,z:V.z,r:.7});BURN.push({x:V.x,y:V.y+1,z:V.z,s:.45});}}
+    // San Francisco downtown: tents and tarps along the backs of the pavements, with oil-drum fires and small fires on the kerb between them
+    {const drum=std({color:0x4a3a2c,roughness:.8,metalness:.4}),tarps=[0x2f5d8a,0x3f6b3a,0x8a6d2f,0x6b2f2f,0x5a5f66,0x8a8a7a,0x2b3d5a].map(c=>std({color:c,roughness:.9,side:THREE.DoubleSide})),dome=new THREE.SphereGeometry(1,10,6,0,Math.PI*2,0,Math.PI/2),ridge=new THREE.ConeGeometry(1,1,4,1,true).rotateY(Math.PI/4).translate(0,.5,0);
+      for(const sd of[-1,1])for(let i=Z.b1+m(70+rr(0,20));i<Z.downtown-m(30);i+=m(rr(9,20))){if(sd>0&&SFX.some(c=>Math.abs(i-c)<m(12)))continue;const r=rnd(),lat=sd*(8.9+XW[i]);
+        if(r<.5){const tm=pick(tarps),g=new THREE.Mesh(r<.32?dome:ridge,tm);off(i,lat,0,g.position);g.position.y+=.13;g.scale.set(rr(1.2,1.6),rr(1.1,1.5),rr(1.4,2));g.rotation.y=yaw(i)+rr(-.4,.4);g.castShadow=true;scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:1});
+          if(rnd()<.4){const t2=new THREE.Mesh(ridge,pick(tarps));off(i+m(2.6),lat,0,t2.position);t2.position.y+=.13;t2.scale.set(1.1,1.2,1.6);t2.rotation.y=yaw(i)+rr(-.6,.6);scene.add(t2);}}
+        else if(r<.62){off(i,sd*(8.2+XW[i]),0,V);const d=new THREE.Mesh(cyl(.32,.3,.9,12),drum);d.position.set(V.x,V.y+.58,V.z);scene.add(d);OBST.push({x:V.x,z:V.z,r:.7});BURN.push({x:V.x,y:V.y+1.1,z:V.z,s:.45});}
+        else if(r<.7){off(i,sd*(8.4+XW[i]),0,V);BURN.push({x:V.x,y:V.y+.3,z:V.z,s:.35});}}}
     // the board with the giant eyes: it watches the traffic, and now and then it blinks
     const eyeTex=(look,open)=>canvas(1024,460,(g,w,h)=>{g.fillStyle='#0b0d10';g.fillRect(0,0,w,h);g.strokeStyle='#ff4c3a';g.lineWidth=8;g.strokeRect(12,12,w-24,h-24);
       for(const sx of[-1,1]){const cx=w/2+sx*230,cy=200;g.save();g.beginPath();g.moveTo(cx-190,cy);g.quadraticCurveTo(cx,cy-170*open,cx+190,cy);g.quadraticCurveTo(cx,cy+170*open,cx-190,cy);g.closePath();g.fillStyle='#f1ede4';g.fill();g.clip();
