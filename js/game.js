@@ -114,7 +114,7 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
   for(let i=0;i<NS;i++){const c=zoneArr[i];xwT[i]=c===1?2.2:c===3?(i<z.tu0?1.4:2.4):c===4?1.8:c===5?1.2:c===8?.6:0;if((i>z.tu0-m(220)&&i<z.tu1+m(220))||(i>z.wt1-m(220)&&i<z.wt0+m(220)))xwT[i]=0;}
   for(let i=0;i<NS;i++){let s=0;for(let j=-25;j<=25;j++)s+=xwT[wrapI(i+j)];XW[i]=s/51+4.6*bump(i,z.toll+m(70),z.toll+m(120),z.toll+m(240),z.toll+m(290))+1.3*bump(i,z.detour+m(170),z.detour+m(260),z.toll+m(110),z.toll+m(170));   /* the approach to the toll plaza is a little wider, with lane lines */
     H[i]=5.4*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.5,z.wilma+WL*.665)+1.6*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.685,z.wilma+WL*.705)   /* Wilma Chan overpass: comes down to a short level lip and drops off it - a small jump on the way to the tube */
-      +18*bump(i,z.tu1+m(160),z.tu1+m(340),z.toll-m(520),z.toll-m(260))
+      +18*bump(i,z.tu1+m(160),z.tu1+m(560),z.toll-m(520),z.toll-m(260))
       +22*bump(i,z.b0-m(240),z.b0-m(10),z.b1-m(460),z.b1-m(120))
       +78*bump(i,z.hyde+m(50),z.hyde+m(380),z.hyde+m(450),z.hyde+m(690))   /* Hyde St: a long, very steep climb, a short crest, then a sharp drop towards the Wharf */
       +26*bump(i,z.gg0-m(300),z.gg0-m(20),z.sq-m(650),z.sq-m(150))
@@ -127,6 +127,7 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
   // banked bends: the outside of the curve raised, by how tightly the road turns (from the tangents), faded in and out at the ends of each stretch
   const bankOn=(a,b,amt)=>{const fd=m(25);for(let i=a;i<=b;i++){let c=0;for(let q=-8;q<8;q++){const u=wrapI(i+q),v=wrapI(u+1);c+=(T[v].x-T[u].x)*Nn[u].x+(T[v].z-T[u].z)*Nn[u].z;}const env=sst(i,a,a+fd)*(1-sst(i,b-fd,b));BK[wrapI(i)]=clamp(-c/(16*SEG)*45,-amt,amt)*env;}};
   bankOn(z.tu0-m(200),z.tu0-m(10),.1);   // into the Posey Tube
+  bankOn(z.tu1+m(200),z.tu1+m(430),.08);   // out of the tube and up onto I-880
   XW[NS]=XW[0];H[NS]=H[0];for(let i=0;i<=NS;i++)P[i].y=H[i];
   for(let i=0;i<NS;i++){const c=zoneArr[i];if((c===1||c===3||c===7||c===8)&&H[i]<.5)landIdx.push(i);}}
 const span=(a,b,fn)=>{if(a<b)fn(a,b);else{fn(a,NS);fn(0,b);}};   // vc: rivals, vcp: the player's own limit (drives the brake warning)
@@ -422,7 +423,7 @@ await BOOT.step('ROADSIDE',.20);
 /* ================= FREE DRIVE WORLD ================= */
 // A quiet island town street, the tube under the estuary with its portal buildings, a freeway past the port, then a long suspension bridge.
 // The whole route is level: the bay is simply 45 m below the road, so the bridge is high without the engine needing hills.
-let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
+const MILL=[],AIR={g:null,st:0,t:0,cd:6};let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
 const cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null;const BURN=[];   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
 if(!DRIVE){ // roadside advertising boards, as on the old circuit: cigarettes, wine and bread, by turns
   const ad=(kind,name,sub)=>canvas(1024,460,(g,w,h)=>{const bg={cig:'#1d4f8a',wine:'#efe6cc',bread:'#f0c23a'}[kind],ink={cig:'#f4f1e8',wine:'#7a1626',bread:'#3a2412'}[kind];g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=ink;g.lineWidth=10;g.strokeRect(14,14,w-28,h-28);
@@ -836,25 +837,54 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
   const corrM=c=>mat('corr'+c,{map:corr.map,color:c,roughness:.85});
   {const crane=(x,z,ry)=>{const g=new THREE.Group(),mm=mat('crane',{color:0xd9d6cc,roughness:.6,metalness:.3});for(const[lx,lz]of[[-9,-7],[9,-7],[-9,7],[9,7]])B(1.4,52,1.4,mm,lx,26,lz,0,g);
       B(22,3,17,mm,0,52,0,0,g);const boom=B(3,3,74,mm,0,56,26,0,g);boom.rotation.x=-.12;B(2,26,2,mm,0,66,-2,0,g);B(20,1,1,mm,0,40,-7,0,g);B(20,1,1,mm,0,40,7,0,g);g.position.set(x,0,z);g.rotation.y=ry;scene.add(g);};
-    for(let k=0;k<14;k++){const t=k/13,x=lerp(-1730,-1840,t),z=lerp(-2350,-4550,t);crane(x,z,-Math.PI/2);}
+    for(let k=0;k<10;k++){const t=k/9,x=lerp(-1780,-1840,t),z=lerp(-3450,-4550,t);crane(x,z,-Math.PI/2);}   // the cranes stand along the far end of the wharf: on the left you pass warehouses, then the rail yard, then the port
     const cont=new THREE.InstancedMesh(new THREE.BoxGeometry(12,2.6,2.5),std({roughness:.8,color:0xffffff}),1400);let k=0;
-    for(let q=0;q<1400;q++){const t=rnd(),x=lerp(-1650,-1760,t)+rr(0,240),z=lerp(-2300,-4500,t)+rr(-30,30);if(!farFromRoad(x,z,50))continue;const st=rnd()*4|0;M4.compose(V.set(x,1.3+st*2.6,z),Q.setFromAxisAngle(YAX,Math.PI/2+(rnd()<.1?.2:0)),S.set(1,1,1));cont.setMatrixAt(k,M4);cont.setColorAt(k++,C.setHex(pick([0x8a3a30,0x2f5f7a,0xb9a36a,0x4a6f52,0x9a4a2a,0x3a3a5a,0xc9c4b8])));}
+    for(let q=0;q<1400;q++){const t=rnd(),x=lerp(-1700,-1760,t)+rr(0,240),z=lerp(-3400,-4500,t)+rr(-30,30);if(!farFromRoad(x,z,50))continue;const st=rnd()*4|0;M4.compose(V.set(x,1.3+st*2.6,z),Q.setFromAxisAngle(YAX,Math.PI/2+(rnd()<.1?.2:0)),S.set(1,1,1));cont.setMatrixAt(k,M4);cont.setColorAt(k++,C.setHex(pick([0x8a3a30,0x2f5f7a,0xb9a36a,0x4a6f52,0x9a4a2a,0x3a3a5a,0xc9c4b8])));}
     cont.count=k;cont.castShadow=true;scene.add(cont);
-    for(let k2=0;k2<4;k2++){const g=new THREE.Group(),z=-2700-k2*520,hull=mat('hull'+k2%2,{color:k2%2?0x1c2a3a:0x6a2a22,roughness:.7});B(32,14,220,hull,0,2,0,0,g);B(30,3,214,mat('deckg',{color:0x5a5a52}),0,10.5,0,0,g);B(26,18,22,white,0,21,-88,0,g);
+    for(let k2=0;k2<4;k2++){const g=new THREE.Group(),z=-3550-k2*300,hull=mat('hull'+k2%2,{color:k2%2?0x1c2a3a:0x6a2a22,roughness:.7});B(32,14,220,hull,0,2,0,0,g);B(30,3,214,mat('deckg',{color:0x5a5a52}),0,10.5,0,0,g);B(26,18,22,white,0,21,-88,0,g);
       for(let q=0;q<28;q++)B(11,2.5+(q%3)*2.6,11.6,mat('cs'+q%5,{color:[0x8a3a30,0x2f5f7a,0xb9a36a,0x4a6f52,0x9a4a2a][q%5],roughness:.8}),(q%2?-6:6),13+(q%3)*1.3,-60+(q>>1)*11);g.position.set(-1960,-45,z);scene.add(g);}}
   {// rails beside the freeway, and the train that runs on them
     const sl=60;for(const o of[sl-.75,sl+.75])ribbon(o-.05,o+.05,i=>-H[i]+.18,i=>-H[i]+.18,steelM,4,Z.tu1+m(260),Z.detour);ribbon(sl-1.6,sl+1.6,i=>-H[i]+.05,i=>-H[i]+.05,mat('ballast',{color:0x5a544a,roughness:1}),4,Z.tu1+m(260),Z.detour);}
-  {// warehouses on the land side, and further out the abandoned steel works: rusted sheds with broken windows, stacks, a blast furnace, conveyor bridges
+  {// warehouses on the land side, and further out the steel works: rusted sheds, still working - glowing windows, stacks and a blast furnace belching black smoke, conveyor bridges
     const rust=corrM(0x8a5a3a),rust2=corrM(0x6a4a3a),fade=corrM(0xb9b3a6),fade2=corrM(0x8a9298);
-    const broken=std({roughness:.9,map:canvas(256,128,(g,w,h)=>{g.fillStyle='#7a5a44';g.fillRect(0,0,w,h);for(let x=8;x<w;x+=24)for(let y=10;y<h;y+=34){g.fillStyle=Math.random()<.6?'#141210':'#3a4a52';g.fillRect(x,y,16,22);if(Math.random()<.5){g.fillStyle='#141210';g.beginPath();g.moveTo(x,y);g.lineTo(x+16,y+R(0,22));g.lineTo(x+R(0,16),y+22);g.fill();}}speck(g,w,h,800,['rgba(40,20,10,.4)','rgba(160,90,40,.3)'],6);})});
+    const MW=[];for(let x=8;x<256;x+=24)for(let y=10;y<128;y+=34)MW.push([x,y,Math.random()<.7,Math.random()<.3,R(0,22),R(0,16)]);   // rusty but working: most windows glow with the furnaces inside
+    const broken=std({roughness:.9,map:canvas(256,128,(g,w,h)=>{g.fillStyle='#7a5a44';g.fillRect(0,0,w,h);for(const[x,y,lit,brk,a,b]of MW){g.fillStyle=lit?'#ffb35a':'#3a4a52';g.fillRect(x,y,16,22);if(brk){g.fillStyle='#141210';g.beginPath();g.moveTo(x,y);g.lineTo(x+16,y+a);g.lineTo(x+b,y+22);g.fill();}}speck(g,w,h,800,['rgba(40,20,10,.4)','rgba(160,90,40,.3)'],6);}),
+      emissiveMap:canvas(256,128,(g,w,h)=>{g.fillStyle='#000';g.fillRect(0,0,w,h);for(const[x,y,lit]of MW)if(lit){g.fillStyle='#ff8a30';g.fillRect(x,y,16,22);}}),emissive:0xffffff,emissiveIntensity:.9});
     for(let i=Z.tu1+m(250);i<Z.detour-m(200);i+=m(90)){const sd=-1,lat=-rr(70,120);gpos(i,lat,V);const w=rr(40,80),d=rr(30,60),h=rr(9,16);B(w,h,d,pick([fade,fade2,rust2]),V.x,h/2,V.z,yaw(i));const rf=B(w+1,1,d+1,mat('roofgrey',{color:0x5a5c5e}),V.x,h+.3,V.z,yaw(i));}
     const mill=Z.tu1+m(1300);gpos(mill,-230,V);const mx=V.x,mz=V.z,ry=yaw(mill);const R2=(lx,lz)=>{const c=Math.cos(ry),s=Math.sin(ry);return[mx+lx*c+lz*s,mz-lx*s+lz*c];};
     for(const[lx,lz,w,d,h]of[[0,0,60,140,26],[-70,30,40,90,20],[60,-60,34,70,32],[-40,-110,80,30,14]]){const[x,z]=R2(lx,lz);B(w,h,d,broken,x,h/2,z,ry);const rf=B(w+.6,1.2,d+.6,rust,x,h+.6,z,ry);rf.rotation.z=rr(-.08,.08);}
-    for(let k=0;k<5;k++){const[x,z]=R2(-20+k*16,70);const h=rr(48,70);const st=new THREE.Mesh(cyl(2.2,3,h,12),rust2);st.position.set(x,h/2,z);st.castShadow=true;scene.add(st);B(5,1,5,rust,x,h,z);}
-    {const[x,z]=R2(70,40);const bf=new THREE.Mesh(cyl(7,9,40,14),rust);bf.position.set(x,20,z);bf.castShadow=true;scene.add(bf);const tp=new THREE.Mesh(new THREE.ConeGeometry(7,12,14),rust2);tp.position.set(x,46,z);scene.add(tp);for(const q of[-1,1]){const st=new THREE.Mesh(cyl(4,4,26,12),rust2);st.position.set(x+q*14,13,z+12);scene.add(st);}
+    for(let k=0;k<5;k++){const[x,z]=R2(-20+k*16,70);const h=rr(48,70);const st=new THREE.Mesh(cyl(2.2,3,h,12),rust2);st.position.set(x,h/2,z);st.castShadow=true;scene.add(st);B(5,1,5,rust,x,h,z);MILL.push({x,y:h+1,z,t:R(0,.3),k:1});}
+    {const[x,z]=R2(70,40);const bf=new THREE.Mesh(cyl(7,9,40,14),rust);bf.position.set(x,20,z);bf.castShadow=true;scene.add(bf);const tp=new THREE.Mesh(new THREE.ConeGeometry(7,12,14),rust2);tp.position.set(x,46,z);scene.add(tp);MILL.push({x,y:52,z,t:0,k:1.6});const gl=new THREE.Mesh(cyl(3.2,3.2,1,12),new THREE.MeshBasicMaterial({color:0xff7a20}));gl.position.set(x,40.6,z);scene.add(gl);   /* the furnace glowing at the throat */for(const q of[-1,1]){const st=new THREE.Mesh(cyl(4,4,26,12),rust2);st.position.set(x+q*14,13,z+12);scene.add(st);}
      const cv=B(4,3,120,rust2,x-40,30,z-10,ry+.6);cv.rotation.x=.18;}
     const ms=sign(1024,200,'BAYSIDE STEEL WORKS','#3a2a20','#c9a37a','900 96px Georgia');{const[x,z]=R2(0,72);const sg=new THREE.Mesh(new THREE.PlaneGeometry(50,9.8),std({map:ms,roughness:.9}));sg.position.set(x,30,z);sg.rotation.y=ry+Math.PI/2;scene.add(sg);}
     for(let k=0;k<6;k++){const[x,z]=R2(rr(-90,90),rr(-150,120));const tk=new THREE.Mesh(cyl(9,9,12,16),fade2);tk.position.set(x,6,z);tk.castShadow=true;scene.add(tk);}
+    // the left (bay) side, in order: warehouses, then the rail yard, then the port with its cranes
+    for(let i=Z.tu1+m(150);i<Z.tu1+m(620);i+=m(rr(55,80))){gpos(i,rr(150,200),V);const w=rr(40,70),d=rr(26,44),h=rr(9,15);B(w,h,d,pick([fade,fade2,rust2,rust]),V.x,V.y+h/2,V.z,yaw(i));B(w+1,1,d+1,mat('roofgrey',{color:0x5a5c5e}),V.x,V.y+h+.3,V.z,yaw(i));
+      for(let q=-1;q<=1;q++){const[dx,dz]=[Math.cos(yaw(i))*q*w*.28,-Math.sin(yaw(i))*q*w*.28];B(5,5,.3,mat('dock',{color:0x3a3c3e}),V.x+dx-Nn[i].x*d/2,V.y+2.5,V.z+dz-Nn[i].z*d/2,yaw(i));}}   // loading doors facing the freeway
+    {const y0=Z.tu1+m(650),y1=Z.tu1+m(1250),bal=mat('ballast',{color:0x5a544a,roughness:1});ribbon(200,280,i=>-H[i]+.04,i=>-H[i]+.04,bal,4,y0,y1);
+      for(let t=0;t<8;t++){const lat=205+t*10;for(const o of[lat-.75,lat+.75])ribbon(o-.05,o+.05,i=>-H[i]+.18,i=>-H[i]+.18,steelM,4,y0,y1);}   // eight tracks side by side
+      const fc=new THREE.InstancedMesh(new THREE.BoxGeometry(3.1,3.8,14),std({roughness:.85,color:0xffffff}),420);let k=0;
+      for(let t=0;t<8;t++){let i=y0+m(rr(0,40));while(i<y1-m(10)&&k<420){if(rnd()<.18){i+=m(rr(30,90));continue;}off(i,205+t*10,0,V);V.y=2.2;M4.compose(V,Q.setFromAxisAngle(YAX,yaw(i)),S.set(1,rnd()<.25?.75:1,1));fc.setMatrixAt(k,M4);
+        fc.setColorAt(k++,C.setHex(pick([0x7a3a28,0x5a3a2a,0x8a5a2a,0x2f4f6a,0x6a6a62,0xb98a3a,0x3a5a3a])));i+=m(15);}}fc.count=k;fc.castShadow=true;scene.add(fc);
+      for(const[d,t]of[[200,1],[420,4],[560,6]]){const i=y0+m(d);off(i,205+t*10,0,V);const lo=B(3.2,4.4,18,mat('loco',{color:0xd8a020,roughness:.6}),V.x,2.6,V.z,yaw(i));B(3.3,.6,18.2,mat('locoband',{color:0x1a1a1a}),V.x,1.2,V.z,yaw(i));}}
+    // the airport, out on the flats beyond the warehouses and the yard: a runway along the shore, a terminal and a control tower. Planes take off now and then (planesTick).
+    {const a0=Z.tu1+m(180),a1=Z.tu1+m(1150),mid=(a0+a1)>>1,lat=660,rw=canvas(64,1024,(g,w,h)=>{g.fillStyle='#2e3034';g.fillRect(0,0,w,h);speck(g,w,h,900,['rgba(255,255,255,.05)','rgba(0,0,0,.2)'],3);g.fillStyle='#e8e8e0';for(let y=40;y<h-40;y+=48)g.fillRect(w/2-1.5,y,3,24);
+        for(const y of[6,h-30])for(let x=6;x<w-4;x+=7)g.fillRect(x,y,4,24);g.fillRect(2,0,2,h);g.fillRect(w-4,0,2,h);});
+      off(mid,lat,0,V);const gy=Math.max(groundAt(V.x,V.z),0)+.08,len=(a1-a0)*SEG,ry=yaw(mid);
+      const run=new THREE.Mesh(new THREE.PlaneGeometry(46,len).rotateX(-Math.PI/2),std({map:rw,roughness:.9}));run.position.set(V.x,gy,V.z);run.rotation.y=ry;run.receiveShadow=true;scene.add(run);
+      const apron=new THREE.Mesh(new THREE.PlaneGeometry(90,len*.6).rotateX(-Math.PI/2),std({color:0x55575a,roughness:.95}));off(mid,lat-95,0,V2);apron.position.set(V2.x,gy-.02,V2.z);apron.rotation.y=ry;scene.add(apron);
+      off(mid-m(120),lat-150,0,V2);B(150,14,42,mat('terminal',{color:0xd8d4c8,roughness:.6}),V2.x,gy+7,V2.z,ry);B(152,2.5,44,mat('termglass',{color:0x2a3a48,roughness:.15,metalness:.6}),V2.x,gy+10,V2.z,ry);
+      off(mid+m(160),lat-140,0,V2);const tw=new THREE.Mesh(cyl(2.4,3.2,34,10),white);tw.position.set(V2.x,gy+17,V2.z);scene.add(tw);const cab=new THREE.Mesh(cyl(5.5,4.2,5,8),mat('termglass',{color:0x2a3a48,roughness:.15,metalness:.6}));cab.position.set(V2.x,gy+36.5,V2.z);scene.add(cab);
+      for(let q=0;q<3;q++){off(mid-m(240)+m(q*60),lat-90,0,V2);const pl=AIRmk();pl.position.set(V2.x,gy,V2.z);pl.rotation.y=ry+Math.PI/2;scene.add(pl);}   // parked at the gates
+      off(a0,lat,0,V);AIR.A=V.clone().setY(gy);off(a1,lat,0,V);AIR.B=V.clone().setY(gy);AIR.ry=ry;}
+    // the stadium, on the right before the steel works: an oval bowl, its seats, the field, and four light towers
+    {const i=Z.tu1+m(820);gpos(i,-300,V);const g=new THREE.Group(),con=std({color:0xb8b2a4,roughness:.9,side:D2});
+      const out=new THREE.Mesh(new THREE.CylinderGeometry(80,74,26,48,1,true),con);out.position.y=13;g.add(out);
+      const seats=new THREE.Mesh(new THREE.CylinderGeometry(76,48,22,48,1,true),std({color:0x2f5a8a,roughness:.8,side:D2}));seats.position.y=12;g.add(seats);
+      const fld=new THREE.Mesh(new THREE.CircleGeometry(48,40).rotateX(-Math.PI/2),std({color:0x3a7a3a,roughness:1}));fld.position.y=.6;g.add(fld);
+      for(const a of[.6,2.5,3.8,5.7]){const x=Math.cos(a)*86,z=Math.sin(a)*86;B(1.6,58,1.6,steelM,x,29,z,0,g);const pn=B(12,7,1,lampMat,x,60,z,-a+Math.PI/2,g);pn.lookAt(0,0,0);}
+      const sg=new THREE.Mesh(new THREE.PlaneGeometry(40,6),std({map:sign(1024,160,'COLISEUM','#1a3a24','#f2c230','900 110px Arial'),roughness:.8}));sg.position.set(0,20,80.3);g.add(sg);
+      g.scale.set(1,1,1.3);g.position.copy(V);g.rotation.y=yaw(i)+Math.PI/2;g.traverse(o=>{o.castShadow=true;});scene.add(g);}
     // downtown Oakland, seen across the flats from both freeways
     skyline(500,-3300,420,500,90,150);}
   { // overhead signs on the freeways
@@ -1528,6 +1558,7 @@ const smokeTex=canvas(128,128,(g)=>{for(let i=0;i<26;i++){const x=64+R(-26,26),y
 let NOGY=0,GY=0;   // height of the road under the action (free drive hills); 0 on the circuit
 const parts=[],mkPool=(n,tex,add)=>{const a=[];for(let i=0;i<n;i++){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,blending:add?THREE.AdditiveBlending:THREE.NormalBlending,opacity:0}));s.visible=false;scene.add(s);a.push({s,life:0});}return a;};
 const fireP=mkPool(240,glowTex,true),smokeP=mkPool(320,smokeTex,false);let fi=0,si=0;
+const millP=DRIVE?mkPool(220,smokeTex,false):null;let mi=0;   // the steel mill's black smoke has a pool of its own, so it never steals the cars' exhaust
 function emit(pool,idx,pos,vx,vy,vz,s0,s1,life,op,col,grav=0,drag=.6){const p=pool[idx%pool.length];p.s.position.copy(pos);p.fl=NOGY?pos.y-1e3:GY;if(GY>.6&&!NOGY&&pos.y<GY-.5)p.s.position.y+=GY;p.vx=vx;p.vy=vy;p.vz=vz;p.s0=s0;p.s1=s1;p.life=p.max=life;p.op=op;p.grav=grav;p.drag=drag;p.s.material.color.setHex(col);p.s.material.rotation=Math.random()*6.28;p.s.visible=true;if(!p.on){p.on=true;parts.push(p);}}
 const flame=(pos,vx,vy,vz,s0,s1,life,col=0xff9a3a)=>emit(fireP,fi++,pos,vx,vy,vz,s0,s1,life,.24,col,0);
 const spark=(pos,vx,vy,vz)=>emit(fireP,fi++,pos,vx,vy,vz,.14,.05,R(.35,.9),1,0xffd27a,20);
@@ -2145,7 +2176,7 @@ const shadeMat=new THREE.MeshBasicMaterial({map:shadeTex,color:0,transparent:tru
   if(DRIVE){span(Z.wt0+120,Z.central,band);band(Z.rb1+20,Z.refinery-20);}else{band(205,NS);band(0,62);}}
 function driveTick(rdt){const zn=zoneOf(PL.idx);leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,zn==='town'&&G.state==='race'&&!G.paused);   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);snapTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);snapTick(rdt);millTick(rdt);planesTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -2633,6 +2664,25 @@ function snapTick(rdt){const S=SNAP,pe=ents.find(e=>e.player);if(!pe||!BRH.lengt
     k.w+=(-Math.sin(k.a)*9.8/Math.max(5,k.L)-k.w*.3)*rdt;k.a+=k.w*rdt;k.m.rotation.z=k.a+Math.sin(t*24)*.08*Math.exp(-t);   // a damped swing from the top, with a whip at first
     if(k.drop&&t>.8){k.vy-=20*rdt;k.g.position.y+=k.vy*rdt;k.m.rotation.x+=rdt*1.2;}
     if(t>10||k.g.position.y<-60||Math.abs(wdiff(k.i*SEG-pe.s))>450){k.st=0;k.g.visible=false;}}}
+// An airliner for the airport by I-880: white, with a blue fin and two engines under the wings. Nose along +z.
+function AIRmk(){const g=new THREE.Group(),bd=std({color:0xf2f2ee,roughness:.5,metalness:.2}),bl=std({color:0x2a4a8a,roughness:.5}),eg=std({color:0xb0b4b8,roughness:.4,metalness:.5});
+  const bx=(sx,sy,sz,mm,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mm);o.position.set(x,y,z);g.add(o);return o;};
+  const f=new THREE.Mesh(cyl(2,2,38,12),bd);f.rotation.x=Math.PI/2;f.position.y=4.2;g.add(f);
+  const nose=new THREE.Mesh(new THREE.SphereGeometry(2,12,8),bd);nose.scale.set(1,1,1.8);nose.position.set(0,4.2,19);g.add(nose);
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(2,8,12),bd);tail.rotation.x=-Math.PI/2;tail.position.set(0,4.6,-23);g.add(tail);
+  bx(36,.5,6,bd,0,3.6,1);bx(12,.4,3.5,bd,0,5,-22);bx(.5,8,5,bl,0,9,-22);
+  for(const x of[-8,8]){const en=new THREE.Mesh(cyl(1.1,1.1,4,10),eg);en.rotation.x=Math.PI/2;en.position.set(x,2.4,3);g.add(en);}
+  g.traverse(o=>{o.castShadow=true;});return g;}
+// Now and then while you are on I-880 a plane rolls down the runway, lifts off and climbs away out over the bay.
+function planesTick(rdt){const A=AIR;if(!A.A)return;const i=PL.idx,on=i>Z.tu1&&i<Z.detour+Math.round(200/SEG);
+  if(!A.g){A.g=AIRmk();A.g.visible=false;A.g.rotation.order='YXZ';scene.add(A.g);A.D=A.B.clone().sub(A.A).normalize();}
+  if(A.st===0){A.g.visible=false;if(!on)return;A.cd-=rdt;if(A.cd>0)return;A.st=1;A.t=0;A.cd=R(16,30);A.g.visible=true;}
+  A.t+=rdt;const t=A.t,acc=3.4,vR=68,tR=vR/acc;let s,y=0,p=0;
+  if(t<tR)s=.5*acc*t*t;else{const u=t-tR;s=.5*acc*tR*tR+vR*u+.6*u*u;y=u*3.2+u*u*.35;p=Math.min(.2,u*.09);}
+  A.g.position.copy(A.A).addScaledVector(A.D,s);A.g.position.y+=y;A.g.rotation.set(-p,A.ry,0);if(t>tR+50)A.st=0;}
+// The steel mill's stacks and blast furnace belch black smoke while you are anywhere along I-880.
+function millTick(rdt){if(!MILL.length||!millP)return;const i=PL.idx;if(!(i>Z.tu1&&i<Z.toll))return;
+  for(const s of MILL){s.t-=rdt;if(s.t>0)continue;s.t=R(.22,.45)/s.k;NOGY=1;emit(millP,mi++,V.set(s.x,s.y,s.z),R(-.8,.8)+2.6,R(5,8),R(-.8,.8),R(9,13)*s.k,R(45,75)*s.k,R(9,13),1,pick([0x121010,0x1c1916,0x26211d]),-.25);NOGY=0;}}
 function fqTick(rdt){if(!FQ.list.length)return;const pe=ents.find(e=>e.player);if(!pe)return;
   for(const q of FQ.list){
     if(q.st===0){if(G.state==='race'&&!PL.crash&&PL.idx>=q.ti&&PL.idx<q.ti+80){q.st=1;q.t=0;q.n=0;q.af=0;q.sd=Math.random()<.5?-1:1;q.fs=wrapS(pe.s+Math.max(280,pe.v*9));sfxRumble();say('EARTHQUAKE !','THE GROUND IS SHAKING - EASE OFF',4);}continue;}
@@ -2824,7 +2874,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={CROWS,BIRDS,SKUNK,SNAP,BRH,BK,TFL,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={CROWS,BIRDS,SKUNK,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
