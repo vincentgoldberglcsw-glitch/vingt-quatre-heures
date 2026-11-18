@@ -69,8 +69,8 @@ function buildRoute(X80=-600){
    .S(380,40).M('richmond').L(25,260).S(400,40).M('shane').S(300,40).R(25,260);
   f.S(X80-150-f.x,50).M('refinery').R(90,150).M('i80');
   // the way home, driven backwards from the house so the two ends can be made to meet: east on San Antonio, north on Grand, west on Buena Vista, north through the Webster Tube, then up to the I-80 line
-  const tu=f.pts[f.mk.tu0],Xt=tu[0]+90,r1=HR1,r2=HR2,r3=HR3,S0=280-r1,n=-tu[1]-r1-r2-r3-120,w=S0+r1-r2-r3-Xt;
-  const ret=d=>{const r=routeTurtle(0,0,90*D2R);r.S(S0).L(90,r1).S(n).M('bv').L(90,r2).S(w).R(90,r3).S(120).M('wt0').S(580,40).M('wt1').S(260).R(35,300).S(d,60).L(35,300);return r;};
+  const tu=f.pts[f.mk.tu0],Xt=tu[0]+90,r1=HR1,r2=HR2,r3=HR3,S0=280-r1,n=-tu[1]-r1-r2-r3-250,w=S0+r1-r2-r3-Xt;
+  const ret=d=>{const r=routeTurtle(0,0,90*D2R);r.S(S0).L(90,r1).S(n).M('bv').L(90,r2).S(w).R(90,r3).S(250).M('wt0').S(580,40).M('wt1').S(80).R(35,520).S(d,60).L(35,300);return r;};
   const g=d=>ret(d).x-X80;let a=50,b=4000;for(let k=0;k<60;k++){const mid=(a+b)/2;if(g(a)*g(mid)<=0)b=mid;else a=mid;}const r=ret((a+b)/2);
   // I-80 south: two gentle S-bends that cancel out, then straight on to meet the way home
   f.S(700,60).R(6,900).S(500,60).L(6,900).M('berkeley').S(1500,60).L(6,900).S(500,60).R(6,900).M('emeryville').S(1800,60).M('oakland');f.S(r.z-f.z,60);
@@ -130,6 +130,7 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
   const bankOn=(a,b,amt)=>{const fd=m(25);for(let i=a;i<=b;i++){let c=0;for(let q=-8;q<8;q++){const u=wrapI(i+q),v=wrapI(u+1);c+=(T[v].x-T[u].x)*Nn[u].x+(T[v].z-T[u].z)*Nn[u].z;}const env=sst(i,a,a+fd)*(1-sst(i,b-fd,b));BK[wrapI(i)]=clamp(-c/(16*SEG)*45,-amt,amt)*env;}};
   bankOn(z.tu0-m(200),z.tu0-m(10),.1);   // into the Posey Tube
   bankOn(z.tu1+m(200),z.tu1+m(430),.08);   // out of the tube and up onto I-880
+  bankOn(z.wt1-m(420),z.wt1-m(50),.08);   // the long, gentle bend down off I-80 into the Webster Tube
   XW[NS]=XW[0];H[NS]=H[0];for(let i=0;i<=NS;i++)P[i].y=H[i];
   for(let i=0;i<NS;i++){const c=zoneArr[i];if((c===1||c===3||c===7||c===8)&&H[i]<.5)landIdx.push(i);}}
 const span=(a,b,fn)=>{if(a<b)fn(a,b);else{fn(a,NS);fn(0,b);}};   // vc: rivals, vcp: the player's own limit (drives the brake warning)
@@ -869,7 +870,7 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
     const MW=[];for(let x=8;x<256;x+=24)for(let y=10;y<128;y+=34)MW.push([x,y,Math.random()<.7,Math.random()<.3,R(0,22),R(0,16)]);   // rusty but working: most windows glow with the furnaces inside
     const broken=std({roughness:.9,map:canvas(256,128,(g,w,h)=>{g.fillStyle='#7a5a44';g.fillRect(0,0,w,h);for(const[x,y,lit,brk,a,b]of MW){g.fillStyle=lit?'#ffb35a':'#3a4a52';g.fillRect(x,y,16,22);if(brk){g.fillStyle='#141210';g.beginPath();g.moveTo(x,y);g.lineTo(x+16,y+a);g.lineTo(x+b,y+22);g.fill();}}speck(g,w,h,800,['rgba(40,20,10,.4)','rgba(160,90,40,.3)'],6);}),
       emissiveMap:canvas(256,128,(g,w,h)=>{g.fillStyle='#000';g.fillRect(0,0,w,h);for(const[x,y,lit]of MW)if(lit){g.fillStyle='#ff8a30';g.fillRect(x,y,16,22);}}),emissive:0xffffff,emissiveIntensity:.9});
-    for(let i=Z.tu1+m(250);i<Z.detour-m(200);i+=m(90)){const sd=-1,lat=-rr(70,120);gpos(i,lat,V);const w=rr(40,80),d=rr(30,60),h=rr(9,16);B(w,h,d,pick([fade,fade2,rust2]),V.x,h/2,V.z,yaw(i));const rf=B(w+1,1,d+1,mat('roofgrey',{color:0x5a5c5e}),V.x,h+.3,V.z,yaw(i));}
+    for(let i=Z.tu1+m(250);i<Z.detour-m(200);i+=m(90)){const sd=-1,lat=-rr(70,120);gpos(i,lat,V);const w=rr(40,80),d=rr(30,60),h=rr(9,16),wm=pick([fade,fade2,rust2]);if(!farFromRoad(V.x,V.z,Math.hypot(w,d)/2+12))continue;B(w,h,d,wm,V.x,h/2,V.z,yaw(i));const rf=B(w+1,1,d+1,mat('roofgrey',{color:0x5a5c5e}),V.x,h+.3,V.z,yaw(i));}
     const mill=Z.tu1+m(1300);gpos(mill,-230,V);const mx=V.x,mz=V.z,ry=yaw(mill);const R2=(lx,lz)=>{const c=Math.cos(ry),s=Math.sin(ry);return[mx+lx*c+lz*s,mz-lx*s+lz*c];};
     for(const[lx,lz,w,d,h]of[[0,0,60,140,26],[-70,30,40,90,20],[60,-60,34,70,32],[-40,-110,80,30,14]]){const[x,z]=R2(lx,lz);B(w,h,d,broken,x,h/2,z,ry);const rf=B(w+.6,1.2,d+.6,rust,x,h+.6,z,ry);rf.rotation.z=rr(-.08,.08);}
     for(let k=0;k<5;k++){const[x,z]=R2(-20+k*16,70);const h=rr(48,70);const st=new THREE.Mesh(cyl(2.2,3,h,12),rust2);st.position.set(x,h/2,z);st.castShadow=true;scene.add(st);B(5,1,5,rust,x,h,z);MILL.push({x,y:h+1,z,t:R(0,.3),k:1});}
@@ -1991,7 +1992,7 @@ const ZLABEL={town:'ALAMEDA',tunnel:'THE TUBE',freeway:'FREEWAY',bridge:'BAY BRI
 const PLACES=DRIVE?(()=>{const m=x=>Math.round(x/SEG);return[[0,'SAN ANTONIO AVE','ALAMEDA'],[Z.paru,'PARU ST','TEN BLOCKS NORTH'],[Z.central,'CENTRAL AVE','PAST THE ALAMEDA THEATRE'],[Z.wilma,'WILMA CHAN WAY','TO THE POSEY TUBE'],[Z.tu0,'POSEY TUBE','UNDER THE ESTUARY'],
   [Z.tu1,'I-880 NORTH','THE PORT OF OAKLAND'],[Z.toll,'TOLL PLAZA','BAY BRIDGE'],[Z.b0,'BAY BRIDGE','TO SAN FRANCISCO'],[Z.b1,'SAN FRANCISCO','DOWNTOWN'],[Z.hyde,'HYDE ST','THE CABLE CAR LINE · RUSSIAN HILL'],[Z.marina+m(40),'MARINA BLVD','WEST TO THE GOLDEN GATE'],
   [Z.gg0,'GOLDEN GATE BRIDGE','NORTH TO MARIN'],[Z.gg1,'MARIN','THE REDWOODS'],[Z.sq,'SAN QUENTIN','EAST TO THE BRIDGE'],[Z.rb0,'RICHMOND–SAN RAFAEL BRIDGE',''],[Z.rb1,'RICHMOND','WATCH FOR TURKEYS'],[Z.shane-m(160),'SHANE DR','RICHMOND'],
-  [Z.i80,'I-80 SOUTH','BERKELEY HILLS ON THE LEFT'],[Z.berkeley,'BERKELEY','THE UNIVERSITY UP THE HILL'],[Z.emeryville,'EMERYVILLE',''],[Z.oakland,'OAKLAND','NEXT EXIT ALAMEDA'],[Z.wt1,'WEBSTER TUBE','BACK UNDER THE ESTUARY'],[Z.wt0,'ALAMEDA','HOME TO SAN ANTONIO AVE'],[Z.wt0+m(260),'BUENA VISTA AVE','ALAMEDA'],[Z.bv,'GRAND ST','SOUTH TO SAN ANTONIO'],[NS-m(240),'SAN ANTONIO AVE','ALMOST HOME · 1611 ON THE RIGHT']];})():[];
+  [Z.i80,'I-80 SOUTH','BERKELEY HILLS ON THE LEFT'],[Z.berkeley,'BERKELEY','THE UNIVERSITY UP THE HILL'],[Z.emeryville,'EMERYVILLE',''],[Z.oakland,'OAKLAND','NEXT EXIT ALAMEDA'],[Z.wt1,'WEBSTER TUBE','BACK UNDER THE ESTUARY'],[Z.wt0,'ALAMEDA','HOME TO SAN ANTONIO AVE'],[Z.wt0+m(390),'BUENA VISTA AVE','ALAMEDA'],[Z.bv,'GRAND ST','SOUTH TO SAN ANTONIO'],[NS-m(240),'SAN ANTONIO AVE','ALMOST HOME · 1611 ON THE RIGHT']];})():[];
 const placeOf=i=>{let p=PLACES[0];for(const q of PLACES)if(i>=q[0])p=q;return p;};
 const tmNow=()=>performance.now()/1000;
 function startDrive(){clearCrack();fqArm();initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');$('res').style.display='none';for(const id of['tl','br','lf','map','bl'])$(id).classList.remove('hide');
