@@ -2845,7 +2845,7 @@ function showHome(){$('title').classList.toggle('home',HOME);$('trk1').classList
   if(DRIVE)document.querySelector('#title h2').textContent=JUMP?'A FREE DRIVE FROM '+JUMPN[JUMP]+' TO 1611 SAN ANTONIO AVE':'A FREE DRIVE FROM 1611 SAN ANTONIO AVE AND HOME AGAIN';}
 // from: where the Alameda drive starts ('' the house, or a jump point)
 function pickTrack(drive,from=''){if(drive===DRIVE){if(drive)JUMP=from;HOME=false;showHome();return;}const q=new URLSearchParams();if(drive){q.set('mode','drive');if(from)q.set('from',from);}q.set('go','1');q.set('model',G.model);q.set('liv',G.liv);q.set('wx',G.weather);location.search=q.toString();}
-$('trk1').onclick=()=>pickTrack(false);$('trk2').onclick=()=>pickTrack(true);for(const b of document.querySelectorAll('#jmp button'))b.onclick=()=>pickTrack(true,b.dataset.j);showHome();
+$('trk1').onclick=()=>pickTrack(false);$('trk2').onclick=()=>pickTrack(true);for(const b of document.querySelectorAll('#jmp button,#bonus button'))b.onclick=()=>pickTrack(true,b.dataset.j);showHome();
 const JKEY={Digit3:'bb',Numpad3:'bb',Digit4:'sf',Numpad4:'sf',Digit5:'gg',Numpad5:'gg',Digit6:'i80',Numpad6:'i80',KeyH:''};
 if(MODELS[G.model]&&MODELS[G.model].cls)MKEYS=CLASSICS;
 function setSens(d){G.sens=clamp(Math.round((G.sens+d)*10)/10,.1,1);try{localStorage.setItem('vqh-sens',G.sens);}catch(e){}$('oSens').textContent=Math.round(G.sens*100)+'%';say('STEERING '+Math.round(G.sens*100)+'%','[ LESS SENSITIVE · MORE SENSITIVE ]',1.4);}
