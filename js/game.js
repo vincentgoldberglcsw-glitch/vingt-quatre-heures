@@ -427,7 +427,7 @@ await BOOT.step('ROADSIDE',.20);
 // A quiet island town street, the tube under the estuary with its portal buildings, a freeway past the port, then a long suspension bridge.
 // The whole route is level: the bay is simply 45 m below the road, so the bridge is high without the engine needing hills.
 const MILL=[],AIR={g:null,st:0,t:0,cd:6};let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
-const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null;const BURN=[];   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
+const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null;const BURN=[];   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
 if(!DRIVE){ // roadside advertising boards, as on the old circuit: cigarettes, wine and bread, by turns
   const ad=(kind,name,sub)=>canvas(1024,460,(g,w,h)=>{const bg={cig:'#1d4f8a',wine:'#efe6cc',bread:'#f0c23a'}[kind],ink={cig:'#f4f1e8',wine:'#7a1626',bread:'#3a2412'}[kind];g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=ink;g.lineWidth=10;g.strokeRect(14,14,w-28,h-28);
     if(kind==='cig'){g.save();g.translate(190,250);g.rotate(-.1);g.fillStyle='#f4f1e8';g.fillRect(-90,-110,180,250);g.fillStyle='#c8302a';g.fillRect(-90,-30,180,90);g.fillStyle='#f4f1e8';g.beginPath();g.ellipse(0,15,62,30,0,0,7);g.fill();g.fillStyle='#c8302a';g.font='900 30px Georgia';g.textAlign='center';g.fillText('M',0,26);
@@ -553,8 +553,24 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
   const aptT=canvas(256,256,(g,w,h)=>{g.fillStyle='#fff';g.fillRect(0,0,w,h);for(let fl=0;fl<3;fl++)for(let k=0;k<4;k++){const x=16+k*60,y=20+fl*82;g.fillStyle='#f4f1e8';g.fillRect(x-4,y-4,44,58);g.fillStyle='#2a343c';g.fillRect(x,y,36,50);g.fillStyle='rgba(240,236,220,.8)';g.fillRect(x,y+24,36,3);}});
   const roofT=canvas(128,128,(g,w,h)=>{g.fillStyle='#6a5a4c';g.fillRect(0,0,w,h);for(let y=0;y<h;y+=8)for(let x=0;x<w;x+=12){g.fillStyle=`rgba(${40+Math.random()*50|0},${36+Math.random()*40|0},${30+Math.random()*36|0},.5)`;g.fillRect(x+(y/8%2)*6,y,11,7);}});roofT.wrapS=roofT.wrapT=THREE.RepeatWrapping;roofT.repeat.set(.4,.4);
   const tri=new THREE.Shape();tri.moveTo(-1,0);tri.lineTo(1,0);tri.lineTo(0,1);
-  const VIC=[0xe8dcc0,0xc9d6c2,0xd9c7b8,0xb8c9d6,0xe6c9a8,0xd8b7b0,0xf0ead8,0xc7c3d8,0xc9cdd0],CRAFT=[0x4a4f55,0x5b4a3a,0x6f7a5a,0x7a4a36,0x3e4a52,0x8a7a5a,0x56604a],roofM=std({map:roofT,roughness:.9}),brick=std({color:0x8a4a38,roughness:.95}),lawnM=std({color:0x5f7a3a,roughness:1});
+  const VIC=[0x8fa9a3,0xc9cdc4,0xe6dcc0,0x7d9a9c,0xb4bfc0,0xd8d2b8,0x9db3ad,0xa7b3b8,0xe8e0c8],CRAFT=[0x4a4f55,0x5b4a3a,0x6f7a5a,0x7a4a36,0x3e4a52,0x8a7a5a,0x56604a],roofM=std({map:roofT,roughness:.9}),brick=std({color:0x8a4a38,roughness:.95}),lawnM=std({color:0x5f7a3a,roughness:1});
   const wallM=c=>mat('w'+c,{map:wallT,color:c,roughness:.9}),plainM=c=>mat('p'+c,{color:c,roughness:.9});
+  // Victorian dressing, as on the old Alameda streets: canted two-storey bay windows in white frames, a small gable over the bay, white gingerbread brackets and a finial on the main gable,
+  // and in front of some a big Canary Island date palm (thick trunk, wide fan of arching fronds) and a clipped yellow-green hedge. Own random numbers, so the shared ones run on as before.
+  let vs=1893;const vq=()=>(vs=(vs*16807)%2147483647)/2147483647;
+  const vGlass=mat('vglass',{color:0x1f2a30,roughness:.1,metalness:.4}),vTrunk=mat('ptrunk',{color:0x6e5c46,roughness:1}),vHedge=mat('vhedge',{color:0x8a9a32,roughness:1});
+  const vFrondM=std({roughness:.85,side:D2,alphaTest:.5,map:canvas(64,256,(c,w,h)=>{c.clearRect(0,0,w,h);c.strokeStyle='#5f7a2c';c.lineWidth=3;c.beginPath();c.moveTo(w/2,0);c.lineTo(w/2,h);c.stroke();c.lineWidth=2.4;for(let y=8;y<h-6;y+=6){const s=(1-y/h)*.5+.5;c.strokeStyle=y%12?'#4e6e28':'#6d8a34';c.beginPath();c.moveTo(w/2,y);c.lineTo(w/2-28*s,y+14);c.moveTo(w/2,y);c.lineTo(w/2+28*s,y+14);c.stroke();}})});
+  const vFrondG=new THREE.PlaneGeometry(1.5,4.8).translate(0,2.4,0),vTrunkG=cyl(.85,1.05,1,10);
+  const vicDress=(g,w,d,h,mm)=>{const bx=w*.3,fz=d/2+1.2;
+    for(const y of[1.95,h*.42+.5+h*.22]){B(w*.22,1.95,.05,white,bx,y,fz+.02,0,g);B(w*.17,1.6,.06,vGlass,bx,y,fz+.05,0,g);for(const s of[-1,1]){const sp=B(.9,1.6,.06,vGlass,bx+s*(w*.15+.25),y,fz-.32,0,g);sp.rotation.y=s*.8;}}
+    const bg=new THREE.Mesh(new THREE.ExtrudeGeometry(tri,{depth:1.5,bevelEnabled:false}),roofM);bg.scale.set(w*.17,1.7,1);bg.position.set(bx,h*.8+.5,fz-1.4);g.add(bg);
+    const bt=new THREE.Mesh(new THREE.ExtrudeGeometry(tri,{depth:.1,bevelEnabled:false}),white);bt.scale.set(w*.11,1.05,1);bt.position.set(bx,h*.8+.62,fz+.12);g.add(bt);
+    B(w+.3,.32,.12,white,0,h+.3,d/2+.06,0,g);for(let k=0;k<7;k++)B(.12,.55,.3,white,-w/2+.3+k*(w-.6)/6,h+.05,d/2+.18,0,g);B(.16,1.1,.16,white,0,h+3.3,d/2-.1,0,g);
+    const sb=new THREE.Mesh(new THREE.ExtrudeGeometry(tri,{depth:.06,bevelEnabled:false}),white);sb.scale.set(1.3,.9,1);sb.position.set(0,h+1.6,d/2+.06);g.add(sb);
+    if(vq()<.38){const ph=3.6+vq()*2.4,px=-w*.4,pz=d/2+4.4,tk=new THREE.Mesh(vTrunkG,vTrunk);tk.scale.set(1,ph,1);tk.position.set(px,ph/2,pz);g.add(tk);
+      const cr=new THREE.Mesh(new THREE.SphereGeometry(1.4,8,6),vTrunk);cr.scale.set(1,.8,1);cr.position.set(px,ph,pz);g.add(cr);
+      for(let j=0;j<42;j++){const up=j<12,f=new THREE.Mesh(vFrondG,vFrondM);f.position.set(px,ph+.3,pz);f.rotation.set(0,j*2.39996+vq()*.3,0,'YXZ');f.rotateX(up?.4+vq()*.4:1.0+vq()*.95);f.scale.setScalar(1+vq()*.4);g.add(f);}}
+    if(vq()<.55){const hz=d/2+5.35,px=-w*.14,L=(w+4)/2;B(px-1.1+L,1.1,.9,vHedge,(px-1.1-L)/2,.55,hz,0,g);B(L-px-1.1,1.1,.9,vHedge,(px+1.1+L)/2,.55,hz,0,g);}};
   const house=(x,y,z,rot,col,num,style)=>{const g=new THREE.Group(),craft=style==='craft',w=rr(8,10.5),d=rr(9,11),h=craft?rr(5.2,6.6):rr(6,7.4),mm=wallM(col),pm=plainM(col);
     B(w,h,d,mm,0,h/2+.5,0,0,g);B(w+.2,.5,d+.2,craft?brick:side,0,.25,0,0,g);
     const rf=new THREE.Mesh(new THREE.ExtrudeGeometry(tri,{depth:d+1,bevelEnabled:false}),roofM);rf.scale.set(w/2+(craft?1.1:.6),craft?rr(1.8,2.4):rr(2.8,3.8),1);rf.position.set(0,h+.5,-(d+1)/2);g.add(rf);
@@ -566,6 +582,7 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
     B(w*.62,.22,2.6,roofM,-w*.14,3.3,d/2+1.3,0,g);B(w*.62,.5,2.6,craft?brick:side,-w*.14,.25,d/2+1.3,0,g);
     for(const px of[-w*.44,-w*.14,w*.16]){if(craft){B(.45,1.6,.45,white,px,2.4,d/2+2.45,0,g);B(.7,1.1,.7,brick,px,1.05,d/2+2.45,0,g);}else B(.18,2.8,.18,white,px,1.9,d/2+2.45,0,g);}
     B(w*.3,h*.8,1.2,mm,w*.3,h*.42+.5,d/2+.6,0,g);B(.8,2.2,.8,brick,w*.25,h+2.6,-1,0,g);
+    if(style==='vic'&&!num)vicDress(g,w,d,h,mm);   // bay windows, gable trim, and sometimes a Canary Island palm and a hedge (own random numbers)
     for(let s=0;s<3;s++)B(1.6,.17,.4,side,-w*.14,.08+s*.17,d/2+3.2-s*.4,0,g);
     B(w+4,.06,5.6,lawnM,0,.03,d/2+2.9,0,g);if(rnd()<.7){const bu=new THREE.Mesh(new THREE.SphereGeometry(1,10,8),mat("bush"+(rnd()<.3?1:0),{color:rnd()<.3?0xc9b83a:0x3f6a34,roughness:1}));bu.scale.set(1.6,1.2,1.4);bu.position.set(w*.35,.9,d/2+3);g.add(bu);}
     if(num){const pl=new THREE.Mesh(new THREE.PlaneGeometry(1.1,.5),new THREE.MeshBasicMaterial({map:canvas(128,64,(c)=>{c.fillStyle='#1c2a4a';c.fillRect(0,0,128,64);c.fillStyle='#f4f1e8';c.font='900 46px Arial Black,Arial';c.textAlign='center';c.textBaseline='middle';c.fillText(num,64,36);})}));pl.position.set(-w*.14,2.7,d/2+2.56);g.add(pl);}
@@ -685,6 +702,19 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
         else{const cr=rnd()<.55;house(V.x,0,V.z,rot,cr?CRAFT[n++%CRAFT.length]:VIC[n++%VIC.length],'',cr?'craft':'vic');}
         if(!isHome&&rnd()<.42&&Math.abs(i-homeI)>14&&!nearCross(i+3,m(22))){const n1=scene.children.length,o1=OBST.length;parked(wrapI(i+3),sd);if(shops&&nearCross2(i+3,m(12))){scene.remove(...scene.children.slice(n1));OBST.length=o1;}}
         if(xc){scene.remove(...scene.children.slice(n0));OBST.length=o0;}}}}
+  {// a blue ice-cream truck parked at the kerb on Paru, just short of the yellow ladder crosswalk at Clinton Ave: a boxy step van with a serving window and painted treats
+    const c=CROSS[2],sd=1,g=new THREE.Group(),blue=mat('icblue',{color:0x2f8fd8,roughness:.45,metalness:.2}),wh=mat('icwh',{color:0xf4f4f0,roughness:.5});
+    const sideT=canvas(512,256,(x,w,h)=>{x.fillStyle='#2f8fd8';x.fillRect(0,0,w,h);x.fillStyle='#f4f4f0';x.fillRect(150,40,220,120);x.fillStyle='#22313a';x.fillRect(160,50,200,100);
+      const cone=(cx,cy,s,top)=>{x.fillStyle='#d9a75a';x.beginPath();x.moveTo(cx-14*s,cy);x.lineTo(cx+14*s,cy);x.lineTo(cx,cy+40*s);x.fill();x.fillStyle=top;x.beginPath();x.arc(cx,cy-6*s,15*s,0,7);x.fill();};
+      for(let k=0;k<9;k++){const cx=170+k*24,cy=62+(k%2)*44;x.fillStyle=['#ff7ab0','#ffe08a','#fff','#9fe08a','#ff5a5a'][k%5];x.fillRect(cx-7,cy,14,30);x.fillStyle='#d9b07a';x.fillRect(cx-2,cy+30,4,10);}
+      cone(70,70,1.6,'#ff8ac0');cone(440,70,1.6,'#fff4d8');cone(105,150,1.1,'#7a4a2a');cone(410,150,1.1,'#9fe08a');
+      x.fillStyle='#ffe23a';x.font='900 44px Arial Black,Arial';x.textAlign='center';x.fillText('ICE CREAM',w/2,222);x.strokeStyle='#c8241c';x.lineWidth=2;x.strokeText('ICE CREAM',w/2,222);});
+    const sm=std({map:sideT,roughness:.45});B(2.2,2.5,4.4,blue,0,1.95,-.9,0,g);for(const s of[-1,1]){const p=new THREE.Mesh(new THREE.PlaneGeometry(4.3,2.4),sm);p.position.set(s*1.11,1.95,-.9);p.rotation.y=s*Math.PI/2;g.add(p);}
+    B(2.2,1.7,1.9,wh,0,1.55,2.25,0,g);B(2.0,.75,.06,mat('vglass',{color:0x1f2a30,roughness:.1,metalness:.4}),0,2.0,3.21,0,g);B(2.24,.3,6.4,mat('icgrey',{color:0x3a3c40,roughness:.8}),0,.6,.05,0,g);
+    B(2.4,.14,4.6,wh,0,3.25,-.9,0,g);B(.5,.5,.5,mat('iccone',{color:0xff8ac0,roughness:.6}),0,3.55,1.1,0,g);
+    for(const z of[-2.3,2.2])for(const s of[-1,1]){const t=new THREE.Mesh(cyl(.42,.42,.3,12),tyreM);t.rotation.z=Math.PI/2;t.position.set(s*1.0,.42,z);g.add(t);}
+    g.traverse(o=>{o.castShadow=o.receiveShadow=true;});at(c*SEG-17,sd*(5.4+XW[c]),0,g.position);g.rotation.y=yaw(c)+Math.PI;scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:1.6});
+    at(c*SEG-19.5,sd*(5.4+XW[c]),0,V);OBST.push({x:V.x,z:V.z,r:1.6});at(c*SEG-14.5,sd*(5.4+XW[c]),0,V);OBST.push({x:V.x,z:V.z,r:1.6});}
   {// the supermarket on the left of Paru, the block after Encinal: a low stucco box with a raised entrance bay under a tiled roof, the sign, glass doors under a canopy,
    // carts, and a car park in front that the car can drive into
     const a=CROSS[0]+8,b=CROSS[1]-8,ic=Math.round((a+b)/2),g=new THREE.Group(),W=60,D=34,Hh=7.5,F=52;   // F: from the middle of Paru to the shop front
@@ -855,9 +885,23 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
       if(rnd()<.4){const an=new THREE.Mesh(cyl(.25,.5,26,5),capM);an.position.set(x,gy+h+th+13,z);scene.add(an);const bc=new THREE.Mesh(new THREE.SphereGeometry(1,6,5),beacon);bc.position.set(x,gy+h+th+26.5,z);scene.add(bc);}}}};
   const corr=std({roughness:.85,map:canvas(128,128,(g,w,h)=>{g.fillStyle='#fff';g.fillRect(0,0,w,h);for(let x=0;x<w;x+=6){g.fillStyle='rgba(0,0,0,.12)';g.fillRect(x,0,2,h);}speck(g,w,h,600,['rgba(120,70,40,.25)','rgba(0,0,0,.15)'],4);})});
   const corrM=c=>mat('corr'+c,{map:corr.map,color:c,roughness:.85});
-  {const crane=(x,z,ry)=>{const g=new THREE.Group(),mm=mat('crane',{color:0xd9d6cc,roughness:.6,metalness:.3});for(const[lx,lz]of[[-9,-7],[9,-7],[-9,7],[9,7]])B(1.4,52,1.4,mm,lx,26,lz,0,g);
-      B(22,3,17,mm,0,52,0,0,g);const boom=B(3,3,74,mm,0,56,26,0,g);boom.rotation.x=-.12;B(2,26,2,mm,0,66,-2,0,g);B(20,1,1,mm,0,40,-7,0,g);B(20,1,1,mm,0,40,7,0,g);g.position.set(x,0,z);g.rotation.y=ry;scene.add(g);};
-    for(let k=0;k<10;k++){const t=k/9,x=lerp(-1780,-1840,t),z=lerp(-3450,-4550,t);crane(x,z,-Math.PI/2);}   // the cranes stand along the far end of the wharf: on the left you pass warehouses, then the rail yard, then the port
+  {const crane=(x,z,ry,up)=>{const g=new THREE.Group(),mm=mat('crane',{color:0xe6e4de,roughness:.55,metalness:.3}),bm=(x0,y0,z0,x1,y1,z1,t=1.2)=>{const o=B(t,t,Math.hypot(x1-x0,y1-y0,z1-z0),mm,(x0+x1)/2,(y0+y1)/2,(z0+z1)/2,0,g);o.lookAt(x1,y1,z1);return o;};
+      // the photo's ship-to-shore cranes: four legs on a portal with X bracing, the machinery house, a tall A-frame, and the boom out over the water (some raised up, parked)
+      for(const[lx,lz]of[[-9,-7],[9,-7],[-9,7],[9,7]])B(1.4,48,1.4,mm,lx,24,lz,0,g);for(const lz of[-7,7]){B(19,1.6,1.6,mm,0,46,lz,0,g);B(19,1.2,1.2,mm,0,14,lz,0,g);bm(-9,14,lz,9,46,lz,.7);bm(9,14,lz,-9,46,lz,.7);}
+      for(const lx of[-9,9])B(1.6,1.6,15,mm,lx,46,0,0,g);B(9,6,13,mm,0,50,-12,0,g);
+      for(const lx of[-3.5,3.5]){bm(lx,47,-19,0,82,-6,1.3);bm(lx,47,6,0,82,-6,1.3);bm(lx,52,-26,lx,52,8,1.5);
+        if(up)bm(lx,52,8,lx,52+68*Math.sin(1.25),8+68*Math.cos(1.25),1.4);else bm(lx,52,8,lx,52,72,1.4);}
+      const tip=up?[52+68*Math.sin(1.25),8+68*Math.cos(1.25)]:[52,72];bm(0,82,-6,0,tip[0],tip[1],.35);bm(0,82,-6,0,52,-26,.35);
+      g.position.set(x,0,z);g.rotation.y=ry;scene.add(g);};
+    for(let k=0;k<10;k++){const t=k/9,x=lerp(-1780,-1840,t),z=lerp(-3450,-4550,t);crane(x,z,-Math.PI/2,k%3===1);}   // the cranes stand along the far end of the wharf: on the left you pass warehouses, then the rail yard, then the port
+    {// a bulk carrier crossing the bay off the port, slowly: dark hull with a red boot top, white superstructure at the stern, hatch covers and four white deck cranes (moved in the drive's tick)
+      const g=new THREE.Group(),A=(geo,mm,px,py,pz)=>{const o=new THREE.Mesh(geo,mm);o.position.set(px,py,pz);o.castShadow=true;g.add(o);return o;},bx=(w,h,d)=>new THREE.BoxGeometry(w,h,d);
+      const hullM=mat('bchull',{color:0x23272c,roughness:.7}),redM=mat('bcred',{color:0x8a2a20,roughness:.8}),whM=mat('bcwh',{color:0xeceae2,roughness:.55}),hatchM=mat('bchatch',{color:0x6a2a22,roughness:.8});
+      A(bx(30,13,180),hullM,0,4.5,0);A(bx(30.3,2.4,180.3),redM,0,-.4,0);const bw=A(new THREE.ConeGeometry(15,28,4),hullM,0,4.5,103);bw.rotation.x=Math.PI/2;bw.rotation.y=Math.PI/4;bw.scale.set(1,1,.44);
+      for(let k=0;k<5;k++)A(bx(20,2,22),hatchM,0,12,62-k*28);
+      for(let k=0;k<4;k++){const z=48-k*28;A(cyl(1.4,1.6,10,8),whM,0,16,z);A(bx(2.6,2.6,4),whM,0,22,z);const j=A(bx(1.2,1.2,22),whM,0,26,z+9);j.rotation.x=-.5;}
+      A(bx(24,16,16),whM,0,19,-74);A(bx(30,2,9),whM,0,28,-70);A(bx(18,3,12),whM,0,30,-76);A(bx(3,6,4),mat('bcfun',{color:0xd8d4c8,roughness:.6}),0,34,-84);A(bx(26,1,3),mat('vglass',{color:0x1f2a30,roughness:.1,metalness:.4}),0,25,-66);
+      g.position.set(-2350,0,-3600);g.rotation.y=Math.PI;scene.add(g);SHIP=g;}
     const cont=new THREE.InstancedMesh(new THREE.BoxGeometry(12,2.6,2.5),std({roughness:.8,color:0xffffff}),1400);let k=0;
     for(let q=0;q<1400;q++){const t=rnd(),x=lerp(-1700,-1760,t)+rr(0,240),z=lerp(-3400,-4500,t)+rr(-30,30);if(!farFromRoad(x,z,50))continue;const st=rnd()*4|0;M4.compose(V.set(x,1.3+st*2.6,z),Q.setFromAxisAngle(YAX,Math.PI/2+(rnd()<.1?.2:0)),S.set(1,1,1));cont.setMatrixAt(k,M4);cont.setColorAt(k++,C.setHex(pick([0x8a3a30,0x2f5f7a,0xb9a36a,0x4a6f52,0x9a4a2a,0x3a3a5a,0xc9c4b8])));}
     cont.count=k;cont.castShadow=true;scene.add(cont);
@@ -1218,7 +1262,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
   {const ch=std({color:0x1c1a18,roughness:1});for(const f of[.12,.27,.45,.6,.83]){const i=Z.b0+Math.round((Z.b1-Z.b0)*f),sd=f*10%2<1?1:-1,g=new THREE.Group();g.add(new THREE.Mesh(carG,ch),new THREE.Mesh(whG,ch));off(i,sd*7.4,0,g.position);g.rotation.set(0,yaw(i)+rr(-.6,.6),sd*.12);scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:2.2});BURN.push({x:g.position.x,y:g.position.y+1,z:g.position.z,s:.8});}}
   // last of all, merge the static scenery by material and by area, so the whole bay draws in a few hundred calls instead of tens of thousands
   Terrain.occupy(scene.children.slice(A0));Terrain.start(scene,CULL,LANDM,grassTex);   // the real hills: level ground is kept under everything built above, and the rest is queued to be raised tile by tile
-  bakeStatic(scene.children.slice(A0),new Set([pelicans,exotics,manatee,tunL,SWOOP,...CROWS.map(c=>c.g)]));
+  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...CROWS.map(c=>c.g)]));
   for(const o of [...scene.children])if(o.isInstancedMesh&&o.frustumCulled&&o.count>60)splitInstanced(o);
 }
 
@@ -2798,6 +2842,7 @@ function extrasTick(rdt){const pe=ents.find(e=>e.player);if(!pe)return;const m_=
     if(c.act){c.g.visible=true;const near=Math.abs(wdiff(c.s-pe.s));if(c.dir>0?c.s<hi:c.s>lo)c.s+=5*c.dir*rdt;const i=wrapI(Math.floor(c.s/SEG)),yf=at(c.s+3*c.dir,c.lat,0,V).y,yb=at(c.s-3*c.dir,c.lat,0,V).y;
       at(c.s,c.lat,0,c.g.position).y=(yf+yb)/2+.05;c.g.rotation.set(-Math.atan2(yf-yb,6),yaw(i)+(c.dir<0?Math.PI:0),0);
       c.obs.forEach((o,k)=>{at(c.s+(k-1)*3,c.lat,0,V);o.x=V.x;o.z=V.z;});c.bell-=rdt;if(c.bell<=0&&near<90){c.bell=R(2.5,4.5);sfxBell();}}}}
+  if(SHIP){SHIP.position.z=-3300-((performance.now()/1000*3.5)%1500);SHIP.position.y=Math.sin(performance.now()/2600)*.15;}   // the bulk carrier crosses the bay off the port at walking pace, then starts again out of sight to the south
   // hawks swoop across the road in the redwoods
   {const S_=SWOOP,inF=zoneArr[PL.idx]===7;DA.sw=(DA.sw??4)-rdt;if(!S_.f&&inF&&DA.sw<=0&&!PL.crash){const sd=Math.random()<.5?-1:1,s0=pe.s+30+Math.max(pe.v,10)*1.4;S_.f={t:0,dur:2.8,a:at(s0+30,sd*40,40),b:at(s0,0,2.8),c:at(s0-10,-sd*45,34)};S_.visible=true;sfxScreech();DA.sw=R(7,14);}
     if(S_.f){const F=S_.f;F.t+=rdt;const u=F.t/F.dur;if(u>=1||!inF){S_.f=null;S_.visible=false;}else{const a=F.a,b=F.b,c=F.c,p=(1-u)*(1-u),q2=2*u*(1-u),r=u*u;S_.position.set(a.x*p+b.x*q2+c.x*r,a.y*p+b.y*q2+c.y*r,a.z*p+b.z*q2+c.z*r);
