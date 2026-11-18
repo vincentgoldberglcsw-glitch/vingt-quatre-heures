@@ -1875,7 +1875,8 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*(1-(PL.melt||0)*.1)
   // other cars, including wrecks left on the road
   for(const e of ents){if(e.player)continue;const isW=!!e.car.wreck;if(e.out>0&&!isW)continue;const ex=e.car.position.x-PL.x,ez=e.car.position.z-PL.z,dzf=ex*fx+ez*fz,dxs=ex*fz-ez*fx;
     if(Math.abs(dzf)<4.3&&Math.abs(dxs)<1.95){const ev=isW?0:e.v,close=dzf>0?f-ev:ev-f;
-      if(racing&&close>30&&v>45&&PL.safe<=0){if(!isW)crashAI(e,close*.5);crashPlayer(close*.5,false);return;}
+      if(racing&&close>30&&v>78.2&&PL.safe<=0){if(!isW)crashAI(e,close*.5);crashPlayer(close*.5,false);return;}   // only above 175 mph (78.2 m/s) is a hit a crash
+      if(close>2&&!isW&&!(e.bT>tmNow())){e.bT=tmNow()+.5;e.lat+=Math.sign(dxs||1)*(Nn[bi].x*fz-Nn[bi].z*fx>0?1:-1)*clamp(close*.08,.4,1.6);G.shake=Math.max(G.shake,.25);sfxBoing(clamp(close/20+.45,.45,1));}   // below that a rubbery bump: boing, and it is shoved aside
       const push=(1.95-Math.abs(dxs))*.5*Math.sign(dxs||1);PL.x-=fz*push;PL.z+=fx*push;if(!isW)e.lat+=push*(Nn[bi].x*fz-Nn[bi].z*fx>0?1:-1)*.5;
       if(close>0){if(dzf>0){const nf=Math.max(0,ev-1.5),k=f>1?nf/f:1;PL.vx*=k;PL.vz*=k;if(!isW)e.v+=1.2;}else if(!isW)e.v=Math.max(0,f-1.5);sfxScrape(.5);G.shake=Math.max(G.shake,.3);}}}
   for(const o of OBST){const ox=PL.x-o.x,oz=PL.z-o.z,d2=ox*ox+oz*oz,R0=o.r||2.5;if(d2<R0*R0&&d2>.01){const d=Math.sqrt(d2),k=(R0-d)/d;PL.x+=ox*k;PL.z+=oz*k;if(o.soft){PL.vx*=.995;PL.vz*=.995;}else if(v>3){PL.vx*=.7;PL.vz*=.7;sfxScrape(clamp(v/20,.3,1));G.shake=Math.max(G.shake,.3);}}}   // parked cars
@@ -2053,8 +2054,8 @@ const JZ={next:0,beat:0,say:R(16,28),bus:null},JCH=[[38,[62,65,69,72]],[43,[59,6
 const RADIO=["You're listening to Radio Alameda. Smooth jazz for the East Bay.","That was the quartet, recorded live. Stay cool out there.","It's a foggy one on the bay tonight. Drive easy.","Radio Alameda. Jazz, all night long.","Coming up, more music, and no news whatsoever."];
 function radioSay(){try{if(!window.speechSynthesis||speechSynthesis.speaking||G.paused)return;const u=new SpeechSynthesisUtterance(RADIO[Math.random()*RADIO.length|0]);u.rate=.78;u.pitch=.5;u.volume=.85;const v=speechSynthesis.getVoices().find(v=>/^en/i.test(v.lang));if(v){u.voice=v;u.lang=v.lang;}speechSynthesis.speak(u);}catch(e){}}
 // The car radio in Alameda is the real thing now: KCSM, live from San Mateo (jazz). It plays for the whole drive, from backing out of the driveway; paused with the game.
-const KCSM='https://ice5.securenetsystems.net/KCSM';let radioEl=null,radioT=0;
-function jazzTick(rdt,on){if(!on){if(radioEl&&!radioEl.paused)radioEl.pause();return;}if(!radioEl){radioEl=new Audio();radioEl.preload='none';}radioEl.volume=G.tun>.5?.35:.55;
+const KCSM='https://ice5.securenetsystems.net/KCSM';let radioEl=null,radioT=0,radioOn=true;try{radioOn=localStorage.getItem('vqh-radio')!=='0';}catch(e){}   // Y turns the radio off and on; the choice is remembered
+function jazzTick(rdt,on){if(!on||!radioOn){if(radioEl&&!radioEl.paused)radioEl.pause();return;}if(!radioEl){radioEl=new Audio();radioEl.preload='none';}radioEl.volume=G.tun>.5?.35:.55;
   if(radioEl.paused){radioT-=rdt;if(radioT<=0){radioT=5;radioEl.src=KCSM+'?t='+Date.now();radioEl.play().catch(()=>{});}}}
 function jazzSynth(rdt,on){if(!AC)return;if(!JZ.bus){const g=AC.createGain(),f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=1100;f.Q.value=.6;g.gain.value=0;g.connect(f);f.connect(master);JZ.bus=g;}
   JZ.bus.gain.setTargetAtTime(on?(G.cam===1?1.15:.85):0,AC.currentTime,.6);if(!on)return;
@@ -2205,6 +2206,10 @@ function skunksTick(rdt){const K=SKUNK,pe=ents.find(e=>e.player);if(!pe)return;
       const up=kd===0?.55:kd===1?.1:.2;k.g.visible=true;k.tp.rotation.x=up;
       if(fam||pair){const nb=pair?1:2+(Math.random()*3|0);let c=0;for(const b of K.l){if(c>=nb)break;if(b.baby&&!b.st&&b.kd===kd){b.st=1;b.ma=k;b.n=c++;b.t=R(0,1);b.s=k.s+R(-.35,.35);b.lat=k.lat+k.side*(b.n+1)*.55;b.g.scale.setScalar(pair?1.45:.85);b.g.visible=true;b.tp.rotation.x=up+.15;}}}}}}
   for(const k of K.l){if(!k.st)continue;k.t+=rdt;
+    if(k.air){const a=k.air;a.vy-=18*rdt;k.y+=a.vy*rdt;k.s+=a.vs*rdt;k.lat+=a.vl*rdt;a.vs*=Math.exp(-1.2*rdt);k.g.rotation.x+=a.sx*rdt;k.g.rotation.z+=a.sz*rdt;   // knocked flying: up in a little arc, tumbling...
+      if(k.y<=0){k.y=0;k.air=null;k.g.rotation.x=k.g.rotation.z=0;k.b.rotation.x=0;if(!k.baby){const w=RW+XW[wrapI(Math.floor(k.s/SEG))];k.st=3;k.t=0;k.sp=1;k.tg=(Math.sign(k.lat)||1)*(w+9);k.mv=R(4.5,6);}}   // ...lands on its feet and runs off the road
+      at(k.s,k.lat,k.y,K.V);k.g.position.copy(K.V);continue;}
+    {const cx=k.g.position.x-PL.x,cz=k.g.position.z-PL.z,vv=Math.abs(pe.v);if(k.t>.2&&vv>2&&!PL.crash&&cx*cx+cz*cz<2.3*2.3){k.y=0;k.air={vy:clamp(3+vv*.1,4,8.5),vs:pe.v*.55+R(1,3),vl:(Math.sign(k.lat-pe.lat)||1)*R(1.5,3.5),sx:R(-11,11),sz:R(-9,9)};sfxBoing(.45);G.shake=Math.max(G.shake,.08);continue;}}   // hit by the car: bounced, never squashed
     if(k.baby){const m=k.ma;if(!m||!m.st){k.st=0;k.ma=null;k.g.visible=false;continue;}   // babies trot along behind their mother and hide behind her while she sprays
       const dir=Math.sign(m.tg-m.lat)||-m.side,want=m.lat-dir*(k.n+1)*.55,d=want-k.lat;k.lat+=Math.sign(d)*Math.min(Math.abs(d),(m.mv+1)*rdt);k.s+=(m.s+(k.n-1)*.25-k.s)*clamp(rdt*3,0,1);
       at(k.s,k.lat,0,K.V);k.g.position.copy(K.V);const mov=Math.abs(d)>.03;
@@ -2259,17 +2264,26 @@ function pennyTick(rdt){const P_=PENNY,pe=ents.find(e=>e.player);if(!pe||!DRIVE)
 function tumbleTick(rdt){const T_=TUMB,pe=ents.find(e=>e.player);if(!pe)return;
   if(!T_.l.length){const mats=[0x9c7a48,0x86663a,0xb08c58].map(c=>new THREE.MeshBasicMaterial({color:c,wireframe:true}));
     for(let k=0;k<14;k++){const g=new THREE.Group(),r=k%3===0?R(1.1,1.7):k%3===1?R(.6,1):R(.3,.5);   // small, middling and big ones
-     for(let q=0;q<3;q++){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r*R(.7,1),1),mats[q]);m.rotation.set(R(0,6),R(0,6),R(0,6));g.add(m);}
+     const sh=k%4,sq=sh===1?[1.2,.72,1.05]:sh===2?[1.25,.95,.8]:[R(.9,1.1),R(.85,1.05),R(.9,1.1)];g.scale.set(...sq);   // round, squashed flat, lopsided, or a clump of two or three balls
+     const lumps=sh===3?[[0,0,0,1],[r*.7,-r*.15,r*.2,.62],[-r*.35,r*.25,-r*.55,.5]]:sh===2?[[0,0,0,1],[r*.45,r*.1,0,.7]]:[[0,0,0,1]];
+     for(const[x,y,z,f]of lumps)for(let q=0;q<3;q++){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r*f*R(.7,1),1),mats[q]);m.position.set(x,y,z);m.scale.set(R(.8,1.2),R(.75,1.15),R(.8,1.2));m.rotation.set(R(0,6),R(0,6),R(0,6));g.add(m);}
       const core=new THREE.Mesh(new THREE.IcosahedronGeometry(r*.45,0),new THREE.MeshStandardMaterial({color:0x6e5530,roughness:1,transparent:true,opacity:.55}));g.add(core);
-      g.visible=false;scene.add(g);T_.l.push({g,r,st:0,s:0,lat:0,dir:1,v:0,y:0,vy:0,ds:0});}}
+      {const pts=[];for(let q=0;q<6+(r*5|0);q++){let a=R(0,6.3),b=R(-1.2,1.2),d=r*R(.8,1);let x=Math.cos(a)*Math.cos(b)*d,y=Math.sin(b)*d,z=Math.sin(a)*Math.cos(b)*d;const L=r*R(.4,1.1);for(let e=0;e<3;e++){const nx=x+(x/d)*L/3+R(-.12,.12)*r,ny=y+(y/d)*L/3-L*.08,nz=z+(z/d)*L/3+R(-.12,.12)*r;pts.push(x,y,z,nx,ny,nz);x=nx;y=ny;z=nz;}}   // loose wiry strands sticking out and trailing off
+        const lg=new THREE.BufferGeometry();lg.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));g.add(new THREE.LineSegments(lg,T_.lm||(T_.lm=new THREE.LineBasicMaterial({color:0x8a6a3c}))));}
+      g.visible=false;scene.add(g);T_.l.push({g,r,st:0,s:0,lat:0,dir:1,v:0,y:0,vy:0,ds:0});}
+    // bits that snap off: a small pool of short twiggy strands that fall away and fade
+    T_.bits=[];for(let q=0;q<48;q++){const lg=new THREE.BufferGeometry();const p=[];let x=0,y=0,z=0;for(let e=0;e<3;e++){const nx=x+R(-.18,.18),ny=y+R(-.18,.18),nz=z+R(-.18,.18);p.push(x,y,z,nx,ny,nz);x=nx;y=ny;z=nz;}lg.setAttribute('position',new THREE.Float32BufferAttribute(p,3));
+      const m=new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:0x9c7a48,transparent:true,opacity:1}));m.visible=false;m.frustumCulled=false;scene.add(m);T_.bits.push({m,t:0,vx:0,vy:0,vz:0,w:0});}}
+  const snap=(k,n,kick)=>{for(let q=0;q<n;q++){const b=T_.bits.find(o=>o.t<=0);if(!b)return;b.t=R(1.2,2.2);b.m.visible=true;b.m.material.opacity=1;b.m.position.copy(k.g.position).add(T_.W.set(R(-1,1),R(-.6,1),R(-1,1)).multiplyScalar(k.r));b.m.rotation.set(R(0,6),R(0,6),R(0,6));b.m.scale.setScalar(k.r*R(1.2,2.4));b.vx=R(-2,2)+PL.vx*kick;b.vy=R(.5,3);b.vz=R(-2,2)+PL.vz*kick;b.w=R(-8,8);}};
+  for(const b of T_.bits){if(b.t<=0)continue;b.t-=rdt;b.vy-=6*rdt;b.vx*=Math.exp(-1.5*rdt);b.vz*=Math.exp(-1.5*rdt);b.m.position.x+=b.vx*rdt;b.m.position.y=Math.max(b.m.position.y+b.vy*rdt,H[PL.idx]+.03);b.m.position.z+=b.vz*rdt;b.m.rotation.x+=b.w*rdt;b.m.rotation.y+=b.w*.6*rdt;b.m.material.opacity=clamp(b.t/.8,0,1);if(b.t<=0)b.m.visible=false;}   // drifting down, tumbling, fading out
   const i=PL.idx,m_=x=>Math.round(x/SEG),on=G.state==='race'&&(zoneArr[i]===1||(DRIVE&&Z.toll&&i>Z.toll-m_(400)&&i<Z.toll+m_(320)));
   if(on){T_.cd-=rdt;if(T_.cd<=0){T_.cd=R(1.5,4);const k=T_.l.find(o=>!o.st);
     if(k){const v=Math.abs(pe.v),s=pe.s+Math.max(35,v*3)+R(0,60),j=wrapI(Math.floor(s/SEG)),w=RW+XW[j];k.st=1;k.s=s;k.dir=Math.random()<.5?-1:1;k.lat=-k.dir*(w+R(4,10));k.v=R(4,8);k.y=0;k.vy=R(1,3);k.ds=R(-1.5,1.5);if(Math.random()<.35){k.s=pe.s+Math.max(70,v*4)+R(0,80);k.lat=R(-w+1,w-1);k.v=R(0,1.5);k.ds=-R(4,9);}   /* some roll down the road towards the car */k.g.visible=true;}}}
   for(const k of T_.l){if(!k.st)continue;const dsP=wdiff(k.s-pe.s),j=wrapI(Math.floor(k.s/SEG)),w=RW+XW[j];
     if(dsP<-40||dsP>320||Math.abs(k.lat)>w+16||(!on&&dsP<0)){k.st=0;k.g.visible=false;continue;}
-    k.lat+=k.dir*k.v*rdt;k.s+=k.ds*rdt;k.vy-=14*rdt;k.y+=k.vy*rdt;if(k.y<=0){k.y=0;k.vy=R(1.5,3.8)*(Math.random()<.2?1.6:1);}   // gusts carry it across in bounces
+    k.lat+=k.dir*k.v*rdt;k.s+=k.ds*rdt;k.vy-=14*rdt;k.y+=k.vy*rdt;if(k.y<=0){const hard=k.vy<-6;k.y=0;k.vy=R(1.5,3.8)*(Math.random()<.2?1.6:1);if(hard&&k.g.visible)snap(k,2+(Math.random()*3|0),0);}   // gusts carry it across in bounces; a hard landing after a high one shakes bits loose
     at(k.s,k.lat,k.y+k.r,T_.V);k.g.position.copy(T_.V);
-    const dx=T_.V.x-PL.x,dz=T_.V.z-PL.z;if(dx*dx+dz*dz<(k.r+1.6)**2&&k.y<1.2){k.vy=R(6,9);k.ds=pe.v*.6;}   // bounced up over the car
+    const dx=T_.V.x-PL.x,dz=T_.V.z-PL.z;if(dx*dx+dz*dz<(k.r+1.6)**2&&k.y<1.2){k.vy=R(6,9);k.ds=pe.v*.6;snap(k,5+(Math.random()*4|0),.5);}   // bounced up over the car, shedding twigs
     const mv=Math.hypot(k.v,k.ds)||1;at(k.s+k.ds/mv,k.lat+k.dir*k.v/mv,0,T_.W);at(k.s,k.lat,0,T_.A);T_.W.sub(T_.A);T_.A.set(T_.W.z,0,-T_.W.x).normalize();T_.Q.setFromAxisAngle(T_.A,mv*rdt/k.r);k.g.quaternion.premultiply(T_.Q);}}
 function turkeysTick(rdt){const v=Math.hypot(PL.vx,PL.vz);for(const k of TK){const m=k.m,gy=H[k.ci];
     if(k.st===0){k.tt-=rdt;if(k.tt<=0){k.tt=R(2,7);k.tl=clamp(k.lat+R(-7,7),-13,13);k.td=clamp(k.ds+R(-6,6),-22,22);}
@@ -2497,7 +2511,7 @@ function trafficTick(dt,pe){if(TRAF.pol){const f=(tmNow()*7|0)%2;TRAF.pol[0].emi
     const dx=t.g.position.x-PL.x,dz=t.g.position.z-PL.z,rel=Math.abs(pe.v-t.v);
     if(dx*dx+dz*dz<(t.r+1)**2&&!PL.crash&&G.state==='race'){const two=t.kind==='moto'||t.kind==='bike',n=Nn[i],sd=(dx*n.x+dz*n.z)>=0?1:-1;
       if(two){if(!(t.bt>0)){t.bt=.6;t.wob=1;t.s+=1.5;t.v=Math.max(t.v,pe.v+R(3,6));t.kv=sd*R(2,4);PL.vx*=.98;PL.vz*=.98;G.shake=Math.max(G.shake,.15);sfxBoing(.6);}}   // motorcycles and bicycles: never a crash, at any speed, just bounced on ahead
-      else if(pe.v>44.7&&PL.safe<=0)crashPlayer(Math.max(rel,20)*.4,false);   // over 100 mph, a crash
+      else if(pe.v>78.2&&PL.safe<=0)crashPlayer(Math.max(rel,20)*.4,false);   // over 175 mph, a crash
       else if(!(t.bt>0)){t.bt=.7;t.wob=1;t.kv=sd*clamp(rel*.4+4,4,13);t.v=Math.max(t.v*.85,t.v+(pe.v>t.v?rel*.3:0));PL.vx*=.93;PL.vz*=.93;PL.x-=n.x*sd*.6;PL.z-=n.z*sd*.6;G.shake=Math.max(G.shake,.25);sfxBoing(clamp(rel/20+.45,.45,1));}}}}   // below that a soft, rubbery bump: both bounce apart, hardly slowed, and the other one wobbles like jelly
 function sfxBoing(k){if(!AC)return;const t=AC.currentTime;tone('sine',R(150,190),t,.32,.5*k,master,{to:R(330,420),a:.004,h:.15});tone('sine',R(90,110),t+.06,.28,.3*k,master,{to:60,h:.2});}
 // ---- San Quentin's beach (east of the prison, down to the bay): big surf crashing in and people flying kites. Hyde St: a few people on the pavements, and kids skateboarding down the middle of the road below the crest (solid: steer round them).
@@ -2762,6 +2776,7 @@ function fqCrack(q,s,lat){crackRoad(s,lat);q.cr.push(CRACKS[CRACKS.length-1]);}
 function fqDeb(q,s,lat,h,delay,sc,vy){spawnDeb(s,lat,h,'chunk',delay,false,0,sc);const d=DEB[DEB.length-1];d.vy=vy;q.deb.push(d);}
 function fqClear(q){for(const m of q.cr){const k=CRACKS.indexOf(m);if(k>=0)CRACKS.splice(k,1);scene.remove(m);m.geometry.dispose();}q.cr.length=0;
   for(const d of q.deb){const k=DEB.indexOf(d);if(k>=0)DEB.splice(k,1);scene.remove(d.m);d.m.geometry.dispose();if(d.ob){const j=OBST.indexOf(d.ob);if(j>=0)OBST.splice(j,1);}}q.deb.length=0;
+  if(q.F&&FQ.cm)for(const c of FQ.cm)if(c.F===q.F){c.t=0;c.o.visible=false;}
   if(q.F){for(const o of q.F.parts){scene.remove(o);if(o.geometry!==FQ.slabG)o.geometry.dispose();}q.F=null;}}
 function fqArm(){const m_=x=>Math.round(x/SEG);for(const q of FQ.list){fqClear(q);const lo=q.a+m_(250),hi=Math.max(lo,q.b-m_(900));q.ti=Math.round(lo+Math.random()*(hi-lo));q.st=0;q.t=0;}}   // a new drive: a new place for each quake
 function fqAfterReset(){for(const q of FQ.list)if(q.st===1&&q.t>5){fqClear(q);q.st=2;}}
@@ -2780,9 +2795,17 @@ function fqShape(F){const N=F.pts.length,rp=F.rim.geometry.attributes.position,c
     for(const[e,sg]of[[0,1],[1,-1]]){at(F.s+p.c+sg*(h+.45*Math.min(1,h*4)),p.lat,.05,V);rp.setXYZ(j*2+e,V.x,V.y,V.z);at(F.s+p.c+sg*h*.72,p.lat,.06,V);cp.setXYZ(j*2+e,V.x,V.y,V.z);}}
   rp.needsUpdate=cp.needsUpdate=true;const i=wrapI(Math.floor(F.s/SEG)),yw=yaw(i);
   for(const b of F.slabs){const p=F.pts[b.j];b.o.visible=p.h>.06;if(!b.o.visible)continue;at(F.s+p.c+b.side*(p.h+.32),p.lat+b.dl,.08+b.tilt*.6*Math.min(1,p.h*2),b.o.position);b.o.rotation.set(-b.side*b.tilt*Math.min(1,p.h*2),yw+b.sp*.05,b.sp*.03,'YXZ');}}
+// the lips crumbling: chunks of asphalt break off the edges, tip over, slide in and drop into the dark (a small reused pool)
+function fqCrumble(F,n){if(!FQ.cm){FQ.cm=[];const dg=new THREE.DodecahedronGeometry(.45,0);for(let q=0;q<40;q++){const o=new THREE.Mesh(q%3?FQ.slabG:dg,FQ.slabM);o.castShadow=true;o.visible=false;scene.add(o);FQ.cm.push({o,t:0});}}
+  for(let q=0;q<n;q++){const p=F.pts[Math.random()*F.pts.length|0];if(p.h<.12)continue;const c=FQ.cm.find(o=>o.t<=0);if(!c)return;const side=Math.random()<.5?-1:1;
+    c.t=R(1.6,2.6);c.F=F;c.p=p;c.side=side;c.d=p.h+R(.15,.7);c.y=.1;c.vy=0;c.vd=-R(.5,1.4);c.rx=R(0,.2);c.w=R(1.2,3.5);c.dl=R(-.5,.5);c.o.scale.set(R(.4,1.1),R(.8,1.8),R(.4,1));c.o.visible=true;
+    NOGY=1;puff(at(F.s+p.c+side*c.d,p.lat,.2,V),R(-1,1),R(1,3),R(-1,1),1,R(2,4),R(1,2),.5,0x9a9080);NOGY=0;}}
+function fqCrumbleTick(rdt){if(!FQ.cm)return;for(const c of FQ.cm){if(c.t<=0)continue;c.t-=rdt;const F=c.F;
+    if(c.d>c.p.h*.7){c.d+=c.vd*rdt;c.rx+=c.w*.5*rdt;c.y=.1;}else{c.vy-=12*rdt;c.y+=c.vy*rdt;c.d=Math.max(0,c.d+c.vd*.4*rdt);c.rx+=c.w*rdt;}   // tipping and sliding over the lip, then falling
+    at(F.s+c.p.c+c.side*c.d,c.p.lat+c.dl,c.y,c.o.position);c.o.rotation.set(-c.side*c.rx,yaw(wrapI(Math.floor(F.s/SEG))),c.dl*.4,"YXZ");if(c.t<=0||c.y<-4){c.t=0;c.o.visible=false;}}}
 // each step of the split: a jolt, a deep rumble, a burst of dust and chunks of road thrown up
 function fqStep(q,F){G.shake=1;sfxCrunch(1);if(AC){const t=AC.currentTime;tone('sine',32,t,1.6,.9,master,{to:24,a:.04,h:.4});hit(t,1.3,1.1,90,'lowpass',master);}
-  NOGY=1;for(let k=0;k<16;k++){const p=F.pts[Math.random()*F.pts.length|0];puff(at(F.s+p.c,p.lat,.3,V),R(-3,3),R(3,8),R(-3,3),1.2,R(4,8),R(1.6,3.2),.65,0x9a9080);}NOGY=0;
+  fqCrumble(F,7);NOGY=1;for(let k=0;k<16;k++){const p=F.pts[Math.random()*F.pts.length|0];puff(at(F.s+p.c,p.lat,.3,V),R(-3,3),R(3,8),R(-3,3),1.2,R(4,8),R(1.6,3.2),.65,0x9a9080);}NOGY=0;
   for(let k=0;k<4;k++){const p=F.pts[Math.random()*F.pts.length*.8|0];fqDeb(q,F.s+p.c+R(-1.5,1.5),p.lat,R(.3,.9),0,R(.2,.4),R(5,11));}}
 // The Golden Gate, once a drive: a rolling earthquake runs along the bridge. The bridge itself is baked into the static scenery, so the travelling wave is
 // carried by the car (pushed side to side) and the view (rolling and heaving), with a deep rumble and the sky going dark.
@@ -2854,16 +2877,18 @@ function exhaustTick(rdt){EXH.t-=rdt;if(EXH.t>0)return;EXH.t=.09;
   for(const t of TRAF){if(!t.act||t.fall||!t.g.ex||!t.g.visible)continue;const dx=t.g.position.x-PL.x,dz=t.g.position.z-PL.z;if(dx*dx+dz*dz>220*220)continue;t.g.localToWorld(V.copy(t.g.ex));
     if(t.kind==='buggy'){if(Math.random()<.25){NOGY=1;puff(V,R(-.2,.2),R(.4,.9),R(-.2,.2),.08,.5,R(1.2,2),.5,0xd8d4cc);NOGY=0;}continue;}
     NOGY=1;puff(V,R(-.4,.4),R(2.5,4.5),R(-.4,.4),.5,R(2.5,4),R(1.6,2.6),.75,[0x141210,0x1e1b18,0x2a2522][Math.random()*3|0]);NOGY=0;}}
-function fqTick(rdt){if(!FQ.list.length)return;const pe=ents.find(e=>e.player);if(!pe)return;
+function fqTick(rdt){if(!FQ.list.length)return;const pe=ents.find(e=>e.player);if(!pe)return;fqCrumbleTick(rdt);
   for(const q of FQ.list){
     if(q.st===0){if(G.state==='race'&&!PL.crash&&PL.idx>=q.ti&&PL.idx<q.ti+80){q.st=1;q.t=0;q.n=0;q.af=0;q.sd=Math.random()<.5?-1:1;q.fs=wrapS(pe.s+Math.max(280,pe.v*9));sfxRumble();say('EARTHQUAKE !','THE GROUND IS SHAKING - EASE OFF',4);}continue;}
     if(q.st!==1)continue;q.t+=rdt;const t=q.t,w=RW+XW[PL.idx];
     if(t<8)G.shake=Math.max(G.shake,.06+.72*sst(t,0,5));G.qd=Math.max(G.qd||0,.45*sst(t,1,4.5));   // the shaking grows and the sky goes dark
     if(t>2.4&&t<5.6){q.n-=rdt;if(q.n<=0){q.n=.12;const u=(t-2.4)/3.2;fqCrack(q,lerp(pe.s+40,q.fs+20,u)+R(-14,14),R(-w,w));}}   // cracks run across the road ahead, out towards where it will split
+    if(t>3.9&&t<5.4){q.m=(q.m||0)-rdt;if(q.m<=0){q.m=.07;const u=(t-3.9)/1.5,wf=RW+XW[wrapI(Math.floor(q.fs/SEG))];fqCrack(q,q.fs+R(-3,3),lerp(-q.sd*(wf+.5),q.sd*wf*.5,u)+R(-1,1));if(Math.random()<.4){NOGY=1;puff(at(q.fs,lerp(-q.sd*wf,q.sd*wf*.5,u),.2,V),R(-1,1),R(.5,2),R(-1,1),1,R(2,4),R(1,2),.4,0x9a9080);NOGY=0;}}}   // then a line of cracks races across the lanes where it will open, puffing dust
     if(t>=5.4&&!q.F){q.F=fqFissure(q,q.fs,q.sd);sfxQuake();sfxCrunch(1);G.shake=1;say('THE ROAD IS SPLITTING !','KEEP TO THE '+(q.sd>0?'LEFT':'RIGHT')+' LANE',4);}
     const F=q.F;
     if(F){const u=t-F.t0;F.kL=sst(u,0,1.4);{let kw=0;for(let n=0;n<4;n++)kw+=.25*sst(u,.15+n*1.1,.4+n*1.1);F.kW=kw;const ns=Math.min(4,Math.floor((u-.15)/1.1)+1);if(ns>(F.stp||0)){F.stp=ns;fqStep(q,F);}}   /* it opens in four violent steps */F.wid+=((q.af?1.25:1)-F.wid)*Math.min(1,rdt*1.5);fqShape(F);
       if(u<5&&Math.random()<rdt*40){const p=F.pts[Math.random()*F.pts.length|0];if(p.h>.05){NOGY=1;puff(at(F.s+p.c,p.lat,.3,V),R(-2,2),R(1.5,5),R(-2,2),1,R(3,6),R(1.4,3),.55,0x9a9080);NOGY=0;}}   // dust out of the split
+      if(u<8&&Math.random()<rdt*(u<4.6?12:3))fqCrumble(F,1);   // the edges keep breaking away and falling in
       if(u>.3&&!F.ch){F.ch=1;for(let k=0;k<8;k++){const p=F.pts[Math.random()*F.pts.length*.7|0];fqDeb(q,F.s+p.c+R(-1.5,1.5),p.lat,R(.4,1.2),R(0,1.4),R(.22,.4),R(4,9));}}   // chunks of road thrown up
       if(!PL.crash&&PL.safe<=0&&G.state==='race'){const f=(pe.lat-F.edge)/(F.tip-F.edge),p=f>=0&&f<=1?F.pts[Math.round(f*(F.pts.length-1))]:null,ds=p?wdiff(F.s+p.c-pe.s):null;
         if(p&&F.prev!=null&&F.prev>0&&ds<=0&&p.h>.15){const v=pe.v;G.shake=1;sfxCrunch(1);NOGY=1;for(let k=0;k<12;k++)puff(V.set(PL.x+R(-1,1),P[PL.idx].y+.3,PL.z+R(-1,1)),R(-3,3),R(1,4),R(-3,3),1,R(3,6),R(1.2,2.4),.55,0x8a8070);NOGY=0;
@@ -2949,6 +2974,7 @@ addEventListener('keydown',e=>{const c=codeOf(e);keys[c]=true;if(['ArrowUp','Arr
   if(c==='KeyT'){const i=WKEYS.indexOf(G.weather);G.weather=WKEYS[(i+1)%5];refreshTitle();say(WX[G.weather].name,WX[G.weather].d,2.4);announce(WXFR[G.weather]);}
   if(c==='KeyN'){ANN.on=!ANN.on;if(!ANN.on&&window.speechSynthesis)speechSynthesis.cancel();say(ANN.on?'ANNOUNCER ON':'ANNOUNCER OFF','',1);}
   if(c==='KeyM'){musicOn=!musicOn;say(musicOn?'MUSIC ON':'MUSIC OFF','',1);}
+  if(c==='KeyY'&&DRIVE){radioOn=!radioOn;try{localStorage.setItem('vqh-radio',radioOn?'1':'0');}catch(e){}say(radioOn?'RADIO ON':'RADIO OFF',radioOn?'KCSM 91.1 · JAZZ':'',1.4);}
   if(c==='KeyP'&&G.state==='race'){G.paused=!G.paused;say(G.paused?'PAUSE':'',G.paused?'CIGARETTE BREAK · P TO RESUME':'',G.paused?1e9:.01);}
   if(c==='KeyR'&&G.state==='race'&&!PL.crash){const i=PL.idx;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;resetVehicle(VS,hero.M.dyn,0);}
   if(c==='KeyH'){G.aids=!G.aids;localStorage.setItem('vqh-aids',G.aids?'1':'0');say(G.aids?'DRIVER AIDS ON':'DRIVER AIDS OFF',G.aids?'ABS · TRACTION CONTROL · STEERING HELP':'NO ABS · NO TRACTION CONTROL · AS IN 1970',2.2);}});
