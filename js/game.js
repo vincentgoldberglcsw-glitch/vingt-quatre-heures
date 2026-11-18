@@ -106,10 +106,11 @@ const Z=DRIVE?(()=>{const z={};for(const k in ROUTE.mk){const[x,zz]=DRIVE_PTS[RO
   for(let k=1;k<=Math.round(320/SEG);k++){wallAt[z.gg0-k]=8.2;edgeAt[z.gg0-k]=6.7;}   // the approach to the Golden Gate has concrete barriers, not pavement
   for(const[a,b]of[[z.tu0,z.tu1],[z.wt1,z.wt0]])for(let k=1;k<=50;k++){wallAt[a-k]=Math.min(wallAt[a-k],5.4+k*.056);wallAt[b+k]=Math.min(wallAt[b+k],5.4+k*.036);}
   z.BR=[[z.b0,z.b1],[z.gg0,z.gg1],[z.rb0,z.rb1]];return z;})():null;
+const BRH=[];   // the suspension spans (where the hanging cables are) and the height of the main cable along them, for the quakes' snapping cables
 // Free drive only: H is the height of the road at each point (Wilma Chan's overpass, the freeway viaducts, the climbs onto the bridges, Hyde Street, the Marin headlands, Shane Drive), XW is extra half-width (avenues, freeways, the toll plaza).
 const XW=new Float32Array(NS+1),H=new Float32Array(NS+1);
 if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SEG),z=Z,xwT=new Float32Array(NS),WL=z.tu0-z.wilma;
-  for(let i=0;i<NS;i++){const c=zoneArr[i];xwT[i]=c===1?2.2:c===3?(i<z.tu0?1.4:2.4):c===5?1.2:c===8?.6:0;if((i>z.tu0-m(220)&&i<z.tu1+m(220))||(i>z.wt1-m(220)&&i<z.wt0+m(220)))xwT[i]=0;}
+  for(let i=0;i<NS;i++){const c=zoneArr[i];xwT[i]=c===1?2.2:c===3?(i<z.tu0?1.4:2.4):c===4?1.8:c===5?1.2:c===8?.6:0;if((i>z.tu0-m(220)&&i<z.tu1+m(220))||(i>z.wt1-m(220)&&i<z.wt0+m(220)))xwT[i]=0;}
   for(let i=0;i<NS;i++){let s=0;for(let j=-25;j<=25;j++)s+=xwT[wrapI(i+j)];XW[i]=s/51+4.6*bump(i,z.toll+m(70),z.toll+m(120),z.toll+m(240),z.toll+m(290))+1.3*bump(i,z.detour+m(170),z.detour+m(260),z.toll+m(110),z.toll+m(170));   /* the approach to the toll plaza is a little wider, with lane lines */
     H[i]=7*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.6,z.wilma+WL*.76)
       +18*bump(i,z.tu1+m(160),z.tu1+m(340),z.toll-m(520),z.toll-m(260))
@@ -876,24 +877,24 @@ await BOOT.step('SPANNING THE BAY · THREE BRIDGES',.49);
   {const trussT=canvas(128,128,(g)=>{g.clearRect(0,0,128,128);g.strokeStyle='#fff';g.lineWidth=11;g.strokeRect(5,5,118,118);g.beginPath();g.moveTo(0,0);g.lineTo(128,128);g.moveTo(128,0);g.lineTo(0,128);g.stroke();});trussT.wrapS=trussT.wrapT=THREE.RepeatWrapping;
     const bridge=(a,b,o)=>{const col=o.col,sm=std({color:col,roughness:.55,metalness:.5}),trussM=std({map:trussT,color:col,alphaTest:.4,side:D2,roughness:.6,metalness:.4}),cableM=std({color:o.cable||0x767c81,roughness:.5,metalness:.6}),TH=o.TH;
       const openT=o.open?canvas(64,128,g=>{g.clearRect(0,0,64,128);g.fillStyle="#fff";g.fillRect(0,0,64,14);g.fillRect(0,0,7,128);g.fillRect(28,0,6,128);g.fillRect(55,0,9,128);}):null;if(openT)openT.wrapS=openT.wrapT=THREE.RepeatWrapping;   // an open rail: three thin bars and a post each few metres, so you see the bay through it
-      for(const sd of[-1,1]){ribbon(sd*8.4,sd*6.6,.14,.14,side,3,a,b);const rl=ribbon(sd*8.3,sd*8.3,.14,1.2,o.open?std({map:openT,color:0x9aa1a6,alphaTest:.5,side:D2,roughness:.5,metalness:.6}):o.rail?std({color:col,roughness:.6,side:D2}):railM,2,a,b);rl.castShadow=!o.open;ribbon(sd*8.5,sd*8.5,-6,0,trussM,6,a,b);}
+      for(const sd of[-1,1]){ribbon(i=>sd*(8.4+XW[i]),i=>sd*(6.6+XW[i]),.14,.14,side,3,a,b);const rl=ribbon(i=>sd*(8.3+XW[i]),i=>sd*(8.3+XW[i]),.14,1.2,o.open?std({map:openT,color:0x9aa1a6,alphaTest:.5,side:D2,roughness:.5,metalness:.6}):o.rail?std({color:col,roughness:.6,side:D2}):railM,2,a,b);rl.castShadow=!o.open;ribbon(i=>sd*(8.5+XW[i]),i=>sd*(8.5+XW[i]),-6,0,trussM,6,a,b);}
       const und=std({color:0x4a4e52,roughness:.8,side:D2}),gap=QK&&a<QK.a&&b>QK.b;   // the underside of the deck; where the Bay Bridge's right-hand lanes fall away it stops at the centre line, so the hole opens onto the water
-      if(gap){ribbon(8.5,-8.5,-6,-6,und,6,a,QK.a);ribbon(8.5,-8.5,-6,-6,und,6,QK.b,b);ribbon(8.5,QK.ls,-6,-6,und,6,QK.a,QK.b);}else ribbon(8.5,-8.5,-6,-6,und,6,a,b);
-      for(let i=a+m(30);i<b-m(20);i+=m(o.pier||60)){if(gap&&i>QK.a-m(12)&&i<QK.b+m(12))continue;const h=45+H[i]-6;B(4,h,15,mat('pier',{color:0x8a8a84,roughness:.9}),P[i].x,-45+h/2,P[i].z,yaw(i));}
-      if(o.truss)for(const[t0,t1,hh]of o.truss){const c0=a+Math.round((b-a)*t0),c1=a+Math.round((b-a)*t1);for(const sd of[-1,1])ribbon(sd*9.2,sd*9.2,1.2,hh,trussM,8.3,c0,c1).castShadow=true;ribbon(9.2,-9.2,hh,hh,trussM,8.3,c0,c1);
-        for(let i=c0;i<=c1;i+=8){const g=new THREE.Group();for(const x of[-9.2,9.2])B(.55,hh,.55,sm,x,hh/2,0,0,g);B(18.9,.6,.6,sm,0,hh,0,0,g);g.position.copy(P[i]);g.rotation.y=yaw(i);scene.add(g);}}
+      if(gap){ribbon(i=>8.5+XW[i],i=>-8.5-XW[i],-6,-6,und,6,a,QK.a);ribbon(i=>8.5+XW[i],i=>-8.5-XW[i],-6,-6,und,6,QK.b,b);ribbon(i=>8.5+XW[i],QK.ls,-6,-6,und,6,QK.a,QK.b);}else ribbon(i=>8.5+XW[i],i=>-8.5-XW[i],-6,-6,und,6,a,b);
+      for(let i=a+m(30);i<b-m(20);i+=m(o.pier||60)){if(gap&&i>QK.a-m(12)&&i<QK.b+m(12))continue;const h=45+H[i]-6;B(4,h,15+2*XW[i],mat('pier',{color:0x8a8a84,roughness:.9}),P[i].x,-45+h/2,P[i].z,yaw(i));}
+      if(o.truss)for(const[t0,t1,hh]of o.truss){const c0=a+Math.round((b-a)*t0),c1=a+Math.round((b-a)*t1);for(const sd of[-1,1])ribbon(i=>sd*(9.2+XW[i]),i=>sd*(9.2+XW[i]),1.2,hh,trussM,8.3,c0,c1).castShadow=true;ribbon(i=>9.2+XW[i],i=>-9.2-XW[i],hh,hh,trussM,8.3,c0,c1);
+        for(let i=c0;i<=c1;i+=8){const g=new THREE.Group();for(const x of[-9.2-XW[i],9.2+XW[i]])B(.55,hh,.55,sm,x,hh/2,0,0,g);B(18.9+2*XW[i],.6,.6,sm,0,hh,0,0,g);g.position.copy(P[i]);g.rotation.y=yaw(i);scene.add(g);}}
       if(!TH)return;const sup=o.sup.map(f=>a+Math.round((b-a)*f));
       const hgt=i=>{let j=0;while(j<sup.length-2&&i>sup[j+1])j++;const ya=j?TH:2,yb=j+1<sup.length-1?TH:2,u=(i-sup[j])/(sup[j+1]-sup[j]),sag=ya===yb?TH-9:16;return ya+(yb-ya)*u-sag*4*u*(1-u);};
-      const c0=sup[0],c1=sup[sup.length-1];
-      for(const sd of[-1,1]){const pts=[];for(let i=c0;i<=c1;i+=5)pts.push(off(i,sd*10.3,hgt(i)));pts.push(off(c1,sd*10.3,hgt(c1)));const cb=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),pts.length*3,o.cr||.4,6,false),cableM);cb.castShadow=true;scene.add(cb);}
-      const n=c1-c0,cnt=Math.floor(n/6)*2,susp=new THREE.InstancedMesh(cyl(.07,.07,1,5),cableM,cnt);let k=0;for(let i=c0+6;i<c1;i+=6)for(const sd of[-1,1]){const h=hgt(i)-1.2;if(h<1.5||k>=cnt)continue;M4.compose(off(i,sd*10.3,1.2+h/2,V),Q.identity(),S.set(1,h,1));susp.setMatrixAt(k++,M4);}susp.count=k;scene.add(susp);
-      {const cl=new THREE.InstancedMesh(new THREE.SphereGeometry(.32,6,5),lampMat,Math.floor(n/3)*2+4);let c=0;for(let i=c0+3;i<c1;i+=3)for(const sd of[-1,1]){M4.compose(off(i,sd*10.3,hgt(i)+.6,V),Q.identity(),S.set(1,1,1));cl.setMatrixAt(c++,M4);}cl.count=c;scene.add(cl);}
+      const c0=sup[0],c1=sup[sup.length-1];BRH.push({c0,c1,hgt});
+      for(const sd of[-1,1]){const pts=[];for(let i=c0;i<=c1;i+=5)pts.push(off(i,sd*(10.3+XW[i]),hgt(i)));pts.push(off(c1,sd*(10.3+XW[c1]),hgt(c1)));const cb=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),pts.length*3,o.cr||.4,6,false),cableM);cb.castShadow=true;scene.add(cb);}
+      const n=c1-c0,cnt=Math.floor(n/6)*2,susp=new THREE.InstancedMesh(cyl(.07,.07,1,5),cableM,cnt);let k=0;for(let i=c0+6;i<c1;i+=6)for(const sd of[-1,1]){const h=hgt(i)-1.2;if(h<1.5||k>=cnt)continue;M4.compose(off(i,sd*(10.3+XW[i]),1.2+h/2,V),Q.identity(),S.set(1,h,1));susp.setMatrixAt(k++,M4);}susp.count=k;scene.add(susp);
+      {const cl=new THREE.InstancedMesh(new THREE.SphereGeometry(.32,6,5),lampMat,Math.floor(n/3)*2+4);let c=0;for(let i=c0+3;i<c1;i+=3)for(const sd of[-1,1]){M4.compose(off(i,sd*(10.3+XW[i]),hgt(i)+.6,V),Q.identity(),S.set(1,1,1));cl.setMatrixAt(c++,M4);}cl.count=c;scene.add(cl);}
       const ln=Math.floor((b-a)/22)*2,posts=new THREE.InstancedMesh(new THREE.BoxGeometry(.16,7.5,.16),sm,ln),bulbs=new THREE.InstancedMesh(new THREE.SphereGeometry(.34,8,6),lampMat,ln);k=0;
-      for(let i=a+11;i<b&&k<ln;i+=22)for(const sd of[-1,1]){M4.compose(off(i,sd*8.7,3.75,V),Q.identity(),S.set(1,1,1));posts.setMatrixAt(k,M4);M4.compose(off(i,sd*8.1,7.5,V),Q,S);bulbs.setMatrixAt(k++,M4);}posts.count=bulbs.count=k;scene.add(posts,bulbs);
-      for(const i of sup.slice(1,-1)){const g=new THREE.Group(),deep=45+H[i];for(const sd of[-1,1]){B(o.leg||2.6,TH+deep,o.legD||3.6,sm,sd*10.3,(TH-deep)/2,0,0,g);if(o.deco){for(const y of[TH*.35,TH*.6,TH*.82])B((o.leg||2.6)+.8,3,(o.legD||3.6)+.8,sm,sd*10.3,y,0,0,g);}}
-        for(const y of o.deco?[TH*.34,TH*.59,TH*.81,TH]:[11.5,34,57,TH])B(20.6,o.deco?5:2.2,o.deco?3.4:2.8,sm,0,y,0,0,g);
-        if(!o.deco){for(const[y0,y1]of[[12.6,33],[35,56],[58,TH-1]])for(const s of[-1,1]){const x=B(Math.hypot(18,y1-y0),.9,.9,sm,0,(y0+y1)/2,0,0,g);x.rotation.z=s*Math.atan2(y1-y0,18);}}
-        for(const sd of[-1,1]){const bc=new THREE.Mesh(new THREE.SphereGeometry(.8,8,6),beacon);bc.position.set(sd*10.3,TH+3.2,0);g.add(bc);}g.position.copy(P[i]);g.rotation.y=yaw(i);scene.add(g);}};
+      for(let i=a+11;i<b&&k<ln;i+=22)for(const sd of[-1,1]){M4.compose(off(i,sd*(8.7+XW[i]),3.75,V),Q.identity(),S.set(1,1,1));posts.setMatrixAt(k,M4);M4.compose(off(i,sd*(8.1+XW[i]),7.5,V),Q,S);bulbs.setMatrixAt(k++,M4);}posts.count=bulbs.count=k;scene.add(posts,bulbs);
+      for(const i of sup.slice(1,-1)){const g=new THREE.Group(),deep=45+H[i],xw=XW[i];for(const sd of[-1,1]){B(o.leg||2.6,TH+deep,o.legD||3.6,sm,sd*(10.3+xw),(TH-deep)/2,0,0,g);if(o.deco){for(const y of[TH*.35,TH*.6,TH*.82])B((o.leg||2.6)+.8,3,(o.legD||3.6)+.8,sm,sd*(10.3+xw),y,0,0,g);}}
+        for(const y of o.deco?[TH*.34,TH*.59,TH*.81,TH]:[11.5,34,57,TH])B(20.6+2*xw,o.deco?5:2.2,o.deco?3.4:2.8,sm,0,y,0,0,g);
+        if(!o.deco){for(const[y0,y1]of[[12.6,33],[35,56],[58,TH-1]])for(const s of[-1,1]){const x=B(Math.hypot(18+2*xw,y1-y0),.9,.9,sm,0,(y0+y1)/2,0,0,g);x.rotation.z=s*Math.atan2(y1-y0,18+2*xw);}}
+        for(const sd of[-1,1]){const bc=new THREE.Mesh(new THREE.SphereGeometry(.8,8,6),beacon);bc.position.set(sd*(10.3+xw),TH+3.2,0);g.add(bc);}g.position.copy(P[i]);g.rotation.y=yaw(i);scene.add(g);}};
     bridge(Z.b0,Z.b1,{col:0x8b9196,TH:80,open:1,sup:[.4,.55,.7,.85,1],truss:[[.004,.36,9.5]],pier:70});
     bridge(Z.gg0,Z.gg1,{col:0xc0392b,cable:0xb8402e,TH:150,sup:[0,.18,.82,1],deco:1,leg:4.2,legD:5,cr:.9,rail:1,pier:90});
     bridge(Z.rb0,Z.rb1,{col:0x8a7f6a,TH:0,truss:[[.17,.39,14],[.58,.77,14]],pier:40});
@@ -2126,7 +2127,7 @@ const shadeMat=new THREE.MeshBasicMaterial({map:shadeTex,color:0,transparent:tru
   if(DRIVE){span(Z.wt0+120,Z.central,band);band(Z.rb1+20,Z.refinery-20);}else{band(205,NS);band(0,62);}}
 function driveTick(rdt){const zn=zoneOf(PL.idx);leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,zn==='town'&&G.state==='race'&&!G.paused);   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);snapTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -2227,8 +2228,8 @@ function quakeTick(rdt){const q=QK,i=PL.idx;G.roll=0;if(!q)return;
       // metal shaken off the bridge (bent poles, lamp standards, cable, girder bits) and some bricks: some lands on the lanes that are left, some goes down through the gap
       for(let k=0;k<18;k++){const j=q.a-50+Math.random()*(q.b-q.a+90),inGap=j>q.a&&j<q.b,lat=inGap?R(-RW,q.ls-1):R(-RW,RW),over=inGap;spawnDeb(j*SEG,lat,R(18,45),Math.random()<.8?'metal':'brick',R(1.8,7),over);}}return;}
   q.t+=rdt;const m=q.half[1],sw=sst(q.t,.5,1.1)*(1-sst(q.t,1.7,2.1))+sst(q.t,5.4,6.2)*(1-sst(q.t,10.5,12.5)),ph=Math.sin(q.t*2.4);G.shake=Math.max(G.shake,q.t<8?(.65*(1-q.t/8)+.15)*(1-.8*sw):0);   // the rumble and the sway take turns
-  {const lat=.55*sw*ph,d=lat-(q.sw||0);q.sw=lat;if(!PL.crash){const n=Nn[i];PL.x+=n.x*d;PL.z+=n.z*d;}G.roll=.035*sw*Math.sin(q.t*2.4+.5);   // the deck rolls a little from side to side, carrying the car and the view with it
-    const ax=QK.ax||(QK.ax=new THREE.Vector3()),pv=QK.pv||(QK.pv=new THREE.Vector3()),qq=QK.qq||(QK.qq=new THREE.Quaternion()),c=(q.a+q.b)>>1;ax.set(T[c].x,0,T[c].z).normalize();pv.copy(P[c]);qq.setFromAxisAngle(ax,.014*sw*ph);
+  {const lat=.85*sw*ph,d=lat-(q.sw||0);q.sw=lat;if(!PL.crash){const n=Nn[i];PL.x+=n.x*d;PL.z+=n.z*d;}G.roll=.05*sw*Math.sin(q.t*2.4+.5);   // the deck rolls a little from side to side, carrying the car and the view with it
+    const ax=QK.ax||(QK.ax=new THREE.Vector3()),pv=QK.pv||(QK.pv=new THREE.Vector3()),qq=QK.qq||(QK.qq=new THREE.Quaternion()),c=(q.a+q.b)>>1;ax.set(T[c].x,0,T[c].z).normalize();pv.copy(P[c]);qq.setFromAxisAngle(ax,.022*sw*ph);
     for(const h of q.t<2.2?q.half:[q.half[0]]){h.quaternion.copy(qq);h.position.copy(pv).sub(V.copy(pv).applyQuaternion(qq));}}
   if(q.t>2.2){const u=q.t-2.2;m.position.set(0,-Math.min(70,9*u*u),0);m.quaternion.identity();if(!q.cr){q.cr=1;sfxCrunch(1);G.shake=1;}
     if(u<3&&Math.random()<rdt*40){const j=q.a+(Math.random()*(q.b-q.a)|0);puff(off(j,R(-RW,q.ls),R(-3,1),V),R(-2,2),R(1,4),R(-2,2),2,6,R(1.5,3),.5,0x9a968c);}}
@@ -2594,10 +2595,26 @@ function ggqTick(rdt){const q=GGQ,i=PL.idx;G.heave=0;if(!DRIVE)return;
   if(q.st===0){if(G.state==='race'&&!PL.crash&&i>Z.gg0+(Z.gg1-Z.gg0)*.2&&i<Z.gg0+(Z.gg1-Z.gg0)*.6){q.st=1;q.t=0;q.sw=0;G.qd=1;sfxRumble();sfxQuake();say('EARTHQUAKE !','THE BRIDGE IS ROLLING - HOLD IT STEADY',5);}return;}
   if(q.st!==1)return;q.t+=rdt;const t=q.t,env=sst(t,0,2.5)*(1-sst(t,11,15));
   if(t>15||PL.crash||i<Z.gg0||i>Z.gg1+40){q.st=2;return;}
-  const s=PL.idx*SEG,ph=s/140-t*1.6;   /* a wave about 140 m long rolling along the deck */
-  G.roll=(G.roll||0)+env*(.075*Math.sin(ph*6.283)+.02*Math.sin(t*5.3));G.heave=env*(.55*Math.sin(ph*6.283+1.3)+.12*Math.sin(t*7.1));
-  const lat=env*.8*Math.sin(ph*6.283+.6),d=lat-q.sw;q.sw=lat;const n=Nn[i];PL.x+=n.x*d;PL.z+=n.z*d;
-  G.shake=Math.max(G.shake,.25+.35*env);if(t>6&&t<6.1&&!q.af){q.af=1;sfxQuake();}}
+  const s=PL.idx*SEG,ph=s/230-t*.9;   /* a long, slow wave (about 230 m) rolling along the deck: a gentle twist, like the Bay Bridge's sway, not a jolt */
+  G.roll=(G.roll||0)+env*.04*Math.sin(ph*6.283);G.heave=env*.3*Math.sin(ph*6.283+1.3);
+  const lat=env*.6*Math.sin(ph*6.283+.6),d=lat-q.sw;q.sw=lat;const n=Nn[i];PL.x+=n.x*d;PL.z+=n.z*d;
+  G.shake=Math.max(G.shake,.06+.1*env);if(t>6&&t<6.1&&!q.af){q.af=1;sfxQuake();}}
+// Bridge quakes (Bay Bridge and Golden Gate): hanging cables snap. Each is a loose strand of its own (the bridge itself is baked into the scenery), hung from the main cable
+// between the fixed ones: its deck end breaks free with a twang, whips and swings out over the water, and some break at the top as well and drop into the bay.
+const SNAP={l:[],cd:0};
+function sfxTwang(v){if(!AC)return;const t=AC.currentTime;tone('sawtooth',R(380,560),t,.7,.22*v,master,{to:R(70,110),a:.003,h:.2,lp:2600});hit(t,.12,.45*v,3200,'bandpass',master);}
+function snapTick(rdt){const S=SNAP,pe=ents.find(e=>e.player);if(!pe||!BRH.length)return;
+  if(!S.l.length){const M=std({color:0x767c81,roughness:.5,metalness:.6}),geo=new THREE.CylinderGeometry(.08,.08,1,5).translate(0,-.5,0);
+    for(let k=0;k<12;k++){const g=new THREE.Group(),m=new THREE.Mesh(geo,M);g.add(m);g.visible=false;scene.add(g);S.l.push({g,m,st:0});}}
+  const on=(QK&&QK.st===1&&QK.t>.4&&QK.t<9)||(GGQ.st===1&&GGQ.t>1&&GGQ.t<13);
+  if(on){S.cd-=rdt;if(S.cd<=0){S.cd=R(.3,.9);const s=pe.s+R(18,90),i=wrapI(Math.floor(s/SEG)+3),br=BRH.find(b=>i>b.c0+4&&i<b.c1-4),k=S.l.find(o=>!o.st);
+    if(br&&k){const top=br.hgt(i),L=top-1.2;if(L>3){const sd=Math.random()<.5?-1:1;k.st=1;k.t=0;k.L=L;k.i=i;k.drop=Math.random()<.4;k.vy=0;k.a=0;k.w=sd*R(1.4,2.6);
+      off(i,sd*(10.3+XW[i]),top,k.g.position);k.g.rotation.set(0,yaw(i),0);k.m.scale.set(1,L,1);k.m.rotation.set(0,0,0);k.g.visible=true;
+      sfxTwang(clamp(50/(Math.abs(wdiff(i*SEG-pe.s))+15),.25,1));}}}}
+  for(const k of S.l){if(!k.st)continue;k.t+=rdt;const t=k.t;
+    k.w+=(-Math.sin(k.a)*9.8/Math.max(5,k.L)-k.w*.3)*rdt;k.a+=k.w*rdt;k.m.rotation.z=k.a+Math.sin(t*24)*.08*Math.exp(-t);   // a damped swing from the top, with a whip at first
+    if(k.drop&&t>.8){k.vy-=20*rdt;k.g.position.y+=k.vy*rdt;k.m.rotation.x+=rdt*1.2;}
+    if(t>10||k.g.position.y<-60||Math.abs(wdiff(k.i*SEG-pe.s))>450){k.st=0;k.g.visible=false;}}}
 function fqTick(rdt){if(!FQ.list.length)return;const pe=ents.find(e=>e.player);if(!pe)return;
   for(const q of FQ.list){
     if(q.st===0){if(G.state==='race'&&!PL.crash&&PL.idx>=q.ti&&PL.idx<q.ti+80){q.st=1;q.t=0;q.n=0;q.af=0;q.sd=Math.random()<.5?-1:1;q.fs=wrapS(pe.s+Math.max(280,pe.v*9));sfxRumble();say('EARTHQUAKE !','THE GROUND IS SHAKING - EASE OFF',4);}continue;}
@@ -2789,7 +2806,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={CROWS,BIRDS,SKUNK,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={CROWS,BIRDS,SKUNK,SNAP,BRH,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
