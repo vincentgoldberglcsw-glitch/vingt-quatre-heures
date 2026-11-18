@@ -65,9 +65,9 @@ function buildRoute(X80=-600){
   f.S(580,40).M('tu1')
    .S(260).L(12,500).M('i880').S(2300,60).M('detour').S(380,60).L(78,420).M('toll').S(520,52).M('b0').S(3300,70).M('b1')
    .S(791,35).M('downtown').R(90,100).M('hyde').S(655,30).M('marina').L(90,MR).S(415,45).R(90,120).M('gg0').S(1560,60).M('gg1')
-   .S(260).R(25,500).M('woods').S(700,50).R(30,400).S(600,50).M('sq').R(35,300).S(700,50).M('rb0').S(2600,70).M('rb1')
+   .S(260).R(25,500).M('woods').S(700,50).R(30,400).S(600,50).M('sq').R(35,300).S(700,50).M('rb0').S(2150,70).M('rb1')
    .S(380,40).M('richmond').L(25,260).S(400,40).M('shane').S(300,40).R(25,260);
-  f.S(X80-150-f.x,50).M('refinery').R(90,150).M('i80');
+  f.S(X80-420-f.x,50).M('refinery').R(90,420).M('i80');
   // the way home, driven backwards from the house so the two ends can be made to meet: east on San Antonio, north on Grand, west on Buena Vista, north through the Webster Tube, then up to the I-80 line
   const tu=f.pts[f.mk.tu0],Xt=tu[0]+90,r1=HR1,r2=HR2,r3=HR3,S0=280-r1,n=-tu[1]-r1-r2-r3-250,w=S0+r1-r2-r3-Xt;
   const ret=d=>{const r=routeTurtle(0,0,90*D2R);r.S(S0).L(90,r1).S(n).M('bv').L(90,r2).S(w).R(90,r3).S(250).M('wt0').S(580,40).M('wt1').S(80).R(35,520).S(d,60).L(35,300);return r;};
@@ -129,6 +129,7 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
     if(i>=z.detour-m(30)&&i<=z.detour+m(150))wallR[i]=RW+XW[i]+14;}   // the detour exit lane opens on the right
   // banked bends: the outside of the curve raised, by how tightly the road turns (from the tangents), faded in and out at the ends of each stretch
   const bankOn=(a,b,amt)=>{const fd=m(25);for(let i=a;i<=b;i++){let c=0;for(let q=-8;q<8;q++){const u=wrapI(i+q),v=wrapI(u+1);c+=(T[v].x-T[u].x)*Nn[u].x+(T[v].z-T[u].z)*Nn[u].z;}const env=sst(i,a,a+fd)*(1-sst(i,b-fd,b));BK[wrapI(i)]=clamp(-c/(16*SEG)*45,-amt,amt)*env;}};
+  bankOn(z.refinery-m(60),z.i80+m(60),.1);   // the wide sweep from Shane Drive onto I-80, taken at speed
   bankOn(z.tu0-m(200),z.tu0-m(10),.1);   // into the Posey Tube
   bankOn(z.tu1+m(200),z.tu1+m(430),.08);   // out of the tube and up onto I-880
   bankOn(z.wt1-m(420),z.wt1-m(50),.08);   // the long, gentle bend down off I-80 into the Webster Tube
@@ -427,7 +428,7 @@ await BOOT.step('ROADSIDE',.20);
 /* ================= FREE DRIVE WORLD ================= */
 // A quiet island town street, the tube under the estuary with its portal buildings, a freeway past the port, then a long suspension bridge.
 // The whole route is level: the bay is simply 45 m below the road, so the bridge is high without the engine needing hills.
-const MILL=[],AIR={g:null,st:0,t:0,cd:6};let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
+const MILL=[],REFS=[],AIR={g:null,st:0,t:0,cd:6};let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
 const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null;const BURN=[];   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
 if(!DRIVE){ // roadside advertising boards, as on the old circuit: cigarettes, wine and bread, by turns
   const ad=(kind,name,sub)=>canvas(1024,460,(g,w,h)=>{const bg={cig:'#1d4f8a',wine:'#efe6cc',bread:'#f0c23a'}[kind],ink={cig:'#f4f1e8',wine:'#7a1626',bread:'#3a2412'}[kind];g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=ink;g.lineWidth=10;g.strokeRect(14,14,w-28,h-28);
@@ -1134,7 +1135,7 @@ await BOOT.step('RICHMOND · SHANE DRIVE',.68);
      cand.slice(0,N).forEach(([x,y,z,o],k)=>{const r=rq();
        if(r<.62){const rad=9+rq()*12,h=8+rq()*8;M.compose(Pp.set(x,y,z),Qi,Sc.set(rad,h,rad));tanks.setMatrixAt(nt,M);M.compose(Pp.set(x,y+h,z),Qi,Sc.set(rad,rad*.35,rad));domes.setMatrixAt(nt++,M);}
        else if(r<.9){for(let q=0;q<3;q++){const rad=2+rq()*2.2,h=28+rq()*34,px=x+(q-1)*9,pz=z+(rq()-.5)*8;M.compose(Pp.set(px,y,pz),Qi,Sc.set(rad,h,rad));cols.setMatrixAt(nc++,M);
-         for(let l=1;l<=2;l++){M.compose(Pp.set(px+rad,y+h*l/2.4,pz),Qi,Sc.set(1,1,1));lights.setMatrixAt(nl++,M);}}}
+         for(let l=1;l<=2;l++){M.compose(Pp.set(px+rad,y+h*l/2.4,pz),Qi,Sc.set(1,1,1));lights.setMatrixAt(nl++,M);}REFS.push({x:px,y:y+h+1,z:pz,t:rq(),k:1});}}
        else flareSites.push([x,y,z,o]);});
      tanks.count=domes.count=nt;cols.count=nc;lights.count=nl;for(const im of[tanks,domes,cols])im.castShadow=true;scene.add(tanks,domes,cols,lights);
      // pipe racks running between the tank farms
@@ -1143,7 +1144,7 @@ await BOOT.step('RICHMOND · SHANE DRIVE',.68);
      const ft=canvas(128,256,(g,w,h)=>{const r=g.createRadialGradient(w/2,h*.62,4,w/2,h*.55,h*.5);r.addColorStop(0,'rgba(255,236,170,1)');r.addColorStop(.22,'rgba(255,160,40,.95)');r.addColorStop(.55,'rgba(240,80,10,.6)');r.addColorStop(1,'rgba(200,40,0,0)');g.fillStyle=r;g.fillRect(0,0,w,h);});
      if(!flareSites.length&&cand.length)flareSites.push(cand[cand.length-1]);
      flareSites.sort((a,b)=>b[3]-a[3]).slice(0,3).forEach(([x,y,z])=>{const h=80+rq()*25,st=new THREE.Mesh(cyl(1.1,1.8,h,8),std({color:0x9a3a2a,roughness:.7}));st.position.set(x,y+h/2,z);scene.add(st);
-       const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:ft,color:0xffffff,depthWrite:false,transparent:true,fog:false}));sp.position.set(x,y+h+20,z);sp.scale.set(26,52,1);scene.add(sp);FLARES.push({sp,b:sp.position.y,ph:rq()*6});BURN.push({x,y:y+h+2,z,s:1.6,flare:1});});
+       const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:ft,color:0xffffff,depthWrite:false,transparent:true,fog:false}));sp.position.set(x,y+h+20,z);sp.scale.set(26,52,1);scene.add(sp);FLARES.push({sp,b:sp.position.y,ph:rq()*6});REFS.push({x,y:y+h+3,z,t:rq(),k:1.5});BURN.push({x,y:y+h+2,z,s:1.6,flare:1});});
      // tankers at anchor: long dark hulls with a white bridge house at the stern
      const hullM=std({color:0x2a2c30,roughness:.7}),redM=std({color:0x8a2a20,roughness:.8}),whM=std({color:0xe8e4da,roughness:.6}),dkM=std({color:0x5a3a2a,roughness:.8});
      const tanker=(x,z,ry)=>{const g=new THREE.Group(),A=(geo,mm,px,py,pz)=>{const o=new THREE.Mesh(geo,mm);o.position.set(px,py,pz);g.add(o);return o;};
@@ -1713,6 +1714,7 @@ const smokeTex=canvas(128,128,(g)=>{for(let i=0;i<26;i++){const x=64+R(-26,26),y
 let NOGY=0,GY=0;   // height of the road under the action (free drive hills); 0 on the circuit
 const parts=[],mkPool=(n,tex,add)=>{const a=[];for(let i=0;i<n;i++){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,blending:add?THREE.AdditiveBlending:THREE.NormalBlending,opacity:0}));s.visible=false;scene.add(s);a.push({s,life:0});}return a;};
 const fireP=mkPool(240,glowTex,true),smokeP=mkPool(320,smokeTex,false);let fi=0,si=0;
+const refP=DRIVE?mkPool(300,smokeTex,false):null;let ri=0;
 const millP=DRIVE?mkPool(220,smokeTex,false):null;let mi=0;   // the steel mill's black smoke has a pool of its own, so it never steals the cars' exhaust
 function emit(pool,idx,pos,vx,vy,vz,s0,s1,life,op,col,grav=0,drag=.6){const p=pool[idx%pool.length];p.s.position.copy(pos);p.fl=NOGY?pos.y-1e3:GY;if(GY>.6&&!NOGY&&pos.y<GY-.5)p.s.position.y+=GY;p.vx=vx;p.vy=vy;p.vz=vz;p.s0=s0;p.s1=s1;p.life=p.max=life;p.op=op;p.grav=grav;p.drag=drag;p.s.material.color.setHex(col);p.s.material.rotation=Math.random()*6.28;p.s.visible=true;if(!p.on){p.on=true;parts.push(p);}}
 const flame=(pos,vx,vy,vz,s0,s1,life,col=0xff9a3a)=>emit(fireP,fi++,pos,vx,vy,vz,s0,s1,life,.24,col,0);
@@ -2405,7 +2407,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);tumbleTick(rdt);pennyTick(rdt);snapTick(rdt);millTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);tumbleTick(rdt);pennyTick(rdt);snapTick(rdt);millTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -3076,6 +3078,9 @@ function planesTick(rdt){const A=AIR;if(!A.A)return;const i=PL.idx,on=i>Z.tu1&&i
 // The steel mill's stacks and blast furnace belch black smoke while you are anywhere along I-880.
 function millTick(rdt){if(!MILL.length||!millP)return;const i=PL.idx;if(!(i>Z.tu1&&i<Z.toll))return;
   for(const s of MILL){s.t-=rdt;if(s.t>0)continue;s.t=R(.22,.45)/s.k;NOGY=1;emit(millP,mi++,V.set(s.x,s.y,s.z),R(-.8,.8)+2.6,R(5,8),R(-.8,.8),R(9,13)*s.k,R(45,75)*s.k,R(9,13),1,[0x121010,0x1c1916,0x26211d][Math.random()*3|0],-.25);NOGY=0;}}
+// The refinery columns and flare stacks send up grey smoke, from the end of the bridge to the I-80 ramp.
+function refTick(rdt){if(!REFS.length||!refP)return;const i=PL.idx;if(!(i>Z.rb1-Math.round(900/SEG)&&i<Z.i80+Math.round(300/SEG)))return;
+  for(const s of REFS){s.t-=rdt;if(s.t>0)continue;s.t=R(.7,1.3)/s.k;NOGY=1;emit(refP,ri++,V.set(s.x,s.y,s.z),R(-.8,.8)+3,R(4,7),R(-.8,.8),R(10,14)*s.k,R(55,90)*s.k,R(10,14),1,[0x4a4846,0x5e5b57,0x777470][Math.random()*3|0],-.2);NOGY=0;}}
 // People for the Alameda streets: a coat or shirt, trousers, a head, and two legs that can swing (g.legs). Materials are shared by colour.
 function mkPerson(h=1){const g=new THREE.Group(),sk=pplM(SKINS[Math.random()*SKINS.length|0]),sh=pplM(SHIRTS[Math.random()*SHIRTS.length|0]),pt=pplM(PANTS[Math.random()*PANTS.length|0]);g.legs=[];
   const bd=new THREE.Mesh(new THREE.BoxGeometry(.46,.62,.26),sh);bd.position.y=1.18;g.add(bd);const hd=new THREE.Mesh(new THREE.SphereGeometry(.13,10,8),sk);hd.position.y=1.62;g.add(hd);
