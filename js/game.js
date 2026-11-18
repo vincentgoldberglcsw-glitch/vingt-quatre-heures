@@ -2153,7 +2153,13 @@ const RADIO=["You're listening to Radio Alameda. Smooth jazz for the East Bay.",
 function radioSay(){try{if(!window.speechSynthesis||speechSynthesis.speaking||G.paused)return;const u=new SpeechSynthesisUtterance(RADIO[Math.random()*RADIO.length|0]);u.rate=.78;u.pitch=.5;u.volume=.85;const v=speechSynthesis.getVoices().find(v=>/^en/i.test(v.lang));if(v){u.voice=v;u.lang=v.lang;}speechSynthesis.speak(u);}catch(e){}}
 // The car radio in Alameda is the real thing now: KCSM, live from San Mateo (jazz). It plays for the whole drive, from backing out of the driveway; paused with the game.
 const KCSM='https://ice5.securenetsystems.net/KCSM';let radioEl=null,radioT=0,radioOn=true;try{radioOn=localStorage.getItem('vqh-radio')!=='0';}catch(e){}   // Y turns the radio off and on; the choice is remembered
-function jazzTick(rdt,on){if(!on||!radioOn){if(radioEl&&!radioEl.paused)radioEl.pause();return;}if(!radioEl){radioEl=new Audio();radioEl.preload='none';}radioEl.volume=G.tun>.5?.35:.55;
+// the choice offered while backing out of the driveway: a list so other stations can be added (number keys; Y toggles later). With the radio off only birds and wind play (there are no sirens in this bed).
+const RADIO_OPTS=[{k:'Digit1',name:'KCSM 91.1 · JAZZ',on:true},{k:'Digit2',name:'RADIO OFF',on:false}],RPICK={on:false,t:0,last:true},AMB={t:1,w:2};
+function radioPick(o){RPICK.on=false;radioOn=o.on;try{localStorage.setItem('vqh-radio',o.on?'1':'0');}catch(e){}say(o.name,o.on?'':'BIRDS AND WIND',1.6);}
+function ambTick(rdt,on){if(!AC||!on||radioOn||G.paused||G.tun>.5)return;const t=AC.currentTime;AMB.t-=rdt;AMB.w-=rdt;
+  if(AMB.t<=0){AMB.t=R(.8,4);const n=2+(Math.random()*4|0),f=R(2600,4600);let u=t;for(let i=0;i<n;i++){tone('sine',f*R(.9,1.15),u,.09,.03,master,{to:f*R(1.1,1.5),a:.01,h:.4});u+=R(.08,.14);}}   // a bird's twitter
+  if(AMB.w<=0){AMB.w=R(3,7);hit(t,R(2.5,4),.05,R(350,700),'bandpass',master);}}   // a soft gust
+function jazzTick(rdt,on){if(RPICK.on){RPICK.t-=rdt;if(RPICK.t<=0){RPICK.on=false;radioOn=RPICK.last;}}ambTick(rdt,on&&!RPICK.on);if(RPICK.on)on=false;if(!on||!radioOn){if(radioEl&&!radioEl.paused)radioEl.pause();return;}if(!radioEl){radioEl=new Audio();radioEl.preload='none';}radioEl.volume=G.tun>.5?.35:.55;
   if(radioEl.paused){radioT-=rdt;if(radioT<=0){radioT=5;radioEl.src=KCSM+'?t='+Date.now();radioEl.play().catch(()=>{});}}}
 function jazzSynth(rdt,on){if(!AC)return;if(!JZ.bus){const g=AC.createGain(),f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=1100;f.Q.value=.6;g.gain.value=0;g.connect(f);f.connect(master);JZ.bus=g;}
   JZ.bus.gain.setTargetAtTime(on?(G.cam===1?1.15:.85):0,AC.currentTime,.6);if(!on)return;
@@ -2173,7 +2179,7 @@ const TK=[];
     A(new THREE.SphereGeometry(.045,6,5),rm,0,1,.44).scale.y=1.8;A(new THREE.ConeGeometry(.025,.09,5),lm,0,1.1,.47).rotation.x=Math.PI/2;for(const s of[-1,1])A(cyl(.02,.02,.32,5),lm,s*.1,.16,0);
     g.w=[1,-1].map(s=>{const p=new THREE.Group();p.position.set(s*.2,.66,0);const w=new THREE.Mesh(new THREE.PlaneGeometry(.62,.42).rotateX(-Math.PI/2),fm);w.position.x=s*.31;p.add(w);g.add(p);return p;});g.scale.setScalar(1.25);scene.add(g);return g;};
   const tm_=x=>Math.round(x/SEG);   // free drive: a few flocks in Alameda, and Richmond is overrun with them
-  for(const ci of DRIVE?[Z.start+tm_(150),Z.paru+tm_(300),Z.paru+tm_(700),Z.bv+tm_(400),Z.rb1+tm_(120),Z.richmond+tm_(120),Z.shane-tm_(200),Z.shane-tm_(60),Z.shane+tm_(80),Z.shane+tm_(220),Z.shane+tm_(380),Z.refinery-tm_(400),Z.refinery-tm_(220)]:[Math.floor(NS*.27),Math.floor(NS*.52),Math.floor(NS*.78)])for(let k=0;k<5;k++)TK.push({m:mk(),ci,lat:R(-11,11),ds:R(-9,9),tl:R(-11,11),td:R(-9,9),tt:R(1,5),st:0,x:0,y:0,z:0,vx:0,vy:0,vz:0,h:R(0,6),sp:0});}
+  for(const ci of DRIVE?[Z.start+tm_(150),Z.paru+tm_(300),Z.paru+tm_(700),Z.bv+tm_(400),Z.rb1+tm_(120),Z.richmond+tm_(120),Z.shane-tm_(200),Z.shane-tm_(60),Z.shane+tm_(80),Z.shane+tm_(220),Z.shane+tm_(380),Z.refinery-tm_(400),Z.refinery-tm_(220)]:[Math.floor(NS*.27),Math.floor(NS*.52),Math.floor(NS*.78)])for(let k=0;k<4;k++)TK.push({m:mk(),ci,lat:R(-11,11),ds:R(-9,9),tl:R(-11,11),td:R(-9,9),tt:R(1,5),st:0,x:0,y:0,z:0,vx:0,vy:0,vz:0,h:R(0,6),sp:0});}
 // newspapers in the tubes: loose sheets that skitter along the floor in the draught, tumble in the air, and are flung up behind a passing car. A small pool, kept ahead of the player.
 let PAPERS=null;
 function papersTick(rdt){const inT=zoneArr[PL.idx]===2;if(!PAPERS){if(!inT)return;
@@ -2240,7 +2246,7 @@ function driveHome(pe){if(!DRIVE)return;const H0=Z.home;if(!H0||G.state!=='race'
 // the start of the free drive: the car is in the driveway at 1611, nose to the house, and backs out across the pavement, swinging into the lane facing the right way.
 // PL.auto runs a path in track coordinates (a Bézier over s and lateral), and the player takes over when it ends. driveHome() uses the same thing to bring the car in.
 function homeStart(){if(!DRIVE)return;const H0=Z.home;if(!H0)return;const pe=ents.find(e=>e.player),lane=-(RW+XW[wrapI(Math.round(H0.s/SEG))])/2;
-  PL.auto={t:0,T:6.5,hold:.4,rev:true,p:[[H0.s,H0.lat],[H0.s,H0.lat+5.5],[H0.s,lane-.4],[H0.s-10,lane]]};autoPlace(0,pe,true);pe.v=0;PL.vx=PL.vz=0;PL.steer=0;G.camH=PL.h;first=true;G.mist=1;}
+  PL.auto={t:0,T:6.5,hold:.4,rev:true,p:[[H0.s,H0.lat],[H0.s,H0.lat+5.5],[H0.s,lane-.4],[H0.s-10,lane]]};autoPlace(0,pe,true);pe.v=0;PL.vx=PL.vz=0;PL.steer=0;G.camH=PL.h;first=true;G.mist=1;RPICK.on=true;RPICK.t=9;RPICK.last=radioOn;radioOn=false;say('CAR RADIO','1 · KCSM JAZZ    2 · OFF  (birds and wind)',8);}
 function bez(p,u,k){const a=1-u;return a*a*a*p[0][k]+3*a*a*u*p[1][k]+3*a*u*u*p[2][k]+u*u*u*p[3][k];}
 function autoPlace(u,pe,init){const A=PL.auto,s=bez(A.p,u,0),lat=bez(A.p,u,1),u2=Math.min(1,u+.002),u1=u2-.002,ds=bez(A.p,u2,0)-bez(A.p,u1,0),dl=bez(A.p,u2,1)-bez(A.p,u1,1),ns=wrapS(s),i=wrapI(Math.floor(ns/SEG));
   at(ns,lat,0,V);const sg=A.rev?-1:1,fx=sg*(T[i].x*ds+Nn[i].x*dl),fz=sg*(T[i].z*ds+Nn[i].z*dl);PL.x=V.x;PL.z=V.z;if(fx||fz)PL.h=Math.atan2(fx,fz);PL.idx=i;pe.lat=lat;
@@ -2370,7 +2376,7 @@ function shootTick(rdt){const S_=SHOOT,u=skyMat.uniforms;if(!S_.l){const g=new T
   S_.d.set(R(-1,1),R(-.5,-.2),R(-1,1)).normalize();S_.len=R(500,900);S_.dur=R(.5,.9);S_.t=S_.dur;S_.l.visible=true;}
 function tumbleTick(rdt){const T_=TUMB,pe=ents.find(e=>e.player);if(!pe)return;
   if(!T_.l.length){const mats=[0x9c7a48,0x86663a,0xb08c58].map(c=>new THREE.MeshBasicMaterial({color:c,wireframe:true}));
-    for(let k=0;k<14;k++){const g=new THREE.Group(),r=k%3===0?R(1.1,1.7):k%3===1?R(.6,1):R(.3,.5);   // small, middling and big ones
+    for(let k=0;k<24;k++){const g=new THREE.Group(),r=k%4===0?R(1.1,1.7):k%4===1?R(.6,1):k%4===2?R(.3,.5):R(.14,.28);   // small, middling and big ones
      const sh=k%4,sq=sh===1?[1.2,.72,1.05]:sh===2?[1.25,.95,.8]:[R(.9,1.1),R(.85,1.05),R(.9,1.1)];g.scale.set(...sq);   // round, squashed flat, lopsided, or a clump of two or three balls
      const lumps=sh===3?[[0,0,0,1],[r*.7,-r*.15,r*.2,.62],[-r*.35,r*.25,-r*.55,.5]]:sh===2?[[0,0,0,1],[r*.45,r*.1,0,.7]]:[[0,0,0,1]];
      for(const[x,y,z,f]of lumps)for(let q=0;q<3;q++){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r*f*R(.7,1),1),mats[q]);m.position.set(x,y,z);m.scale.set(R(.8,1.2),R(.75,1.15),R(.8,1.2));m.rotation.set(R(0,6),R(0,6),R(0,6));g.add(m);}
@@ -2384,7 +2390,7 @@ function tumbleTick(rdt){const T_=TUMB,pe=ents.find(e=>e.player);if(!pe)return;
   const snap=(k,n,kick)=>{for(let q=0;q<n;q++){const b=T_.bits.find(o=>o.t<=0);if(!b)return;b.t=R(1.2,2.2);b.m.visible=true;b.m.material.opacity=1;b.m.position.copy(k.g.position).add(T_.W.set(R(-1,1),R(-.6,1),R(-1,1)).multiplyScalar(k.r));b.m.rotation.set(R(0,6),R(0,6),R(0,6));b.m.scale.setScalar(k.r*R(1.2,2.4));b.vx=R(-2,2)+PL.vx*kick;b.vy=R(.5,3);b.vz=R(-2,2)+PL.vz*kick;b.w=R(-8,8);}};
   for(const b of T_.bits){if(b.t<=0)continue;b.t-=rdt;b.vy-=6*rdt;b.vx*=Math.exp(-1.5*rdt);b.vz*=Math.exp(-1.5*rdt);b.m.position.x+=b.vx*rdt;b.m.position.y=Math.max(b.m.position.y+b.vy*rdt,H[PL.idx]+.03);b.m.position.z+=b.vz*rdt;b.m.rotation.x+=b.w*rdt;b.m.rotation.y+=b.w*.6*rdt;b.m.material.opacity=clamp(b.t/.8,0,1);if(b.t<=0)b.m.visible=false;}   // drifting down, tumbling, fading out
   const i=PL.idx,m_=x=>Math.round(x/SEG),on=G.state==='race'&&(zoneArr[i]===1||(DRIVE&&Z.toll&&i>Z.toll-m_(400)&&i<Z.toll+m_(320)));
-  if(on){T_.cd-=rdt;if(T_.cd<=0){T_.cd=R(1.5,4);const k=T_.l.find(o=>!o.st);
+  if(on){T_.cd-=rdt;if(T_.cd<=0){T_.cd=R(.8,2.6);const k=T_.l.find(o=>!o.st);
     if(k){const v=Math.abs(pe.v),s=pe.s+Math.max(35,v*3)+R(0,60),j=wrapI(Math.floor(s/SEG)),w=RW+XW[j];k.st=1;k.s=s;k.dir=Math.random()<.5?-1:1;k.lat=-k.dir*(w+R(4,10));k.v=R(4,8);k.y=0;k.vy=R(1,3);k.ds=R(-1.5,1.5);if(Math.random()<.35){k.s=pe.s+Math.max(70,v*4)+R(0,80);k.lat=R(-w+1,w-1);k.v=R(0,1.5);k.ds=-R(4,9);}   /* some roll down the road towards the car */k.g.visible=true;}}}
   for(const k of T_.l){if(!k.st)continue;const dsP=wdiff(k.s-pe.s),j=wrapI(Math.floor(k.s/SEG)),w=RW+XW[j];
     if(dsP<-40||dsP>320||Math.abs(k.lat)>w+16||(!on&&dsP<0)){k.st=0;k.g.visible=false;continue;}
@@ -2393,7 +2399,7 @@ function tumbleTick(rdt){const T_=TUMB,pe=ents.find(e=>e.player);if(!pe)return;
     const dx=T_.V.x-PL.x,dz=T_.V.z-PL.z;if(dx*dx+dz*dz<(k.r+1.6)**2&&k.y<1.2){k.vy=R(6,9);k.ds=pe.v*.6;snap(k,5+(Math.random()*4|0),.5);}   // bounced up over the car, shedding twigs
     const mv=Math.hypot(k.v,k.ds)||1;at(k.s+k.ds/mv,k.lat+k.dir*k.v/mv,0,T_.W);at(k.s,k.lat,0,T_.A);T_.W.sub(T_.A);T_.A.set(T_.W.z,0,-T_.W.x).normalize();T_.Q.setFromAxisAngle(T_.A,mv*rdt/k.r);k.g.quaternion.premultiply(T_.Q);}}
 function turkeysTick(rdt){const v=Math.hypot(PL.vx,PL.vz);for(const k of TK){const m=k.m,gy=H[k.ci];
-    if(k.st===0){k.tt-=rdt;if(k.tt<=0){k.tt=R(2,7);k.tl=clamp(k.lat+R(-7,7),-13,13);k.td=clamp(k.ds+R(-6,6),-22,22);}
+    if(k.st===0){k.tt-=rdt;if(k.tt<=0){k.tt=R(2,7);{const a=R(0,6.283),d=R(3,12);k.tl=clamp(k.lat+Math.cos(a)*d,-13,13);k.td=clamp(k.ds+Math.sin(a)*d*1.6,-22,22);}}
       at(k.ci*SEG+k.ds,k.lat,0,V);const near=(V.x-PL.x)**2+(V.z-PL.z)**2,sc=near<260&&v>5?3.2:.75;if(sc>1&&Math.abs(k.tl-k.lat)<1)k.tl=clamp(k.lat+(k.lat>=0?9:-9),-14,14);   // they scuttle aside when a car comes
       const dl=k.tl-k.lat,dd=k.td-k.ds,d=Math.hypot(dl,dd);if(d>.2){k.lat+=dl/d*sc*rdt;k.ds+=dd/d*sc*rdt;k.h=Math.atan2(Nn[k.ci].x*dl+T[k.ci].x*dd,Nn[k.ci].z*dl+T[k.ci].z*dd);}
       at(k.ci*SEG+k.ds,k.lat,0,m.position);m.position.y+=d>.2?Math.abs(Math.sin(tmNow()*9+k.ci+k.tl))*.04:0;m.rotation.set(0,k.h,0);m.w[0].rotation.z=m.w[1].rotation.z=0;m.w[0].scale.x=m.w[1].scale.x=.25;
@@ -3210,6 +3216,7 @@ addEventListener('keydown',e=>{const c=codeOf(e);keys[c]=true;if(['ArrowUp','Arr
   if(c==='KeyT'){const i=WKEYS.indexOf(G.weather);G.weather=WKEYS[(i+1)%5];refreshTitle();say(WX[G.weather].name,WX[G.weather].d,2.4);announce(WXFR[G.weather]);}
   if(c==='KeyN'){ANN.on=!ANN.on;if(!ANN.on&&window.speechSynthesis)speechSynthesis.cancel();say(ANN.on?'ANNOUNCER ON':'ANNOUNCER OFF','',1);}
   if(c==='KeyM'){musicOn=!musicOn;say(musicOn?'MUSIC ON':'MUSIC OFF','',1);}
+  if(RPICK.on&&DRIVE){const o=RADIO_OPTS.find(o=>o.k===c);if(o){radioPick(o);return;}}
   if(c==='KeyY'&&DRIVE){radioOn=!radioOn;try{localStorage.setItem('vqh-radio',radioOn?'1':'0');}catch(e){}say(radioOn?'RADIO ON':'RADIO OFF',radioOn?'KCSM 91.1 · JAZZ':'',1.4);}
   if(c==='KeyP'&&G.state==='race'){G.paused=!G.paused;say(G.paused?'PAUSE':'',G.paused?'CIGARETTE BREAK · P TO RESUME':'',G.paused?1e9:.01);}
   if(c==='KeyR'&&G.state==='race'&&!PL.crash){const i=PL.idx;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;resetVehicle(VS,hero.M.dyn,0);}
