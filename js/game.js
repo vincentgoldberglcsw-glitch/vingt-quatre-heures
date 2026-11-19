@@ -64,7 +64,7 @@ const D2R=Math.PI/180;
 const MR=220;
 // Alameda: every corner is a wide sweep. PR: San Antonio onto Paru (the straight before it is shortened by PR-52 so Paru St stays where it was), CR: Paru onto Central, WR: Central onto Wilma Chan Way,
 // HR1..HR3: the way home (San Antonio from Grand, Grand from Buena Vista, Buena Vista from the Webster Tube). Grand St stays where it was too.
-const PB=72,PLEN=PB*9+62,PR=110,CR=260,WR=260,HR1=120,HR2=110,HR3=110;
+const PB=72,PLEN=PB*9+62,PR=110,CR=160,WR=260,HR1=120,HR2=110,HR3=110;
 function routeTurtle(x,z,th){const pts=[],mk={},T={pts,mk,get x(){return x},get z(){return z},get th(){return th},
   push(){pts.push([x,z]);},
   S(len,st=40){const n=Math.max(1,Math.round(len/st));for(let k=0;k<n;k++){x+=Math.sin(th)*len/n;z+=Math.cos(th)*len/n;T.push();}return T;},
@@ -775,6 +775,11 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
     const sub=canvas(512,64,(c,w,h)=>{c.fillStyle='#e2d4b8';c.fillRect(0,0,w,h);c.fillStyle='#6a2a1e';c.font='700 34px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText('GROCERY · PHARMACY · BAKERY · DELI',w/2,34,500);});
     L(new THREE.PlaneGeometry(36,1.1),std({map:sub,roughness:.8}),0,6.4,.06);
     for(const s of[-1,1]){const cr=L(bx(5,1.1,1.6),mat('cart',{color:0x9aa0a4,metalness:.7,roughness:.35}),s*13,.75,4.2);cr.material.wireframe=false;for(let k=0;k<4;k++)L(bx(.9,.9,1.2),mat('cart2',{color:0xb9bec2,metalness:.7,roughness:.35}),s*13-1.6+k*1.05,.6,4.2);}   // cart corrals
+    {const big=canvas(1024,320,(c,w,h)=>{c.fillStyle='#d8261c';c.fillRect(0,0,w,h);c.fillStyle='#ffe23a';c.fillRect(0,0,w,26);c.fillRect(0,h-26,w,26);c.fillStyle='#fff';c.font='900 150px Arial Black,Arial';c.textAlign='center';c.textBaseline='middle';c.fillText('SUPERMARKET',w/2,h/2+4,960);}),
+        bm=new THREE.MeshBasicMaterial({map:big,side:THREE.DoubleSide}),pm=mat('mull',{color:0x9aa0a4,metalness:.6,roughness:.4}),sx=-30,sz=9;   // a tall lit pole sign by the car park, a striped awning, and balloons on strings
+      L(cyl(.35,.45,17,8),pm,sx,8.5,sz);L(new THREE.PlaneGeometry(16,5),bm,sx,17.5,sz).castShadow=false;
+      const aw=canvas(256,64,(c,w,h)=>{for(let k=0;k<8;k++){c.fillStyle=k%2?'#fff':'#d8261c';c.fillRect(k*32,0,32,h);}});L(new THREE.BoxGeometry(24,.3,4.5),new THREE.MeshBasicMaterial({map:aw}),0,5.1,5.4).rotation.x=.18;
+      for(const[bx2,col]of[[-12,0xd8261c],[12,0xffe23a],[0,0x2f8fd8]]){L(cyl(.02,.02,9,4),pm,bx2,15.8,2);L(new THREE.SphereGeometry(1.4,10,8),new THREE.MeshBasicMaterial({color:col}),bx2,20.8,2);}}
     SHOP.ic=ic;SHOP.F=F;g.traverse(o=>{if(o.isMesh)o.receiveShadow=true;});off(ic,F,0,g.position);g.position.y=0;g.rotation.y=faceRoad(ic,1);scene.add(g);
     // the car park, from the back of the pavement to the shop front, with bays, lamp posts and a few cars
     const lot=new THREE.Mesh(new THREE.PlaneGeometry(b-a,1).rotateX(-Math.PI/2),lotM);{const lg=[];for(let i=a;i<=b;i++){lg.push(off(i,12,.015),off(i,F-.1,.015));}
