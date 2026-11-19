@@ -3328,6 +3328,8 @@ function startDive(sd,vn,bi,hole){ohNo();{const e=ents.find(e=>e.player);if(e)e.
   if(hole)at(bi*SEG+Math.min(40,hole.room*.6),sd*2.5,16,PL.crash.cam=new THREE.Vector3());   // over the gap, looking back and down as the car drops through it
   else at(bi*SEG+24,-sd*4.5,3.2,PL.crash.cam=new THREE.Vector3());}
 function diveTick(dt,pe){const D=PL.crash;D.tt+=dt;
+  if(D.rep){let h=document.getElementById("skiph");if(!h){h=document.createElement("div");h.id="skiph";h.textContent="SPACE to skip";h.style.cssText="position:fixed;bottom:9%;left:50%;transform:translateX(-50%);color:#fff;font:700 15px Arial;letter-spacing:.2em;background:rgba(0,0,0,.5);padding:8px 16px;border-radius:6px;z-index:9;pointer-events:none";document.body.appendChild(h);}h.style.display="block";   // a repeat fall: Space skips the scene, back on the road where the car went off
+    if(!keys.Space)D.rel=1;else if(D.rel&&D.tt>.5){D.skip=1;if(D.ph===0){D.ph=1;D.t1=D.tt-99;D.wx=D.x;D.wz=D.z;}}}
   if(D.ph===0){D.x+=D.vx*dt;D.z+=D.vz*dt;D.vy-=22*dt;D.y+=D.vy*dt;hero.position.set(D.x,D.y,D.z);hero.rotation.x+=1.5*dt;hero.rotation.z+=D.sd*1.1*dt;
     if(D.y<-45){D.ph=1;D.t1=D.tt;D.wx=D.x;D.wz=D.z;V.set(D.x,-44.6,D.z);for(let i=0;i<70;i++){const a=R(0,6.283),sp=R(2,11);puff(V,Math.cos(a)*sp,R(6,22),Math.sin(a)*sp,R(.8,1.6),R(4,8),R(1.2,2.6),.8,0xeef2f4);}sfxSplash();G.shake=.8;}return;}
   const u=D.tt-D.t1,S=9.2;   // S: the moment McQueen breaks the surface
@@ -3344,7 +3346,7 @@ function diveTick(dt,pe){const D=PL.crash;D.tt+=dt;
   if(u>S+6.5&&!D.m6){D.m6=1;say('A TANKER !','COMING STRAIGHT AT THEM',2);sfxHorn();}
   if(u>S+8.3&&!D.said){D.said=1;say('THEY SWIM FOR THE SHORE','',4);}
   if(u>S+8.5){D.wx+=D.dir*15*dt*sst(u,S+8.5,S+9.6);if(Math.random()<dt*10)puff(V.set(D.wx-D.dir*2.2,-44.9,D.wz+R(-.6,.6)),0,.4,0,.5,1.8,R(.8,1.4),.5,0xeef2f4);}
-  if(u>(D.rep?4.6:S+14)){const i=PL.idx=wrapI(D.rep&&!D.hole?D.idx-40:(Z.BR.find(r=>D.idx>=r[0]&&D.idx<=r[1])||[Z.b0])[0]-45);pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();first=true;G.uw=0;
+  if(u>(D.rep?4.6:S+14)||D.skip){{const h=document.getElementById("skiph");if(h)h.style.display="none";}const i=PL.idx=wrapI(D.rep&&!D.hole?D.idx-40:(Z.BR.find(r=>D.idx>=r[0]&&D.idx<=r[1])||[Z.b0])[0]-45);pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();first=true;G.uw=0;
     hero.visible=true;hero.position.set(PL.x,H[i],PL.z);hero.rotation.set(0,PL.h,0);mcq.rotation.set(0,0,0);manatee.visible=false;manatee.pipe.visible=false;SEA.g.visible=SEA.oc.visible=SEA.dome.visible=SEA.tk.visible=false;SEA.light.intensity=0;say('BACK ON DRY LAND','',2);}}
 function diveScene(tm){const D=PL.crash,S=9.2;if(D.ph<1){manatee.visible=false;SEA.g.visible=SEA.oc.visible=false;G.uw=0;return;}
   const u=D.tt-D.t1,bob=Math.sin(tm*1.6)*.07,th=D.dir>0?Math.PI/2:-Math.PI/2;
