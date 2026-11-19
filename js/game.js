@@ -3528,7 +3528,7 @@ function fqTick(rdt){if(!FQ.list.length)return;const pe=ents.find(e=>e.player);i
       if(u>.3&&!F.ch){F.ch=1;for(let k=0;k<8;k++){const p=F.pts[Math.random()*F.pts.length*.7|0];fqDeb(q,F.s+p.c+R(-1.5,1.5),p.lat,R(.4,1.2),R(0,1.4),R(.22,.4),R(4,9));}}   // chunks of road thrown up
       if(!PL.crash&&PL.safe<=0&&G.state==='race'){const f=(pe.lat-F.edge)/(F.tip-F.edge),p=f>=0&&f<=1?F.pts[Math.round(f*(F.pts.length-1))]:null,ds=p?wdiff(F.s+p.c-pe.s):null;
         if(p&&F.prev!=null&&F.prev>0&&ds<=0&&p.h>.15){const v=pe.v;G.shake=1;sfxCrunch(1);NOGY=1;for(let k=0;k<12;k++)puff(V.set(PL.x+R(-1,1),P[PL.idx].y+.3,PL.z+R(-1,1)),R(-3,3),R(1,4),R(-3,3),1,R(3,6),R(1.2,2.4),.55,0x8a8070);NOGY=0;
-          if(q.nm==='MARIN')holeFall(pe);else if(v>26)crashPlayer(v*.4,false);else{PL.vx*=.45;PL.vz*=.45;sfxScrape(1);}}   // over the fissure: a hard jolt, and at speed a crash
+          if(q.nm==='MARIN'){PL.air=1;PL.vy=Math.max(PL.vy||0,10);PL.vx*=.92;PL.vz*=.92;G.shake=1;sfxCrunch(1);say('BOING !','OVER THE CRACK',1.5);}else if(v>26)crashPlayer(v*.4,false);else{PL.vx*=.45;PL.vz*=.45;sfxScrape(1);}}   // over the fissure: a hard jolt, and at speed a crash
         F.prev=ds;}else F.prev=null;}
     if(t>12.5&&!q.af){q.af=1;sfxQuake();G.shake=Math.max(G.shake,.75);say('AFTERSHOCK !','',2);for(let k=0;k<4;k++)fqCrack(q,q.fs+R(-40,40),R(-w,w));}
     if(q.af&&t<14.5)G.shake=Math.max(G.shake,.4*(1-(t-12.5)/2));
