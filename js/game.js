@@ -36,7 +36,7 @@ const LIT={p:null,t:3};   // litter thrown from passing cars (see litterTick)
 const SFSM=[];   // smoke sources on the decayed San Francisco towers
 const BBQ=[];   // the roadside billboards on I-880 that fall during the quake (see bbQuakeTick)
 const VANS=[];   // the ice-cream truck and the taco truck, driving up and down Paru (see vanTick)
-const MILLC={i:-1,t:0,x:0,z:0,ry:0,y:0,w:null};   // the steel mill: its track index, and a timer for the falling pieces during the quake
+const MILLC={tw:[],i:-1,t:0,x:0,z:0,ry:0,y:0,w:null};   // the steel mill: its track index, and a timer for the falling pieces during the quake
 const SHOP={ic:0,F:0,list:null,t:0};   // the supermarket shoppers (see shopTick)
 const DOME={x:0,z:0,i:-1,hit:0},SAFEZ=()=>DRIVE&&PL.idx<Z.tu0&&!DOME.hit;   // the green eyed dome in the road before the Posey Tube
 const DETR={a:-1};   // the detour ramp: starts at index a, 240 segments long, drops to the ground by 60% of the way
@@ -1049,14 +1049,15 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
         for(let q=-L/2+8;q<L/2-6;q+=14){const t=M(sx,q,Hh+2.4,W,5,.8,rust);t.rotation.order='YXZ';t.rotation.x=.45;}
         for(const[hz,hy,hw]of[[-60,8,10],[10,7,7],[70,9,12],[-20,12,6]])M(sx+(sx<0?-W/2-.1:W/2+.1),hz,hy,.4,hw*.6,hw,blk);
         M(sx,rr(-60,60),Hh+4.6,12,.4,16,blk);}   // a hole through the roof
+      const towerAdd=(st,x,z,h,ex,me)=>{const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);g.attach(st);for(const e of ex)g.attach(e);const dr=Math.random()<.5?1:-1,dx=Math.sin(ry)*dr,dz=Math.cos(ry)*dr;MILLC.tw.push({g,me,H:me?me.y:h,x,z,dx,dz,ax:new THREE.Vector3(dz,0,-dx),d:R(1,7),u:0,s:0});};
       for(let k=0;k<6;k++){const[x,z]=R2(100,-70+k*26),hh=k===4?26:k===5?9:rr(42,48),st=new THREE.Mesh(cyl(6,6.4,hh,14),k%2?rust:rust2);st.position.set(x,hh/2,z);if(k===4){st.rotation.z=.32;st.position.x+=4;}st.castShadow=true;scene.add(st);   // hot-blast stoves: one leaning, one a broken stump
         if(k<4){const dm=new THREE.Mesh(new THREE.SphereGeometry(6,12,6,0,6.2832,0,1.5708),rust2);dm.position.set(x,hh,z);scene.add(dm);}}
       M(100,-5,32,3,3,150,pipeM);M(100,-5,22,3,3,150,pipeM);M(88,-5,12,3,26,3,pipeM);   // pipework along the stoves
-      {const[x,z]=R2(150,-20);const bf=new THREE.Mesh(cyl(8,11,56,16),rust);bf.position.set(x,28,z);bf.castShadow=true;scene.add(bf);const tp=new THREE.Mesh(new THREE.ConeGeometry(8,14,16),rust2);tp.position.set(x,63,z);scene.add(tp);MILL.push({x,y:71,z,t:0,k:1.6});   // the furnace tower, its throat still smoking
+      {const[x,z]=R2(150,-20);const bf=new THREE.Mesh(cyl(8,11,56,16),rust);bf.position.set(x,28,z);bf.castShadow=true;scene.add(bf);const tp=new THREE.Mesh(new THREE.ConeGeometry(8,14,16),rust2);tp.position.set(x,63,z);scene.add(tp);const fme={x,y:71,z,t:0,k:1.6};MILL.push(fme);towerAdd(bf,x,z,56,[tp],fme);   // the furnace tower, its throat still smoking
         const hs=M(185,-20,28,80,2.4,3.4,rust2);hs.rotation.order='YXZ';hs.rotation.z=.52;M(150,-20,8,3,16,3,rust2);}   // the skip hoist climbing slanted up to the throat
-      for(let k=0;k<5;k++){const h=[96,90,84,58,42][k],[x,z]=R2(-120,-100+k*45),st=new THREE.Mesh(cyl(1.7,3,h,12),k%2?rust:rust2);st.position.set(x,h/2,z);st.castShadow=true;scene.add(st);
-        if(k<3){B(5,1,5,rust,x,h,z);MILL.push({x,y:h+1,z,t:R(0,.3),k:1.2});}   // smoke from the intact stack tops only
-        else{const jg=new THREE.Mesh(new THREE.ConeGeometry(2.6,5,5),blk);jg.position.set(x,h+1.5,z);jg.rotation.z=rr(-.5,.5);scene.add(jg);if(k===3){const f=new THREE.Mesh(cyl(1.4,1.7,22,10),rust2);f.position.set(x+9,1.2,z+4);f.rotation.set(1.45,0,1.2);scene.add(f);}}}   // the tops broken off, one fallen
+      for(let k=0;k<5;k++){const h=[96,90,84,58,42][k],[x,z]=R2(-120,-100+k*45),st=new THREE.Mesh(cyl(1.7,3,h,12),k%2?rust:rust2);st.position.set(x,h/2,z);st.castShadow=true;scene.add(st);const tex=[];let tme=null;
+        if(k<3){tex.push(B(5,1,5,rust,x,h,z));tme={x,y:h+1,z,t:R(0,.3),k:1.2};MILL.push(tme);}   // smoke from the intact stack tops only
+        else{const jg=new THREE.Mesh(new THREE.ConeGeometry(2.6,5,5),blk);jg.position.set(x,h+1.5,z);jg.rotation.z=rr(-.5,.5);scene.add(jg);tex.push(jg);if(k===3){const f=new THREE.Mesh(cyl(1.4,1.7,22,10),rust2);f.position.set(x+9,1.2,z+4);f.rotation.set(1.45,0,1.2);scene.add(f);}}towerAdd(st,x,z,h,tex,tme);}   // the tops broken off, one fallen; each tall tower can topple in the quake
       for(let k=0;k<9;k++)M(-170,-90+k*13,2.2,4.6,2.6,11,k%3?rust2:rust);   // ore cars on the siding
       M(-170,0,.6,1,.3,170,blk);M(-168,0,.6,1,.3,170,blk);
       for(let k=0;k<14;k++)M(rr(-190,190),rr(-120,120),.8,rr(2,6),rr(1,3),rr(2,6),k%2?rust2:blk,rr(0,3));   // more ruin: rubble piles, twisted girders, collapsed roof sections, stumps of stacks and stoves
@@ -1516,7 +1517,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
   {const ch=std({color:0x1c1a18,roughness:1});for(const f of[.12,.27,.45,.6,.83]){const i=Z.b0+Math.round((Z.b1-Z.b0)*f),sd=f*10%2<1?1:-1,g=new THREE.Group();g.add(new THREE.Mesh(carG,ch),new THREE.Mesh(whG,ch));off(i,sd*7.4,0,g.position);g.rotation.set(0,yaw(i)+rr(-.6,.6),sd*.12);scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:2.2});BURN.push({x:g.position.x,y:g.position.y+1,z:g.position.z,s:.8});}}
   // last of all, merge the static scenery by material and by area, so the whole bay draws in a few hundred calls instead of tens of thousands
   Terrain.occupy(scene.children.slice(A0));Terrain.start(scene,CULL,LANDM,grassTex);   // the real hills: level ground is kept under everything built above, and the rest is queued to be raised tile by tile
-  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...CROWS.map(c=>c.g)]));
+  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...CROWS.map(c=>c.g),...MILLC.tw.map(t=>t.g)]));
   for(const o of [...scene.children])if(o.isInstancedMesh&&o.frustumCulled&&o.count>60)splitInstanced(o);
 }
 
@@ -3551,7 +3552,9 @@ function millWorkers(rdt){const M=MILLC;if(M.i<0)return;const dx=PL.x-M.x,dz=PL.
   if(!M.w){M.w=[];for(let k=0;k<12;k++){const p=mkPerson(R(.95,1.05));scene.add(p);M.w.push({p,lx:R(-170,100),lz:R(-100,100),tx:0,tz:0,t:0,ph:R(0,6)});}}
   const c=Math.cos(M.ry),s=Math.sin(M.ry);for(const w of M.w){w.t-=rdt;if(w.t<=0){w.t=R(6,14);w.tx=R(-180,110);w.tz=R(-110,110);}const ddx=w.tx-w.lx,ddz=w.tz-w.lz,d=Math.hypot(ddx,ddz);if(d>1){w.lx+=ddx/d*1.1*rdt;w.lz+=ddz/d*1.1*rdt;}w.ph+=rdt*6;
     w.p.position.set(M.x+w.lx*c+w.lz*s,M.y,M.z-w.lx*s+w.lz*c);w.p.rotation.y=M.ry+Math.atan2(ddx,ddz);w.p.visible=true;if(w.p.legs){w.p.legs[0].rotation.x=Math.sin(w.ph)*.5;w.p.legs[1].rotation.x=-Math.sin(w.ph)*.5;}}}
-function millTick(rdt){if(!MILL.length||!millP)return;const i=PL.idx;if(!(i>Z.tu1&&i<Z.toll))return;millWorkers(rdt);const fq=FQ.list[0],qk=!!(fq&&fq.st===1&&fq.t>.5&&fq.t<12&&Math.abs(i-MILLC.i)<Math.round(900/SEG));if(qk){MILLC.t-=rdt;if(MILLC.t<=0){MILLC.t=R(.12,.3);spawnDeb(MILLC.i*SEG+R(-130,130),-230+R(-70,70),R(25,70),Math.random()<.5?"slab":"chunk",0,false,0,R(1.4,2.4));NOGY=1;const s=MILL[Math.random()*MILL.length|0];if(s)puff(V.set(s.x+R(-20,20),R(8,30),s.z+R(-20,20)),R(-2,2),R(3,8),R(-2,2),2,R(18,34),R(3,5),.6,0x2a2622);NOGY=0;}}
+function millTick(rdt){if(!MILL.length||!millP)return;const i=PL.idx;if(!(i>Z.tu1&&i<Z.toll))return;millWorkers(rdt);const fq=FQ.list[0],qk=!!(fq&&fq.st===1&&fq.t>.5&&fq.t<12&&Math.abs(i-MILLC.i)<Math.round(900/SEG));
+  for(const w of MILLC.tw){if(!w.s&&qk&&fq.t>w.d)w.s=1;if(w.s===1){w.u=Math.min(1,w.u+rdt/9);const a=1.45*w.u*w.u;w.g.quaternion.setFromAxisAngle(w.ax,a);if(w.me){w.me.x=w.x+w.dx*w.H*Math.sin(a);w.me.z=w.z+w.dz*w.H*Math.sin(a);w.me.y=w.H*Math.cos(a)+1;}if(w.u>=1){w.s=2;NOGY=1;puff(V.set(w.x+w.dx*w.H*.9,3,w.z+w.dz*w.H*.9),0,4,0,2,R(26,40),R(4,6),.7,0x2a2622);NOGY=0;}}}
+  if(qk){MILLC.t-=rdt;if(MILLC.t<=0){MILLC.t=R(.12,.3);spawnDeb(MILLC.i*SEG+R(-130,130),-230+R(-70,70),R(25,70),Math.random()<.5?"slab":"chunk",0,false,0,R(1.4,2.4));NOGY=1;const s=MILL[Math.random()*MILL.length|0];if(s)puff(V.set(s.x+R(-20,20),R(8,30),s.z+R(-20,20)),R(-2,2),R(3,8),R(-2,2),2,R(18,34),R(3,5),.6,0x2a2622);NOGY=0;}}
   for(const s of MILL){s.t-=rdt;if(s.t>0)continue;s.t=R(.12,.26)/s.k/(qk?3:1);NOGY=1;emit(millP,mi++,V.set(s.x,s.y,s.z),R(-.8,.8)+2.6,R(5,8),R(-.8,.8),R(12,18)*s.k,R(60,100)*s.k,R(9,13),1,[0x121010,0x1c1916,0x26211d][Math.random()*3|0],-.25);NOGY=0;}}
 // The refinery columns and flare stacks send up grey smoke, from the end of the bridge to the I-80 ramp.
 function refTick(rdt){if(!REFS.length||!refP)return;const i=PL.idx;if(!(i>Z.rb1-Math.round(900/SEG)&&i<Z.i80+Math.round(300/SEG)))return;
