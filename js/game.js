@@ -124,12 +124,15 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
       +9*Math.sin((i-z.gg1)*SEG/170)*bump(i,z.gg1+m(150),z.gg1+m(350),z.sq-m(900),z.sq-m(700))
       +16*bump(i,z.rb0+m(500),z.rb0+m(1000),z.rb0+m(1500),z.rb0+m(2000))
       +24*bump(i,z.richmond+m(80),z.shane-m(80),z.shane+m(150),z.refinery-m(300))
+      +7*Math.sin((i-z.richmond)*SEG/140)*bump(i,z.richmond+m(60),z.richmond+m(200),z.shane-m(60),z.shane-m(10))   /* rolling hills through Richmond */
       +12*bump(i,z.i80+m(150),z.i80+m(330),z.wt1-m(600),z.wt1-m(380));
     wallAt[i]+=XW[i];edgeAt[i]+=XW[i];if(i>=z.wilma+m(10)&&i<=z.wilma+m(75))wallAt[i]=edgeAt[i]=38;   // the drive-in lot on Wilma Chan Way is open ground
     if(i>=z.detour-m(30)&&i<=z.detour+m(150))wallR[i]=RW+XW[i]+14;}   // the detour exit lane opens on the right
   // banked bends: the outside of the curve raised, by how tightly the road turns (from the tangents), faded in and out at the ends of each stretch
   const bankOn=(a,b,amt)=>{const fd=m(25);for(let i=a;i<=b;i++){let c=0;for(let q=-8;q<8;q++){const u=wrapI(i+q),v=wrapI(u+1);c+=(T[v].x-T[u].x)*Nn[u].x+(T[v].z-T[u].z)*Nn[u].z;}const env=sst(i,a,a+fd)*(1-sst(i,b-fd,b));BK[wrapI(i)]=clamp(-c/(16*SEG)*45,-amt,amt)*env;}};
   bankOn(z.refinery-m(60),z.i80+m(60),.1);   // the wide sweep from Shane Drive onto I-80, taken at speed
+  bankOn(z.sq+m(40),z.rb0+m(20),.1);   // past San Quentin: a gentle banked curve through the badlands
+  bankOn(z.richmond+m(40),z.shane,.08);   // Richmond's sloping bend
   bankOn(z.tu0-m(200),z.tu0-m(10),.1);   // into the Posey Tube
   bankOn(z.tu1+m(200),z.tu1+m(430),.08);   // out of the tube and up onto I-880
   bankOn(z.wt1-m(420),z.wt1-m(50),.08);   // the long, gentle bend down off I-80 into the Webster Tube
@@ -1071,6 +1074,15 @@ await BOOT.step('SAN FRANCISCO',.55);
     {const rk=std({color:0x5e554a,roughness:1,side:D2}),[c0,c1]=CLF,ft=i=>13+H[i]*.3;   // Marin: on the left a narrow rocky ledge, then a cliff straight down to the rocks and the bay
       ribbon(i=>9.6+XW[i],13,-.03,-.03,rk,8,c0,c1);ribbon(13,ft,-.03,i=>-H[i],rk,6,c0,c1);ribbon(i=>ft(i)-2,i=>ft(i)+700,i=>.35-H[i],i=>.35-H[i],std({color:0x34596a,roughness:.3,metalness:.2}),20,c0-40,c1+40);
       const N=420,im=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),rk,N);let k=0;for(let i=c0;i<=c1&&k<N-1;i+=1)for(let q=0;q<2;q++){const y=Math.random()<.3?-H[i]*Math.random():-H[i];off(i,y>-H[i]?13+(y/-H[i])*(ft(i)-13):ft(i)+R(-1,6),y,V);M4.compose(V,Q.setFromEuler(new THREE.Euler(R(0,3),R(0,3),R(0,3))),S.set(R(1,3),R(.8,2.4),R(1,3)));im.setMatrixAt(k++,M4);}im.count=k;im.castShadow=true;scene.add(im);}bank(Z.richmond,Z.refinery,grass,40,2);}
+    {// badlands past San Quentin: banded mud hills in yellow, rust, purple and blue-grey with ridged fans (vertex colours, one mesh per side)
+      const BC=[0xe3b04a,0xb4562f,0x7d5a86,0x7f93a8,0xd9a066,0xa04a3a].map(h=>new THREE.Color(h)),a0=Z.sq+m(40),a1=Z.rb0+m(20),LN=12,tc=new THREE.Color(),pos=[],col=[],idx=[];
+      for(const sd of[-1,1]){pos.length=0;col.length=0;idx.length=0;let n=0;
+        for(let i=a0;i<=a1;i+=2){const e=sst(i,a0,a0+m(80))*(1-sst(i,a1-m(80),a1));
+          for(let j=0;j<=LN;j++){const t=j/LN,lat=sd*(14+t*t*150),rd=Math.sin(i*.9+j*1.7)*.5+Math.sin(i*.31-j*.8)*.5,y=t<.1?-.03:e*(10+17*(1+Math.sin(i*.07+sd))+Math.abs(rd)*7)*Math.pow(t,.8)-.03;
+            off(i,lat,y,V);pos.push(V.x,V.y,V.z);const bnd=y*.55+rd*.6+i*.013+Math.floor(j/2)*.4,k=Math.floor(Math.abs(bnd))%BC.length;tc.copy(BC[k]).lerp(BC[(k+1)%BC.length],(Math.abs(bnd)%1>.8)?.5:0);if(y<.5)tc.set(0x8a7a4e);col.push(tc.r,tc.g,tc.b);}
+          if(i+2<=a1){for(let j=0;j<LN;j++){const q=n*(LN+1)+j;idx.push(q,q+1,q+LN+1,q+1,q+LN+2,q+LN+1);}}n++;}
+        const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos.slice(),3));g.setAttribute('color',new THREE.Float32BufferAttribute(col.slice(),3));g.setIndex(idx.slice());g.computeVertexNormals();
+        const mh=new THREE.Mesh(g,std({vertexColors:true,roughness:1,flatShading:true,side:D2}));mh.receiveShadow=true;scene.add(mh);}}
 
 await BOOT.step('THE MARIN REDWOODS',.63);
   // ---- Marin: a redwood forest - tall red trunks and dark spires all round, ferns on the floor - then San Quentin by the water
