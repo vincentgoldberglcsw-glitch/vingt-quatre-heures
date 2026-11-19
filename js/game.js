@@ -49,7 +49,7 @@ const D2R=Math.PI/180;
 const MR=220;
 // Alameda: every corner is a wide sweep. PR: San Antonio onto Paru (the straight before it is shortened by PR-52 so Paru St stays where it was), CR: Paru onto Central, WR: Central onto Wilma Chan Way,
 // HR1..HR3: the way home (San Antonio from Grand, Grand from Buena Vista, Buena Vista from the Webster Tube). Grand St stays where it was too.
-const PR=110,CR=160,WR=160,HR1=120,HR2=110,HR3=110;
+const PB=72,PLEN=PB*9+62,PR=110,CR=160,WR=160,HR1=120,HR2=110,HR3=110;
 function routeTurtle(x,z,th){const pts=[],mk={},T={pts,mk,get x(){return x},get z(){return z},get th(){return th},
   push(){pts.push([x,z]);},
   S(len,st=40){const n=Math.max(1,Math.round(len/st));for(let k=0;k<n;k++){x+=Math.sin(th)*len/n;z+=Math.cos(th)*len/n;T.push();}return T;},
@@ -59,11 +59,11 @@ function buildRoute(X80=-600){
   // Corners are swept, not square: every junction on the loop has about twice the radius it had, so it can be driven as a corner rather than stopped for.
   // The two straights into the Posey Tube are trimmed to suit, so that the tube mouth - and with it the port, the bridges and the coastlines - stays exactly where it was.
   const old=routeTurtle(0,0,-90*D2R).S(40).S(260).R(90,24).S(920).L(90,24).S(400).R(70,45).S(560).R(20,200);
-  const lead=(a,b)=>routeTurtle(0,0,-90*D2R).M('t0').S(40).M('start').S(260-(PR-52)).R(90,PR).M('paru').S(890).L(90,CR).M('central').S(a).R(70,WR).M('wilma').S(b).R(20,420).M('tu0');   // the last bend into the Posey Tube: a long, wide, banked sweep
+  const lead=(a,b)=>routeTurtle(0,0,-90*D2R).M('t0').S(40).M('start').S(260-(PR-52)).R(90,PR).M('paru').S(PLEN).L(90,CR).M('central').S(a).R(70,WR).M('wilma').S(b).R(20,420).M('tu0');   // the last bend into the Posey Tube: a long, wide, banked sweep
   const p0=lead(1,1),wd=-160*D2R,wl=1+(old.z-p0.z)/Math.cos(wd),cl=1-(old.x-p0.x-(wl-1)*Math.sin(wd));
   const f=lead(cl,wl);
   f.S(580,40).M('tu1')
-   .S(260).L(12,500).M('i880').S(2300,60).M('detour').S(380,60).L(78,420).M('toll').S(520,52).M('b0').S(3300,70).M('b1')
+   .S(260).L(12,500).M('i880').S(1700,60).M('detour').S(380,60).L(78,420).M('toll').S(520,52).M('b0').S(3300,70).M('b1')
    .S(791,35).M('downtown').R(90,100).M('hyde').S(655,30).M('marina').L(90,MR).S(415,45).R(90,120).M('gg0').S(1560,60).M('gg1')
    .S(260).R(25,500).M('woods').S(700,50).R(30,400).S(600,50).M('sq').R(35,300).S(700,50).M('rb0').S(2150,70).M('rb1')
    .S(380,40).M('richmond').L(25,260).S(400,40).M('shane').S(300,40).R(25,260);
@@ -73,7 +73,7 @@ function buildRoute(X80=-600){
   const ret=d=>{const r=routeTurtle(0,0,90*D2R);r.S(S0).L(90,r1).S(n).M('bv').L(90,r2).S(w).R(90,r3).S(250).M('wt0').S(580,40).M('wt1').S(80).R(35,520).S(d,60).L(35,300);return r;};
   const g=d=>ret(d).x-X80;let a=50,b=4000;for(let k=0;k<60;k++){const mid=(a+b)/2;if(g(a)*g(mid)<=0)b=mid;else a=mid;}const r=ret((a+b)/2);
   // I-80 south: two gentle S-bends that cancel out, then straight on to meet the way home
-  f.S(700,60).R(6,900).S(500,60).L(6,900).M('berkeley').S(1500,60).L(6,900).S(500,60).R(6,900).M('emeryville').S(1800,60).M('oakland');f.S(r.z-f.z,60);
+  f.S(500,60).R(6,900).S(350,60).L(6,900).M('berkeley').S(1000,60).L(6,900).S(350,60).R(6,900).M('emeryville').S(1200,60).M('oakland');f.S(r.z-f.z,60);
   const pts=f.pts.slice(),mk={...f.mk},rp=r.pts.slice().reverse();rp.pop();
   const o=pts.length-1;for(const[k,v]of Object.entries(r.mk))mk[k]=o+(r.pts.length-1-v);
   for(let i=1;i<rp.length;i++)pts.push(rp[i]);
@@ -231,7 +231,7 @@ for(let i=0;i<NS;i+=3)for(const sd of [-1,1])for(let k=0;k<3;k++){
   if(DRIVE&&sd<0&&i>Z.wilma+20/SEG&&i<Z.tu0-130/SEG){   // Wilma Chan Way: a thick belt of trees on the right. Own hash for spacing and jitter, so the seeded scenery after this is unchanged
     const hh=n=>{const s=Math.sin(i*12.9898+k*78.233+n*37.719)*43758.5453;return s-Math.floor(s);};
     if(hh(0)>=.3){const oo=-(13.5+k*6.5+hh(1)*4+XW[i]),x=P[i].x+Nn[i].x*oo+(hh(2)-.5)*3,z=P[i].z+Nn[i].z*oo+(hh(3)-.5)*3;if(farFromRoad(x,z,10))treePos.push([x,z]);}}
-  if(DRIVE){const zn=zoneOf(i),cr=(i-Z.paru)/(92/SEG);if(zn==='town'){if(k||i%21||(i>Z.wt0-5&&i<Z.wt0+70)||(i>Z.paru&&i<Z.central&&Math.abs(cr-Math.round(cr))*92<16)||(sd>0&&i>Z.paru-(PR*1.57+12)/SEG&&i<Z.paru+3))continue;o=sd*11.2;minD=9.5;}else if(zn==='freeway'){if(k||rnd()<.6||H[i]>1)continue;o=sd*rr(26,60);}else if(zn==='hills'){if(rnd()<.6||H[i]>.5)continue;}else continue;}   // street trees in town, a few by the freeways, oaks at the foot of the Richmond hills; the redwoods are their own
+  if(DRIVE){const zn=zoneOf(i),cr=(i-Z.paru)/(PB/SEG);if(zn==='town'){if(k||i%21||(i>Z.wt0-5&&i<Z.wt0+70)||(i>Z.paru&&i<Z.central&&Math.abs(cr-Math.round(cr))*PB<16)||(sd>0&&i>Z.paru-(PR*1.57+12)/SEG&&i<Z.paru+3))continue;o=sd*11.2;minD=9.5;}else if(zn==='freeway'){if(k||rnd()<.6||H[i]>1)continue;o=sd*rr(26,60);}else if(zn==='hills'){if(rnd()<.6||H[i]>.5)continue;}else continue;}   // street trees in town, a few by the freeways, oaks at the foot of the Richmond hills; the redwoods are their own
   else if(sd>0&&i>GS0-8&&i<GS1+8&&Math.abs(o)<36||sd<0&&i>GS0&&i<GS1)continue;
   const x=P[i].x+Nn[i].x*o+rr(-3,3)*(minD<16?.2:1),z=P[i].z+Nn[i].z*o+rr(-3,3)*(minD<16?.2:1);if(farFromRoad(x,z,minD)){treePos.push([x,z]);if(minD===9.5)TOWNT.push([x,z]);}}
 const CARDS=34,NT=treePos.length;
@@ -263,7 +263,7 @@ const tuftMat=std({map:tuftTex,alphaTest:.4,side:THREE.DoubleSide,roughness:1});
  const tufts=new THREE.InstancedMesh(tg,tuftMat,NTUFT);
  const pops=new THREE.InstancedMesh(tg,std({map:poppyTex,alphaTest:.4,side:THREE.DoubleSide,roughness:1}),NPOP);
  // in town the tufts keep to the front lawns, behind the pavement, and none grow in the supermarket car park or on the paved crossroads
- const mS=x=>Math.round(x/SEG),bare=DRIVE?[[Z.paru+mS(92)+8,Z.paru+mS(184)-8,1],[Z.paru-mS(PR*1.57+30)-6,Z.paru+6,1]]:[];
+ const mS=x=>Math.round(x/SEG),bare=DRIVE?[[Z.paru+mS(PB)+8,Z.paru+mS(PB*2)-8,1],[Z.paru-mS(PR*1.57+30)-6,Z.paru+6,1]]:[];
  const put=(mesh,k,lo,hi,s0,s1)=>{const i=DRIVE?landIdx[rnd()*landIdx.length|0]:rnd()*NS|0,sd=rnd()<.5?-1:1;let o=sd*(lo+Math.pow(rnd(),1.6)*(hi-lo));
    if(DRIVE&&zoneArr[i]===1){const e=12.4+XW[i];if(Math.abs(o)<e)o=sd*(e+(Math.abs(o)-lo)*.5);}off(i,o,0,V);V.x+=T[i].x*rr(-1,1);V.z+=T[i].z*rr(-1,1);
    Q.setFromAxisAngle(YAX,rr(0,6.3));const s=rr(s0,s1),sx=s*rr(.9,1.5),gone=bare.some(([a,b,ss])=>i>=a&&i<=b&&sd===ss&&Math.abs(o)<60);M4.compose(V,Q,S.set(gone?0:sx,gone?0:s,gone?0:s));mesh.setMatrixAt(k,M4);};
@@ -485,7 +485,7 @@ await BOOT.step('KERBS AND BARRIERS',.26);
   const pavement=(a,b,hedged,sides=[-1,1])=>{if(b-a<3)return;for(const sd of sides){for(let i=a;i<b;i++)KB[i]|=sd>0?1:2;ribbon(i=>sd*(9.6+XW[i]),i=>sd*(6.6+XW[i]),.13,.13,side,3,a,b);ribbon(i=>sd*(6.6+XW[i]),i=>sd*(6.6+XW[i]),0,.13,side,3,a,b);if(hedged){let a0=a;for(const[g0,g1]of(sd<0?HG:[])){if(g1<=a0||g0>=b)continue;if(g0-a0>=2)ribbon(i=>sd*(9.6+XW[i]),i=>sd*(9.6+XW[i]),.13,1.05,hedge,3,a0,g0);a0=Math.max(a0,g1);}if(b-a0>=2)ribbon(i=>sd*(9.6+XW[i]),i=>sd*(9.6+XW[i]),.13,1.05,hedge,3,a0,b);}}};
   const HG=DRIVE?(h=>[[h-6,h-1],[h+1,h+3]])(Math.round(Z.start/9)*9):[];   // gaps in the front fence at 1611 for the driveway and the walk (the house stands at the multiple of 9 nearest Z.start, its driveway 7 m back along the street)
   const barrier=(a,b,sides=[-1,1],mm=jersey)=>{if(b-a<3)return;for(const sd of sides){ribbon(i=>sd*(8.3+XW[i]),i=>sd*(6.6+XW[i]),.012,.012,side,4,a,b);ribbon(i=>sd*(8.3+XW[i]),i=>sd*(8.3+XW[i]),0,.85,mm,4,a,b).castShadow=true;}};
-  const CROSS=[];for(let k=1;k<=9;k++)CROSS.push(Z.paru+m(92*k));   // the nine cross streets on Paru
+  const CROSS=[];for(let k=1;k<=9;k++)CROSS.push(Z.paru+m(PB*k));   // the nine cross streets on Paru
   const CROSS2=[];for(let d=85;Z.central+m(d)<Z.wilma-m(70);d+=112){if(Math.abs(d-190)<38||Math.abs(d-420)<26)d+=40;const c=Z.central+m(d);if(c<Z.wilma-m(70)&&!curved(c)&&!curved(c+8)&&!curved(c-8))CROSS2.push(c);}   // cross streets on Central Ave, clear of the theatre and the roadside board (visual only, like Paru's)
   if(DRIVE)for(let d=110;Z.b1+m(d)<Z.downtown-m(70);d+=115)SFX.push(Z.b1+m(d));   // cross streets off to the left along the downtown street in San Francisco (visual only)
   const nearCross=(i,d)=>CROSS.some(c=>Math.abs(i-c)<d),nearCross2=(i,d)=>CROSS2.some(c=>Math.abs(i-c)<d);
@@ -748,13 +748,13 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
     let hs=91;const hr=()=>{hs=(hs*16807)%2147483647;return hs/2147483647;},hp=a=>a[hr()*a.length|0];
     const O=P[Z.paru],tq=T[Z.paru+20],tu=new THREE.Vector2(tq.x,tq.z).normalize(),nv=new THREE.Vector2(tu.y,-tu.x);   // u: metres north along Paru from the corner, v: metres west (left)
     const W2=(u,v)=>[O.x+tu.x*u+nv.x*v,O.z+tu.y*u+nv.y*v],inIsle=(x,z)=>x>-1290&&x<540&&z>-1580&&z<290;
-    const US=[-PR-276,-PR-184,-PR-92,-PR,92,184,276,368,460,552,644,736,828,890+CR],VL=[-400,-250,-130,0,130,250,400];
+    const US=[-PR-3*PB,-PR-2*PB,-PR-PB,-PR,...[1,2,3,4,5,6,7,8,9].map(k=>k*PB),PLEN+CR],VL=[-400,-250,-130,0,130,250,400];
     const rd=std({color:0x4a4b4e,roughness:.9}),rdS=(u0,v0,u1,v1,w)=>{const[x0,z0]=W2(u0,v0),[x1,z1]=W2(u1,v1),L=Math.hypot(x1-x0,z1-z0);if(L<2)return;const o=new THREE.Mesh(new THREE.PlaneGeometry(w,L).rotateX(-Math.PI/2),rd);o.position.set((x0+x1)/2,.012,(z0+z1)/2);o.rotation.y=Math.atan2(x1-x0,z1-z0);o.receiveShadow=true;scene.add(o);};
-    for(const u of US){if(u===-PR){rdS(u,160,u,400,12);continue;}if(u===890+CR){rdS(u,-160,u,-400,12);continue;}const a=u>0&&u<890?55:12;rdS(u,a,u,400,12);rdS(u,-a,u,-400,12);}   // east-west streets (Paru's own crossings are already paved for 55 m either side)
-    for(const v of VL)if(v)rdS(-PR-288,v,890+CR,v,12);                                                                                                                                  // streets parallel to Paru
+    for(const u of US){if(u===-PR){rdS(u,160,u,400,12);continue;}if(u===PLEN+CR){rdS(u,-160,u,-400,12);continue;}const a=u>0&&u<PLEN?55:12;rdS(u,a,u,400,12);rdS(u,-a,u,-400,12);}   // east-west streets (Paru's own crossings are already paved for 55 m either side)
+    for(const v of VL)if(v)rdS(-PR-288,v,PLEN+CR,v,12);                                                                                                                                  // streets parallel to Paru
     const lots=[];
     for(let a=0;a<US.length-1;a++)for(let b=0;b<VL.length-1;b++){const u0=US[a],u1=US[a+1],v0=VL[b],v1=VL[b+1];
-      for(const[u,face]of[[u0+18,-1],[u1-18,1]])for(let v=v0+15;v<=v1-15;v+=13+hr()*3){if(Math.abs(v)<26||(u0===92&&v0===0))continue;/* u0 92, v0 0: the supermarket block */const[x,z]=W2(u+(hr()-.5)*2,v);if(!inIsle(x,z)||!farFromRoad(x,z,40))continue;lots.push([x,z,face,hr()]);}}
+      for(const[u,face]of[[u0+18,-1],[u1-18,1]])for(let v=v0+15;v<=v1-15;v+=13+hr()*3){if(Math.abs(v)<26||(u0===PB&&v0===0))continue;/* u0 92, v0 0: the supermarket block */const[x,z]=W2(u+(hr()-.5)*2,v);if(!inIsle(x,z)||!farFromRoad(x,z,40))continue;lots.push([x,z,face,hr()]);}}
     const N=lots.length,body=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),std({map:wallT,roughness:.9}),N),roof=new THREE.InstancedMesh(new THREE.ExtrudeGeometry(tri,{depth:1,bevelEnabled:false}).translate(0,0,-.5),roofM,N);
     const yawF=Math.atan2(tu.x,tu.y),C=new THREE.Color(),M4b=new THREE.Matrix4(),Qb=new THREE.Quaternion(),Sb=new THREE.Vector3(),Pb=new THREE.Vector3(),trees=[];
     lots.forEach(([x,z,face,r],k)=>{const w=8+r*3,d=9+hr()*3,h=hr()<.3?6.5+hr()*1.5:4.6+hr()*1.4,ry=yawF+(face>0?0:Math.PI);Qb.setFromAxisAngle(YAX,ry);
@@ -2242,7 +2242,8 @@ function driveHome(pe){if(!DRIVE)return;const H0=Z.home;if(!H0||G.state!=='race'
   const lane=-(RW+XW[wrapI(Math.round(H0.s/SEG))])/2,v0=Math.max(8,Math.abs(pe.v)),go=ahead+12,c=Math.min(go/3,30),e=pe.s+go;   // pull up past the driveway, then back into it (the start's reverse-out, run the other way)
   PL.auto={t:0,T:clamp(2*go/v0,2.5,9),ease:'out',hold:.5,rev:false,p:[[pe.s,pe.lat],[pe.s+c,pe.lat],[e-c,lane],[e,lane]],
     next:{t:0,T:6.5,rev:true,fin:true,p:[[e,lane],[e-12,lane-.4],[e-12,H0.lat+5.5],[e-12,H0.lat]]}};
-  G.state='finish';G.finT=0;G.stopT=0;sfxCheer();say('HOME','1611 SAN ANTONIO AVE · ROUND THE BAY IN '+fmt(G.raceT),6);}
+  G.state='finish';G.finT=0;G.stopT=0;sfxCheer();say('HOME','1611 SAN ANTONIO AVE · ROUND THE BAY IN '+fmt(G.raceT),6);homeParty();}
+function homeParty(){try{const st=document.createElement("style");st.textContent="@keyframes cfl{to{transform:translateY(105vh) rotate(720deg)}}";document.head.appendChild(st);const w=document.createElement("div");w.style.cssText="position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50";const bn=document.createElement("div");bn.textContent="YOU'RE HOME !";bn.style.cssText="position:absolute;top:22%;width:100%;text-align:center;font:900 clamp(48px,11vw,150px) Georgia,serif;color:#ffd23c;text-shadow:0 4px 0 #b3201a,0 0 30px #000";w.appendChild(bn);const C=["#e8432e","#2fb7e8","#f2c230","#7ad13a","#e85bd0","#fff"];for(let k=0;k<160;k++){const c=document.createElement("i");c.style.cssText="position:absolute;top:-20px;left:"+Math.random()*100+"vw;width:10px;height:16px;background:"+C[k%6]+";animation:cfl "+(2.5+Math.random()*3)+"s linear "+Math.random()*2+"s forwards";w.appendChild(c);}document.body.appendChild(w);setTimeout(()=>{w.remove();st.remove();},8000);for(let k=1;k<4;k++)setTimeout(sfxCheer,k*900);}catch(e){}}
 // the start of the free drive: the car is in the driveway at 1611, nose to the house, and backs out across the pavement, swinging into the lane facing the right way.
 // PL.auto runs a path in track coordinates (a Bézier over s and lateral), and the player takes over when it ends. driveHome() uses the same thing to bring the car in.
 function homeStart(){if(!DRIVE)return;const H0=Z.home;if(!H0)return;const pe=ents.find(e=>e.player),lane=-(RW+XW[wrapI(Math.round(H0.s/SEG))])/2;
