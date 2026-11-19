@@ -3013,7 +3013,7 @@ function fireball(p,t){const x=p.x,y=p.y,z=p.z;for(let k=0;k<34;k++){const a=R(0
 function sfxBoing(k){if(!AC)return;const t=AC.currentTime;tone('sine',R(150,190),t,.32,.5*k,master,{to:R(330,420),a:.004,h:.15});tone('sine',R(90,110),t+.06,.28,.3*k,master,{to:60,h:.2});}
 // ---- San Quentin's beach (east of the prison, down to the bay): big surf crashing in and people flying kites. Hyde St: a few people on the pavements, and kids skateboarding down the middle of the road below the crest (solid: steer round them).
 // All made after bakeStatic, with their own seeded numbers so nothing else moves.
-const SQB={g:null,waves:[],kites:[]},HYD={walk:[],kids:[],t:0};
+const SQB={g:null,waves:[],kites:[]},HYD={walk:[],kids:[],t:0,go:0};
 if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=90210;return()=>(s=(s*16807)%2147483647)/2147483647;})(),LR=(a,b)=>a+lr()*(b-a);
   const skin=[0xd9a988,0x8a5a3c,0xc48a62,0xf0c8a8,0x5a3a26].map(c=>std({color:c,roughness:.8})),cloth=c=>std({color:c,roughness:.9});
   const person=(top,leg,sc=1,par=scene)=>{const g=new THREE.Group(),b=new THREE.Group();g.add(b);const bx=(sx,sy,sz,mm,x,y,z,p=b)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mm);o.position.set(x,y,z);o.castShadow=true;p.add(o);return o;};
@@ -3025,10 +3025,10 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=90210;return()=>(s=(s*168
   for(let k=0;k<9;k++){const g=person(TOPS[k%TOPS.length],LEGS[k%LEGS.length]),o={x:1e9,z:1e9,r:.55};g.visible=false;OBST.push(o);
     HYD.walk.push({g,o,sd:k%2?1:-1,s:(Z.hyde+m_(LR(40,600)))*SEG,dir:lr()<.5?-1:1,sp:LR(1.1,1.6),lo:(Z.hyde+m_(30))*SEG,hi:(Z.marina-m_(40))*SEG,ph:lr()*6});}
   const deck=std({color:0x8a4a22,roughness:.7}),whl=std({color:0xe8e0c8,roughness:.6});
-  for(let k=0;k<5;k++){const g=person(TOPS[(k*3+1)%TOPS.length],LEGS[k%LEGS.length],.78),bd=new THREE.Mesh(new THREE.BoxGeometry(.24,.05,.82),deck);bd.position.y=.1;g.add(bd);
+  for(let k=0;k<9;k++){const g=person(TOPS[(k*3+1)%TOPS.length],LEGS[k%LEGS.length],.78),bd=new THREE.Mesh(new THREE.BoxGeometry(.24,.05,.82),deck);bd.position.y=.1;g.add(bd);
     for(const[x,z]of[[-.09,.28],[.09,.28],[-.09,-.28],[.09,-.28]]){const w=new THREE.Mesh(cyl(.035,.035,.04,8).rotateZ(Math.PI/2),whl);w.position.set(x,.04,z);g.add(w);}
     g.b.position.y=.13;g.b.rotation.y=Math.PI/2*(k%2?1:-1)*.85;g.legs[0].rotation.x=.25;g.legs[1].rotation.x=-.25;g.arms[0].rotation.z=-.9;g.arms[1].rotation.z=.9;g.visible=false;const o={x:1e9,z:1e9,r:.9};OBST.push(o);
-    HYD.kids.push({g,o,s0:(Z.hyde+m_(450+k*32))*SEG,d:0,sp:LR(2.5,4.5),ph:lr()*6,wf:LR(.35,.6),c:LR(-3.2,3.2)});}
+    HYD.kids.push({g,o,bd:g.children[1],up:k>=5,s:(Z.hyde+m_(300-(k-5)*40))*SEG,tt:LR(1,4),tr:-1,s0:(Z.hyde+m_(450+k*32))*SEG,d:0,sp:LR(2.5,4.5),ph:lr()*6,wf:LR(.35,.6),c:k>=5?-LR(2,3.4):LR(-3.2,3.2)});}
   // the beach: sand from the edge of the Marin shore (x -5560) down into the bay, with the waterline at about x -5100, right beside the San Rafael bridge
   const G0=new THREE.Group();G0.visible=false;scene.add(G0);SQB.g=G0;const x0=-5561,x1=-5100,xe=-4950,z0=-9420,z1=-9772,yb=x=>-45*(x-x0)/(x1-x0);SQB.yb=yb;SQB.x1=x1;
   {const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([x0,.05,z0, x0,.05,z1, xe,yb(xe),z0, xe,yb(xe),z1],3));g.setIndex([0,2,1,1,2,3]);g.computeVertexNormals();
@@ -3042,16 +3042,25 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=90210;return()=>(s=(s*168
     const tl=new THREE.Mesh(new THREE.PlaneGeometry(.2,6).translate(0,-4.2,0),std({color:KC[(k+3)%KC.length],side:THREE.DoubleSide}));kg.add(tl);G0.add(kg);
     const ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0x222222}));ln.frustumCulled=false;G0.add(ln);
     SQB.kites.push({p,kg,tl,ln,x,y:yb(x),z,ph:lr()*6,L:LR(40,58)});}}
+function LR2(a,b){return a+Math.random()*(b-a);}
+// tricks for a skater: an ollie (hop), a kickflip (the board spins on its long axis) or a 360 spin, arms out, now and then
+function skTrick(k,rdt){k.tt-=rdt;if(k.tr<0&&k.tt<=0){k.tr=0;k.kind=Math.random()*3|0;k.tt=LR2(2.5,5);}
+  if(k.tr>=0){k.tr+=rdt/.7;const u=Math.min(1,k.tr);k.hop=Math.sin(u*Math.PI)*(k.kind===2?.35:.75);if(k.bd)k.bd.rotation.z=k.kind===1?u*Math.PI*2:0;k.sp360=k.kind===2?u*Math.PI*2:0;k.g.arms[0].rotation.z=-1.5;k.g.arms[1].rotation.z=1.5;if(k.tr>=1){k.tr=-1;k.hop=0;k.sp360=0;if(k.bd)k.bd.rotation.z=0;k.g.arms[0].rotation.z=-.9;k.g.arms[1].rotation.z=.9;}}}
+function mh_(x){return Math.round(x/SEG);}
 function sqHydTick(rdt){if(!DRIVE)return;const pe=ents.find(e=>e.player);if(!pe)return;HYD.t+=rdt;const t=HYD.t,i0=PL.idx,city=i0>=Z.b1&&i0<Z.gg0;
   for(const w of HYD.walk){if(!city){if(w.g.visible){w.g.visible=false;w.o.x=1e9;}continue;}w.s+=w.dir*w.sp*rdt;if(w.s>w.hi){w.s=w.hi;w.dir=-1;}if(w.s<w.lo){w.s=w.lo;w.dir=1;}
     const i=wrapI(Math.floor(w.s/SEG)),q=Math.sin(t*w.sp*5.5+w.ph)*.5;at(w.s,w.sd*(8.1+XW[i]),.13,w.g.position);w.g.rotation.y=yaw(i)+(w.dir<0?Math.PI:0);w.g.visible=true;
     w.g.legs[0].rotation.x=q;w.g.legs[1].rotation.x=-q;w.g.arms[0].rotation.x=-q*.8;w.g.arms[1].rotation.x=q*.8;w.o.x=w.g.position.x;w.o.z=w.g.position.z;}
   const bot=(Z.marina-Math.round(40/SEG))*SEG;
-  for(const k of HYD.kids){if(!city){if(k.g.visible){k.g.visible=false;k.o.x=1e9;}continue;}
+  if(i0<Z.hyde)HYD.go=0;else if(i0>=Z.hyde+mh_(345))HYD.go=1;   // the downhill kids start rolling when you reach the top of Hyde St
+  for(const k of HYD.kids){const lo=Z.hyde-mh_(20),hi=Z.hyde+mh_(380);if(k.up){if(!city||i0<lo||i0>hi){if(k.g.visible){k.g.visible=false;k.o.x=1e9;}continue;}
+      k.s-=k.sp*1.5*rdt;if(k.s<pe.s-70||k.s<(Z.hyde+mh_(30))*SEG)k.s=Math.min(pe.s+LR2(130,260),(Z.hyde+mh_(355))*SEG);   // up kids roll down the climb towards and past you, then are put back up the hill ahead
+      const i=wrapI(Math.floor(k.s/SEG)),a=t*k.wf+k.ph,lat=clamp(k.c+Math.sin(a)*1.6,-5.4,5.4),sl=(H[wrapI(i+1)]-H[wrapI(i-1)])/(2*SEG);skTrick(k,rdt);at(k.s,lat,k.hop||0,k.g.position);k.g.rotation.set(-Math.atan(sl),Math.atan2(-T[i].x,-T[i].z)+(k.sp360||0),0,'YXZ');k.g.visible=true;k.o.x=k.g.position.x;k.o.z=k.g.position.z;}}
+  for(const k of HYD.kids){if(k.up)continue;if(!city){if(k.g.visible){k.g.visible=false;k.o.x=1e9;}continue;}
     let s=k.s0+k.d;const gap=s-pe.s;if((gap<-60||k.d>260)&&Math.abs(gap)>150){k.d=0;s=k.s0;}   /* once well behind the driver, back up the hill to go again */
-    if(s<bot){k.d+=k.sp*rdt;s=k.s0+k.d;}
+    if(HYD.go&&s<bot){k.d+=k.sp*rdt;s=k.s0+k.d;if(s>=bot)k.d=0;}if(HYD.go)skTrick(k,rdt);
     const i=wrapI(Math.floor(s/SEG)),a=t*k.wf+k.ph,lat=clamp(k.c+Math.sin(a)*2.6,-5.4,5.4),dl=Math.cos(a)*2.6*k.wf/Math.max(k.sp,.5),sl=(H[wrapI(i+1)]-H[wrapI(i-1)])/(2*SEG);
-    at(s,lat,0,k.g.position);k.g.rotation.set(-Math.atan(sl),Math.atan2(T[i].x+Nn[i].x*dl,T[i].z+Nn[i].z*dl),0,'YXZ');k.g.visible=true;k.o.x=k.g.position.x;k.o.z=k.g.position.z;}
+    at(s,lat,k.hop||0,k.g.position);k.g.rotation.set(-Math.atan(sl),Math.atan2(T[i].x+Nn[i].x*dl,T[i].z+Nn[i].z*dl)+(k.sp360||0),0,"YXZ");k.g.visible=true;k.o.x=k.g.position.x;k.o.z=k.g.position.z;}
   const near=i0>Z.sq-Math.round(300/SEG)&&i0<Z.rb0+Math.round(700/SEG);SQB.g.visible=near;if(!near)return;
   const yb=SQB.yb,x1=SQB.x1;
   for(const w of SQB.waves){const p=(t/8+w.ph)%1,x=x1+250-p*245,h=p<.72?lerp(.8,7.5,p/.72):7.5*Math.max(0,1-(p-.72)/.12);   // each wave rolls in, rears up, and breaks on the sand
