@@ -3355,7 +3355,8 @@ function diveScene(tm){const D=PL.crash,S=9.2;if(D.ph<1){manatee.visible=false;S
   manatee.position.set(D.wx+D.dir*(24*(1-a)+3.2*(1-under)),-45.78+bob*.6+lift*.42+visit*.4,D.wz);manatee.rotation.set(-.2*visit,th+Math.PI*(1-under),0);
   manatee.tail.rotation.x=Math.sin(tm*4)*.35*(1-visit*.7);manatee.fl[0].rotation.z=.5+Math.sin(tm*3)*.25;manatee.fl[1].rotation.z=-.5-Math.sin(tm*3)*.25;
   const pp=u>S+2.6&&u<S+7.4;manatee.pipe.visible=pp;if(pp&&Math.random()<.75){V.set(0,.2,.5);manatee.pipe.localToWorld(V);puff(V,R(-.3,.3),R(.6,1.5),R(-.3,.3),.25,R(1.3,2.6),R(2,3.4),.7,0xe8e8e4);}   // a great deal of pipe smoke
-  const tk=SEA.tk;tk.visible=u>S+6.3&&u<S+14;if(tk.visible){tk.position.set(D.x-D.dir*(250-(u-S-6.3)*14),-45,D.wz-46);tk.rotation.y=D.dir>0?0:Math.PI;}}
+  const tk=SEA.tk;tk.visible=u>S+6.3&&u<S+14;if(tk.visible){tk.position.set(D.x-D.dir*(250-(u-S-6.3)*14),-45,D.wz-46);tk.rotation.y=D.dir>0?0:Math.PI;}
+  if(u>.9&&u<S+.5){NOGY=1;const bb=(p,w)=>{V.set(p.x+R(-w,w),p.y+R(-.3,.9),p.z+R(-w,w));puff(V,R(-.25,.25),R(.5,1.3),R(-.25,.25),R(.04,.08),R(.08,.15),R(1.4,2.4),.6,0xcfeeff);};if(u<S-.5&&Math.random()<.4)bb(hero.position,1.9);if(u>6.3&&u<S+.3&&Math.random()<.3)bb(mcq.position,.5);NOGY=0;}}   // bubbles stream round the sinking car and rise with Steve (small, from the shared smoke pool)
 function sfxSplash(){if(!AC)return;const t=AC.currentTime;hit(t,1.4,1.2,900,'lowpass',master);hit(t,.6,.6,3500,'highpass',master);tone('sine',70,t,.5,.8,master,{to:30});}
 function sfxThump(k){if(!AC)return;const t=AC.currentTime;tone('sine',78,t,.11,.8*k,master,{to:42,h:.2});hit(t,.07,.3*k,1200,'bandpass',master);}
 function sfxHorn(){if(!AC)return;const t=AC.currentTime,f=R(78,96);for(const[m,v]of[[1,.5],[1.26,.3],[2.01,.12]])tone('sawtooth',f*m,t,R(2.6,3.6),v,master,{a:.25,h:.85,lp:420,q:1});
