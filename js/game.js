@@ -2598,13 +2598,14 @@ function birdsTick(rdt){const B=BIRDS,pe=ents.find(e=>e.player);if(!pe)return;
     B.im=new THREE.InstancedMesh(g,new THREE.MeshBasicMaterial({color:0x17161a,side:THREE.DoubleSide}),30);B.im.frustumCulled=false;B.im.count=0;scene.add(B.im);
     for(let k=0;k<30;k++)B.b.push({ox:0,oy:0,oz:0,ph:0,w:0,r:0});}
   if(DRIVE){if(PL.idx<Z.tu0)B.tb=0;else if(!B.tb&&B.st===0&&G.state==='race'&&PL.idx>=Z.tu1-Math.round(40/SEG)&&PL.idx<Z.tu1+Math.round(80/SEG)){   // coming out of the Posey Tube a flock bursts up from the road ahead (once per run)
-    B.tb=1;B.st=1;B.t=0;B.n=20+(Math.random()*11|0);B.s=pe.s+R(40,60);B.dir=Math.random()<.5?-1:1;B.T=R(6,8);
+    B.tb=1;B.bat=1;B.st=1;B.t=0;B.n=26+(Math.random()*5|0);B.s=pe.s+R(40,60);B.dir=Math.random()<.5?-1:1;B.T=R(6,8);
     for(let k=0;k<B.n;k++){const b=B.b[k];b.ox=R(-7,7);b.oy=R(-2,2.5);b.oz=R(-8,8);b.ph=R(0,6.3);b.w=R(.6,1.4)*(Math.random()<.5?-1:1);b.r=R(1,3);}}}
   if(B.st===0){B.im.count=0;const mar=DRIVE&&PL.idx>=Z.gg1&&PL.idx<Z.sq;if((zoneArr[PL.idx]!==1&&!mar)||G.state!=='race')return;B.cd-=rdt;if(B.cd>0)return;
-    B.st=1;B.t=0;B.cd=mar?R(5,10):R(30,60);B.n=mar?24+(Math.random()*7|0):15+(Math.random()*16|0);B.s=pe.s+R(45,80);B.dir=Math.random()<.5?-1:1;B.T=R(6,8);
+    B.bat=0;B.st=1;B.t=0;B.cd=mar?R(5,10):R(30,60);B.n=mar?24+(Math.random()*7|0):15+(Math.random()*16|0);B.s=pe.s+R(45,80);B.dir=Math.random()<.5?-1:1;B.T=R(6,8);
     for(let k=0;k<B.n;k++){const b=B.b[k];b.ox=R(-7,7);b.oy=R(-2,2.5);b.oz=R(-8,8);b.ph=R(0,6.3);b.w=R(.6,1.4)*(Math.random()<.5?-1:1);b.r=R(1,3);}return;}
   B.t+=rdt;const u=B.t/B.T;if(u>=1){B.st=0;B.im.count=0;return;}
-  const lat=B.dir*lerp(-55,55,u),h=2.6+34*Math.pow(Math.abs(2*u-1),1.6),sAl=B.s+lerp(-10,10,u),tm=B.t;
+  let lat=B.dir*lerp(-55,55,u),h=2.6+34*Math.pow(Math.abs(2*u-1),1.6),sAl=B.s+lerp(-10,10,u);const tm=B.t;
+  if(B.bat){lat=B.dir*Math.sin(u*5)*3.5;h=2+46*u*u;sAl=pe.s+lerp(-14,40,Math.min(1,u*1.6));}   /* bats out of the Posey Tube: they stream out with the car and climb away into the sky */
   at(sAl,lat,0,B.V);at(sAl,lat+B.dir,0,B.S);const hd=Math.atan2(B.S.x-B.V.x,B.S.z-B.V.z),pt=u<.5?.35:-.35;
   for(let k=0;k<B.n;k++){const b=B.b[k],a=tm*b.w+b.ph,cx=b.ox*Math.cos(a*.5)+Math.sin(a)*b.r,cz=b.oz+Math.cos(a)*b.r,cy=b.oy*(.5+.5*Math.abs(2*u-1))+Math.sin(a*1.3)*.6;
     at(sAl+cz,lat+cx,h+cy,B.V);B.E.set(pt,hd+Math.sin(a)*.3,Math.sin(a)*.4);B.Q.setFromEuler(B.E);
