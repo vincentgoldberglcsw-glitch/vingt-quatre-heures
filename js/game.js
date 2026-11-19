@@ -2797,12 +2797,13 @@ function logTick(dt,pe){const L=LOGT;if(!L.g)return;const m_=x=>Math.round(x/SEG
     o.ro+=o.wr*dt;const wl=wallAt[i]-.6;if(Math.abs(o.lat)>wl){o.lat=Math.sign(o.lat)*wl;o.vl*=-.3;}
     at(o.s,o.lat,o.y,o.m.position);o.m.rotation.set(o.pi,yaw(i)+o.ya,o.ro);}}
 function placeVehicle(t){const i=wrapI(Math.floor(t.s/SEG)),j=wrapI(i+1);at(t.s,t.lat,0,t.g.position);const sl=(H[wrapI(i+1)]-H[wrapI(i-1)])/(2*SEG);t.g.rotation.set(-Math.atan(sl),yaw(i),0);t.ob.x=t.g.position.x;t.ob.z=t.g.position.z;}
-function trafficTick(dt,pe){if(TRAF.pol){const f=(tmNow()*7|0)%2;TRAF.pol[0].emissiveIntensity=f?4:.15;TRAF.pol[1].emissiveIntensity=f?.15:4;}const i0=PL.idx,zn=zoneArr[i0],road=i=>{const c=zoneArr[i];return(c===3&&i>Z.tu1+40&&!(i>Z.detour-60&&i<Z.detour+90))||c===4;},on=road(i0),bay=i0>=Z.b0-250&&i0<=Z.b1,
+function trafficTick(dt,pe){bubbleTick(dt);if(TRAF.pol){const f=(tmNow()*7|0)%2;TRAF.pol[0].emissiveIntensity=f?4:.15;TRAF.pol[1].emissiveIntensity=f?.15:4;}const i0=PL.idx,zn=zoneArr[i0],road=i=>{const c=zoneArr[i];return(c===3&&i>Z.tu1+40&&!(i>Z.detour-60&&i<Z.detour+90))||c===4;},on=road(i0),bay=i0>=Z.b0-250&&i0<=Z.b1,
     rsr=i0>=Z.rb0-250&&i0<=Z.rb1,i880=i0>Z.tu1&&i0<Z.b0-250,gap=bay?48:rsr?90:70,spd=bay?1:1.2;   // I-880 and the San Rafael bridge: fewer vehicles, further apart and a bit quicker; the Bay Bridge stays busy for the earthquake
   for(const t of TRAF){
-    if(t.fall){const F=t.fall;F.vy-=20*dt;t.g.position.x+=F.vx*dt;t.g.position.z+=F.vz*dt;t.g.position.y+=F.vy*dt;t.g.rotation.x+=F.w*dt;t.g.rotation.z+=F.w*.3*dt;t.ob.x=1e9;
+    if(t.fall){const F=t.fall;F.vy-=20*dt;if(F.boom>0){F.boom-=dt;if(F.boom<=0)fireball(t.g.position,t);}
+      t.g.position.x+=F.vx*dt;t.g.position.z+=F.vz*dt;t.g.position.y+=F.vy*dt;t.g.rotation.x+=F.w*dt;t.g.rotation.z+=F.w*.3*dt;t.ob.x=1e9;
       if(t.g.position.y<-44&&!F.sp){F.sp=1;sfxSplash();NOGY=1;for(let k=0;k<26;k++){const a=R(0,6.283),sp=R(2,8);puff(V.set(t.g.position.x,-44.6,t.g.position.z),Math.cos(a)*sp,R(5,16),Math.sin(a)*sp,R(.8,1.6),R(4,7),R(1.2,2.4),.8,0xeef2f4);}NOGY=0;}
-      if(t.g.position.y<-60){t.fall=null;t.act=false;t.qf=false;t.g.visible=false;}continue;}
+      if(t.g.position.y<-60){t.hit=0;t.fall=null;t.act=false;t.qf=false;t.g.visible=false;}continue;}
     const want=on&&t.n<(bay?11:rsr?4:i880?5:9);
     if(t.act){const ds=wdiff(t.s-pe.s),i=wrapI(Math.floor(t.s/SEG));if(!t.qf&&(ds<-160||ds>1000||(!want&&ds>-40)||!road(i))){t.act=false;t.g.visible=false;t.ob.x=1e9;}}
     if(!t.act){if(want&&Math.random()<dt*1.5){const s=wrapS(pe.s+R(300,850)),i=wrapI(Math.floor(s/SEG));if(road(i)&&!(QK.st&&i>QK.a-200&&i<QK.b+10)&&!FQ.list.some(q=>q.F&&Math.abs(wdiff(q.F.s-s))<160)){const w=RW+XW[i],ln=[-.75,-.25,.25,.75][Math.random()*4|0]*w;
@@ -2823,9 +2824,19 @@ function trafficTick(dt,pe){if(TRAF.pol){const f=(tmNow()*7|0)%2;TRAF.pol[0].emi
     if(t.wob>0){t.wob=Math.max(0,t.wob-dt*1.6);const q=Math.sin(t.wob*34)*t.wob*.22;t.g.scale.set(1+q,1-q,1+q*.6);if(!t.wob)t.g.scale.set(1,1,1);}   // rubbery: it squashes and springs back a few times after a bump
     const dx=t.g.position.x-PL.x,dz=t.g.position.z-PL.z,rel=Math.abs(pe.v-t.v);
     if(dx*dx+dz*dz<(t.r+1)**2&&!PL.crash&&G.state==='race'){const two=t.kind==='moto'||t.kind==='bike',n=Nn[i],sd=(dx*n.x+dz*n.z)>=0?1:-1;
-      if(two){if(!(t.bt>0)){t.bt=.6;t.wob=1;t.s+=1.5;t.v=Math.max(t.v,pe.v+R(3,6));t.kv=sd*R(2,4);PL.vx*=.98;PL.vz*=.98;G.shake=Math.max(G.shake,.15);sfxBoing(.6);}}   // motorcycles and bicycles: never a crash, at any speed, just bounced on ahead
+      if(two){if(!(t.bt>0)){t.bt=.6;t.wob=1;if(t.kind==='moto'&&zoneArr[i]===4&&i>=Z.b0&&i<=Z.b1&&(t.hit=(t.hit||0)+1)>=2){const tg=T[i],s2=Math.sign(t.lat)||sd;t.fall={vx:tg.x*Math.max(t.v,8)+n.x*s2*9,vz:tg.z*Math.max(t.v,8)+n.z*s2*9,vy:2,w:R(2,4)*s2};sfxCrunch(.6);sfxScrape(1);bubble(t.g,"HEY DUDE, WATCH IT!");}
+        t.s+=1.5;t.v=Math.max(t.v,pe.v+R(3,6));t.kv=sd*R(2,4);PL.vx*=.98;PL.vz*=.98;G.shake=Math.max(G.shake,.15);sfxBoing(.6);}}   // motorcycles and bicycles: never a crash, at any speed, just bounced on ahead
       else if(pe.v>78.2&&PL.safe<=0)crashPlayer(Math.max(rel,20)*.4,false);   // over 175 mph, a crash
-      else if(!(t.bt>0)){t.bt=.7;t.wob=1;t.kv=sd*clamp(rel*.4+4,4,13);t.v=Math.max(t.v*.85,t.v+(pe.v>t.v?rel*.3:0));PL.vx*=.93;PL.vz*=.93;PL.x-=n.x*sd*.6;PL.z-=n.z*sd*.6;G.shake=Math.max(G.shake,.25);sfxBoing(clamp(rel/20+.45,.45,1));}}}}   // below that a soft, rubbery bump: both bounce apart, hardly slowed, and the other one wobbles like jelly
+      else if(!(t.bt>0)){t.bt=.7;t.wob=1;if((t.kind==='truck'||t.kind==='truck2')&&zoneArr[i]===4&&(t.hit=(t.hit||0)+1)>=2){const tg=T[i],s2=Math.sign(t.lat)||sd;t.fall={vx:tg.x*t.v+n.x*s2*8,vz:tg.z*t.v+n.z*s2*8,vy:3,w:R(.5,1)*s2,boom:.7};sfxScrape(1);}
+        t.kv=sd*clamp(rel*.4+4,4,13);t.v=Math.max(t.v*.85,t.v+(pe.v>t.v?rel*.3:0));PL.vx*=.93;PL.vz*=.93;PL.x-=n.x*sd*.6;PL.z-=n.z*sd*.6;G.shake=Math.max(G.shake,.25);sfxBoing(clamp(rel/20+.45,.45,1));}}}}   // below that a soft, rubbery bump: both bounce apart, hardly slowed, and the other one wobbles like jelly
+// a small floating speech bubble over a vehicle (one shared sprite), and the fireball when a tanker goes up
+const BUB={sp:null,c:null,tx:null,g:null,t:0};
+function bubble(g,txt){if(!BUB.sp){const c=document.createElement('canvas');c.width=512;c.height=96;BUB.c=c;BUB.tx=new THREE.CanvasTexture(c);BUB.tx.colorSpace=THREE.SRGBColorSpace;BUB.sp=new THREE.Sprite(new THREE.SpriteMaterial({map:BUB.tx,depthTest:false,transparent:true}));BUB.sp.scale.set(7,1.31,1);BUB.sp.renderOrder=9;scene.add(BUB.sp);}
+  const x=BUB.c.getContext('2d');x.clearRect(0,0,512,96);x.fillStyle='#fff';x.strokeStyle='#111';x.lineWidth=5;x.beginPath();x.roundRect?x.roundRect(4,4,504,72,24):x.rect(4,4,504,72);x.fill();x.stroke();x.fillStyle='#111';x.font='900 40px Arial';x.textAlign='center';x.textBaseline='middle';x.fillText(txt,256,42,480);BUB.tx.needsUpdate=true;BUB.g=g;BUB.t=3;BUB.sp.visible=true;}
+function bubbleTick(dt){if(!BUB.sp||BUB.t<=0)return;BUB.t-=dt;if(BUB.t<=0||!BUB.g){BUB.sp.visible=false;return;}BUB.sp.position.set(BUB.g.position.x,BUB.g.position.y+3.2,BUB.g.position.z);}
+function fireball(p,t){const x=p.x,y=p.y,z=p.z;for(let k=0;k<34;k++){const a=R(0,6.283),sp=R(1,9);puff(V.set(x,y+1,z),Math.cos(a)*sp,R(2,14),Math.sin(a)*sp,R(2,4),R(7,13),R(.7,1.6),.9,k%3?0xff7a1c:0xffd060);}
+  for(let k=0;k<16;k++){const a=R(0,6.283),sp=R(1,5);puff(V.set(x,y+2,z),Math.cos(a)*sp,R(5,16),Math.sin(a)*sp,R(3,5),R(9,16),R(1.8,3.2),.7,0x151311);}
+  sfxCrunch(1);sfxBoing(.3);G.shake=Math.max(G.shake,.5);t.fall=null;t.act=false;t.qf=false;t.hit=0;t.g.visible=false;t.ob.x=1e9;}
 function sfxBoing(k){if(!AC)return;const t=AC.currentTime;tone('sine',R(150,190),t,.32,.5*k,master,{to:R(330,420),a:.004,h:.15});tone('sine',R(90,110),t+.06,.28,.3*k,master,{to:60,h:.2});}
 // ---- San Quentin's beach (east of the prison, down to the bay): big surf crashing in and people flying kites. Hyde St: a few people on the pavements, and kids skateboarding down the middle of the road below the crest (solid: steer round them).
 // All made after bakeStatic, with their own seeded numbers so nothing else moves.
