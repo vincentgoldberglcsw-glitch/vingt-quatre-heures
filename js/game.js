@@ -135,7 +135,7 @@ const XW=new Float32Array(NS+1),H=new Float32Array(NS+1);
 if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SEG),z=Z,xwT=new Float32Array(NS),WL=z.tu0-z.wilma;
   for(let i=0;i<NS;i++){const c=zoneArr[i];xwT[i]=c===1?2.2:c===3?(i<z.tu0?1.4:2.4):c===4?1.8:c===5?1.2:c===8?.6:0;if((i>z.tu0-m(220)&&i<z.tu1+m(220))||(i>z.wt1-m(220)&&i<z.wt0+m(220)))xwT[i]=0;}
   for(let i=0;i<NS;i++){let s=0;for(let j=-25;j<=25;j++)s+=xwT[wrapI(i+j)];XW[i]=s/51+4.6*bump(i,z.toll+m(70),z.toll+m(120),z.toll+m(240),z.toll+m(290))+1.3*bump(i,z.detour+m(170),z.detour+m(260),z.toll+m(110),z.toll+m(170))+2.4*bump(i,z.hyde-m(20),z.hyde+m(40),z.marina-m(70),z.marina-m(10));   /* the approach to the toll plaza is a little wider, with lane lines */
-    H[i]=5.4*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.5,z.wilma+WL*.665)+1.6*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.685,z.wilma+WL*.705)   /* Wilma Chan overpass: comes down to a short level lip and drops off it - a small jump on the way to the tube */
+    H[i]=5.4*bump(i,z.wilma+WL*.10,z.wilma+WL*.36,z.wilma+WL*.5,z.wilma+WL*.665)+1.5*bump(i,z.wilma+WL*.33,z.wilma+WL*.365,z.wilma+WL*.365,z.wilma+WL*.40)+1.6*bump(i,z.wilma+WL*.10,z.wilma+WL*.36,z.wilma+WL*.685,z.wilma+WL*.705)   /* Wilma Chan overpass: comes down to a short level lip and drops off it - a small jump on the way to the tube */
       +18*bump(i,z.tu1+m(160),z.tu1+m(560),z.toll-m(520),z.toll-m(260))
       +22*bump(i,z.b0-m(240),z.b0-m(10),z.b1-m(460),z.b1-m(120))
       +15*bump(i,z.rb0-m(1150),z.rb0-m(750),z.rb0-m(480),z.rb0-m(15))   /* before the Richmond-San Rafael bridge: the road climbs to a headland over the bay, then comes gently down onto the deck */
