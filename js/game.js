@@ -431,7 +431,7 @@ await BOOT.step('ROADSIDE',.20);
 /* ================= FREE DRIVE WORLD ================= */
 // A quiet island town street, the tube under the estuary with its portal buildings, a freeway past the port, then a long suspension bridge.
 // The whole route is level: the bay is simply 45 m below the road, so the bridge is high without the engine needing hills.
-const MILL=[],REFS=[],AIR={g:null,st:0,t:0,cd:6};let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
+const MILL=[],CRN=[],REFS=[],AIR={g:null,st:0,t:0,cd:6};let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
 const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null;const BURN=[];   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
 if(!DRIVE){ // roadside advertising boards, as on the old circuit: cigarettes, wine and bread, by turns
   const ad=(kind,name,sub)=>canvas(1024,460,(g,w,h)=>{const bg={cig:'#1d4f8a',wine:'#efe6cc',bread:'#f0c23a'}[kind],ink={cig:'#f4f1e8',wine:'#7a1626',bread:'#3a2412'}[kind];g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=ink;g.lineWidth=10;g.strokeRect(14,14,w-28,h-28);
@@ -540,13 +540,18 @@ await BOOT.step('BORING THE TUBES',.29);
   tunLampB=new THREE.MeshBasicMaterial({map:lampT,color:new THREE.Color(.8,1.15,1.8),transparent:true,side:D2,depthWrite:false,fog:false});   // the Posey Tube's own lamps: cold and bluish, and they flicker
   tube(Z.tu0,Z.tu1,'P O S E Y   T U B E',1.2,1.3,tunLampB);tube(Z.wt1,Z.wt0,'W E B S T E R   T U B E');
   {// graffiti along the Posey Tube's walls, above the railing: tags and big letters in spray paint, with drips
-    const TAGS=['OAKTOWN','24H','McQ','VQH','ESTUARY','ZORRO','RIP','POSEY','510','KRUSH','BAYSIDE','LE MANS','TUBE RAT','ALAMEDA'],COL=['#e8432e','#2fb7e8','#f2c230','#7ad13a','#e85bd0','#f4f1e8','#ff8a1c'];
+    const TAGS=['OAKTOWN','24H','McQ','VQH','ESTUARY','ZORRO','RIP','POSEY','510','KRUSH','BAYSIDE','LE MANS','TUBE RAT','ALAMEDA','NO EXIT','DEEP','FISH','SKEET','ROACH','WET FLOOR','HI MOM','GHOST','NEON','9 LIVES','DIG','OHM','WAVE','ISLAND','BOP'],COL=['#e8432e','#2fb7e8','#f2c230','#7ad13a','#e85bd0','#f4f1e8','#ff8a1c'];
     const gm=TAGS.map((s,n)=>{const tx=canvas(512,192,(g,w,h)=>{g.clearRect(0,0,w,h);const c1=COL[n%COL.length],c2=COL[(n*3+2)%COL.length];g.save();g.translate(w/2,h/2);g.rotate(R(-.12,.08));
       g.font=`900 ${s.length>6?78:110}px Impact, "Arial Black", sans-serif`;g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';
-      g.lineWidth=22;g.strokeStyle='#111';g.strokeText(s,0,0);g.lineWidth=9;g.strokeStyle=c2;g.strokeText(s,0,0);g.fillStyle=c1;g.fillText(s,0,0);
+      const sty=n%4;if(sty===1)g.font=`italic 900 ${s.length>6?70:100}px Georgia, serif`;else if(sty===2)g.font=`900 ${s.length>6?64:92}px "Comic Sans MS", Chewy, cursive`;g.lineWidth=sty===3?10:22;g.strokeStyle='#111';g.strokeText(s,0,0);g.lineWidth=9;g.strokeStyle=c2;g.strokeText(s,0,0);g.fillStyle=sty===3?'rgba(0,0,0,0)':c1;g.fillText(s,0,0);
+      g.strokeStyle=c2;g.fillStyle=c1;g.lineWidth=6;const dk=n%5;if(dk===0){g.beginPath();for(let q=0;q<10;q++){const a=q*.628-1.57,r=q%2?14:30;g.lineTo(-w*.36+Math.cos(a)*r,-52+Math.sin(a)*r);}g.closePath();g.fill();}else if(dk===1){g.beginPath();g.arc(w*.34,-50,24,0,7);g.stroke();g.fillRect(w*.34-9,-56,5,5);g.fillRect(w*.34+5,-56,5,5);g.beginPath();g.arc(w*.34,-46,11,.2,2.9);g.stroke();}else if(dk===2){g.beginPath();g.moveTo(-w*.4,58);g.lineTo(w*.4,58);g.lineTo(w*.4-16,46);g.moveTo(w*.4,58);g.lineTo(w*.4-16,70);g.stroke();}else if(dk===3){g.beginPath();g.moveTo(-26,-70);g.lineTo(-14,-92);g.lineTo(0,-72);g.lineTo(14,-92);g.lineTo(26,-70);g.closePath();g.fill();}
       for(let k=0;k<7;k++)g.fillRect(R(-w*.38,w*.38),R(14,34),3,R(14,48));g.restore();});return std({map:tx,emissiveMap:tx,emissive:0xffffff,emissiveIntensity:.6,transparent:true,alphaTest:.1,roughness:.7,polygonOffset:true,polygonOffsetFactor:-2,side:D2});});   // a little self-lit, so the paint reads in the gloom
-    let n=0;for(let i=Z.tu0+m(20);i<Z.tu1-m(15);i+=m(R(9,20))){const sd=Math.random()<.5?1:-1,len=R(5,7.5),me=new THREE.Mesh(new THREE.PlaneGeometry(len,len*.375),gm[(n*5)%gm.length]);
+    let n=0;for(let i=Z.tu0+m(20);i<Z.tu1-m(15);i+=m(R(6,14))){const sd=Math.random()<.5?1:-1,len=R(3.5,8.5),me=new THREE.Mesh(new THREE.PlaneGeometry(len,len*.375),gm[(n*7+(Math.random()*5|0))%gm.length]);
       off(i,sd*(6.5*1.2-.05),2.6,me.position);me.rotation.y=Math.atan2(-sd*Nn[i].x,-sd*Nn[i].z);scene.add(me);n++;}}
+  {// haze hanging in the Posey Tube's air: faint motes
+    const pts=[],hz=canvas(32,32,(g,w,h)=>{const r=g.createRadialGradient(16,16,0,16,16,16);r.addColorStop(0,'rgba(255,255,255,.8)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,w,h);});
+    for(let k=0;k<700;k++){const i=Math.floor(R(Z.tu0+m(5),Z.tu1-m(5)));off(i,R(-6,6),R(.4,4.8),V);pts.push(V.x,V.y,V.z);}
+    const gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));scene.add(new THREE.Points(gg,new THREE.PointsMaterial({map:hz,size:1.6,transparent:true,opacity:.22,depthWrite:false,color:0xb8c8e0,sizeAttenuation:true})));}
   tunL=new THREE.PointLight(0xffc27a,0,46,1.3);scene.add(tunL);
 
 await BOOT.step('BUILDING ALAMEDA · HOUSE BY HOUSE',.33);
@@ -897,7 +902,7 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
       for(const lx of[-3.5,3.5]){bm(lx,47,-19,0,82,-6,1.3);bm(lx,47,6,0,82,-6,1.3);bm(lx,52,-26,lx,52,8,1.5);
         if(up)bm(lx,52,8,lx,52+68*Math.sin(1.25),8+68*Math.cos(1.25),1.4);else bm(lx,52,8,lx,52,72,1.4);}
       const tip=up?[52+68*Math.sin(1.25),8+68*Math.cos(1.25)]:[52,72];bm(0,82,-6,0,tip[0],tip[1],.35);bm(0,82,-6,0,52,-26,.35);
-      g.position.set(x,0,z);g.rotation.y=ry;scene.add(g);};
+      g.position.set(x,0,z);g.rotation.y=ry;scene.add(g);CRN.push({g,ry,t:R(3,25),a:0,d:1,k:0});};
     for(let k=0;k<10;k++){const t=k/9,x=lerp(-1780,-1840,t),z=lerp(-3450,-4550,t);crane(x,z,-Math.PI/2,k%3===1);}   // the cranes stand along the far end of the wharf: on the left you pass warehouses, then the rail yard, then the port
     {// a bulk carrier crossing the bay off the port, slowly: dark hull with a red boot top, white superstructure at the stern, hatch covers and four white deck cranes (moved in the drive's tick)
       const g=new THREE.Group(),A=(geo,mm,px,py,pz)=>{const o=new THREE.Mesh(geo,mm);o.position.set(px,py,pz);o.castShadow=true;g.add(o);return o;},bx=(w,h,d)=>new THREE.BoxGeometry(w,h,d);
@@ -1200,6 +1205,20 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
     spots.forEach(([i,sd],v)=>{const t=tex(ADS[v%ADS.length],v),g=new THREE.Group(),bd=new THREE.Mesh(new THREE.PlaneGeometry(13.5,6),new THREE.MeshStandardMaterial({map:t,emissiveMap:t,emissive:0xffffff,emissiveIntensity:.55,roughness:.6}));bd.position.y=8;g.add(bd);
       B(13.8,6.3,.25,steelM,0,8,-.15,0,g);const leg=8+(H[i]>2?H[i]:0);for(const x of[-5,5])B(.4,leg,.4,steelM,x,8-3-leg/2,-.35,0,g);
       g.traverse(o=>{o.castShadow=true;});off(i,sd*(wallAt[i]+8),0,g.position);g.rotation.y=yaw(i)+Math.PI-sd*.36;scene.add(g);});
+    {// I-880 after the tube: chemicals, poison, a wonder drug, robot repair, and warnings about animals and insects (drawn symbols)
+      const HZ=[['CHEMCO','Industrial Solvents · Acids · Bulk','chem','#1d3a5a','#ffd23a'],['RAT-B-GONE','Poison. Handle With Gloves.','skull','#2a1a2a','#9aff6a'],['MIRACULIN','The Wonder Drug! Ask Your Doctor','pill','#f0f4f8','#c0262c'],
+        ['ROBO-FIX','Robot Repair · While U Wait','wrench','#243040','#7ad8ff'],['WARNING','Ducks Crossing · Slow Down','duck','#f2c230','#1a1a1a'],['DANGER','Killer Bees · Do Not Stop','bee','#f2c230','#1a1a1a'],['BEWARE','Skunks, Raccoons & Possums','skunk','#f2c230','#1a1a1a'],['TOXIC','Chemical Storage · Keep Out','chem','#2a2a2a','#ffd23a']];
+      HZ.forEach(([name,tag,pic,bg,fg],v)=>{const t=canvas(1024,460,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=fg;g.lineWidth=12;g.strokeRect(14,14,w-28,h-28);const cx=200,cy=230;g.fillStyle=fg;g.strokeStyle=fg;g.lineCap='round';
+          if(pic==='chem'){g.beginPath();g.moveTo(cx-30,cy-120);g.lineTo(cx+30,cy-120);g.lineTo(cx+30,cy-30);g.lineTo(cx+90,cy+90);g.lineTo(cx-90,cy+90);g.lineTo(cx-30,cy-30);g.closePath();g.lineWidth=10;g.stroke();g.globalAlpha=.7;g.fillRect(cx-70,cy+30,140,56);g.globalAlpha=1;}
+          else if(pic==='skull'){g.beginPath();g.arc(cx,cy-20,80,0,7);g.fill();g.fillRect(cx-45,cy+40,90,50);g.fillStyle=bg;for(const d of[-34,34]){g.beginPath();g.arc(cx+d,cy-20,22,0,7);g.fill();}g.fillRect(cx-6,cy+10,12,22);for(let q=-2;q<=2;q++)g.fillRect(cx+q*16-3,cy+60,6,30);g.strokeStyle=fg;g.lineWidth=16;g.beginPath();g.moveTo(cx-110,cy+100);g.lineTo(cx+110,cy+130);g.moveTo(cx+110,cy+100);g.lineTo(cx-110,cy+130);g.stroke();}
+          else if(pic==='pill'){g.save();g.translate(cx,cy);g.rotate(-.6);g.beginPath();g.roundRect(-110,-48,110,96,48);g.fill();g.fillStyle='#2a5ec0';g.beginPath();g.roundRect(0,-48,110,96,48);g.fill();g.restore();g.fillStyle='#f2c230';for(let q=0;q<5;q++){const a=q*1.256;g.beginPath();g.arc(cx+Math.cos(a)*150,cy+Math.sin(a)*150,8,0,7);g.fill();}}
+          else if(pic==='wrench'){g.lineWidth=26;g.beginPath();g.moveTo(cx-90,cy+100);g.lineTo(cx+50,cy-40);g.stroke();g.beginPath();g.arc(cx+66,cy-56,40,0,7);g.lineWidth=22;g.stroke();g.fillStyle='#d8dde2';g.fillRect(cx-120,cy-120,80,70);g.fillStyle=bg;for(const d of[-100,-60])g.fillRect(cx+d,cy-100,16,16);}
+          else if(pic==='duck'){g.beginPath();g.ellipse(cx,cy+30,100,60,0,0,7);g.fill();g.beginPath();g.arc(cx+80,cy-50,40,0,7);g.fill();g.fillRect(cx+110,cy-58,50,16);g.fillStyle=bg;g.beginPath();g.arc(cx+92,cy-58,8,0,7);g.fill();g.fillStyle=fg;for(let q=0;q<3;q++){g.beginPath();g.ellipse(cx-110+q*0,cy+110,0,0,0,0,7);g.fill();}for(let q=0;q<3;q++){g.beginPath();g.ellipse(cx-60+q*60,cy+110,18,12,0,0,7);g.fill();}}
+          else if(pic==='bee'){g.beginPath();g.ellipse(cx,cy,80,56,0,0,7);g.fill();g.fillStyle=bg;for(const d of[-30,10,48])g.fillRect(cx+d,cy-56,14,112);g.fillStyle=fg;g.globalAlpha=.6;for(const d of[-1,1]){g.beginPath();g.ellipse(cx+d*30,cy-80,34,52,d*.5,0,7);g.fill();}g.globalAlpha=1;g.beginPath();g.moveTo(cx+80,cy);g.lineTo(cx+125,cy);g.lineTo(cx+80,cy+12);g.fill();}
+          else{g.beginPath();g.ellipse(cx,cy+30,90,50,0,0,7);g.fill();g.beginPath();g.arc(cx+90,cy-10,32,0,7);g.fill();g.save();g.translate(cx-80,cy);g.rotate(-1.1);g.beginPath();g.ellipse(0,-40,30,90,0,0,7);g.fill();g.restore();g.fillStyle=bg;g.fillRect(cx-40,cy-8,80,12);g.fillRect(cx-40,cy+24,80,12);g.fillRect(cx-20,cy-26,50,10);g.fillStyle=fg;for(const d of[-50,-10,30,60])g.fillRect(cx+d,cy+60,12,36);}
+          g.fillStyle=fg;g.textAlign='left';g.font='900 '+(name.length>8?84:100)+'px Arial Black,Arial';g.fillText(name,370,220,610);g.font='italic 700 34px Georgia';g.fillText(tag,372,290,610);g.fillRect(372,312,300,6);});
+        const g=new THREE.Group(),bd=new THREE.Mesh(new THREE.PlaneGeometry(13.5,6),new THREE.MeshStandardMaterial({map:t,emissiveMap:t,emissive:0xffffff,emissiveIntensity:.4,roughness:.6}));bd.position.y=8;g.add(bd);B(13.8,6.3,.25,steelM,0,8,-.15,0,g);
+        const i=Z.tu1+m(120+v*200),sd=v%2?-1:1,leg=8+(H[i]>2?H[i]:0);for(const x of[-5,5])B(.4,leg,.4,steelM,x,8-3-leg/2,-.35,0,g);g.traverse(o=>{o.castShadow=true;});off(i,sd*(wallAt[i]+8),0,g.position);g.rotation.y=yaw(i)+Math.PI-sd*.36;scene.add(g);});}
     // old-fashioned roadside boards along I-880 and I-80: cream paper, a drawing, a slogan. Old-time candy above all (and a robot lollipop), a roller rink, a drive-in, a tyre shop.
     const RETRO=[['PEPPERMINT PETE\'S','Old-Time Candy · Since 1921','mint','#b3241c'],['TAFFY TOWN','Salt Water Taffy · 40 Flavors','taffy','#2a6aa8'],['CANDY CANE LANE','Penny Candy · Root Beer Barrels · Licorice','cane','#2f7a3a'],
       ['ROBO-POP','The Lollipop Made by Robots!','robo','#7a2a8a'],['ISLAND ROLLER RINK','Skate Every Night · Organ Music','skate','#c0601c'],['STARLITE DRIVE-IN','Two Features Tonight · Car Hop Service','film','#1c3a6a'],['BAY TIRE & BRAKE','We Stop for Nothing','tire','#3a3a3a'],['JAWBREAKER JIM\'S','Fudge · Brittle · Jawbreakers','jaw','#a8401c']];
@@ -2199,7 +2218,7 @@ function papersTick(rdt){const inT=zoneArr[PL.idx]===2;if(!PAPERS){if(!inT)retur
     const tx=canvas(256,180,(g,w,h)=>{g.fillStyle='#e9e4d4';g.fillRect(0,0,w,h);g.fillStyle='#1c1c1c';g.font='900 26px Georgia,serif';g.textAlign='center';g.fillText('THE ISLAND TIMES',w/2,28);g.fillRect(10,36,w-20,2);
       g.font='900 19px Georgia,serif';g.fillText('BRIDGE QUAKE: LANES LOST',w/2,60,w-20);g.fillStyle='#8a8a84';g.fillRect(14,72,100,60);for(let c=0;c<3;c++)for(let y=72+(c?0:68);y<h-8;y+=7)g.fillRect(c?122+(c-1)*66:14,y,c?58:100,3);});
     const mm=std({map:tx,side:THREE.DoubleSide,roughness:.9,emissiveMap:tx,emissive:0xfff2d8,emissiveIntensity:.35}),geo=new THREE.PlaneGeometry(.95,.66,3,1);PAPERS=[];   // fewer sheets than before
-    for(let k=0;k<14;k++){const m=new THREE.Mesh(geo,mm);m.castShadow=false;m.visible=false;scene.add(m);PAPERS.push({m,s:0,lat:0,y:0,vs:0,vl:0,vy:0,sp:new THREE.Vector3(),live:false});}}
+    for(let k=0;k<6;k++){const m=new THREE.Mesh(geo,mm);m.castShadow=false;m.visible=false;scene.add(m);PAPERS.push({m,s:0,lat:0,y:0,vs:0,vl:0,vy:0,sp:new THREE.Vector3(),live:false});}}
   const pe=ents.find(e=>e.player),v=Math.hypot(PL.vx,PL.vz);
   for(const p of PAPERS){if(!inT){p.live=false;p.m.visible=false;continue;}
     const ds=wdiff(p.s-pe.s);if(!p.live||ds<-40||ds>170){const s=wrapS(pe.s+(p.live?R(90,165):R(-10,150))),i=wrapI(Math.floor(s/SEG));if(zoneArr[i]!==2){p.live=false;p.m.visible=false;continue;}
@@ -2455,7 +2474,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);tumbleTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);tumbleTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -3119,11 +3138,14 @@ function AIRmk(){const g=new THREE.Group(),bd=std({color:0xf2f2ee,roughness:.5,m
 // Now and then while you are on I-880 a plane rolls down the runway, lifts off and climbs away out over the bay.
 function planesTick(rdt){const A=AIR;if(!A.A)return;const i=PL.idx,on=i>Z.tu1&&i<Z.detour+Math.round(200/SEG);
   if(!A.g){A.g=AIRmk();A.g.visible=false;A.g.rotation.order='YXZ';scene.add(A.g);A.D=A.B.clone().sub(A.A).normalize();}
-  if(A.st===0){A.g.visible=false;if(!on)return;A.cd-=rdt;if(A.cd>0)return;A.st=1;A.t=0;A.cd=R(16,30);A.g.visible=true;}
-  A.t+=rdt;const t=A.t,acc=3.4,vR=68,tR=vR/acc;let s,y=0,p=0;
+  if(A.st===0){A.g.visible=false;if(!on)return;A.cd-=rdt;if(A.cd>0)return;A.st=1;A.t=0;A.cd=R(16,30);A.land=Math.random()<.45;A.g.visible=true;}
+  A.t+=rdt;if(A.land){const t=A.t;let s,y=0,p=0;if(t<10){s=-600+60*t;y=-s*.08;p=-.06;}else{const u=Math.min(t-10,15);s=60*u-2*u*u;}A.g.position.copy(A.A).addScaledVector(A.D,s);A.g.position.y+=y;A.g.rotation.set(-p,A.ry,0);if(t>31)A.st=0;return;}   // landings: down the glide slope, touch down, brake
+const t=A.t,acc=3.4,vR=68,tR=vR/acc;let s,y=0,p=0;
   if(t<tR)s=.5*acc*t*t;else{const u=t-tR;s=.5*acc*tR*tR+vR*u+.6*u*u;y=u*3.2+u*u*.35;p=Math.min(.2,u*.09);}
   A.g.position.copy(A.A).addScaledVector(A.D,s);A.g.position.y+=y;A.g.rotation.set(-p,A.ry,0);if(t>tR+50)A.st=0;}
 // The steel mill's stacks and blast furnace belch black smoke while you are anywhere along I-880.
+function craneTick(rdt){if(!CRN.length)return;const i=PL.idx;if(!(i>Z.tu1&&i<Z.detour))return;   // the port cranes slew a little now and then
+  for(const c of CRN){if(c.a>0){c.a-=rdt;c.g.rotation.y=c.ry+Math.sin((1-Math.max(c.a,0)/c.d)*Math.PI)*c.k;}else{c.t-=rdt;if(c.t<=0){c.t=R(10,35);c.d=R(6,10);c.a=c.d;c.k=R(-.16,.16);}}}}
 function millTick(rdt){if(!MILL.length||!millP)return;const i=PL.idx;if(!(i>Z.tu1&&i<Z.toll))return;
   for(const s of MILL){s.t-=rdt;if(s.t>0)continue;s.t=R(.22,.45)/s.k;NOGY=1;emit(millP,mi++,V.set(s.x,s.y,s.z),R(-.8,.8)+2.6,R(5,8),R(-.8,.8),R(9,13)*s.k,R(45,75)*s.k,R(9,13),1,[0x121010,0x1c1916,0x26211d][Math.random()*3|0],-.25);NOGY=0;}}
 // The refinery columns and flare stacks send up grey smoke, from the end of the bridge to the I-80 ramp.
