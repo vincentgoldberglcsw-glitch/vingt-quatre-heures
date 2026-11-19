@@ -2022,6 +2022,15 @@ const accelOf=(f,M)=>Math.max(0,13.5*M.acc*(1-f/M.top));
 function speak(txt,rate,pitch){try{if(!window.speechSynthesis||G.paused)return;const u=new SpeechSynthesisUtterance(txt);u.rate=rate;u.pitch=pitch;u.volume=1;const v=speechSynthesis.getVoices().find(v=>/^en/i.test(v.lang));if(v){u.voice=v;u.lang=v.lang;}else u.lang='en-US';speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}}
 function ohNo(){try{if(window.speechSynthesis){const u=new SpeechSynthesisUtterance('Oh, nooooooooooo!');u.rate=.7;u.pitch=.6;u.volume=1;const v=speechSynthesis.getVoices().find(v=>/^en/i.test(v.lang));if(v)u.voice=v;speechSynthesis.cancel();speechSynthesis.speak(u);return;}}catch(e){}
   if(AC)tone('sawtooth',330,AC.currentTime,1.4,.5,master,{to:110,a:.05,h:.7,lp:900,ft:'bandpass',q:3});}
+// Crash inside the Posey Tube: the whole tube goes up in flames for a couple of seconds, then the car is put back on the road past the exit.
+const TUF={st:null,V:new THREE.Vector3()};
+function tubeFire(dt){const F=TUF;if(!F.st){const m=new THREE.MeshBasicMaterial({color:0xff7a1c,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false,fog:false});F.st=[];for(let n=0;n<8;n++){const o=new THREE.Mesh(new THREE.BoxGeometry(.5,.9,26),m.clone());o.visible=false;scene.add(o);F.st.push(o);}}
+  const c=PL.crash,tb=c&&!c.dive&&PL.idx>=Z.tu0&&PL.idx<=Z.tu1;
+  if(!tb){if(F.on){F.on=0;for(const o of F.st)o.visible=false;}return;}
+  if(!F.on){F.on=1;c.tf=0;sfxCrunch(1);}c.tf+=dt;
+  const len=Z.tu1-Z.tu0;for(let n=0;n<8;n++){const o=F.st[n],j=Math.max(Z.tu0,Math.min(Z.tu1-1,Math.round(PL.idx+(n-3.5)*(len/8)*.6))),w=RW+XW[j];at(j*SEG,(n%2?1:-1)*(w-.6),.45,F.V);o.position.copy(F.V);o.rotation.set(0,yaw(j),0);o.scale.set(1,.7+.5*Math.sin(tmNow()*13+n*2.1),1);o.material.opacity=.45+.3*Math.sin(tmNow()*17+n);o.visible=true;}
+  for(let q=0;q<2;q++){const a=R(-60,60),j=Math.max(Z.tu0,Math.min(Z.tu1-1,PL.idx+Math.round(a/SEG))),w=RW+XW[j];at(j*SEG,R(-w+.6,w-.6),R(.2,1.2),F.V);puff(F.V,R(-.4,.4),R(2,5),R(-.4,.4),R(1.2,2.2),R(3,5),R(.7,1.3),.8,q?0xff7a1c:0xffc050);}
+  if(Math.random()<dt*6)puff(V.set(PL.x,3.5,PL.z),R(-1,1),R(.5,2),R(-1,1),R(2,3),R(6,9),R(1.5,2.5),.5,0x151311);}
 function crashPlayer(sev,atWall){if(PL.crash||PL.safe>0)return;ohNo();const pe=ents.find(e=>e.player);PL.crash={t:0,sd:Math.sign(pe.lat)||1,s:pe.s};startWreck(pe,PL.vx,PL.vz,sev,atWall);PL.vx=PL.vz=0;pe.v=0;G.slow=.3;G.slowT=2.6;say('ACCIDENT','No. '+LIV().num+' · McQUEEN',3);endSkid();announce('Accident ! La Porsche de McQueen est sortie de la piste !');}
 function fallOff(sd,vn,bi){const n=Nn[bi],h=H[bi],vx=PL.vx,vz=PL.vz;crashPlayer(vn,true);const w=hero.wreck;if(!w)return;const out=Math.max(vn,7);   // through the barrier and down to the ground below
   w.free=1;w.y=h;w.vy=2;w.x+=n.x*sd*2.4;w.z+=n.z*sd*2.4;w.vx=vx*.8+n.x*sd*out;w.vz=vz*.8+n.z*sd*out;w.wr=sd*R(2.5,4.5);w.fire=R(1.9,2.6);PL.crash.cam=1;camP.set(PL.x+n.x*sd*26+T[bi].x*20,2.4,PL.z+n.z*sd*26+T[bi].z*20);say('OVER THE EDGE','No. '+LIV().num+' - McQUEEN',3);}
@@ -2130,8 +2139,8 @@ function sim(dt){const pe=ents.find(e=>e.player);
   playerUpdate(dt,pe);for(const e of ents)if(!e.player)aiUpdate(e,dt,pe);updateWrecks(dt);placeAll(dt);
   if(wx.wet>.5&&!PL.crash&&pe.v>20&&Math.random()<dt*26)puff(V.set(PL.x-Math.sin(PL.h)*2.6,.5,PL.z-Math.cos(PL.h)*2.6),R(-1.5,1.5),R(1,3),R(-1.5,1.5),1.2,5.5,R(.7,1.2),.34,0xd0d6da);
   if(PL.crash&&PL.crash.dive)diveTick(dt,pe);
-  else if(PL.crash){const w=hero.wreck,still=!w||(Math.hypot(w.vx,w.vz)<1&&w.y<=0&&!w.wr);
-    if(PL.crash.t>8||(PL.crash.t>5&&still)){const i=PL.idx=wrapI((w?w.idx:PL.idx)+35);if(w)endWreck(w);pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();
+  else if(PL.crash){const w=hero.wreck,still=!w||(Math.hypot(w.vx,w.vz)<1&&w.y<=0&&!w.wr);tubeFire(dt);const tb=PL.crash.tf>2.3;
+    if(tb||PL.crash.t>8||(PL.crash.t>5&&still)){const i=PL.idx=wrapI(tb?Z.tu1+30:(w?w.idx:PL.idx)+35);if(w)endWreck(w);if(TUF.st){TUF.on=0;for(const o of TUF.st)o.visible=false;}pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();
       hero.position.set(PL.x,H[i],PL.z);hero.rotation.set(0,PL.h,0);GY=PL.gy=PL.cy=H[i];PL.air=0;PL.vy=0;say(DRIVE?'BACK ON THE ROAD':'BACK IN THE RACE','',1.5);}}
   if(G.state==='race'){G.doomT-=dt;if(G.doomT<=0){G.doomT=R(38,70);const c=ents.filter(e=>!e.player&&e.out<=0&&!e.doom&&wdiff(e.s-pe.s)>45&&wdiff(e.s-pe.s)<230&&e.v>35);if(c.length){const e=c[Math.random()*c.length|0];e.doom=Math.random()<.5?-1:1;}else G.doomT=6;}
     if(!DRIVE&&pe.dist>=LAPS*LEN){G.state='finish';G.finT=0;G.slow=.3;G.slowT=3.2;first=true;sfxCheer();say('DRAPEAU À DAMIER','P'+(standings().indexOf(pe)+1)+' · '+LAPS+' LAPS',4);announce("Le drapeau à damier ! Les vingt-quatre heures sont terminées !");}}
