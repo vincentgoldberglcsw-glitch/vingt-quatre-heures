@@ -974,6 +974,21 @@ if(DRIVE){ // ---- Alameda scenery: the hill and driveway to the burger, eucalyp
     B(18,.4,9,wal,5,5.2,4,0,g);for(const x of[-2,12])for(const z of[1,7])B(.4,5,.4,stl,x,2.5,z,0,g);for(const x of[2,8]){B(.7,1.5,.6,std({color:0xc8241c,roughness:.5}),x,.75,4,0,g);}
     const pm=new THREE.Mesh(new THREE.PlaneGeometry(2.4,3.6),lit(128,192,(c,w,h)=>{c.fillStyle='#1c1c1e';c.fillRect(0,0,w,h);c.fillStyle='#f2c230';c.font='900 26px Arial Black,Arial';c.textAlign='center';c.fillText('QUIK',w/2,34);c.fillStyle='#fff';c.font='900 34px Arial';for(let k=0;k<3;k++)c.fillText(['3.89','4.19','4.49'][k],w/2,84+k*40);}));pm.position.set(-14,8.5,10);g.add(pm);B(.3,7,.3,stl,-14,3.5,10,0,g);
     g.traverse(o=>{if(o.isMesh)o.castShadow=o.receiveShadow=true;});scene.add(g);}
+  {// "OLIVER IS... THE SILVOR SORFER": a few billboards, an art-deco film poster (redrawn: a teal city at night behind a big bald head) on Wilma Chan Way, I-880 and I-80
+    const ol=(bg,hl,sk)=>canvas(1024,512,(c,w,h)=>{const gr=c.createLinearGradient(0,0,0,h);gr.addColorStop(0,bg[0]);gr.addColorStop(1,bg[1]);c.fillStyle=gr;c.fillRect(0,0,w,h);
+      c.fillStyle='rgba(255,255,230,.12)';for(const x of[560,660,760]){c.beginPath();c.moveTo(x,0);c.lineTo(x-70,h);c.lineTo(x+70,h);c.fill();}   // searchlights
+      c.fillStyle=hl;for(const[x,bw,bh]of[[430,70,250],[500,50,330],[780,60,300],[840,80,220],[920,70,280],[980,60,200],[560,40,180]]){c.fillRect(x,h-bh,bw,bh);c.fillStyle='#ffe9a0';for(let yy=h-bh+10;yy<h-10;yy+=18)for(let xx=x+8;xx<x+bw-8;xx+=14)if(Math.random()<.45)c.fillRect(xx,yy,5,7);c.fillStyle=hl;}
+      c.fillStyle=hl;c.beginPath();c.moveTo(520,h-330);c.lineTo(525,h-380);c.lineTo(530,h-330);c.fill();   // a spire
+      c.fillStyle=sk;c.beginPath();c.ellipse(700,250,118,148,0,0,7);c.fill();c.fillStyle='rgba(0,0,0,.18)';c.beginPath();c.ellipse(730,270,80,128,0,0,7);c.fill();   // the head
+      c.strokeStyle='rgba(40,50,50,.55)';c.lineWidth=5;c.beginPath();c.moveTo(584,215);c.quadraticCurveTo(700,150,816,215);c.stroke();   // swim-cap line
+      c.fillStyle='#14201f';c.beginPath();c.ellipse(655,262,15,8,0,0,7);c.fill();c.beginPath();c.ellipse(745,262,15,8,0,0,7);c.fill();c.fillStyle='#d8e4dc';c.beginPath();c.arc(659,262,4,0,7);c.fill();c.beginPath();c.arc(749,262,4,0,7);c.fill();
+      c.strokeStyle='#14201f';c.lineWidth=4;c.beginPath();c.moveTo(636,236);c.lineTo(672,232);c.moveTo(728,232);c.lineTo(764,236);c.stroke();c.beginPath();c.moveTo(704,270);c.lineTo(698,312);c.lineTo(716,316);c.stroke();c.fillStyle='#4a3030';c.beginPath();c.ellipse(704,350,26,8,0,0,7);c.fill();
+      c.fillStyle=sk;c.fillRect(640,370,120,140);
+      c.fillStyle='#f4edd2';c.textAlign='left';c.textBaseline='alphabetic';c.font='900 150px Georgia,serif';c.fillText('OLIVER',24,160);c.font='900 44px Arial Black,Arial';c.fillText('IS...',30,236);c.fillText('THE SILVOR',30,292);c.fillText('SORFER',30,348);
+      c.fillStyle='#e8c060';c.font='900 26px Georgia,serif';c.fillText('IMPERIAL · WEEK OF OCTOBER · FOR SIX DAYS',30,470,520);});
+    board(Z.wilma+m(330),-(12+XW[Z.wilma+m(330)]),9,4.5,ol(['#1f4a48','#0d2424'],'#10302e','#a9c4bc'),0,.35);
+    board(Z.tu1+m(720),12+XW[Z.tu1+m(720)],9,4.5,ol(['#3a2c20','#1a120c'],'#2a1c12','#c9b08a'),0,.35);
+    board(Z.i80+m(380),-(12+XW[Z.i80+m(380)]),9,4.5,ol(['#2a2a4a','#0e0e22'],'#14143a','#b8bcd4'),0,.35);}
   // turn arrows: a yellow board before each corner, on the side the road bends to
   {const arrow=(d)=>canvas(256,256,(g,w,h)=>{g.fillStyle='#f2c230';g.fillRect(0,0,w,h);g.strokeStyle='#111';g.lineWidth=12;g.strokeRect(10,10,w-20,h-20);g.fillStyle='#111';g.beginPath();g.moveTo(w/2+d*86,h/2);g.lineTo(w/2+d*8,h/2-76);g.lineTo(w/2+d*8,h/2-30);g.lineTo(w/2-d*86,h/2-30);g.lineTo(w/2-d*86,h/2+30);g.lineTo(w/2+d*8,h/2+30);g.lineTo(w/2+d*8,h/2+76);g.closePath();g.fill();});
     // dir +1 = left turn (sign on the left, +lat); the board faces back along the road, so its canvas is drawn mirrored (left turn = arrow pointing +x on the canvas)
