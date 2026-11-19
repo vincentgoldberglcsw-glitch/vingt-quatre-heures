@@ -2889,7 +2889,15 @@ function logTick(dt,pe){const L=LOGT;if(!L.g)return;const m_=x=>Math.round(x/SEG
     o.ro+=o.wr*dt;const wl=wallAt[i]-.6;if(Math.abs(o.lat)>wl){o.lat=Math.sign(o.lat)*wl;o.vl*=-.3;}
     at(o.s,o.lat,o.y,o.m.position);o.m.rotation.set(o.pi,yaw(i)+o.ya,o.ro);}}
 function placeVehicle(t){const i=wrapI(Math.floor(t.s/SEG)),j=wrapI(i+1);at(t.s,t.lat,0,t.g.position);const sl=(H[wrapI(i+1)]-H[wrapI(i-1)])/(2*SEG);t.g.rotation.set(-Math.atan(sl),yaw(i),0);t.ob.x=t.g.position.x;t.ob.z=t.g.position.z;}
-function trafficTick(dt,pe){bubbleTick(dt);if(TRAF.pol){const f=(tmNow()*7|0)%2;TRAF.pol[0].emissiveIntensity=f?4:.15;TRAF.pol[1].emissiveIntensity=f?.15:4;}const i0=PL.idx,zn=zoneArr[i0],road=i=>{const c=zoneArr[i];return(c===3&&i>Z.tu1+40&&!(i>Z.detour-60&&i<Z.detour+90))||c===4;},on=road(i0),bay=i0>=Z.b0-250&&i0<=Z.b1,
+// Wheels that come off a failing vehicle: a small pool of loose tyres that roll and bounce away, then vanish
+const WHL={l:null};
+function wheelsOff(t){const W=WHL;if(!W.l){const gm=new THREE.CylinderGeometry(.4,.4,.3,12).rotateZ(Math.PI/2),mm=std({color:0x151515,roughness:.9});W.l=[];for(let k=0;k<10;k++){const m=new THREE.Mesh(gm,mm);m.visible=false;scene.add(m);W.l.push({m,t:0,vx:0,vy:0,vz:0,gy:0,w:0});}}
+  const i=wrapI(Math.floor(t.s/SEG)),n=Nn[i],tg=T[i];t.g.updateMatrixWorld(true);
+  for(const wh of t.g.wh){const o=W.l.find(q=>q.t<=0);wh.visible=false;if(!o)continue;wh.getWorldPosition(o.m.position);o.gy=o.m.position.y;o.t=R(4,6.5);o.m.visible=true;o.m.rotation.set(0,yaw(i),0);const sd=wh.position.x>=0?1:-1;
+    o.vx=tg.x*t.v*R(.8,1.3)+n.x*sd*R(2,7);o.vz=tg.z*t.v*R(.8,1.3)+n.z*sd*R(2,7);o.vy=R(3,7);o.w=R(8,16);}
+  t.dead=1;sfxCrunch(.6);sfxScrape(1);G.shake=Math.max(G.shake,.2);}
+function wheelsTick(dt){const W=WHL;if(!W.l)return;for(const o of W.l){if(o.t<=0)continue;o.t-=dt;if(o.t<=0){o.m.visible=false;continue;}o.vy-=20*dt;const p=o.m.position;p.x+=o.vx*dt;p.z+=o.vz*dt;p.y+=o.vy*dt;if(p.y<o.gy&&o.vy<0){p.y=o.gy;o.vy*=-.4;if(o.vy<1)o.vy=0;const k=Math.exp(-.5*dt*6);o.vx*=k;o.vz*=k;}o.m.rotation.x+=o.w*dt;}}
+function trafficTick(dt,pe){bubbleTick(dt);wheelsTick(dt);if(TRAF.pol){const f=(tmNow()*7|0)%2;TRAF.pol[0].emissiveIntensity=f?4:.15;TRAF.pol[1].emissiveIntensity=f?.15:4;}const i0=PL.idx,zn=zoneArr[i0],road=i=>{const c=zoneArr[i];return(c===3&&i>Z.tu1+40&&!(i>Z.detour-60&&i<Z.detour+90))||c===4;},on=road(i0),bay=i0>=Z.b0-250&&i0<=Z.b1,
     rsr=i0>=Z.rb0-250&&i0<=Z.rb1,i880=i0>Z.tu1&&i0<Z.b0-250,gap=bay?48:rsr?90:70,spd=bay?1:1.2;   // I-880 and the San Rafael bridge: fewer vehicles, further apart and a bit quicker; the Bay Bridge stays busy for the earthquake
   for(const t of TRAF){
     if(t.fall){const F=t.fall;F.vy-=20*dt;if(F.boom>0){F.boom-=dt;if(F.boom<=0)fireball(t.g.position,t);}
@@ -2899,10 +2907,11 @@ function trafficTick(dt,pe){bubbleTick(dt);if(TRAF.pol){const f=(tmNow()*7|0)%2;
     const want=on&&t.n<(bay?11:rsr?4:i880?5:9);
     if(t.act){const ds=wdiff(t.s-pe.s),i=wrapI(Math.floor(t.s/SEG));if(!t.qf&&(ds<-160||ds>1000||(!want&&ds>-40)||!road(i))){t.act=false;t.g.visible=false;t.ob.x=1e9;}}
     if(!t.act){if(want&&Math.random()<dt*1.5){const s=wrapS(pe.s+R(300,850)),i=wrapI(Math.floor(s/SEG));if(road(i)&&!(QK.st&&i>QK.a-200&&i<QK.b+10)&&!FQ.list.some(q=>q.F&&Math.abs(wdiff(q.F.s-s))<160)){const w=RW+XW[i],ln=[-.75,-.25,.25,.75][Math.random()*4|0]*w;
-        if(TRAF.every(o=>!o.act||Math.abs(wdiff(o.s-s))>gap||Math.abs(o.lt-ln)>1.5)){t.act=true;t.s=s;t.lt=t.lat=ln;t.v=t.vb*spd;t.g.visible=true;}}}continue;}
+        if(TRAF.every(o=>!o.act||Math.abs(wdiff(o.s-s))>gap||Math.abs(o.lt-ln)>1.5)){t.act=true;t.s=s;t.lt=t.lat=ln;t.v=t.vb*spd;t.g.visible=true;t.dead=0;t.stop=0;for(const wh of t.g.wh)wh.visible=true;t.lw=t.kind!=='moto'&&t.kind!=='bike'&&t.kind!=='buggy'&&!t.g.legs&&!t.extra&&Math.random()<.12?R(3,9):0;}}}continue;}
     let v=t.kind==='buggy'?t.vb:t.vb*spd;for(const o of TRAF){if(o===t||!o.act||o.fall||Math.abs(o.lt-t.lt)>1.5)continue;const d=wdiff(o.s-t.s);if(d>0&&d<(t.len+o.len)/2+14)v=Math.min(v,o.v*.9);}
     if(DUCK.st===1){const dd=wdiff(DUCK.s-t.s);if(dd>0&&dd<55)v=Math.min(v,Math.max(0,(dd-t.len/2-7)*.5));}   // everyone stops for the ducks
     t.sw=0;for(const q of FQ.list){const F=q.F;if(!F||F.kL<.05)continue;const dd=wdiff(F.s-t.s);if(dd>-6&&dd<170&&t.lat>F.lo-1.6&&t.lat<F.hi+1.6){t.lt=F.free;t.sw=1;if(Math.abs(t.lat-F.free)>1.2)v=Math.min(v,Math.sqrt(12*Math.max(0,dd-t.len/2-5)));}}   // and for a fissure: brake hard, and squeeze past in the open lane
+    if(t.dead)v=0;   // no wheels: grinds to a halt
     const dp=wdiff(pe.s-t.s);if(dp>0&&dp<(t.len/2+16)&&Math.abs(pe.lat-t.lat)<2.6)v=Math.min(v,Math.max(0,pe.v-2));   // don't run into the player from behind
     const i=wrapI(Math.floor(t.s/SEG));
     if(QK&&QK.st&&QK.t>2.2&&t.lat<QK.ls-.4&&i>=QK.a&&i<=QK.b){const tg=T[i];t.fall={vx:tg.x*Math.max(t.v,5),vz:tg.z*Math.max(t.v,5),vy:1,w:R(.8,1.5)};sfxCrunch(.5);continue;}   // the road has gone from under it
@@ -2911,16 +2920,18 @@ function trafficTick(dt,pe){bubbleTick(dt);if(TRAF.pol){const f=(tmNow()*7|0)%2;
       if(Math.abs(t.lat)>wl){if(zoneArr[i]===4){const n=Nn[i],tg=T[i],sd=Math.sign(t.lat),out=Math.max(3,Math.abs(t.kv));t.fall={vx:tg.x*t.v+n.x*sd*out,vz:tg.z*t.v+n.z*sd*out,vy:2.5,w:R(1,1.8)*sd};t.kv=0;sfxCrunch(.8);sfxScrape(1);G.shake=Math.max(G.shake,.4);placeVehicle(t);continue;}   // over the bridge rail and down into the bay, tipping as it goes
         t.lat=Math.sign(t.lat)*wl;t.kv=0;}}
     placeVehicle(t);
+    if(t.lw>0){t.lw-=dt;if(t.lw<=0){if(wdiff(t.s-pe.s)>12&&t.g.visible)wheelsOff(t);else t.lw=.5;}}   // somewhere ahead of the player, the wheels come off
+    if(t.dead&&t.v<.3){t.stop=1;t.ob.x=1e9;}   // stopped for good: you can drive through it
     for(const wh of t.g.wh)wh.rotation.x+=t.v*dt/.4;if(t.g.legs){const q=tmNow()*9;t.g.legs.forEach((l,k)=>{l.rotation.x=Math.sin(q+(k%2?0:Math.PI)+(k>1?.6:0))*.5;});}
     if(t.bt>0)t.bt-=dt;
     if(t.wob>0){t.wob=Math.max(0,t.wob-dt*1.6);const q=Math.sin(t.wob*34)*t.wob*.22;t.g.scale.set(1+q,1-q,1+q*.6);if(!t.wob)t.g.scale.set(1,1,1);}   // rubbery: it squashes and springs back a few times after a bump
     const dx=t.g.position.x-PL.x,dz=t.g.position.z-PL.z,rel=Math.abs(pe.v-t.v);
-    if(dx*dx+dz*dz<(t.r+1)**2&&!PL.crash&&G.state==='race'){const two=t.kind==='moto'||t.kind==='bike',n=Nn[i],sd=(dx*n.x+dz*n.z)>=0?1:-1;
+    if(dx*dx+dz*dz<(t.r+1)**2&&!PL.crash&&!t.stop&&G.state==='race'){const two=t.kind==='moto'||t.kind==='bike',n=Nn[i],sd=(dx*n.x+dz*n.z)>=0?1:-1;
       if(two){if(!(t.bt>0)){t.bt=.6;t.wob=1;if(t.kind==='moto'&&zoneArr[i]===4&&i>=Z.b0&&i<=Z.b1&&(t.hit=(t.hit||0)+1)>=2){const tg=T[i],s2=Math.sign(t.lat)||sd;t.fall={vx:tg.x*Math.max(t.v,8)+n.x*s2*9,vz:tg.z*Math.max(t.v,8)+n.z*s2*9,vy:2,w:R(2,4)*s2};sfxCrunch(.6);sfxScrape(1);bubble(t.g,"HEY DUDE, WATCH IT!");}
-        t.s+=1.5;t.v=Math.max(t.v,pe.v+R(3,6));t.kv=sd*R(2,4);PL.vx*=.98;PL.vz*=.98;G.shake=Math.max(G.shake,.15);sfxBoing(.6);}}   // motorcycles and bicycles: never a crash, at any speed, just bounced on ahead
+        t.s+=2.5;t.v=Math.max(t.v,pe.v+R(5,9));t.kv=sd*R(3.5,6.5);PL.vx*=.98;PL.vz*=.98;G.shake=Math.max(G.shake,.15);sfxBoing(.6);}}   // motorcycles and bicycles: never a crash, at any speed, just bounced on ahead
       else if(pe.v>78.2&&PL.safe<=0)crashPlayer(Math.max(rel,20)*.4,false);   // over 175 mph, a crash
       else if(!(t.bt>0)){t.bt=.7;t.wob=1;if((t.kind==='truck'||t.kind==='truck2')&&zoneArr[i]===4&&(t.hit=(t.hit||0)+1)>=2){const tg=T[i],s2=Math.sign(t.lat)||sd;t.fall={vx:tg.x*t.v+n.x*s2*8,vz:tg.z*t.v+n.z*s2*8,vy:3,w:R(.5,1)*s2,boom:.7};sfxScrape(1);}
-        t.kv=sd*clamp(rel*.4+4,4,13);t.v=Math.max(t.v*.85,t.v+(pe.v>t.v?rel*.3:0));PL.vx*=.93;PL.vz*=.93;PL.x-=n.x*sd*.6;PL.z-=n.z*sd*.6;G.shake=Math.max(G.shake,.25);sfxBoing(clamp(rel/20+.45,.45,1));}}}}   // below that a soft, rubbery bump: both bounce apart, hardly slowed, and the other one wobbles like jelly
+        t.kv=sd*clamp(rel*.55+6,6,18);t.v=Math.max(t.v*.85,t.v+(pe.v>t.v?rel*.3:0));PL.vx*=.93;PL.vz*=.93;PL.x-=n.x*sd*.6;PL.z-=n.z*sd*.6;G.shake=Math.max(G.shake,.25);sfxBoing(clamp(rel/20+.45,.45,1));}}}}   // below that a soft, rubbery bump: both bounce apart, hardly slowed, and the other one wobbles like jelly
 // a small floating speech bubble over a vehicle (one shared sprite), and the fireball when a tanker goes up
 const BUB={sp:null,c:null,tx:null,g:null,t:0};
 function bubble(g,txt){if(!BUB.sp){const c=document.createElement('canvas');c.width=512;c.height=96;BUB.c=c;BUB.tx=new THREE.CanvasTexture(c);BUB.tx.colorSpace=THREE.SRGBColorSpace;BUB.sp=new THREE.Sprite(new THREE.SpriteMaterial({map:BUB.tx,depthTest:false,transparent:true}));BUB.sp.scale.set(7,1.31,1);BUB.sp.renderOrder=9;scene.add(BUB.sp);}
