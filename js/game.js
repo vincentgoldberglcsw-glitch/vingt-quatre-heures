@@ -3341,16 +3341,16 @@ function holeFall(pe){const i=PL.idx;crashPlayer(Math.abs(pe.v)*.3,false);const 
 // San Quentin: ~30 prisoners in stripes (instanced) pour out onto the road and wave both arms to flag you down. Harmless: nothing collides, you drive straight through them
 const PRIS={l:[],on:0,V:new THREE.Vector3(),W:new THREE.Vector3(),Y:new THREE.Vector3(0,1,0),X:new THREE.Vector3(1,0,0),P:new THREE.Vector3(),S1:new THREE.Vector3(1,1,1),Q:new THREE.Quaternion(),QY:new THREE.Quaternion(),F:new THREE.Matrix4(),L:new THREE.Matrix4(),M:new THREE.Matrix4(),N:30};
 function prisPut(im,k,x,y,z,rx,sc){const K=PRIS;K.P.set(x,y,z);K.Q.setFromAxisAngle(K.X,rx);K.L.compose(K.P,K.Q,sc||K.S1);K.M.multiplyMatrices(K.F,K.L);im.setMatrixAt(k,K.M);}
-function prisTick(rdt){const K=PRIS,N=K.N,a=Z.sq+Math.round(260/SEG),near=PL.idx>a-Math.round(360/SEG)&&PL.idx<a+Math.round(200/SEG);
+function prisTick(rdt){const K=PRIS,N=K.N,a=Z.sq+Math.round(260/SEG),near=PL.idx>a-Math.round(900/SEG)&&PL.idx<a+Math.round(200/SEG);
   if(!K.im){const st=std({map:canvas(32,64,(g,w,h)=>{for(let y=0;y<h;y+=16){g.fillStyle='#f0ece0';g.fillRect(0,y,w,8);g.fillStyle='#1a1a1a';g.fillRect(0,y+8,w,8);}}),roughness:1}),sk=std({color:0xc89a78,roughness:1});
     const mk=(g,m,n)=>{const o=new THREE.InstancedMesh(g,m,n);o.frustumCulled=false;o.count=0;scene.add(o);return o;};
     K.im=[mk(new THREE.BoxGeometry(.5,.7,.3),st,N),mk(new THREE.SphereGeometry(.15,8,6),sk,N),mk(new THREE.BoxGeometry(.18,.8,.2).translate(0,-.4,0),st,N*2),mk(new THREE.BoxGeometry(.13,.6,.13).translate(0,-.28,0),st,N*2),mk(new THREE.BoxGeometry(.06,.9,.06).translate(0,.3,0),std({color:0x5a4026,roughness:1}),N),mk(new THREE.BoxGeometry(.3,.14,.14),std({color:0x55585c,roughness:.6,metalness:.5}),N)];
     K.Z=new THREE.Vector3(0,0,0);K.SH=new THREE.Vector3(.7,2,.3);
     const ft=canvas(64,64,(g,w,h)=>{const gr=g.createRadialGradient(32,40,2,32,36,30);gr.addColorStop(0,'rgba(255,240,170,1)');gr.addColorStop(.4,'rgba(255,150,30,.8)');gr.addColorStop(1,'rgba(255,60,0,0)');g.fillStyle=gr;g.fillRect(0,0,w,h);});
     K.fl=[];for(let q=0;q<5;q++){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:ft,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,fog:false}));sp.visible=false;scene.add(sp);K.fl.push(sp);}
-    for(let n=0;n<N;n++){const ro=n<4?1:n<7?2:0,tl=n%4===0&&n>=8&&n<=24?4:ro===2?0:n%4;K.l.push({s:0,lat:0,tg:0,t:0,mv:0,ro,tl});}}   // ro: 0 running, 1 crouched in the road, 2 lying in the road; tl: 0 none, 1 shovel, 2 hammer, 3 stick, 4 flaming torch
+    for(let n=0;n<N;n++){const ro=n<4?1:n<7?2:0,tl=ro===2?0:1+n%3;K.l.push({s:0,lat:0,tg:0,t:0,mv:0,ro,tl});}}   // ro: 0 running, 1 crouched in the road, 2 lying in the road; tl: 0 none, 1 shovel, 2 hammer, 3 stick, 4 flaming torch
   if(!near||G.state!=='race'){if(K.on){K.on=0;for(const m of K.im)m.count=0;for(const f of K.fl)f.visible=false;}return;}
-  if(!K.on){K.on=1;for(const o of K.l){const w=RW+XW[wrapI(Math.floor(a))];o.s=a*SEG+R(-50,50);o.lat=(Math.random()<.5?-1:1)*R(w+14,w+(o.tl?70:40));o.tg=R(-w+1,w-1);o.mv=R(3,4.6);o.t=-R(0,3);if(o.ro){o.lat=o.tg=R(-w+2,w-2);o.t=R(0,3);}}}   // the ones running come out of the prison grounds; a few are already in the road, crouched or lying
+  if(!K.on){K.on=1;for(const o of K.l){const w=RW+XW[wrapI(Math.floor(a))];o.s=a*SEG+R(-50,50);o.lat=(Math.random()<.5?-1:1)*R(w+14,w+(o.tl?70:40));o.tg=R(-w+1,w-1);o.mv=R(1.3,2.1);o.t=-R(0,14);if(o.ro){o.lat=o.tg=R(-w+2,w-2);o.t=R(0,3);}}}   // the ones running come out of the prison grounds; a few are already in the road, crouched or lying
   let fi=0;
   for(let n=0;n<N;n++){const o=K.l[n];o.t+=rdt;const d=o.tg-o.lat,run=o.t>0&&Math.abs(d)>.1;if(run)o.lat+=Math.sign(d)*Math.min(Math.abs(d),o.mv*rdt);
     const sw=Math.sin(o.t*10);at(o.s,o.lat,run?Math.abs(sw)*.08:0,K.V);
