@@ -2847,7 +2847,7 @@ function seaTick(tm,D){const S_=SEA;S_.g.position.set(D.wx,-45,D.wz);
 // water closes over the camera: teal murk, a dome of deepening colour, and a soft light on the car
 function underwater(k){scene.fog.color.lerp(SEA.col,k);scene.fog.near=lerp(scene.fog.near,1,k);scene.fog.far=lerp(scene.fog.far,44,k);SEA.dome.visible=k>.4;SEA.dome.position.copy(camera.position);SEA.light.intensity=k*340;SEA.light.position.copy(hero.position);SEA.light.position.y+=7;}
 function sfxBubble(){if(!AC)return;let t=AC.currentTime;for(let i=0;i<3+(Math.random()*4|0);i++){tone('sine',R(260,520),t,.1,.22,master,{to:R(800,1400),a:.01,h:.3});t+=R(.05,.14);}}
-function sfxCaw(){if(!AC)return;let t=AC.currentTime;const n=2+(Math.random()*3|0),v=R(.16,.3);for(let i=0;i<n;i++){const f=R(520,640);tone('sawtooth',f,t,.2,v,master,{to:f*.66,a:.01,h:.5,lp:1900,ft:'bandpass',q:2.5});hit(t,.17,v*.8,1500,'bandpass',master);t+=R(.28,.4);}}
+function sfxCaw(){return;/* crow calls switched off at the owner's request */if(!AC)return;let t=AC.currentTime;const n=2+(Math.random()*3|0),v=R(.16,.3);for(let i=0;i<n;i++){const f=R(520,640);tone('sawtooth',f,t,.2,v,master,{to:f*.66,a:.01,h:.5,lp:1900,ft:'bandpass',q:2.5});hit(t,.17,v*.8,1500,'bandpass',master);t+=R(.28,.4);}}
 // wind howling through the viaduct and the bridge: resonant noise whose pitch keeps sliding
 let HW=null;
 function howlTick(k){if(!AC)return;if(!HW){const nb=noiseBuf(2),g=AC.createGain();g.gain.value=0;g.connect(master);HW={g,f:[]};for(const f0 of[330,520]){const s=AC.createBufferSource();s.buffer=nb;s.loop=true;const fl=AC.createBiquadFilter();fl.type='bandpass';fl.frequency.value=f0;fl.Q.value=14;const gg=AC.createGain();gg.gain.value=f0<400?1:.6;s.connect(fl);fl.connect(gg);gg.connect(g);s.start();HW.f.push(fl);}}
