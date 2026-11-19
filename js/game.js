@@ -3510,10 +3510,10 @@ const SNAP={l:[],cd:0};
 function sfxTwang(v){if(!AC)return;const t=AC.currentTime;tone('sawtooth',R(380,560),t,.7,.22*v,master,{to:R(70,110),a:.003,h:.2,lp:2600});hit(t,.12,.45*v,3200,'bandpass',master);}
 function snapTick(rdt){const S=SNAP,pe=ents.find(e=>e.player);if(!pe||!BRH.length)return;
   if(!S.l.length){const M=std({color:0x767c81,roughness:.5,metalness:.6}),geo=new THREE.CylinderGeometry(.08,.08,1,5).translate(0,-.5,0);
-    for(let k=0;k<26;k++){const g=new THREE.Group(),m=new THREE.Mesh(geo,M);g.add(m);g.visible=false;scene.add(g);S.l.push({g,m,st:0});}}
+    for(let k=0;k<48;k++){const g=new THREE.Group(),m=new THREE.Mesh(geo,M);g.add(m);g.visible=false;scene.add(g);S.l.push({g,m,st:0});}}
   const on=(QK&&QK.st===1&&QK.t>.4&&QK.t<9)||(GGQ.st===1&&GGQ.t>1&&GGQ.t<13);
-  if(on){S.cd-=rdt;if(S.cd<=0){S.cd=QK&&QK.st===1?R(.12,.4):R(.3,.9);const s=pe.s+R(18,90),i=wrapI(Math.floor(s/SEG)+3),br=BRH.find(b=>i>b.c0+4&&i<b.c1-4),k=S.l.find(o=>!o.st);
-    if(br&&k){const top=br.hgt(i),L=top-1.2;if(L>3){const sd=Math.random()<.5?-1:1;k.st=1;k.t=0;k.L=L;k.i=i;k.drop=Math.random()<.4;k.vy=0;k.a=0;k.w=sd*R(1.4,2.6);
+  if(on){S.cd-=rdt;if(S.cd<=0){S.cd=QK&&QK.st===1?R(.06,.22):R(.2,.6);let i=0,br=null,bt=-1;for(let q=0;q<6;q++){const i2=wrapI(Math.floor((pe.s+R(18,130))/SEG)+3),b2=BRH.find(b=>i2>b.c0+4&&i2<b.c1-4);if(b2){const h2=b2.hgt(i2);if(h2>bt){bt=h2;i=i2;br=b2;}}}const k=S.l.find(o=>!o.st);   /* of several candidates the longest hanging cable is the one that goes */
+    if(br&&k){const top=br.hgt(i),L=top-1.2;if(L>3){const sd=Math.random()<.5?-1:1;k.st=1;k.t=0;k.L=L;k.i=i;k.drop=Math.random()<(L>14?.6:.4);k.vy=0;k.a=0;k.w=sd*R(1.4,2.6);
       off(i,sd*(10.3+XW[i]),top,k.g.position);k.g.rotation.set(0,yaw(i),0);k.m.scale.set(1,L,1);k.m.rotation.set(0,0,0);k.g.visible=true;
       sfxTwang(clamp(50/(Math.abs(wdiff(i*SEG-pe.s))+15),.25,1));}}}}
   for(const k of S.l){if(!k.st)continue;k.t+=rdt;const t=k.t;
