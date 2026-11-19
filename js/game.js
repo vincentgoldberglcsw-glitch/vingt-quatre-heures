@@ -1964,7 +1964,7 @@ function sfxBeep(hi){if(!AC)return;tone('square',hi?880:440,AC.currentTime,hi?.5
 function updateAudio(rpm,thr,speed,slip){if(!AC)return;const t=AC.currentTime,f=rpm/60*3*(G.slow<1?.7:1),on=G.state==='race'||G.state==='count'||G.state==='finish';
   for(const[o,m]of engOsc)o.frequency.setTargetAtTime(f*m,t,.03);
   engFilt.frequency.setTargetAtTime(500+rpm*.28+thr*1700,t,.05);engG.gain.setTargetAtTime(on&&!G.paused&&!PL.crash?(.11+thr*.15)*(G.cam===1?1.15:1):0,t,.06);
-  windG.gain.setTargetAtTime(on&&!G.paused?Math.min(.22,speed*speed*.00003):0,t,.1);squealG.gain.setTargetAtTime(on&&!G.paused&&!PL.crash?clamp((slip-2.6)*.055,0,.32):0,t,.05);engG.echo.gain.setTargetAtTime(G.tun*1.1,t,.15);
+  windG.gain.setTargetAtTime(on&&!G.paused?Math.min(.22,speed*speed*.00003):0,t,.1);squealG.gain.setTargetAtTime(on&&!G.paused&&!PL.crash&&!(DRIVE&&thr>.2&&Math.abs(PL.steer)<.2&&!PL.brk)?clamp((slip-2.6)*.055,0,.32):0,t,.05);engG.echo.gain.setTargetAtTime(G.tun*1.1,t,.15);
   rainG_.gain.setTargetAtTime(G.paused?0:G.weather==='rain'?.1:G.weather==='hail'?.14:0,t,.3);musicG.gain.setTargetAtTime(musicOn?(G.state==='title'?.65:.42):0,t,.2);}
 
 function sfxThunder(d){if(!AC)return;const t=AC.currentTime+Math.min(3,d/340),v=clamp(140/(d+60),.15,1);hit(t,3.2,1.1*v,140,'lowpass',master);hit(t+.3,2.4,.7*v,90,'lowpass',master);if(d<250)hit(t,.25,1.2*v,2600,'highpass',master);}
