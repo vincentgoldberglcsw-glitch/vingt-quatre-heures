@@ -32,6 +32,14 @@ function canvas(w,h,fn,srgb=true){const c=document.createElement('canvas');c.wid
   const t=new THREE.CanvasTexture(c);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=ANISO;return t;}
 const std=o=>new THREE.MeshStandardMaterial(o);
 const DETR={a:-1};   // the detour ramp: starts at index a, 240 segments long, drops to the ground by 60% of the way
+// hyperspace jump into the portal: streaking stars stretch out from the centre (w 0..1 building), then on arrival they shrink away again (w 0..-1)
+const WARP={c:null,s:null};
+function warpDraw(w){if(!WARP.c){const c=document.createElement('canvas');c.width=480;c.height=270;c.style.cssText='position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:50;display:none';document.body.appendChild(c);WARP.c=c;WARP.s=Array.from({length:110},()=>({a:Math.random()*6.283,r:Math.random(),v:.5+Math.random()}));}
+  const c=WARP.c;if(w===null||Math.abs(w)>=1){c.style.display='none';return;}c.style.display='block';const g=c.getContext('2d'),W=c.width,Hh=c.height,cx=W/2,cy=Hh/2,k=Math.abs(w),build=w>0;
+  g.fillStyle=build?'rgba(0,6,24,'+(.15+k*.35)+')':'rgba(0,6,24,'+(.5*(1-k))+')';g.fillRect(0,0,W,Hh);
+  const len=build?k*k*.5:(1-k)*.4,run=Math.max(W,Hh);
+  for(const s of WARP.s){const r0=(s.r*.3+(build?k:1-k)*s.v*.7)*run*.55,r1=r0+len*run*s.v+2;g.strokeStyle=s.v>1?'#ffffff':'#9fd2ff';g.lineWidth=1+s.v;g.beginPath();g.moveTo(cx+Math.cos(s.a)*r0,cy+Math.sin(s.a)*r0);g.lineTo(cx+Math.cos(s.a)*r1,cy+Math.sin(s.a)*r1);g.stroke();}
+  if(build&&k>.75){g.fillStyle='rgba(255,255,255,'+((k-.75)*4)+')';g.fillRect(0,0,W,Hh);}}
 const PORTAL={c:null,tex:null,g:null,i:1e9,t:0};   // the Richmond portal: its swirl canvas is redrawn a few times a second
 const PPLM={};const pplM=c=>PPLM[c]||(PPLM[c]=std({color:c,roughness:.9}));
 const SHIRTS=[0x8a3a30,0x2f5f7a,0xd8cfb0,0x4a6a4a,0x3a3a4a,0xc9a84a,0x6a4a6a,0xe8e4d8,0x1f3a5a,0xb3241c],PANTS=[0x2a2a30,0x3a4a6a,0x5a4a3a,0x1c1c1e,0x6a6a62],SKINS=[0xe0b896,0xc8946a,0x8a5a3a,0xf0d0b0,0x5a3a28];
@@ -1061,7 +1069,7 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
     // the detour: orange signs, a gantry pointing right, and the exit lane peeling off the viaduct towards Berkeley and Richmond
     const det=sign(512,512,'DETOUR','#f08a1c','#141414','900 110px Arial','→');for(const d of[400,300,200])board(Z.detour-m(d),-(11+XW[Z.detour-m(d)]),2.6,2.6,det,1,.45);
     gant(Z.detour-m(60),'DETOUR  ↗','BERKELEY · RICHMOND',"#f08a1c",'#141414',-3.8);
-    const a=Z.detour-m(30),n=60,pos=[],uv=[];DETR.a=a;const _x=[],idx=[];for(let k=0;k<=n;k++){const u=k/n,i=a+k*4,lat=-(RW+XW[i])-4.2-70*u*u,y=H[i]*(1-sst(u,.08,.6)),p=P[i],nn=Nn[i];for(const s of[-4,4])pos.push(p.x+nn.x*(lat+s),y+.02,p.z+nn.z*(lat+s));uv.push(0,k*.6,1,k*.6);if(k<n){const q=k*2;idx.push(q,q+2,q+1,q+1,q+2,q+3);}}
+    const a=Z.detour-m(30),n=60,pos=[],uv=[];DETR.a=a;const _x=[],idx=[];for(let k=0;k<=n;k++){const u=k/n,i=a+k*4,lat=-(RW+XW[i])-4.2-70*u*u,y=H[i]*(1-sst(u,.08,.6)),p=P[i],nn=Nn[i];for(const s of[-4,4])pos.push(p.x+nn.x*(lat+s),y+.02-s*.09*Math.sin(Math.PI*u),p.z+nn.z*(lat+s));uv.push(0,k*.6,1,k*.6);if(k<n){const q=k*2;idx.push(q,q+2,q+1,q+1,q+2,q+3);}}
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const rm=new THREE.Mesh(g,new THREE.MeshStandardMaterial({map:roadTex,roughness:.72,side:D2}));rm.receiveShadow=true;scene.add(rm);
     const cone=new THREE.InstancedMesh(new THREE.ConeGeometry(.28,.8,10),std({color:0xf06a1c,roughness:.6}),30);for(let k=0;k<30;k++){const i=a-m(40)+k*3,lat=-(RW+XW[i])-.4-k*.1;off(i,lat,.4,V);M4.compose(V,Q.identity(),S.set(1,1,1));cone.setMatrixAt(k,M4);}scene.add(cone);
     { // the portal to Richmond: signs with weeds, then a platform and a ring gate with a swirling blue tunnel (the detour fade fires when the car reaches it)
@@ -3173,8 +3181,8 @@ function extrasTick(rdt){const pe=ents.find(e=>e.player);if(!pe)return;const m_=
   // the detour: take the exit lane on the right and the road brings you round to Richmond
   {const i=PL.idx;if(PORTAL.c&&PL.idx>PORTAL.i-300&&PL.idx<PORTAL.i+40){PORTAL.t+=rdt;if(PORTAL.t>.06){PORTAL.t=0;const c=PORTAL.c,g=c.getContext('2d'),w=c.width,ph=tmNow()*2.2;g.fillStyle='#061a3a';g.fillRect(0,0,w,w);for(let k=0;k<9;k++){g.strokeStyle=k%2?'rgba(210,240,255,.9)':'rgba(60,150,255,.8)';g.lineWidth=5+k%3*2;g.beginPath();for(let r=3;r<w*.62;r+=3){const an=r*.09-ph+k*.7,x=w/2+Math.cos(an)*r*(1-k*.015),y=w/2+Math.sin(an)*r*(1-k*.015);r===3?g.moveTo(x,y):g.lineTo(x,y);}g.stroke();}const rg=g.createRadialGradient(w/2,w/2,2,w/2,w/2,w*.5);rg.addColorStop(0,'rgba(255,255,255,1)');rg.addColorStop(.35,'rgba(150,210,255,.35)');rg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=rg;g.fillRect(0,0,w,w);PORTAL.tex.needsUpdate=true;}}
   if(!FADE.go&&!PL.crash&&i>=PORTAL.i-3&&i<PORTAL.i+m_(40)&&pe.lat<-(RW+XW[i]+3.2)){FADE.go=1;FADE.t=0;PL.air=1;PL.vy=Math.max(PL.vy||0,9);$('fade').style.background='#d8f0ff';say('DETOUR','BERKELEY · RICHMOND',2.5);}
-    if(FADE.go){FADE.t+=rdt;FADE.k=clamp(FADE.t/.6,0,1);if(FADE.t>.7&&FADE.go===1){FADE.go=2;const j=PL.idx=wrapI(Z.rb1+m_(30)),sp=Math.max(pe.v,16);pe.s=j*SEG;pe.lat=0;PL.x=P[j].x;PL.z=P[j].z;PL.h=G.camH=yaw(j);PL.vx=Math.sin(PL.h)*sp;PL.vz=Math.cos(PL.h)*sp;PL.cy=PL.gy=H[j];PL.air=0;PL.vy=0;first=true;say('RICHMOND','THE DETOUR BROUGHT YOU ROUND · I-80 SOUTH TO HOME',3);}
-      if(FADE.go===2){FADE.k=clamp(1-(FADE.t-.7)/.8,0,1);if(FADE.k<=0){FADE.go=null;$('fade').style.background='';}}}
+    if(FADE.go){FADE.t+=rdt;FADE.k=clamp((FADE.t-.75)/.3,0,1);warpDraw(FADE.go===1?FADE.t/1.05:-(FADE.t-1.05)/.9);if(FADE.t>1.05&&FADE.go===1){FADE.go=2;const j=PL.idx=wrapI(Z.rb1+m_(30)),sp=Math.max(pe.v,16);pe.s=j*SEG;pe.lat=0;PL.x=P[j].x;PL.z=P[j].z;PL.h=G.camH=yaw(j);PL.vx=Math.sin(PL.h)*sp;PL.vz=Math.cos(PL.h)*sp;PL.cy=PL.gy=H[j];PL.air=0;PL.vy=0;first=true;say('RICHMOND','THE DETOUR BROUGHT YOU ROUND · I-80 SOUTH TO HOME',3);}
+      if(FADE.go===2){FADE.k=clamp(1-(FADE.t-1.05)/.8,0,1);if(FADE.k<=0){warpDraw(null);FADE.go=null;$('fade').style.background='';}}}
     $('fade').style.opacity=FADE.k.toFixed(3);}}
 // Sunny weather is a heatwave: the tyres slowly melt (a little less grip, black smoke off the wheels) and there are wildfires burning in the country round about, more of them in the city.
 const FIRES=[];
