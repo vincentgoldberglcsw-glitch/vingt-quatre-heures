@@ -2486,6 +2486,9 @@ function birdsTick(rdt){const B=BIRDS,pe=ents.find(e=>e.player);if(!pe)return;
   if(!B.im){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array([0,0,.13, 0,0,-.12, -.38,.16,-.06, 0,0,.13, .38,.16,-.06, 0,0,-.12]),3));g.computeVertexNormals();
     B.im=new THREE.InstancedMesh(g,new THREE.MeshBasicMaterial({color:0x17161a,side:THREE.DoubleSide}),30);B.im.frustumCulled=false;B.im.count=0;scene.add(B.im);
     for(let k=0;k<30;k++)B.b.push({ox:0,oy:0,oz:0,ph:0,w:0,r:0});}
+  if(DRIVE){if(PL.idx<Z.tu0)B.tb=0;else if(!B.tb&&B.st===0&&G.state==='race'&&PL.idx>=Z.tu1-Math.round(40/SEG)&&PL.idx<Z.tu1+Math.round(80/SEG)){   // coming out of the Posey Tube a flock bursts up from the road ahead (once per run)
+    B.tb=1;B.st=1;B.t=0;B.n=20+(Math.random()*11|0);B.s=pe.s+R(40,60);B.dir=Math.random()<.5?-1:1;B.T=R(6,8);
+    for(let k=0;k<B.n;k++){const b=B.b[k];b.ox=R(-7,7);b.oy=R(-2,2.5);b.oz=R(-8,8);b.ph=R(0,6.3);b.w=R(.6,1.4)*(Math.random()<.5?-1:1);b.r=R(1,3);}}}
   if(B.st===0){B.im.count=0;if(zoneArr[PL.idx]!==1||G.state!=='race')return;B.cd-=rdt;if(B.cd>0)return;
     B.st=1;B.t=0;B.cd=R(30,60);B.n=15+(Math.random()*16|0);B.s=pe.s+R(45,80);B.dir=Math.random()<.5?-1:1;B.T=R(6,8);
     for(let k=0;k<B.n;k++){const b=B.b[k];b.ox=R(-7,7);b.oy=R(-2,2.5);b.oz=R(-8,8);b.ph=R(0,6.3);b.w=R(.6,1.4)*(Math.random()<.5?-1:1);b.r=R(1,3);}return;}
