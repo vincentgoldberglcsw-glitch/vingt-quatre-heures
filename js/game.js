@@ -2551,7 +2551,7 @@ function tumbleTick(rdt){const T_=TUMB,pe=ents.find(e=>e.player);if(!pe)return;
     if(dsP<-40||dsP>320||Math.abs(k.lat)>w+16||(!on&&dsP<0)){k.st=0;k.g.visible=false;continue;}
     k.lat+=k.dir*k.v*rdt;k.s+=k.ds*rdt;k.vy-=14*rdt;k.y+=k.vy*rdt;if(k.y<=0){const hard=k.vy<-6;k.y=0;k.vy=R(1.5,3.8)*(Math.random()<.2?1.6:1);if(hard&&k.g.visible)snap(k,2+(Math.random()*3|0),0);}   // gusts carry it across in bounces; a hard landing after a high one shakes bits loose
     at(k.s,k.lat,k.y+k.r,T_.V);k.g.position.copy(T_.V);
-    const dx=T_.V.x-PL.x,dz=T_.V.z-PL.z;if(dx*dx+dz*dz<(k.r+1.6)**2&&k.y<1.2){k.vy=R(6,9);k.ds=pe.v*.6;snap(k,5+(Math.random()*4|0),.5);}   // bounced up over the car, shedding twigs
+    const dx=T_.V.x-PL.x,dz=T_.V.z-PL.z;if(dx*dx+dz*dz<(k.r+1.6)**2&&k.y<1.2){if(Math.random()<.33){snap(k,14+(Math.random()*8|0),.6);k.st=0;k.g.visible=false;continue;}   /* 1 in 3 disintegrates into a burst of bits */k.vy=R(6,9);k.ds=pe.v*.6;snap(k,5+(Math.random()*4|0),.5);}   // bounced up over the car, shedding twigs
     const mv=Math.hypot(k.v,k.ds)||1;at(k.s+k.ds/mv,k.lat+k.dir*k.v/mv,0,T_.W);at(k.s,k.lat,0,T_.A);T_.W.sub(T_.A);T_.A.set(T_.W.z,0,-T_.W.x).normalize();T_.Q.setFromAxisAngle(T_.A,mv*rdt/k.r);k.g.quaternion.premultiply(T_.Q);}}
 function turkeysTick(rdt){const v=Math.hypot(PL.vx,PL.vz);for(const k of TK){const m=k.m,gy=H[k.ci];
     if(k.st===0){k.tt-=rdt;if(k.tt<=0){k.tt=R(2,7);{const a=R(0,6.283),d=R(3,12);k.tl=clamp(k.lat+Math.cos(a)*d,-13,13);k.td=clamp(k.ds+Math.sin(a)*d*1.6,-22,22);}}
