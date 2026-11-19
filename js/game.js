@@ -1027,11 +1027,22 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
       emissiveMap:canvas(256,128,(g,w,h)=>{g.fillStyle='#000';g.fillRect(0,0,w,h);for(const[x,y,lit]of MW)if(lit){g.fillStyle='#ff8a30';g.fillRect(x,y,16,22);}}),emissive:0xffffff,emissiveIntensity:.9});
     for(let i=Z.tu1+m(250);i<Z.detour-m(200);i+=m(90)){const sd=-1,lat=-rr(70,120);gpos(i,lat,V);const w=rr(40,80),d=rr(30,60),h=rr(9,16),wm=pick([fade,fade2,rust2]);if(!farFromRoad(V.x,V.z,Math.hypot(w,d)/2+12))continue;B(w,h,d,wm,V.x,h/2,V.z,yaw(i));const rf=B(w+1,1,d+1,mat('roofgrey',{color:0x5a5c5e}),V.x,h+.3,V.z,yaw(i));}
     const mill=Z.tu1+m(1300);gpos(mill,-230,V);const mx=V.x,mz=V.z,ry=yaw(mill);const R2=(lx,lz)=>{const c=Math.cos(ry),s=Math.sin(ry);return[mx+lx*c+lz*s,mz-lx*s+lz*c];};
-    for(const[lx,lz,w,d,h]of[[0,0,60,140,26],[-70,30,40,90,20],[60,-60,34,70,32],[-40,-110,80,30,14]]){const[x,z]=R2(lx,lz);B(w,h,d,broken,x,h/2,z,ry);const rf=B(w+.6,1.2,d+.6,rust,x,h+.6,z,ry);rf.rotation.z=rr(-.08,.08);}
-    for(let k=0;k<5;k++){const[x,z]=R2(-20+k*16,70);const h=rr(48,70);const st=new THREE.Mesh(cyl(2.2,3,h,12),rust2);st.position.set(x,h/2,z);st.castShadow=true;scene.add(st);B(5,1,5,rust,x,h,z);MILL.push({x,y:h+1,z,t:R(0,.3),k:1});}
-    {const[x,z]=R2(70,40);const bf=new THREE.Mesh(cyl(7,9,40,14),rust);bf.position.set(x,20,z);bf.castShadow=true;scene.add(bf);const tp=new THREE.Mesh(new THREE.ConeGeometry(7,12,14),rust2);tp.position.set(x,46,z);scene.add(tp);MILL.push({x,y:52,z,t:0,k:1.6});const gl=new THREE.Mesh(cyl(3.2,3.2,1,12),new THREE.MeshBasicMaterial({color:0xff7a20}));gl.position.set(x,40.6,z);scene.add(gl);   /* the furnace glowing at the throat */for(const q of[-1,1]){const st=new THREE.Mesh(cyl(4,4,26,12),rust2);st.position.set(x+q*14,13,z+12);scene.add(st);}
-     const cv=B(4,3,120,rust2,x-40,30,z-10,ry+.6);cv.rotation.x=.18;}
-    const ms=sign(1024,200,'BAYSIDE STEEL WORKS','#3a2a20','#c9a37a','900 96px Georgia');{const[x,z]=R2(0,72);const sg=new THREE.Mesh(new THREE.PlaneGeometry(50,9.8),std({map:ms,roughness:.9}));sg.position.set(x,30,z);sg.rotation.y=ry+Math.PI/2;scene.add(sg);}
+    {const blk=std({color:0x0e0d0c,roughness:1}),pipeM=corrM(0x7a4a32),M=(lx,lz,y,w,h,d,mt,rot=0)=>{const[x,z]=R2(lx,lz);return B(w,h,d,mt,x,y,z,ry+rot);};   // the works in partial ruin, spread over a big footprint (local x across, z along)
+      for(const sx of[-40,40]){const L=210,W=46,Hh=15;M(sx,0,Hh/2,W,Hh,L,broken);   // two long sheds with sawtooth roofs and holes shot in the walls and roof
+        for(let q=-L/2+8;q<L/2-6;q+=14){const t=M(sx,q,Hh+2.4,W,5,.8,rust);t.rotation.order='YXZ';t.rotation.x=.45;}
+        for(const[hz,hy,hw]of[[-60,8,10],[10,7,7],[70,9,12],[-20,12,6]])M(sx+(sx<0?-W/2-.1:W/2+.1),hz,hy,.4,hw*.6,hw,blk);
+        M(sx,rr(-60,60),Hh+4.6,12,.4,16,blk);}   // a hole through the roof
+      for(let k=0;k<6;k++){const[x,z]=R2(100,-70+k*26),hh=k===4?26:k===5?9:rr(42,48),st=new THREE.Mesh(cyl(6,6.4,hh,14),k%2?rust:rust2);st.position.set(x,hh/2,z);if(k===4){st.rotation.z=.32;st.position.x+=4;}st.castShadow=true;scene.add(st);   // hot-blast stoves: one leaning, one a broken stump
+        if(k<4){const dm=new THREE.Mesh(new THREE.SphereGeometry(6,12,6,0,6.2832,0,1.5708),rust2);dm.position.set(x,hh,z);scene.add(dm);}}
+      M(100,-5,32,3,3,150,pipeM);M(100,-5,22,3,3,150,pipeM);M(88,-5,12,3,26,3,pipeM);   // pipework along the stoves
+      {const[x,z]=R2(150,-20);const bf=new THREE.Mesh(cyl(8,11,56,16),rust);bf.position.set(x,28,z);bf.castShadow=true;scene.add(bf);const tp=new THREE.Mesh(new THREE.ConeGeometry(8,14,16),rust2);tp.position.set(x,63,z);scene.add(tp);MILL.push({x,y:71,z,t:0,k:1.6});   // the furnace tower, its throat still smoking
+        const hs=M(185,-20,28,80,2.4,3.4,rust2);hs.rotation.order='YXZ';hs.rotation.z=.52;M(150,-20,8,3,16,3,rust2);}   // the skip hoist climbing slanted up to the throat
+      for(let k=0;k<5;k++){const h=[96,90,84,58,42][k],[x,z]=R2(-120,-100+k*45),st=new THREE.Mesh(cyl(1.7,3,h,12),k%2?rust:rust2);st.position.set(x,h/2,z);st.castShadow=true;scene.add(st);
+        if(k<3){B(5,1,5,rust,x,h,z);MILL.push({x,y:h+1,z,t:R(0,.3),k:1.2});}   // smoke from the intact stack tops only
+        else{const jg=new THREE.Mesh(new THREE.ConeGeometry(2.6,5,5),blk);jg.position.set(x,h+1.5,z);jg.rotation.z=rr(-.5,.5);scene.add(jg);if(k===3){const f=new THREE.Mesh(cyl(1.4,1.7,22,10),rust2);f.position.set(x+9,1.2,z+4);f.rotation.set(1.45,0,1.2);scene.add(f);}}}   // the tops broken off, one fallen
+      for(let k=0;k<9;k++)M(-170,-90+k*13,2.2,4.6,2.6,11,k%3?rust2:rust);   // ore cars on the siding
+      M(-170,0,.6,1,.3,170,blk);M(-168,0,.6,1,.3,170,blk);}
+    const ms=sign(1024,200,'BAYSIDE STEEL WORKS','#3a2a20','#c9a37a','900 96px Georgia');{const[x,z]=R2(0,-130);const sg=new THREE.Mesh(new THREE.PlaneGeometry(50,9.8),std({map:ms,roughness:.9}));sg.position.set(x,30,z);sg.rotation.y=ry+Math.PI/2;scene.add(sg);}
     for(let k=0;k<6;k++){const[x,z]=R2(rr(-90,90),rr(-150,120));const tk=new THREE.Mesh(cyl(9,9,12,16),fade2);tk.position.set(x,6,z);tk.castShadow=true;scene.add(tk);}
     // the left (bay) side, in order: warehouses, then the rail yard, then the port with its cranes
     for(let i=Z.tu1+m(150);i<Z.tu1+m(620);i+=m(rr(55,80))){gpos(i,rr(150,200),V);const w=rr(40,70),d=rr(26,44),h=rr(9,15);B(w,h,d,pick([fade,fade2,rust2,rust]),V.x,V.y+h/2,V.z,yaw(i));B(w+1,1,d+1,mat('roofgrey',{color:0x5a5c5e}),V.x,V.y+h+.3,V.z,yaw(i));
