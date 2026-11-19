@@ -31,6 +31,7 @@ const camera=new THREE.PerspectiveCamera(16,innerWidth/innerHeight,0.12,5000);
 function canvas(w,h,fn,srgb=true){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);
   const t=new THREE.CanvasTexture(c);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=ANISO;return t;}
 const std=o=>new THREE.MeshStandardMaterial(o);
+const SHOP={ic:0,F:0,list:null,t:0};   // the supermarket shoppers (see shopTick)
 const DOME={x:0,z:0,i:-1};   // the green eyed dome in the road before the Posey Tube
 const DETR={a:-1};   // the detour ramp: starts at index a, 240 segments long, drops to the ground by 60% of the way
 // hyperspace jump into the portal: streaking stars stretch out from the centre (w 0..1 building), then on arrival they shrink away again (w 0..-1)
@@ -145,7 +146,7 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
   bankOn(z.refinery-m(60),z.i80+m(60),.1);   // the wide sweep from Shane Drive onto I-80, taken at speed
   bankOn(z.sq+m(40),z.rb0+m(20),.1);   // past San Quentin: a gentle banked curve through the badlands
   bankOn(z.richmond+m(40),z.shane,.08);   // Richmond's sloping bend
-  bankOn(z.paru-m(PR*1.571+40),z.paru+m(40),.26);bankOn(z.central-m(CR*1.571+40),z.central+m(40),.26);bankOn(z.wilma-m(WR*1.222+40),z.wilma+m(40),.26);   // the Alameda corners: wide and steeply banked, for 175 mph
+  bankOn(z.paru-m(PR*1.571+40),z.paru+m(40),.26);bankOn(z.wilma-m(WR*1.222+40),z.wilma+m(40),.26);   // the Alameda corners: wide and steeply banked, for 175 mph
   bankOn(z.tu0-m(200),z.tu0-m(10),.2);   // into the Posey Tube
   bankOn(z.tu1+m(200),z.tu1+m(430),.08);   // out of the tube and up onto I-880
   bankOn(z.wt1-m(420),z.wt1-m(50),.08);   // the long, gentle bend down off I-80 into the Webster Tube
@@ -247,7 +248,7 @@ for(let i=0;i<NS;i+=3)for(const sd of [-1,1])for(let k=0;k<3;k++){
   if(DRIVE&&sd<0&&i>Z.wilma+20/SEG&&i<Z.tu0-130/SEG){   // Wilma Chan Way: a thick belt of trees on the right. Own hash for spacing and jitter, so the seeded scenery after this is unchanged
     const hh=n=>{const s=Math.sin(i*12.9898+k*78.233+n*37.719)*43758.5453;return s-Math.floor(s);};
     if(hh(0)>=.3){const oo=-(13.5+k*6.5+hh(1)*4+XW[i]),x=P[i].x+Nn[i].x*oo+(hh(2)-.5)*3,z=P[i].z+Nn[i].z*oo+(hh(3)-.5)*3;if(farFromRoad(x,z,10))treePos.push([x,z]);}}
-  if(DRIVE){const zn=zoneOf(i),cr=(i-Z.paru)/(PB/SEG);if(zn==='town'){if(k||i%21||(i>Z.wt0-5&&i<Z.wt0+70)||(i>Z.paru&&i<Z.central&&Math.abs(cr-Math.round(cr))*PB<16)||(sd>0&&i>Z.paru-(PR*1.57+12)/SEG&&i<Z.paru+3))continue;o=sd*11.2;minD=9.5;}else if(zn==='freeway'){if(k||rnd()<.6||H[i]>1)continue;o=sd*rr(26,60);}else if(zn==='hills'){if(rnd()<.6||H[i]>.5)continue;}else continue;}   // street trees in town, a few by the freeways, oaks at the foot of the Richmond hills; the redwoods are their own
+  if(DRIVE){const zn=zoneOf(i),cr=(i-Z.paru)/(PB/SEG);if(zn==='town'){if(k||i%9||(i>Z.wt0-5&&i<Z.wt0+70)||(i>Z.paru&&i<Z.central&&Math.abs(cr-Math.round(cr))*PB<16)||(sd>0&&i>Z.paru-(PR*1.57+12)/SEG&&i<Z.paru+3))continue;o=sd*11.2;minD=9.5;}else if(zn==='freeway'){if(k||rnd()<.6||H[i]>1)continue;o=sd*rr(26,60);}else if(zn==='hills'){if(rnd()<.6||H[i]>.5)continue;}else continue;}   // street trees in town, a few by the freeways, oaks at the foot of the Richmond hills; the redwoods are their own
   else if(sd>0&&i>GS0-8&&i<GS1+8&&Math.abs(o)<36||sd<0&&i>GS0&&i<GS1)continue;
   const x=P[i].x+Nn[i].x*o+rr(-3,3)*(minD<16?.2:1),z=P[i].z+Nn[i].z*o+rr(-3,3)*(minD<16?.2:1);if(farFromRoad(x,z,minD)){treePos.push([x,z]);if(minD===9.5)TOWNT.push([x,z]);}}
 const CARDS=34,NT=treePos.length;
@@ -731,7 +732,7 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
     g.traverse(o=>{o.castShadow=true;});off(i,sd*(5.55+XW[i]),0,g.position);g.rotation.y=yaw(i)+(sd>0?Math.PI:0);scene.add(g);OBST.push({x:g.position.x,z:g.position.z});};
   {let n=0;const homeI=Z.start;   // houses on both sides wherever the town zone runs straight, with gaps at the cross streets and the shops on Central Ave
     for(let i=0;i<NS;i+=9){if(zoneArr[i]!==1||curved(i)||curved(i+6)||curved(i-6)||nearCross(i,m(16))||(i>Z.wt0-5&&i<Z.wt0+m(140)))continue;const shops=i>Z.central+m(30)&&i<Z.wilma-m(20);
-      for(const sd of[-1,1]){const isHome=sd<0&&Math.abs(i-homeI)<5;if(shops&&sd<0&&Math.abs(i-(Z.central+m(190)))<14)continue;   // the theatre's plot
+      for(const sd of[-1,1]){const isHome=sd<0&&Math.abs(i-homeI)<5;if(!shops&&!isHome&&(i/9|0)%3===1)continue;   /* open spaces between the houses */if(shops&&sd<0&&Math.abs(i-(Z.central+m(190)))<14)continue;   // the theatre's plot
         if(sd>0&&i>CROSS[0]+8&&i<CROSS[1]-8)continue;                                       // the supermarket's plot
         off(i,sd*((shops?14.2:21)+XW[i]),0,V);const rot=faceRoad(i,sd);
         const xc=shops&&nearCross2(i,m(14)),n0=scene.children.length,o0=OBST.length;   /* a Central Ave cross street: the shop is still built (so the shared random numbers run on as before) and then taken away */
@@ -768,14 +769,14 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
     const sub=canvas(512,64,(c,w,h)=>{c.fillStyle='#e2d4b8';c.fillRect(0,0,w,h);c.fillStyle='#6a2a1e';c.font='700 34px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText('GROCERY · PHARMACY · BAKERY · DELI',w/2,34,500);});
     L(new THREE.PlaneGeometry(36,1.1),std({map:sub,roughness:.8}),0,6.4,.06);
     for(const s of[-1,1]){const cr=L(bx(5,1.1,1.6),mat('cart',{color:0x9aa0a4,metalness:.7,roughness:.35}),s*13,.75,4.2);cr.material.wireframe=false;for(let k=0;k<4;k++)L(bx(.9,.9,1.2),mat('cart2',{color:0xb9bec2,metalness:.7,roughness:.35}),s*13-1.6+k*1.05,.6,4.2);}   // cart corrals
-    g.traverse(o=>{if(o.isMesh)o.receiveShadow=true;});off(ic,F,0,g.position);g.position.y=0;g.rotation.y=faceRoad(ic,1);scene.add(g);
+    SHOP.ic=ic;SHOP.F=F;g.traverse(o=>{if(o.isMesh)o.receiveShadow=true;});off(ic,F,0,g.position);g.position.y=0;g.rotation.y=faceRoad(ic,1);scene.add(g);
     // the car park, from the back of the pavement to the shop front, with bays, lamp posts and a few cars
     const lot=new THREE.Mesh(new THREE.PlaneGeometry(b-a,1).rotateX(-Math.PI/2),lotM);{const lg=[];for(let i=a;i<=b;i++){lg.push(off(i,12,.015),off(i,F-.1,.015));}
       const pos=[],idx=[];lg.forEach(v=>pos.push(v.x,v.y,v.z));for(let k=0;k<b-a;k++){const q=k*2;idx.push(q,q+2,q+1,q+1,q+2,q+3);}const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setIndex(idx);geo.computeVertexNormals();lot.geometry=geo;lot.material.side=D2;}
     lot.position.set(0,0,0);lot.rotation.set(0,0,0);lot.receiveShadow=true;scene.add(lot);
     for(let i=a+3;i<=b-3;i+=2)for(const o of[22,38]){const ln=new THREE.Mesh(new THREE.PlaneGeometry(.15,5.2).rotateX(-Math.PI/2),lineM);off(i,o,.03,ln.position);ln.rotation.y=yaw(i)+Math.PI/2;scene.add(ln);}   // bay lines, two rows
-    for(const i of[a+8,ic,b-8]){const lp=new THREE.Group();B(.22,8,.22,steelM,0,4,0,0,lp);B(1.8,.25,.6,lampMat,.8,8,0,0,lp);off(i,30,0,lp.position);lp.rotation.y=yaw(i);scene.add(lp);OBST.push({x:lp.position.x,z:lp.position.z,r:.5});}
-    for(const[i,o]of[[a+6,22],[a+14,38],[ic+2,22],[ic+10,38],[b-6,22]]){const c=new THREE.Group();c.add(new THREE.Mesh(carG,mat('car'+(i%PCOL.length),{color:PCOL[i%PCOL.length],roughness:.4,metalness:.3})),new THREE.Mesh(whG,tyreM),new THREE.Mesh(new THREE.BoxGeometry(1.62,.36,2.32).translate(0,1.2,-.2),glassM));
+    for(const i of[a+8,b-8]){const lp=new THREE.Group();B(.22,8,.22,steelM,0,4,0,0,lp);B(1.8,.25,.6,lampMat,.8,8,0,0,lp);off(i,30,0,lp.position);lp.rotation.y=yaw(i);scene.add(lp);OBST.push({x:lp.position.x,z:lp.position.z,r:.5});}
+    for(const[i,o]of[[a+6,22],[a+14,38],[b-6,22]]){const c=new THREE.Group();c.add(new THREE.Mesh(carG,mat('car'+(i%PCOL.length),{color:PCOL[i%PCOL.length],roughness:.4,metalness:.3})),new THREE.Mesh(whG,tyreM),new THREE.Mesh(new THREE.BoxGeometry(1.62,.36,2.32).translate(0,1.2,-.2),glassM));
       c.traverse(q=>{q.castShadow=true;});off(i,o,0,c.position);c.rotation.y=yaw(i)+Math.PI/2*(o>30?1:-1);scene.add(c);OBST.push({x:c.position.x,z:c.position.z});}
     for(let i=a;i<=b;i++){if(!wallR[i])wallR[i]=wallAt[i];wallAt[i]=F-9.5;edgeAt[i]=Math.max(edgeAt[i],F-9);}}   // open on the left: the kerb is dropped along the car park, up to the canopy posts
   {// the neighbourhood behind Paru: the cross streets carry on, with a few streets parallel to Paru, and every block is filled with plain houses (instanced, no detail),
@@ -856,7 +857,7 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
     const vs=new THREE.Mesh(new THREE.BoxGeometry(2.4,19,.9),new THREE.MeshBasicMaterial({map:canvas(96,640,(c)=>{c.fillStyle='#7a1512';c.fillRect(0,0,96,640);c.fillStyle='#ffd27a';c.font='900 64px Arial Black,Arial';c.textAlign='center';'ALAMEDA'.split('').forEach((ch,k)=>c.fillText(ch,48,82+k*84));})}));vs.position.set(-6,15,9.2);th.add(vs);
     const zig=new THREE.Mesh(new THREE.ConeGeometry(1.4,4,4),gold);zig.position.set(-6,26.5,9.2);th.add(zig);
     th.traverse(o=>{o.castShadow=true;});off(q,-(19+XW[q]),0,th.position);th.rotation.y=faceRoad(q,-1);scene.add(th);
-    for(let k=0;k<34;k++){const i=q+m(2+k*.9),p=mkPerson(R(.9,1.05));at(i*SEG+R(-.15,.15),-(8.3+XW[i])+R(-.3,.3),.13,p.position);p.rotation.y=yaw(i)+Math.PI+R(-.4,.4);if(k%5===2)p.legs[0].rotation.x=.25;scene.add(p);}   // the queue for the picture, along the pavement from the box office
+    for(let k=0;k<80;k++){const i=q+m(2+k*.75),p=mkPerson(R(.9,1.05));at(i*SEG+R(-.15,.15),-(8.3+XW[i])+R(-.3,.3),.13,p.position);p.rotation.y=yaw(i)+Math.PI+R(-.4,.4);if(k%5===2)p.legs[0].rotation.x=.25;scene.add(p);}   // the queue for the picture, along the pavement from the box office
     const bt=canvas(1024,460,(g,w,h)=>{const sky=g.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#bfe3f2');sky.addColorStop(1,'#e9f5d8');g.fillStyle=sky;g.fillRect(0,0,w,h);
       g.fillStyle='#5fa544';g.beginPath();g.ellipse(520,480,640,150,0,0,7);g.fill();g.fillStyle='#4a8a38';g.beginPath();g.ellipse(330,290,330,74,-.12,0,7);g.fill();
       for(let k=0;k<8;k++){const x=120+k*52,y=226-Math.sin(k*.9)*20,r=k?34:26;g.fillStyle=k%2?'#58b548':'#e6ef5a';g.beginPath();g.arc(x,y,r,0,7);g.fill();g.fillStyle='#1c1c1c';g.fillRect(x-10,y+r-4,6,16);g.fillRect(x+6,y+r-4,6,16);}
@@ -2696,7 +2697,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -3421,6 +3422,12 @@ function millTick(rdt){if(!MILL.length||!millP)return;const i=PL.idx;if(!(i>Z.tu
 function refTick(rdt){if(!REFS.length||!refP)return;const i=PL.idx;if(!(i>Z.rb1-Math.round(900/SEG)&&i<Z.i80+Math.round(300/SEG)))return;
   for(const s of REFS){s.t-=rdt;if(s.t>0)continue;s.t=R(.7,1.3)/s.k;NOGY=1;emit(refP,ri++,V.set(s.x,s.y,s.z),R(-.8,.8)+3,R(4,7),R(-.8,.8),R(10,14)*s.k,R(55,90)*s.k,R(10,14),1,[0x4a4846,0x5e5b57,0x777470][Math.random()*3|0],-.2);NOGY=0;}}
 // People for the Alameda streets: a coat or shirt, trousers, a head, and two legs that can swing (g.legs). Materials are shared by colour.
+// Pull into the supermarket car park and shoppers stream out of the doors carrying store-bought turkeys (a small pool of people, made on first visit).
+
+function shopTick(rdt){if(!SHOP.ic)return;const D=off(SHOP.ic,SHOP.F-6,0),near=(PL.x-D.x)**2+(PL.z-D.z)**2<55*55;
+  if(!SHOP.list){if(!near)return;const tg=new THREE.SphereGeometry(.2,8,6),tmat=std({color:0xb8743c,roughness:.8});SHOP.list=[];for(let k=0;k<16;k++){const p=mkPerson(R(.9,1.05)),tk=new THREE.Mesh(tg,tmat);tk.scale.set(.9,.7,1.3);tk.position.set(.3,1,.2);p.add(tk);p.visible=false;p.lat=0;p.ii=0;scene.add(p);SHOP.list.push(p);}}
+  SHOP.t-=rdt;if(near&&SHOP.t<=0){const p=SHOP.list.find(q=>!q.visible);if(p){SHOP.t=R(.35,.7);p.visible=true;p.lat=SHOP.F-5;p.ii=SHOP.ic+Math.round(R(-4,4));p.ph=R(0,6);}}
+  for(const p of SHOP.list){if(!p.visible)continue;p.lat-=1.5*rdt;if(p.lat<14){p.visible=false;continue;}p.ph+=rdt*9;const i=wrapI(p.ii);off(i,p.lat,.13,p.position);const n=Nn[i];p.rotation.y=Math.atan2(-n.x,-n.z);p.legs[0].rotation.x=Math.sin(p.ph)*.55;p.legs[1].rotation.x=-Math.sin(p.ph)*.55;}}
 function mkPerson(h=1){const g=new THREE.Group(),sk=pplM(SKINS[Math.random()*SKINS.length|0]),sh=pplM(SHIRTS[Math.random()*SHIRTS.length|0]),pt=pplM(PANTS[Math.random()*PANTS.length|0]);g.legs=[];
   const bd=new THREE.Mesh(new THREE.BoxGeometry(.46,.62,.26),sh);bd.position.y=1.18;g.add(bd);const hd=new THREE.Mesh(new THREE.SphereGeometry(.13,10,8),sk);hd.position.y=1.62;g.add(hd);
   for(const x of[-.26,.26]){const a=new THREE.Mesh(new THREE.BoxGeometry(.1,.56,.12),sh);a.position.set(x,1.16,0);g.add(a);}
