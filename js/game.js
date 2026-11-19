@@ -2390,6 +2390,32 @@ function birdsTick(rdt){const B=BIRDS,pe=ents.find(e=>e.player);if(!pe)return;
     at(sAl+cz,lat+cx,h+cy,B.V);B.E.set(pt,hd+Math.sin(a)*.3,Math.sin(a)*.4);B.Q.setFromEuler(B.E);
     const fl=Math.sin(tm*(14+k%5)+b.ph);B.S.set(1.3,fl*1.3,1.3);B.M.compose(B.V,B.Q,B.S);B.im.setMatrixAt(k,B.M);}
   B.im.count=B.n;B.im.instanceMatrix.needsUpdate=true;}
+// Owls: wet, ruffled and a bit grumpy. Perched on poles and snags in Alameda and the Marin redwoods, turning their heads; now and then one swoops low across the road far ahead and climbs away (also on I-80). Never solid.
+const OWL={p:[],f:null,cd:12,t:0,on:0,dir:1,T:3.4,s:0};
+function mkOwl(v){const g=new THREE.Group(),dk=v===0,hc=dk?0x5a4030:0xf2f0ea,fc=dk?0x2a1c14:0x111111,M=(c,r=.35)=>std({color:c,roughness:r,metalness:.05}),
+  tex=canvas(64,64,(c,w,h)=>{c.fillStyle=dk?'#4a3426':'#dcd8d0';c.fillRect(0,0,w,h);c.fillStyle=dk?'rgba(20,10,6,.65)':'rgba(70,60,50,.5)';for(let x=2;x<w;x+=6)c.fillRect(x+R(-1,1),0,2,h);c.fillStyle=dk?'rgba(200,170,130,.35)':'rgba(40,30,20,.5)';for(let k=0;k<30;k++)c.fillRect(R(0,w),R(0,h),3,2);}),
+  sp=(r,m,sx,sy,sz,x,y,z,p=g)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,10,8),m);o.scale.set(sx,sy,sz);o.position.set(x,y,z);p.add(o);return o;};
+  sp(.2,std({map:tex,roughness:.3}),1,1.3,.9,0,.28,0);
+  for(let k=0;k<7;k++){const c=new THREE.Mesh(new THREE.ConeGeometry(.03,.14,4),M(dk?0x3a2a1e:0xcfcac0));c.position.set(R(-.15,.15),R(.18,.45),R(-.12,.12));c.rotation.set(R(-.9,.9),0,R(-.9,.9));g.add(c);}   // ruffled, wet feathers
+  const hd=new THREE.Group();hd.position.set(0,.58,.02);g.add(hd);sp(.15,M(hc),1,.95,.95,0,0,0,hd);sp(.125,M(fc),1.05,.95,.4,0,-.01,.09,hd);
+  for(const x of[-.065,.065]){sp(.055,std({color:0xff8a10,emissive:0xaa4400,emissiveIntensity:.6,roughness:.3}),1,1,.6,x,.02,.13,hd);sp(.022,M(0x050505),1,1,.6,x,.02,.17,hd);if(dk){const e=new THREE.Mesh(new THREE.ConeGeometry(.035,.12,4),M(0x3a2a1e));e.position.set(x*1.6,.15,0);hd.add(e);}}
+  const bk=new THREE.Mesh(new THREE.ConeGeometry(.03,.07,4),M(0xb8a060));bk.rotation.x=Math.PI/2;bk.position.set(0,-.04,.17);hd.add(bk);
+  const tl=new THREE.Mesh(new THREE.BoxGeometry(.12,.02,.24),M(dk?0x3a2a1e:0xb8b4aa));tl.position.set(0,.1,-.2);tl.rotation.x=.4;g.add(tl);
+  g.wp=[];for(const k of[1,-1]){const w=new THREE.Group();w.position.set(k*.19,.42,0);sp(.2,M(dk?0x3e2c20:0xcfcbc2),.35,1.6,.8,0,-.3,0,w);w.rotation.z=k*.1;w.k=k;g.add(w);g.wp.push(w);}
+  g.head=hd;return g;}
+function owlsTick(rdt){if(!DRIVE||G.state!=='race')return;const pe=ents.find(e=>e.player);if(!pe)return;const O=OWL,t=tmNow(),zOf=s=>zoneArr[wrapI(Math.floor(s/SEG))],okZ=s=>{const z=zOf(s);return z===1||z===7;};
+  if(!O.p.length){for(let k=0;k<3;k++){const g=new THREE.Group(),forest=k===2,tr=new THREE.Mesh(new THREE.CylinderGeometry(forest?.3:.14,forest?.4:.17,7,8),std({color:forest?0x4a2a1a:0x5a4630,roughness:1}));tr.position.y=3.5;g.add(tr);
+      const arm=new THREE.Mesh(new THREE.BoxGeometry(2.4,.14,.14),std({color:0x4a3a28,roughness:1}));arm.position.y=6.8;g.add(arm);const ow=mkOwl(k===1?1:0);ow.position.set(k===1?.4:-.3,6.85,0);ow.scale.setScalar(1.7);g.add(ow);g.visible=false;scene.add(g);O.p.push({g,ow,ph:R(0,6),s:-1e9});}
+    const f=mkOwl(1);f.scale.setScalar(2.4);f.rotation.order='YXZ';f.visible=false;scene.add(f);O.f=f;}
+  for(const q of O.p){if(q.g.visible&&q.s>pe.s-35&&q.s<pe.s+320){q.ow.head.rotation.y=Math.sign(Math.sin(t*.45+q.ph))*Math.pow(Math.abs(Math.sin(t*.45+q.ph)),.4)*1.7;continue;}
+    const ns=pe.s+R(70,260);if(!okZ(ns)||O.p.some(o=>o!==q&&Math.abs(o.s-ns)<60)){q.g.visible=false;q.s=-1e9;continue;}
+    const side=Math.random()<.5?-1:1;at(ns,side*R(9,11),0,V);at(ns,0,0,V2);q.g.position.copy(V);q.g.rotation.y=Math.atan2(V2.x-V.x,V2.z-V.z);q.s=ns;q.g.visible=true;}
+  const f=O.f;O.cd-=rdt;
+  if(!O.on&&O.cd<=0){const i=PL.idx;if(okZ(pe.s)||(i>Z.i80&&i<Z.wt1)){O.on=1;O.t=0;O.dir=Math.random()<.5?-1:1;O.cd=R(30,55);}else O.cd=4;}
+  if(O.on){O.t+=rdt;const u=O.t/O.T;if(u>=1){O.on=0;f.visible=false;return;}
+    const pos=(u,o)=>at(pe.s+lerp(75,28,u),O.dir*lerp(-24,24,u),2.4+6*Math.pow(Math.abs(2*u-1),1.4),o);pos(u,V);pos(Math.min(1,u+.03),V2);
+    f.visible=true;f.position.copy(V);f.rotation.set(-Math.atan2(V2.y-V.y,Math.hypot(V2.x-V.x,V2.z-V.z)),Math.atan2(V2.x-V.x,V2.z-V.z),O.dir*.25*Math.sin(u*6.283));
+    const a=.9+.6*Math.sin(t*16)*(u>.55?1:.4);for(const w of f.wp)w.rotation.z=w.k*a;f.head.rotation.y=0;}}
 // Skunks on the Alameda streets, lots of them: every few seconds one (sometimes a mother with two or three babies trotting behind) runs out from either kerb into the road ahead,
 // stops, turns its back to the car, raises its tail and sprays a big yellow-green mist, then scurries on across or back. Not solid; no tint over the view.
 const SKUNK={l:[],cd:4,V:new THREE.Vector3(),W:new THREE.Vector3()};
@@ -2551,7 +2577,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);tumbleTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
