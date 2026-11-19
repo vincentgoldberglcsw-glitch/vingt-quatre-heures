@@ -64,7 +64,7 @@ const D2R=Math.PI/180;
 const MR=220;
 // Alameda: every corner is a wide sweep. PR: San Antonio onto Paru (the straight before it is shortened by PR-52 so Paru St stays where it was), CR: Paru onto Central, WR: Central onto Wilma Chan Way,
 // HR1..HR3: the way home (San Antonio from Grand, Grand from Buena Vista, Buena Vista from the Webster Tube). Grand St stays where it was too.
-const PB=72,PLEN=PB*9+62,PR=220,CR=260,WR=260,HR1=120,HR2=110,HR3=110;
+const PB=72,PLEN=PB*9+62,PR=110,CR=260,WR=260,HR1=120,HR2=110,HR3=110;
 function routeTurtle(x,z,th){const pts=[],mk={},T={pts,mk,get x(){return x},get z(){return z},get th(){return th},
   push(){pts.push([x,z]);},
   S(len,st=40){const n=Math.max(1,Math.round(len/st));for(let k=0;k<n;k++){x+=Math.sin(th)*len/n;z+=Math.cos(th)*len/n;T.push();}return T;},
@@ -148,7 +148,7 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
   bankOn(z.refinery-m(60),z.i80+m(60),.1);   // the wide sweep from Shane Drive onto I-80, taken at speed
   bankOn(z.sq+m(40),z.rb0+m(20),.1);   // past San Quentin: a gentle banked curve through the badlands
   bankOn(z.richmond+m(40),z.shane,.08);   // Richmond's sloping bend
-  bankOn(z.paru-m(PR*1.571+40),z.paru+m(40),.26);bankOn(z.wilma-m(WR*1.222+40),z.wilma+m(40),.26);   // the Alameda corners: wide and steeply banked, for 175 mph
+  bankOn(z.wilma-m(WR*1.222+40),z.wilma+m(40),.26);   // the Alameda corners: wide and steeply banked, for 175 mph
   bankOn(z.tu0-m(200),z.tu0-m(10),.2);   // into the Posey Tube
   bankOn(z.tu1+m(200),z.tu1+m(430),.08);   // out of the tube and up onto I-880
   bankOn(z.wt1-m(420),z.wt1-m(50),.08);   // the long, gentle bend down off I-80 into the Webster Tube
