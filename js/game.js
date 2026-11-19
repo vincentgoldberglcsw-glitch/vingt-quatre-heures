@@ -1079,9 +1079,13 @@ await BOOT.step('SAN FRANCISCO',.55);
     {const rk=std({color:0x5e554a,roughness:1,side:D2}),[c0,c1]=CLF,ft=i=>13+H[i]*.3;   // Marin: on the left a narrow rocky ledge, then a cliff straight down to the rocks and the bay
       ribbon(i=>9.6+XW[i],13,-.03,-.03,rk,8,c0,c1);ribbon(13,ft,-.03,i=>-H[i],rk,6,c0,c1);ribbon(i=>ft(i)-2,i=>ft(i)+700,i=>.35-H[i],i=>.35-H[i],std({color:0x34596a,roughness:.3,metalness:.2}),20,c0-40,c1+40);
       const N=420,im=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),rk,N);let k=0;for(let i=c0;i<=c1&&k<N-1;i+=1)for(let q=0;q<2;q++){const y=Math.random()<.3?-H[i]*Math.random():-H[i];off(i,y>-H[i]?13+(y/-H[i])*(ft(i)-13):ft(i)+R(-1,6),y,V);M4.compose(V,Q.setFromEuler(new THREE.Euler(R(0,3),R(0,3),R(0,3))),S.set(R(1,3),R(.8,2.4),R(1,3)));im.setMatrixAt(k++,M4);}im.count=k;im.castShadow=true;scene.add(im);}bank(Z.richmond,Z.refinery,grass,40,2);}
-    {const bs=sign(1024,340,'WELCOME TO THE BADLANDS','#7a3f1e','#d9b48a','900 92px Arial','EST. LONG AGO · ENTER AT YOUR OWN RISK');board(Z.sq+m(330),-12,9,3,bs,0,.05);board(Z.sq+m(345),12,9,3,bs,0,.05);}
+    {const bs=sign(1024,340,'WELCOME TO THE BADLANDS','#7a3f1e','#d9b48a','900 92px Arial','EST. LONG AGO · ENTER AT YOUR OWN RISK');board(Z.sq+m(440),-12,9,3,bs,0,.05);board(Z.sq+m(455),12,9,3,bs,0,.05);}
     {// badlands past San Quentin: banded mud hills in yellow, rust, purple and blue-grey with ridged fans (vertex colours, one mesh per side)
-      const BC=[0xe3b04a,0xb4562f,0x7d5a86,0x7f93a8,0xd9a066,0xa04a3a].map(h=>new THREE.Color(h)),a0=Z.sq+m(40),a1=Z.rb0+m(20),LN=12,tc=new THREE.Color(),pos=[],col=[],idx=[];
+    {// plain desert between San Quentin and the badlands: sand, cacti, tombstones, skeletons (three instanced meshes)
+      const d0=Z.sq+m(40),d1=Z.sq+m(440),sand=std({color:0xc9aa72,roughness:1,side:D2});for(const sd of[-1,1])ribbon(i=>sd*(9.6+XW[i]),sd*120,-.03,-.05,sand,12,d0,d1);
+      const geos=[[new THREE.CylinderGeometry(.5,.6,4,6),std({color:0x4f7a3c,roughness:1}),22,2],[new THREE.BoxGeometry(1,1.5,.3),std({color:0x8f8f88,roughness:1}),16,.75],[new THREE.SphereGeometry(.45,6,4),std({color:0xe8e2cf,roughness:1}),10,.3]];
+      for(const[g,mt,N,hy]of geos){const im=new THREE.InstancedMesh(g,mt,N);for(let k=0;k<N;k++){const i=d0+m(10)+(Math.random()*(d1-d0-m(20))|0);off(i,(Math.random()<.5?-1:1)*R(14,60),hy,V);M4.compose(V,Q.setFromEuler(new THREE.Euler(0,R(0,6),g.type==='SphereGeometry'?0:R(-.1,.1))),S.set(1,hy===2?R(.7,1.4):1,1));im.setMatrixAt(k,M4);}im.castShadow=true;scene.add(im);}}
+      const BC=[0xe3b04a,0xb4562f,0x7d5a86,0x7f93a8,0xd9a066,0xa04a3a].map(h=>new THREE.Color(h)),a0=Z.sq+m(420),a1=Z.rb0+m(20),LN=12,tc=new THREE.Color(),pos=[],col=[],idx=[];
       for(const sd of[-1,1]){pos.length=0;col.length=0;idx.length=0;let n=0;
         for(let i=a0;i<=a1;i+=2){const e=sst(i,a0,a0+m(80))*(1-sst(i,a1-m(80),a1));
           for(let j=0;j<=LN;j++){const t=j/LN,lat=sd*(14+t*t*150),rd=Math.sin(i*.9+j*1.7)*.5+Math.sin(i*.31-j*.8)*.5,y=t<.1?-.03:e*(10+17*(1+Math.sin(i*.07+sd))+Math.abs(rd)*7)*Math.pow(t,.8)-.03;
