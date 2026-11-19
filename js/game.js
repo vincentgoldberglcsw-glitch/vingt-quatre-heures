@@ -3017,7 +3017,7 @@ function trafficTick(dt,pe){bubbleTick(dt);wheelsTick(dt);if(TRAF.pol){const f=(
     const want=on&&t.n<(bay?11:rsr?4:i880?5:9);
     if(t.act){const ds=wdiff(t.s-pe.s),i=wrapI(Math.floor(t.s/SEG));if(!t.qf&&(ds<-160||ds>1000||(!want&&ds>-40)||!road(i))){t.act=false;t.g.visible=false;t.ob.x=1e9;}}
     if(!t.act){if(want&&Math.random()<dt*1.5){const s=wrapS(pe.s+R(300,850)),i=wrapI(Math.floor(s/SEG));if(road(i)&&!(QK.st&&i>QK.a-200&&i<QK.b+10)&&!FQ.list.some(q=>q.F&&Math.abs(wdiff(q.F.s-s))<160)){const w=RW+XW[i],ln=[-.75,-.25,.25,.75][Math.random()*4|0]*w;
-        if(TRAF.every(o=>!o.act||Math.abs(wdiff(o.s-s))>gap||Math.abs(o.lt-ln)>1.5)){t.act=true;t.s=s;t.lt=t.lat=ln;t.v=t.vb*spd;t.g.visible=true;t.dead=0;t.stop=0;for(const wh of t.g.wh)wh.visible=true;t.lw=t.kind!=='moto'&&t.kind!=='bike'&&t.kind!=='buggy'&&!t.g.legs&&!t.extra&&Math.random()<.12?R(3,9):0;}}}continue;}
+        if(TRAF.every(o=>!o.act||Math.abs(wdiff(o.s-s))>gap||Math.abs(o.lt-ln)>1.5)){t.act=true;t.s=s;t.lt=t.lat=ln;t.v=t.vb*spd;t.g.visible=true;t.dead=0;t.stop=0;t.sk=0;t.g.rotation.z=0;for(const wh of t.g.wh)wh.visible=true;t.lw=t.kind!=='moto'&&t.kind!=='bike'&&t.kind!=='buggy'&&!t.g.legs&&!t.extra&&Math.random()<.12?R(3,9):0;}}}continue;}
     let v=t.kind==='buggy'?t.vb:t.vb*spd;for(const o of TRAF){if(o===t||!o.act||o.fall||Math.abs(o.lt-t.lt)>1.5)continue;const d=wdiff(o.s-t.s);if(d>0&&d<(t.len+o.len)/2+14)v=Math.min(v,o.v*.9);}
     if(DUCK.st===1){const dd=wdiff(DUCK.s-t.s);if(dd>0&&dd<55)v=Math.min(v,Math.max(0,(dd-t.len/2-7)*.5));}   // everyone stops for the ducks
     t.sw=0;for(const q of FQ.list){const F=q.F;if(!F||F.kL<.05)continue;const dd=wdiff(F.s-t.s);if(dd>-6&&dd<170&&t.lat>F.lo-1.6&&t.lat<F.hi+1.6){t.lt=F.free;t.sw=1;if(Math.abs(t.lat-F.free)>1.2)v=Math.min(v,Math.sqrt(12*Math.max(0,dd-t.len/2-5)));}}   // and for a fissure: brake hard, and squeeze past in the open lane
@@ -3025,11 +3025,12 @@ function trafficTick(dt,pe){bubbleTick(dt);wheelsTick(dt);if(TRAF.pol){const f=(
     const dp=wdiff(pe.s-t.s);if(dp>0&&dp<(t.len/2+16)&&Math.abs(pe.lat-t.lat)<2.6)v=Math.min(v,Math.max(0,pe.v-2));   // don't run into the player from behind
     const i=wrapI(Math.floor(t.s/SEG));
     if(QK&&QK.st&&QK.t>2.2&&t.lat<QK.ls-.4&&i>=QK.a&&i<=QK.b){const tg=T[i];t.fall={vx:tg.x*Math.max(t.v,5),vz:tg.z*Math.max(t.v,5),vy:1,w:R(.8,1.5)};sfxCrunch(.5);continue;}   // the road has gone from under it
-    t.v+=clamp(v-t.v,-9*dt,3*dt);t.s=wrapS(t.s+t.v*dt);const w=RW+XW[i];t.lt=clamp(t.lt,-.75*w,.75*w);t.lat+=clamp(t.lt-t.lat,-(t.sw?3:1.5)*dt,(t.sw?3:1.5)*dt);
+    if(t.sk)t.v=Math.max(0,t.v-(t.v*.9+2)*dt);else t.v+=clamp(v-t.v,-9*dt,3*dt);t.s=wrapS(t.s+t.v*dt);const w=RW+XW[i];t.lt=clamp(t.lt,-.75*w,.75*w);t.lat+=clamp(t.lt-t.lat,-(t.sw?3:1.5)*dt,(t.sw?3:1.5)*dt);
     if(t.kv){t.lat+=t.kv*dt;t.kv*=Math.exp(-2.2*dt);if(Math.abs(t.kv)<.2)t.kv=0;t.lt=clamp(t.lat,-.75*w,.75*w);const wl=wallAt[i]-.5;   // knocked sideways by the player
       if(Math.abs(t.lat)>wl){if(zoneArr[i]===4){const n=Nn[i],tg=T[i],sd=Math.sign(t.lat),out=Math.max(3,Math.abs(t.kv));t.fall={vx:tg.x*t.v+n.x*sd*out,vz:tg.z*t.v+n.z*sd*out,vy:2.5,w:R(1,1.8)*sd};t.kv=0;sfxCrunch(.8);sfxScrape(1);G.shake=Math.max(G.shake,.4);placeVehicle(t);continue;}   // over the bridge rail and down into the bay, tipping as it goes
         t.lat=Math.sign(t.lat)*wl;t.kv=0;}}
     placeVehicle(t);
+    if(t.sk){t.g.rotation.z=t.skd*1.45;t.g.position.y+=.25;if(t.v>1){if(Math.random()<dt*40)spark(V.set(t.g.position.x,t.g.position.y,t.g.position.z),R(-3,3),R(1,4),R(-3,3));if(Math.random()<dt*3&&(t.g.position.x-PL.x)**2+(t.g.position.z-PL.z)**2<1600)sfxScrape(.5);}else if(!t.stop){t.dead=1;t.stop=1;t.ob.x=1e9;}}   // a hit motorbike lies down and slides on ahead, throwing sparks, and stops after 30 m or so
     if(t.lw>0){t.lw-=dt;if(t.lw<=0){if(wdiff(t.s-pe.s)>12&&t.g.visible)wheelsOff(t);else t.lw=.5;}}   // somewhere ahead of the player, the wheels come off
     if(t.dead&&t.v<.3){t.stop=1;t.ob.x=1e9;}   // stopped for good: you can drive through it
     for(const wh of t.g.wh)wh.rotation.x+=t.v*dt/.4;if(t.g.legs){const q=tmNow()*9;t.g.legs.forEach((l,k)=>{l.rotation.x=Math.sin(q+(k%2?0:Math.PI)+(k>1?.6:0))*.5;});}
@@ -3038,7 +3039,7 @@ function trafficTick(dt,pe){bubbleTick(dt);wheelsTick(dt);if(TRAF.pol){const f=(
     const dx=t.g.position.x-PL.x,dz=t.g.position.z-PL.z,rel=Math.abs(pe.v-t.v);
     if(dx*dx+dz*dz<(t.r+1)**2&&!PL.crash&&!t.stop&&G.state==='race'){const two=t.kind==='moto'||t.kind==='bike',n=Nn[i],sd=(dx*n.x+dz*n.z)>=0?1:-1;
       if(two){if(!(t.bt>0)){t.bt=.6;t.wob=1;if(t.kind==='moto'&&zoneArr[i]===4&&i>=Z.b0&&i<=Z.b1&&(t.hit=(t.hit||0)+1)>=2){const tg=T[i],s2=Math.sign(t.lat)||sd;t.fall={vx:tg.x*Math.max(t.v,8)+n.x*s2*9,vz:tg.z*Math.max(t.v,8)+n.z*s2*9,vy:2,w:R(2,4)*s2};sfxCrunch(.6);sfxScrape(1);bubble(t.g,"HEY DUDE, WATCH IT!");}
-        t.s+=2.5;t.v=Math.max(t.v,pe.v+R(5,9));t.kv=sd*R(3.5,6.5);PL.vx*=.98;PL.vz*=.98;G.shake=Math.max(G.shake,.15);sfxBoing(.6);}}   // motorcycles and bicycles: never a crash, at any speed, just bounced on ahead
+        t.s+=2.5;t.v=Math.max(t.v,pe.v+R(5,9));t.kv=sd*R(3.5,6.5);PL.vx*=.98;PL.vz*=.98;G.shake=Math.max(G.shake,.15);sfxBoing(.6);if(t.kind==='moto'&&!t.fall){t.sk=1;t.skd=sd;t.v=Math.max(pe.v*.95,16);t.kv=sd*R(1,2.5);sfxScrape(1);}}}   // motorcycles and bicycles: never a crash, at any speed, just bounced on ahead
       else if(pe.v>78.2&&PL.safe<=0)crashPlayer(Math.max(rel,20)*.4,false);   // over 175 mph, a crash
       else if(!(t.bt>0)){t.bt=.7;t.wob=1;if((t.kind==='truck'||t.kind==='truck2')&&zoneArr[i]===4&&(t.hit=(t.hit||0)+1)>=2){const tg=T[i],s2=Math.sign(t.lat)||sd;t.fall={vx:tg.x*t.v+n.x*s2*8,vz:tg.z*t.v+n.z*s2*8,vy:3,w:R(.5,1)*s2,boom:.7};sfxScrape(1);}
         t.kv=sd*clamp(rel*.55+6,6,18);t.v=Math.max(t.v*.85,t.v+(pe.v>t.v?rel*.3:0));PL.vx*=.93;PL.vz*=.93;PL.x-=n.x*sd*.6;PL.z-=n.z*sd*.6;G.shake=Math.max(G.shake,.25);sfxBoing(clamp(rel/20+.45,.45,1));}}}}   // below that a soft, rubbery bump: both bounce apart, hardly slowed, and the other one wobbles like jelly
