@@ -2507,8 +2507,8 @@ function birdsTick(rdt){const B=BIRDS,pe=ents.find(e=>e.player);if(!pe)return;
   if(DRIVE){if(PL.idx<Z.tu0)B.tb=0;else if(!B.tb&&B.st===0&&G.state==='race'&&PL.idx>=Z.tu1-Math.round(40/SEG)&&PL.idx<Z.tu1+Math.round(80/SEG)){   // coming out of the Posey Tube a flock bursts up from the road ahead (once per run)
     B.tb=1;B.st=1;B.t=0;B.n=20+(Math.random()*11|0);B.s=pe.s+R(40,60);B.dir=Math.random()<.5?-1:1;B.T=R(6,8);
     for(let k=0;k<B.n;k++){const b=B.b[k];b.ox=R(-7,7);b.oy=R(-2,2.5);b.oz=R(-8,8);b.ph=R(0,6.3);b.w=R(.6,1.4)*(Math.random()<.5?-1:1);b.r=R(1,3);}}}
-  if(B.st===0){B.im.count=0;if(zoneArr[PL.idx]!==1||G.state!=='race')return;B.cd-=rdt;if(B.cd>0)return;
-    B.st=1;B.t=0;B.cd=R(30,60);B.n=15+(Math.random()*16|0);B.s=pe.s+R(45,80);B.dir=Math.random()<.5?-1:1;B.T=R(6,8);
+  if(B.st===0){B.im.count=0;const mar=DRIVE&&PL.idx>=Z.gg1&&PL.idx<Z.sq;if((zoneArr[PL.idx]!==1&&!mar)||G.state!=='race')return;B.cd-=rdt;if(B.cd>0)return;
+    B.st=1;B.t=0;B.cd=mar?R(5,10):R(30,60);B.n=mar?24+(Math.random()*7|0):15+(Math.random()*16|0);B.s=pe.s+R(45,80);B.dir=Math.random()<.5?-1:1;B.T=R(6,8);
     for(let k=0;k<B.n;k++){const b=B.b[k];b.ox=R(-7,7);b.oy=R(-2,2.5);b.oz=R(-8,8);b.ph=R(0,6.3);b.w=R(.6,1.4)*(Math.random()<.5?-1:1);b.r=R(1,3);}return;}
   B.t+=rdt;const u=B.t/B.T;if(u>=1){B.st=0;B.im.count=0;return;}
   const lat=B.dir*lerp(-55,55,u),h=2.6+34*Math.pow(Math.abs(2*u-1),1.6),sAl=B.s+lerp(-10,10,u),tm=B.t;
