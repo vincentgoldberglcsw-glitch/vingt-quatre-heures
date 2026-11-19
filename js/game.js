@@ -36,7 +36,7 @@ const LIT={p:null,t:3};   // litter thrown from passing cars (see litterTick)
 const SFSM=[];   // smoke sources on the decayed San Francisco towers
 const BBQ=[];   // the roadside billboards on I-880 that fall during the quake (see bbQuakeTick)
 const VANS=[];   // the ice-cream truck and the taco truck, driving up and down Paru (see vanTick)
-const BEARS=[];
+const BEARS=[],BUFF=[];
 const MILLC={tw:[],i:-1,t:0,x:0,z:0,ry:0,y:0,w:null};   // the steel mill: its track index, and a timer for the falling pieces during the quake
 const SHOP={ic:0,F:0,list:null,t:0};   // the supermarket shoppers (see shopTick)
 const DOME={x:0,z:0,i:-1,hit:0},SAFEZ=()=>DRIVE&&PL.idx<Z.tu0&&!DOME.hit;   // the green eyed dome in the road before the Posey Tube
@@ -142,6 +142,7 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
       +15*bump(i,z.rb0-m(1150),z.rb0-m(750),z.rb0-m(480),z.rb0-m(15))   /* before the Richmond-San Rafael bridge: the road climbs to a headland over the bay, then comes gently down onto the deck */
       +78*bump(i,z.hyde+m(50),z.hyde+m(360),z.hyde+m(425),z.hyde+m(645))   /* Hyde St: a long, very steep climb, a short crest, then a sharp drop towards the Wharf */
       +26*bump(i,z.gg0-m(300),z.gg0-m(20),z.sq-m(650),z.sq-m(150))
+      +30*bump(i,z.sq-m(1500),z.sq-m(1100),z.sq-m(1050),z.sq-m(850))   /* out of the redwoods: a long, steeper climb to a crest, then a sharp drop */
       +9*Math.sin((i-z.gg1)*SEG/170)*bump(i,z.gg1+m(150),z.gg1+m(350),z.sq-m(900),z.sq-m(700))
       +16*bump(i,z.rb0+m(500),z.rb0+m(1000),z.rb0+m(1500),z.rb0+m(2000))
       +24*bump(i,z.richmond+m(80),z.shane-m(80),z.shane+m(150),z.refinery-m(300))
@@ -155,6 +156,7 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
   bankOn(z.rb1+m(80),z.richmond+m(60),.16);bankOn(z.rb0-m(1000),z.rb0-m(60),.16);bankOn(z.sq+m(40),z.rb0+m(20),.1);   // past San Quentin: a gentle banked curve through the badlands
   bankOn(z.richmond+m(40),z.shane,.08);   // Richmond's sloping bend
   bankOn(z.wilma-m(WR*1.222+40),z.wilma+m(40),.26);   // the Alameda corners: wide and steeply banked, for 175 mph
+  bankOn(z.sq-m(830),z.sq-m(590),.22);   // the bend out of the redwoods into the prison field, for 150 mph
   bankOn(z.tu0-m(200),z.tu0-m(10),.2);   // into the Posey Tube
   bankOn(z.tu1+m(200),z.tu1+m(430),.08);   // out of the tube and up onto I-880
   bankOn(z.wt1-m(420),z.wt1-m(50),.08);   // the long, gentle bend down off I-80 into the Webster Tube
@@ -1314,12 +1316,12 @@ await BOOT.step('THE MARIN REDWOODS',.63);
   // ---- Marin: a redwood forest - tall red trunks and dark spires all round, ferns on the floor - then San Quentin by the water
   {const N=1500,bark=std({color:0x7a3e26,roughness:1,map:canvas(64,256,(g,w,h)=>{g.fillStyle='#fff';g.fillRect(0,0,w,h);for(let i=0;i<200;i++){g.fillStyle=Math.random()<.5?'rgba(40,16,8,.4)':'rgba(255,220,200,.25)';g.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*3,20+Math.random()*60);}})});
     const trunk=new THREE.InstancedMesh(cyl(.35,1,1,9),bark,N),cone=new THREE.InstancedMesh(new THREE.ConeGeometry(1,1,8),std({color:0x24402a,roughness:1}),N*3);let k=0,c=0;
-    for(let i=Z.gg1+m(160);i<Z.sq-m(200)&&k<N;i+=2){for(let q=0;q<2&&k<N;q++){const sd=rnd()<.5?-1:1,lat=sd*(11.5+Math.pow(rnd(),1.4)*120);off(i,lat,0,V);if(!farFromRoad(V.x,V.z,10.5)||(sd>0&&i>CLF[0]-50&&i<CLF[1]+50))continue;V.y=groundAt(V.x,V.z);
+    for(let i=Z.gg1+m(160);i<Z.sq-m(200)&&k<N;i+=2){for(let q=0;q<2&&k<N;q++){const sd=rnd()<.5?-1:1,lat=sd*(11.5+Math.pow(rnd(),1.4)*120);off(i,lat,0,V);if(i>=Z.sq-m(610)||!farFromRoad(V.x,V.z,10.5)||(sd>0&&i>CLF[0]-50&&i<CLF[1]+50))continue;V.y=groundAt(V.x,V.z);
       const h=rr(45,85),r=rr(1,2.3);M4.compose(V2.set(V.x,V.y+h/2-2,V.z),Q.identity(),S.set(r,h,r));trunk.setMatrixAt(k++,M4);
       for(let j=0;j<3;j++){const ch=h*rr(.25,.38),cy=V.y+h*(.55+j*.17);M4.compose(V2.set(V.x,cy,V.z),Q.setFromAxisAngle(YAX,rr(0,6)),S.set(r*rr(3.5,5)*(1-j*.22),ch,r*rr(3.5,5)*(1-j*.22)));cone.setMatrixAt(c++,M4);}}}
     trunk.count=k;cone.count=c;trunk.castShadow=cone.castShadow=true;scene.add(trunk,cone);
     const fern=new THREE.InstancedMesh(mergeGeometries([new THREE.PlaneGeometry(1.6,1).translate(0,.5,0),new THREE.PlaneGeometry(1.6,1).translate(0,.5,0).rotateY(Math.PI/2)]),std({map:tuftTex,alphaTest:.4,side:D2,roughness:1,color:0x4a7a3a}),2500);k=0;
-    for(let q=0;q<2500;q++){const i=Z.gg1+m(160)+(rnd()*(Z.sq-Z.gg1-m(360))|0),lat=(rnd()<.5?-1:1)*rr(10,60);if(lat>0&&i>CLF[0]-50&&i<CLF[1]+50)continue;off(i,lat,0,V);V.y=groundAt(V.x,V.z);M4.compose(V,Q.setFromAxisAngle(YAX,rr(0,6)),S.setScalar(rr(.8,1.6)));fern.setMatrixAt(k++,M4);}fern.count=k;scene.add(fern);
+    for(let q=0;q<2500;q++){const i=Z.gg1+m(160)+(rnd()*(Z.sq-Z.gg1-m(360))|0),lat=(rnd()<.5?-1:1)*rr(10,60);if(i>=Z.sq-m(610)||(lat>0&&i>CLF[0]-50&&i<CLF[1]+50))continue;off(i,lat,0,V);V.y=groundAt(V.x,V.z);M4.compose(V,Q.setFromAxisAngle(YAX,rr(0,6)),S.setScalar(rr(.8,1.6)));fern.setMatrixAt(k++,M4);}fern.count=k;scene.add(fern);
     {// bears in the redwoods near the entrance: some peep out from behind a trunk to see what is going on, some climb up a trunk (BEARS, animated in bearsTick)
       const fur=std({color:0x4a3322,roughness:1}),fur2=std({color:0x6a4a30,roughness:1}),nose=std({color:0x14100c,roughness:.5}),bk=std({color:0x6a3a22,roughness:1}),tg=new THREE.Vector3(),bs=new THREE.SphereGeometry(1,10,8);
       const mkBear=()=>{const g=new THREE.Group(),P_=(geo,mt,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(geo,mt);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;g.add(o);return o;};
@@ -1331,6 +1333,17 @@ await BOOT.step('THE MARIN REDWOODS',.63);
         off(i,sd*R(12.2,14),0,V);V.y=groundAt(V.x,V.z);const tx=V.x,ty=V.y,tz=V.z,n=Nn[i],tn=T[i],climb=q%2===1,tr=new THREE.Mesh(cyl(1.35,1.6,40,10),bk);tr.position.set(tx,ty+20,tz);tr.castShadow=true;scene.add(tr);
         const g=mkBear(),pv=new THREE.Group();pv.add(g);scene.add(pv);BEARS.push({g:pv,b:g,climb,tx,ty,tz,nx:n.x*sd,nz:n.z*sd,tx2:tn.x,tz2:tn.z,ph:R(0,6.3),sd});}
     }
+    {// the open field before the prison (the redwoods stop at the banked bend): tall grass, water buffalo grazing on the left, and more prison warnings
+      const gs=std({color:0xffffff,roughness:1,side:D2}),gr=new THREE.InstancedMesh(new THREE.ConeGeometry(.28,1,4).translate(0,.5,0),gs,1500);let gk=0;const a0=Z.sq-m(590),a1=Z.sq-m(40),gc=[0x8a8a3a,0x9a9a48,0x7a8a3a,0xa8a050];
+      for(let q=0;q<1500;q++){const i=a0+Math.floor(Math.random()*(a1-a0)),sd=Math.random()<.6?1:-1;off(i,sd*R(11,sd>0?75:40),0,V);V.y=groundAt(V.x,V.z);M4.compose(V,Q.setFromAxisAngle(YAX,R(0,6.3)),S.set(R(.9,1.6),R(1.1,2.1),R(.9,1.6)));gr.setMatrixAt(gk,M4);gr.setColorAt(gk++,new THREE.Color(gc[q%4]));}gr.count=gk;scene.add(gr);
+      const bm=std({color:0x2c2622,roughness:1}),hm=std({color:0xd8d0b8,roughness:.6}),bg=new THREE.SphereGeometry(1,10,8);
+      for(let q=0;q<9;q++){const i=a0+m(30+q*52)+Math.floor(Math.random()*m(20));off(i,R(18,60),0,V);V.y=groundAt(V.x,V.z);const g=new THREE.Group(),B_=(geo,mt,x,y,z,sx,sy,sz,p=g)=>{const o=new THREE.Mesh(geo,mt);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;p.add(o);return o;};
+        B_(bg,bm,0,1.15,0,.62,.62,1.05);B_(bg,bm,0,1.55,.45,.55,.45,.5);const hd=new THREE.Group();hd.position.set(0,1.1,1.05);g.add(hd);B_(bg,bm,0,0,.1,.3,.33,.4,hd);for(const s of[-1,1]){const h=B_(new THREE.ConeGeometry(.07,.8,6),hm,s*.36,.12,.05,1,1,1,hd);h.rotation.z=-s*1.15;}
+        for(const[x,z]of[[-.35,.6],[.35,.6],[-.35,-.6],[.35,-.6]])B_(new THREE.BoxGeometry(.22,.9,.24),bm,x,.45,z,1,1,1);
+        g.position.copy(V);g.rotation.y=R(0,6.3);g.scale.setScalar(1.4);scene.add(g);BUFF.push({g,hd,ph:R(0,6.3)});}
+      const wF=canvas(512,384,(c,w,h)=>{c.fillStyle='#f6c81c';c.fillRect(0,0,w,h);c.strokeStyle='#111';c.lineWidth=10;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#111';c.font='900 52px Arial Black,Arial';c.textAlign='center';c.fillText('WARNING',w/2,76);c.font='900 36px Arial Black,Arial';c.fillText('ENTERING A',w/2,132,470);c.fillText('FEDERAL PRISON',w/2,178,470);c.fillText('SECURE ZONE',w/2,224,470);c.font='900 28px Arial';c.fillText('NO STOPPING · NO HITCHHIKERS',w/2,290,470);}),
+        wB=canvas(512,384,(c,w,h)=>{c.fillStyle='#f4f1e8';c.fillRect(0,0,w,h);c.strokeStyle='#c8241c';c.lineWidth=14;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#d8261c';c.font='900 76px Arial Black,Arial';c.textAlign='center';c.fillText('BEWARE OF',w/2,120,470);c.fillText('ESCAPED',w/2,215,470);c.fillText('PRISONERS',w/2,310,470);});
+      board(Z.sq-m(560),12.5,5.6,4.2,wF,0,.05);board(Z.sq-m(450),-12.5,5.6,4.2,wF,0,.05);board(Z.sq-m(380),12.5,5.6,4.2,wB,0,.05);board(Z.sq-m(230),-12.5,5.6,4.2,wB,0,.05);board(Z.sq-m(80),12.5,5.6,4.2,wB,0,.05);}
     // an old silver Airstream trailer parked off the road where the redwoods thin out, its wheels sunk in the dirt
     {const i=Z.sq-m(250),g=new THREE.Group(),al=std({color:0xc9ccce,metalness:.85,roughness:.3}),dk=std({color:0x1a1e22,roughness:.15,metalness:.3}),tyr=std({color:0x141414,roughness:.9}),dirt=std({color:0x7a4a30,roughness:1}),blk=std({color:0x1c1c1e,roughness:.8});
       const bod=new THREE.Mesh(new THREE.CapsuleGeometry(1.2,4.6,10,20).rotateX(Math.PI/2),al);bod.scale.set(.95,1.05,1);bod.position.y=1.62;bod.castShadow=true;g.add(bod);
@@ -2992,7 +3005,7 @@ function conesReset(){const C=CONES;if(!C||!C.CP)return;const m=new THREE.Matrix
   if(ch){C.cone.instanceMatrix.needsUpdate=true;C.band.instanceMatrix.needsUpdate=true;}}
 // bears in the redwoods near the Marin entrance: peeping round trunks at the car, and climbing up trunks
 let BEART=0;
-function bearsTick(rdt){if(!BEARS.length)return;BEART+=rdt;const t=BEART;
+function bearsTick(rdt){if(!BEARS.length)return;BEART+=rdt;const t=BEART;for(const f of BUFF){f.hd.rotation.x=.55+Math.sin(t*.7+f.ph)*.25;}   // buffalo graze, heads down and bobbing
   for(const b of BEARS){const dx=b.tx-PL.x,dz=b.tz-PL.z,d2=dx*dx+dz*dz;if(d2>320*320){b.g.visible=false;continue;}b.g.visible=true;
     if(b.climb){const y=b.ty+3.5+5.5*(Math.sin(t*.22+b.ph)+1)/2*1.0+3*Math.max(0,Math.sin(t*.07+b.ph*2));b.g.position.set(b.tx-b.nx*1.05,y,b.tz-b.nz*1.05);b.g.rotation.set(0,Math.atan2(b.nx,b.nz),0);b.b.rotation.set(-Math.PI/2,0,Math.sin(t*2.2+b.ph)*.06);b.b.hd.rotation.x=.5+Math.sin(t*.6+b.ph)*.25;}
     else{const u=(Math.sin(t*.5+b.ph)+1)/2,s=-.2+1.8*u*u*(3-2*u);b.g.position.set(b.tx+b.nx*1.9+b.tx2*s*b.sd,b.ty,b.tz+b.nz*1.9+b.tz2*s*b.sd);const ya=Math.atan2(PL.x-b.g.position.x,PL.z-b.g.position.z);b.g.rotation.set(0,ya,0);b.b.rotation.set(0,0,0);b.b.hd.rotation.y=Math.sin(t*.9+b.ph)*.3;}}}
