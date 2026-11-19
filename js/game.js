@@ -31,6 +31,7 @@ const camera=new THREE.PerspectiveCamera(16,innerWidth/innerHeight,0.12,5000);
 function canvas(w,h,fn,srgb=true){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);
   const t=new THREE.CanvasTexture(c);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=ANISO;return t;}
 const std=o=>new THREE.MeshStandardMaterial(o);
+const VANS=[];   // the ice-cream truck and the taco truck, driving up and down Paru (see vanTick)
 const MILLC={i:-1,t:0};   // the steel mill: its track index, and a timer for the falling pieces during the quake
 const SHOP={ic:0,F:0,list:null,t:0};   // the supermarket shoppers (see shopTick)
 const DOME={x:0,z:0,i:-1};   // the green eyed dome in the road before the Posey Tube
@@ -752,8 +753,12 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
     B(2.2,1.7,1.9,wh,0,1.55,2.25,0,g);B(2.0,.75,.06,mat('vglass',{color:0x1f2a30,roughness:.1,metalness:.4}),0,2.0,3.21,0,g);B(2.24,.3,6.4,mat('icgrey',{color:0x3a3c40,roughness:.8}),0,.6,.05,0,g);
     B(2.4,.14,4.6,wh,0,3.25,-.9,0,g);B(.5,.5,.5,mat('iccone',{color:0xff8ac0,roughness:.6}),0,3.55,1.1,0,g);
     for(const z of[-2.3,2.2])for(const s of[-1,1]){const t=new THREE.Mesh(cyl(.42,.42,.3,12),tyreM);t.rotation.z=Math.PI/2;t.position.set(s*1.0,.42,z);g.add(t);}
-    g.traverse(o=>{o.castShadow=o.receiveShadow=true;});at(c*SEG-17,sd*(5.4+XW[c]),0,g.position);g.rotation.y=yaw(c)+Math.PI;scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:1.6});
-    at(c*SEG-19.5,sd*(5.4+XW[c]),0,V);OBST.push({x:V.x,z:V.z,r:1.6});at(c*SEG-14.5,sd*(5.4+XW[c]),0,V);OBST.push({x:V.x,z:V.z,r:1.6});}
+    g.traverse(o=>{o.castShadow=o.receiveShadow=true;});scene.add(g);{const ob={x:0,z:0,r:2.2};OBST.push(ob);VANS.push({g,s:c*SEG-17,lat:3.2,dir:-1,v:5.5,ob});}   // the ice-cream truck now drives: up and down Paru in its own lane
+    {const t=g.clone(true),tc=mat('tacoc',{color:0xe0801c,roughness:.5,metalness:.2}),tsT=canvas(512,256,(x,w,h)=>{x.fillStyle='#e0801c';x.fillRect(0,0,w,h);x.fillStyle='#f6efd8';x.fillRect(120,40,270,110);x.fillStyle='#22313a';x.fillRect(130,50,250,90);
+        x.fillStyle='#e8c25a';x.beginPath();x.arc(70,110,50,Math.PI,0);x.fill();x.fillStyle='#4a9a3a';x.fillRect(30,108,80,8);x.fillStyle='#c8241c';x.beginPath();x.arc(440,110,40,Math.PI,0);x.fill();   // two painted tacos
+        x.fillStyle='#fff6c8';x.font='900 70px Arial Black,Arial';x.textAlign='center';x.fillText('TACOS',w/2,222);x.strokeStyle='#1f6a2a';x.lineWidth=3;x.strokeText('TACOS',w/2,222);}),tsm=std({map:tsT,roughness:.45});
+      t.traverse(o=>{if(o.isMesh){if(o.material===blue)o.material=tc;else if(o.material===sm)o.material=tsm;}});scene.add(t);const ob={x:0,z:0,r:2.2};OBST.push(ob);VANS.push({g:t,s:c*SEG-60,lat:-3.2,dir:1,v:6.5,ob});}
+  }
   {// the supermarket on the left of Paru, the block after Encinal: a low stucco box with a raised entrance bay under a tiled roof, the sign, glass doors under a canopy,
    // carts, and a car park in front that the car can drive into
     const a=CROSS[0]+8,b=CROSS[1]-8,ic=Math.round((a+b)/2),g=new THREE.Group(),W=60,D=34,Hh=7.5,F=52;   // F: from the middle of Paru to the shop front
@@ -2700,7 +2705,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -3432,6 +3437,7 @@ function refTick(rdt){if(!REFS.length||!refP)return;const i=PL.idx;if(!(i>Z.rb1-
 // People for the Alameda streets: a coat or shirt, trousers, a head, and two legs that can swing (g.legs). Materials are shared by colour.
 // Pull into the supermarket car park and shoppers stream out of the doors carrying store-bought turkeys (a small pool of people, made on first visit).
 
+function vanTick(rdt){if(!VANS.length)return;const a=Z.paru+Math.round(80/SEG),b=Z.central-Math.round(260/SEG);for(const v of VANS){v.s+=v.dir*v.v*rdt;if(v.s<a*SEG)v.s=b*SEG;else if(v.s>b*SEG)v.s=a*SEG;const i=wrapI(Math.round(v.s/SEG));at(v.s,v.lat,Math.abs(Math.sin(v.s*.9))*.03,v.g.position);v.g.rotation.y=yaw(i)+(v.dir<0?Math.PI:0);v.ob.x=v.g.position.x;v.ob.z=v.g.position.z;}}   // soft: the player is pushed aside, never run over
 function shopTick(rdt){if(!SHOP.ic)return;const D=off(SHOP.ic,SHOP.F-6,0),near=(PL.x-D.x)**2+(PL.z-D.z)**2<55*55;
   if(!SHOP.list){if(!near)return;const tg=new THREE.SphereGeometry(.2,8,6),tmat=std({color:0xb8743c,roughness:.8});SHOP.list=[];for(let k=0;k<16;k++){const p=mkPerson(R(.9,1.05)),tk=new THREE.Mesh(tg,tmat);tk.scale.set(.9,.7,1.3);tk.position.set(.3,1,.2);p.add(tk);p.visible=false;p.lat=0;p.ii=0;scene.add(p);SHOP.list.push(p);}}
   SHOP.t-=rdt;if(near&&SHOP.t<=0){const p=SHOP.list.find(q=>!q.visible);if(p){SHOP.t=R(.35,.7);p.visible=true;p.lat=SHOP.F-5;p.ii=SHOP.ic+Math.round(R(-4,4));p.ph=R(0,6);}}
