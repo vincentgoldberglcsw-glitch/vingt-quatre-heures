@@ -36,6 +36,7 @@ const LIT={p:null,t:3};   // litter thrown from passing cars (see litterTick)
 const SFSM=[];   // smoke sources on the decayed San Francisco towers
 const BBQ=[];   // the roadside billboards on I-880 that fall during the quake (see bbQuakeTick)
 const VANS=[];   // the ice-cream truck and the taco truck, driving up and down Paru (see vanTick)
+const BEARS=[];
 const MILLC={tw:[],i:-1,t:0,x:0,z:0,ry:0,y:0,w:null};   // the steel mill: its track index, and a timer for the falling pieces during the quake
 const SHOP={ic:0,F:0,list:null,t:0};   // the supermarket shoppers (see shopTick)
 const DOME={x:0,z:0,i:-1,hit:0},SAFEZ=()=>DRIVE&&PL.idx<Z.tu0&&!DOME.hit;   // the green eyed dome in the road before the Posey Tube
@@ -1319,6 +1320,17 @@ await BOOT.step('THE MARIN REDWOODS',.63);
     trunk.count=k;cone.count=c;trunk.castShadow=cone.castShadow=true;scene.add(trunk,cone);
     const fern=new THREE.InstancedMesh(mergeGeometries([new THREE.PlaneGeometry(1.6,1).translate(0,.5,0),new THREE.PlaneGeometry(1.6,1).translate(0,.5,0).rotateY(Math.PI/2)]),std({map:tuftTex,alphaTest:.4,side:D2,roughness:1,color:0x4a7a3a}),2500);k=0;
     for(let q=0;q<2500;q++){const i=Z.gg1+m(160)+(rnd()*(Z.sq-Z.gg1-m(360))|0),lat=(rnd()<.5?-1:1)*rr(10,60);if(lat>0&&i>CLF[0]-50&&i<CLF[1]+50)continue;off(i,lat,0,V);V.y=groundAt(V.x,V.z);M4.compose(V,Q.setFromAxisAngle(YAX,rr(0,6)),S.setScalar(rr(.8,1.6)));fern.setMatrixAt(k++,M4);}fern.count=k;scene.add(fern);
+    {// bears in the redwoods near the entrance: some peep out from behind a trunk to see what is going on, some climb up a trunk (BEARS, animated in bearsTick)
+      const fur=std({color:0x4a3322,roughness:1}),fur2=std({color:0x6a4a30,roughness:1}),nose=std({color:0x14100c,roughness:.5}),bk=std({color:0x6a3a22,roughness:1}),tg=new THREE.Vector3(),bs=new THREE.SphereGeometry(1,10,8);
+      const mkBear=()=>{const g=new THREE.Group(),P_=(geo,mt,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(geo,mt);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;g.add(o);return o;};
+        P_(bs,fur,0,.95,0,.62,.55,.95);const hd=new THREE.Group();hd.position.set(0,1.15,.9);g.add(hd);const H=(geo,mt,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(geo,mt);o.position.set(x,y,z);o.scale.set(sx,sy,sz);hd.add(o);};
+        H(bs,fur,0,0,0,.34,.32,.34);H(bs,fur2,0,-.1,.28,.17,.13,.2);H(bs,nose,0,-.05,.45,.06,.05,.05);for(const s of[-1,1]){H(bs,fur,s*.24,.26,-.04,.1,.1,.06);H(bs,nose,s*.13,.08,.3,.035,.035,.03);}
+        for(const[x,z]of[[-.4,.55],[.4,.55],[-.4,-.55],[.4,-.55]])P_(new THREE.BoxGeometry(.24,.7,.26),fur,x,.35,z,1,1,1);
+        g.scale.setScalar(1.7);g.hd=hd;return g;};
+      const nb=11;for(let q=0;q<nb;q++){const i=Z.gg1+m(170+q*85+Math.random()*40),sd=(q%3===1&&i>CLF[0]-50&&i<CLF[1]+50)?-1:(Math.random()<.5?-1:1);if(sd>0&&i>CLF[0]-50&&i<CLF[1]+50)continue;
+        off(i,sd*R(12.2,14),0,V);V.y=groundAt(V.x,V.z);const tx=V.x,ty=V.y,tz=V.z,n=Nn[i],tn=T[i],climb=q%2===1,tr=new THREE.Mesh(cyl(1.35,1.6,40,10),bk);tr.position.set(tx,ty+20,tz);tr.castShadow=true;scene.add(tr);
+        const g=mkBear(),pv=new THREE.Group();pv.add(g);scene.add(pv);BEARS.push({g:pv,b:g,climb,tx,ty,tz,nx:n.x*sd,nz:n.z*sd,tx2:tn.x,tz2:tn.z,ph:R(0,6.3),sd});}
+    }
     // an old silver Airstream trailer parked off the road where the redwoods thin out, its wheels sunk in the dirt
     {const i=Z.sq-m(250),g=new THREE.Group(),al=std({color:0xc9ccce,metalness:.85,roughness:.3}),dk=std({color:0x1a1e22,roughness:.15,metalness:.3}),tyr=std({color:0x141414,roughness:.9}),dirt=std({color:0x7a4a30,roughness:1}),blk=std({color:0x1c1c1e,roughness:.8});
       const bod=new THREE.Mesh(new THREE.CapsuleGeometry(1.2,4.6,10,20).rotateX(Math.PI/2),al);bod.scale.set(.95,1.05,1);bod.position.y=1.62;bod.castShadow=true;g.add(bod);
@@ -1518,7 +1530,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
   {const ch=std({color:0x1c1a18,roughness:1});for(const f of[.12,.27,.45,.6,.83]){const i=Z.b0+Math.round((Z.b1-Z.b0)*f),sd=f*10%2<1?1:-1,g=new THREE.Group();g.add(new THREE.Mesh(carG,ch),new THREE.Mesh(whG,ch));off(i,sd*7.4,0,g.position);g.rotation.set(0,yaw(i)+rr(-.6,.6),sd*.12);scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:2.2});BURN.push({x:g.position.x,y:g.position.y+1,z:g.position.z,s:.8});}}
   // last of all, merge the static scenery by material and by area, so the whole bay draws in a few hundred calls instead of tens of thousands
   Terrain.occupy(scene.children.slice(A0));Terrain.start(scene,CULL,LANDM,grassTex);   // the real hills: level ground is kept under everything built above, and the rest is queued to be raised tile by tile
-  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...CROWS.map(c=>c.g),...MILLC.tw.map(t=>t.g)]));
+  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...CROWS.map(c=>c.g),...MILLC.tw.map(t=>t.g),...BEARS.map(b=>b.g)]));
   for(const o of [...scene.children])if(o.isInstancedMesh&&o.frustumCulled&&o.count>60)splitInstanced(o);
 }
 
@@ -2787,7 +2799,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -2978,6 +2990,12 @@ function conesTick(rdt){const C=CONES;if(!C||!C.CP||!C.cone.visible)return;const
 function conesReset(){const C=CONES;if(!C||!C.CP)return;const m=new THREE.Matrix4(),p=new THREE.Vector3(),qq=new THREE.Quaternion(),sc=new THREE.Vector3(1,1,1);let ch=false;
   for(let k=0;k<C.n;k++){const c=C.CP[k];if(c.t<0)continue;c.t=-1;c.a=0;c.vx=c.vz=0;c.x=c.ox;c.z=c.oz;p.set(c.x,c.y,c.z);m.compose(p,qq,sc);C.cone.setMatrixAt(k,m);p.y+=.12;m.compose(p,qq,sc);C.band.setMatrixAt(k,m);ch=true;}
   if(ch){C.cone.instanceMatrix.needsUpdate=true;C.band.instanceMatrix.needsUpdate=true;}}
+// bears in the redwoods near the Marin entrance: peeping round trunks at the car, and climbing up trunks
+let BEART=0;
+function bearsTick(rdt){if(!BEARS.length)return;BEART+=rdt;const t=BEART;
+  for(const b of BEARS){const dx=b.tx-PL.x,dz=b.tz-PL.z,d2=dx*dx+dz*dz;if(d2>320*320){b.g.visible=false;continue;}b.g.visible=true;
+    if(b.climb){const y=b.ty+3.5+5.5*(Math.sin(t*.22+b.ph)+1)/2*1.0+3*Math.max(0,Math.sin(t*.07+b.ph*2));b.g.position.set(b.tx-b.nx*1.05,y,b.tz-b.nz*1.05);b.g.rotation.set(0,Math.atan2(b.nx,b.nz),0);b.b.rotation.set(-Math.PI/2,0,Math.sin(t*2.2+b.ph)*.06);b.b.hd.rotation.x=.5+Math.sin(t*.6+b.ph)*.25;}
+    else{const u=(Math.sin(t*.5+b.ph)+1)/2,s=-.2+1.8*u*u*(3-2*u);b.g.position.set(b.tx+b.nx*1.9+b.tx2*s*b.sd,b.ty,b.tz+b.nz*1.9+b.tz2*s*b.sd);const ya=Math.atan2(PL.x-b.g.position.x,PL.z-b.g.position.z);b.g.rotation.set(0,ya,0);b.b.rotation.set(0,0,0);b.b.hd.rotation.y=Math.sin(t*.9+b.ph)*.3;}}}
 function sfxBell(){if(!AC)return;let t=AC.currentTime;for(let k=0;k<2;k++){for(const[f,v]of[[1760,.22],[2640,.1],[4400,.05]])tone('sine',f,t,.9,v,master,{a:.002,h:.08});t+=.24;}}
 function sfxScreech(){if(!AC)return;const t=AC.currentTime;tone('sawtooth',2300,t,.9,.12,master,{to:1300,a:.05,h:.4,lp:3200,ft:'bandpass',q:6});}
 function quakeStart(q){for(const o of CONES.list)o.visible=true;conesReset();let n=0;   // traffic already on the bridge runs on into the gap: five vehicles in the right-hand lanes, timed to reach it just after it goes
