@@ -137,6 +137,7 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
     H[i]=5.4*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.5,z.wilma+WL*.665)+1.6*bump(i,z.wilma+WL*.143,z.wilma+WL*.3,z.wilma+WL*.685,z.wilma+WL*.705)   /* Wilma Chan overpass: comes down to a short level lip and drops off it - a small jump on the way to the tube */
       +18*bump(i,z.tu1+m(160),z.tu1+m(560),z.toll-m(520),z.toll-m(260))
       +22*bump(i,z.b0-m(240),z.b0-m(10),z.b1-m(460),z.b1-m(120))
+      +15*bump(i,z.rb0-m(1150),z.rb0-m(750),z.rb0-m(480),z.rb0-m(15))   /* before the Richmond-San Rafael bridge: the road climbs to a headland over the bay, then comes gently down onto the deck */
       +78*bump(i,z.hyde+m(50),z.hyde+m(360),z.hyde+m(425),z.hyde+m(645))   /* Hyde St: a long, very steep climb, a short crest, then a sharp drop towards the Wharf */
       +26*bump(i,z.gg0-m(300),z.gg0-m(20),z.sq-m(650),z.sq-m(150))
       +9*Math.sin((i-z.gg1)*SEG/170)*bump(i,z.gg1+m(150),z.gg1+m(350),z.sq-m(900),z.sq-m(700))
@@ -149,7 +150,7 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
   // banked bends: the outside of the curve raised, by how tightly the road turns (from the tangents), faded in and out at the ends of each stretch
   const bankOn=(a,b,amt)=>{const fd=m(25);for(let i=a;i<=b;i++){let c=0;for(let q=-8;q<8;q++){const u=wrapI(i+q),v=wrapI(u+1);c+=(T[v].x-T[u].x)*Nn[u].x+(T[v].z-T[u].z)*Nn[u].z;}const env=sst(i,a,a+fd)*(1-sst(i,b-fd,b));BK[wrapI(i)]=clamp(-c/(16*SEG)*45,-amt,amt)*env;}};
   bankOn(z.refinery-m(60),z.i80+m(60),.1);   // the wide sweep from Shane Drive onto I-80, taken at speed
-  bankOn(z.sq+m(40),z.rb0+m(20),.1);   // past San Quentin: a gentle banked curve through the badlands
+  bankOn(z.rb1+m(80),z.richmond+m(60),.16);bankOn(z.rb0-m(1000),z.rb0-m(60),.16);bankOn(z.sq+m(40),z.rb0+m(20),.1);   // past San Quentin: a gentle banked curve through the badlands
   bankOn(z.richmond+m(40),z.shane,.08);   // Richmond's sloping bend
   bankOn(z.wilma-m(WR*1.222+40),z.wilma+m(40),.26);   // the Alameda corners: wide and steeply banked, for 175 mph
   bankOn(z.tu0-m(200),z.tu0-m(10),.2);   // into the Posey Tube
@@ -1261,6 +1262,12 @@ await BOOT.step('SAN FRANCISCO',.55);
         for(let x=w/2-140;x<=w/2-60;x+=20)c.fillRect(x,190,8,110);for(let x=w/2+60;x<=w/2+140;x+=20)c.fillRect(x,190,8,110);c.fillRect(w/2-150,190,100,8);c.fillRect(w/2+50,190,100,8);}),   // and cell bars either side
         w2=canvas(512,384,(c,w,h)=>{c.fillStyle='#f4f1e8';c.fillRect(0,0,w,h);c.strokeStyle='#c8241c';c.lineWidth=12;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#d8261c';c.font='900 86px Arial Black,Arial';c.textAlign='center';c.fillText('DO NOT',w/2,130);c.fillText('STOP FOR',w/2,230);c.fillText('PRISONERS',w/2,330,470);});
       board(Z.sq-m(300),12.5,5.6,4.2,w1,0,.05);board(Z.sq-m(150),12.5,5.6,4.2,w2,0,.05);}
+    {const RS=[['DANGER','FLAMMABLE VAPOURS','w'],['VOLTEX','SYNTHETIC MOTOR OIL','p'],['NO STOPPING','REFINERY ZONE','w'],['SLICKO','PETROLEUM JELLY · SOFT AS SIN','p'],['AUTHORIZED','VEHICLES ONLY','w'],['KRONOS PREMIUM','UNLEADED · FUELING THE BAY','p'],['RICHMOND REFINING','FUELING THE BAY · SINCE 1902','p']];   // ominous refinery warnings and invented petroleum brands, some dim and sooty
+      RS.forEach(([a1,a2,ty],k)=>{const tx=canvas(512,256,(c,w,h)=>{const wr=ty==='w';c.fillStyle=wr?'#e8b81c':'#1a0f0e';c.fillRect(0,0,w,h);c.strokeStyle=wr?'#111':'#c8241c';c.lineWidth=10;c.strokeRect(8,8,w-16,h-16);
+          if(wr){c.fillStyle='#111';for(let x=-40;x<w;x+=50){c.beginPath();c.moveTo(x,h-36);c.lineTo(x+25,h-36);c.lineTo(x+45,h-8);c.lineTo(x+20,h-8);c.fill();}}else{c.fillStyle='#c8241c';c.beginPath();c.moveTo(70,170);c.quadraticCurveTo(40,110,70,60);c.quadraticCurveTo(100,110,70,170);c.fill();}
+          c.fillStyle=wr?'#111':'#f2e6c8';c.font='900 '+(a1.length>12?40:60)+'px Arial Black,Arial';c.textAlign='center';c.fillText(a1,w*(wr?.5:.58),100,wr?470:380);c.font='900 26px Arial Black,Arial';c.fillStyle=wr?'#8a1010':'#ffb02a';c.fillText(a2,w*(wr?.5:.58),160,wr?470:380);
+          for(let q=0;q<(k%2?160:60);q++){c.fillStyle='rgba(10,8,6,'+(.1+Math.random()*.2)+')';c.fillRect(Math.random()*w,Math.random()*h,2+Math.random()*10,2+Math.random()*30);}if(k%3===1){c.fillStyle='rgba(0,0,0,.35)';c.fillRect(0,0,w,h);}});   // soot stains, a few dimmed
+        board(Z.rb1+m(140+k*130),(k%2?1:-1)*12.5,5.2,2.6,tx,0,.05);});}
     {// badlands past San Quentin: banded mud hills in yellow, rust, purple and blue-grey with ridged fans (vertex colours, one mesh per side)
     {// plain desert between San Quentin and the badlands: sand, cacti, tombstones, skeletons (three instanced meshes)
       const d0=Z.sq+m(40),d1=Z.sq+m(340),sand=std({color:0xc9aa72,roughness:1,side:D2});for(const sd of[-1,1])ribbon(i=>sd*(9.6+XW[i]),sd*120,-.03,-.05,sand,12,d0,d1);
@@ -2744,7 +2751,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);sfSmokeTick(rdt);litterTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -3485,6 +3492,14 @@ function litterTick(rdt){if(!DRIVE||G.state!=='race')return;const L=LIT;
   for(const p of L.p){if(p.st===0)continue;const m=p.m;if(p.st===1){p.vy-=18*rdt;m.position.x+=p.vx*rdt;m.position.y+=p.vy*rdt;m.position.z+=p.vz*rdt;m.rotation.x+=9*rdt;if(m.position.y<=p.gy+.06){m.position.y=p.gy+.06;p.st=2;p.life=0;m.rotation.set(Math.PI/2,R(0,6),0);}}
     else{p.life+=rdt;if(p.life>22)m.scale.setScalar(Math.max(0,1-(p.life-22)/3));if(p.life>25){p.st=0;m.visible=false;continue;}
       const dx=m.position.x-PL.x,dz=m.position.z-PL.z;if(dx*dx+dz*dz<1.5&&Math.hypot(PL.vx,PL.vz)>4&&!PL.crash&&!PL.air){PL.bump=Math.max(PL.bump||0,.7);G.shake=Math.max(G.shake,.25);PL.vx*=.985;PL.vz*=.985;sfxScrape(.3);p.st=1;p.vx=PL.vx*.6+R(-2,2);p.vz=PL.vz*.6+R(-2,2);p.vy=R(3,5);}}}}   // run over: a little bump, and it is kicked up
+// An ominous flock of turkeys waits at the Richmond entrance, motionless and facing you; at about 45 m they all fly up and away (once per run).
+const RTK={g:null,st:0,t:0};
+function rtkTick(rdt){if(!DRIVE||!TK.length)return;const a=Z.richmond-Math.round(120/SEG);
+  if(PL.idx<Z.rb1){if(RTK.st){RTK.st=0;if(RTK.g)for(const o of RTK.g)o.m.visible=false;}return;}
+  if(RTK.st===0&&Math.abs(PL.idx-a)<Math.round(450/SEG)){if(!RTK.g){RTK.g=[];for(let k=0;k<12;k++){const m=TK[0].m.clone(true);scene.add(m);RTK.g.push({m,vx:0,vy:0,vz:0,x0:R(-6,6),l0:R(-7,7)});}}
+    for(const o of RTK.g){at(a*SEG+o.x0,o.l0,0,o.m.position);o.m.rotation.set(0,yaw(a)+Math.PI,0);o.m.scale.setScalar(1.25);o.m.visible=true;const w=o.m.children;w[w.length-1].rotation.z=0;w[w.length-2].rotation.z=0;}RTK.st=1;RTK.t=0;}
+  if(RTK.st===1){at(a*SEG,0,0,V);if((V.x-PL.x)**2+(V.z-PL.z)**2<45*45){RTK.st=2;RTK.t=0;for(const o of RTK.g){o.vy=R(7,12);o.vx=R(-5,5);o.vz=R(-5,5);}}}
+  else if(RTK.st===2){RTK.t+=rdt;for(const o of RTK.g){if(!o.m.visible)continue;o.m.position.x+=o.vx*rdt;o.m.position.y+=o.vy*rdt;o.m.position.z+=o.vz*rdt;o.vy+=1.5*rdt;const w=o.m.children,fl=Math.sin(RTK.t*34+o.x0)*1.1;w[w.length-1].rotation.z=fl;w[w.length-2].rotation.z=-fl;if(RTK.t>5){o.m.visible=false;}else if(RTK.t>3.5)o.m.scale.setScalar(1.25*(1-(RTK.t-3.5)/1.5));}}}
 function sfSmokeTick(rdt){if(!SFSM.length||Math.abs(PL.idx-Z.b1-Math.round(600/SEG))>Math.round(1100/SEG))return;for(const s of SFSM){s.t-=rdt;if(s.t>0)continue;s.t=R(.7,1.4);NOGY=1;puff(V.set(s.x,s.y,s.z),R(-.5,.5)+1.5,R(3,6),R(-.5,.5),4,R(14,24),R(5,8),.45,0x2a2622);NOGY=0;}}
 function bbQuakeTick(rdt){if(!BBQ.length)return;const fq=FQ.list[0],on=!!(fq&&fq.st===1&&fq.t>2.5&&fq.t<14);
   if(fq&&fq.st===0){for(const b of BBQ){if(b.t>=0){b.t=-1;b.ang=0;b.w=0;b.g.rotation.z=0;b.g.position.y=0;}}return;}
