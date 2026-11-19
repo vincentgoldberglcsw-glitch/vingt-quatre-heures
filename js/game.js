@@ -34,7 +34,7 @@ const std=o=>new THREE.MeshStandardMaterial(o);
 const VANS=[];   // the ice-cream truck and the taco truck, driving up and down Paru (see vanTick)
 const MILLC={i:-1,t:0};   // the steel mill: its track index, and a timer for the falling pieces during the quake
 const SHOP={ic:0,F:0,list:null,t:0};   // the supermarket shoppers (see shopTick)
-const DOME={x:0,z:0,i:-1};   // the green eyed dome in the road before the Posey Tube
+const DOME={x:0,z:0,i:-1,hit:0},SAFEZ=()=>DRIVE&&PL.idx<Z.tu0&&!DOME.hit;   // the green eyed dome in the road before the Posey Tube
 const DETR={a:-1};   // the detour ramp: starts at index a, 240 segments long, drops to the ground by 60% of the way
 // hyperspace jump into the portal: streaking stars stretch out from the centre (w 0..1 building), then on arrival they shrink away again (w 0..-1)
 const WARP={c:null,s:null};
@@ -2122,13 +2122,13 @@ function spillTick(rdt){const K=SPILL,pe=ents.find(e=>e.player);if(!pe||!DRIVE||
     if(K.st===3&&Math.random()<rdt*5)puff(V.set(K.V.x,2.5,K.V.z),R(-.5,.5),R(1,3),R(-.5,.5),.8,2.5,R(.8,1.5),.35,0xaab8aa);
     if(ds<-420||ds>900){K.st=0;K.gr.visible=false;K.pm.visible=false;}}
   const tg=K.st===3&&Math.hypot(PL.x-K.pc.x,PL.z-K.pc.z)<K.R?.3:1;K.g+=(tg-K.g)*clamp(rdt*6,0,1);}
-function crashPlayer(sev,atWall){if(PL.crash||PL.safe>0)return;ohNo();const pe=ents.find(e=>e.player);PL.crash={t:0,sd:Math.sign(pe.lat)||1,s:pe.s};startWreck(pe,PL.vx,PL.vz,sev,atWall);PL.vx=PL.vz=0;pe.v=0;G.slow=.3;G.slowT=2.6;say('ACCIDENT','No. '+LIV().num+' · McQUEEN',3);endSkid();announce('Accident ! La Porsche de McQueen est sortie de la piste !');}
+function crashPlayer(sev,atWall){if(PL.crash||PL.safe>0)return;if(SAFEZ()){PL.vx*=.8;PL.vz*=.8;G.shake=Math.max(G.shake,.4);return;}   /* no crashing before the Posey Tube: a hit only bounces and slows */ohNo();const pe=ents.find(e=>e.player);PL.crash={t:0,sd:Math.sign(pe.lat)||1,s:pe.s};startWreck(pe,PL.vx,PL.vz,sev,atWall);PL.vx=PL.vz=0;pe.v=0;G.slow=.3;G.slowT=2.6;say('ACCIDENT','No. '+LIV().num+' · McQUEEN',3);endSkid();announce('Accident ! La Porsche de McQueen est sortie de la piste !');}
 function fallOff(sd,vn,bi){const n=Nn[bi],h=H[bi],vx=PL.vx,vz=PL.vz;crashPlayer(vn,true);const w=hero.wreck;if(!w)return;const out=Math.max(vn,7);   // through the barrier and down to the ground below
   w.free=1;w.y=h;w.vy=2;w.x+=n.x*sd*2.4;w.z+=n.z*sd*2.4;w.vx=vx*.8+n.x*sd*out;w.vz=vz*.8+n.z*sd*out;w.wr=sd*R(2.5,4.5);w.fire=R(1.9,2.6);PL.crash.cam=1;camP.set(PL.x+n.x*sd*26+T[bi].x*20,2.4,PL.z+n.z*sd*26+T[bi].z*20);say('OVER THE EDGE','No. '+LIV().num+' - McQUEEN',3);}
 function crashAI(e,sev,lv=0){if(e.car.wreck)return;const i=wrapI(Math.floor(e.s/SEG));e.out=10;startWreck(e,T[i].x*e.v+Nn[i].x*lv,T[i].z*e.v+Nn[i].z*lv,sev,lv!==0);e.doom=0;e.v=0;
   if(!PL.crash&&camera.position.distanceTo(e.car.position)<260){G.slow=.4;G.slowT=1.6;say('ACCIDENT','No. '+e.num+' · '+e.name,2.6);announce('Accident pour la voiture numéro '+e.num+' !');}}
 // a lightning strike sets the car alight where it is: it coasts to a stop burning, no tumble
-function struck(e){const car=e.car;boltTo(car.position.x,car.position.z);let w;
+function struck(e){const car=e.car;if(e.player&&SAFEZ())return;boltTo(car.position.x,car.position.z);let w;
   if(e.player){PL.crash={t:0,sd:Math.sign(e.lat)||1,s:e.s};w=startWreck(e,PL.vx,PL.vz,0,true);PL.vx=PL.vz=0;G.slow=.35;G.slowT=2.2;say('FOUDRE !','LIGHTNING STRIKE · No. '+LIV().num,3);endSkid();announce('La foudre ! La Porsche de McQueen est en feu !');}
   else{const i=wrapI(Math.floor(e.s/SEG));e.out=10;w=startWreck(e,T[i].x*e.v,T[i].z*e.v,0,true);e.v=0;say('FOUDRE !','No. '+e.num+' · '+e.name,2.4);announce('La foudre a frappé la voiture numéro '+e.num+' !');}
   w.fire=.01;w.wy=R(-.5,.5);w.brake=15;}
@@ -3205,7 +3205,7 @@ function extrasTick(rdt){const pe=ents.find(e=>e.player);if(!pe)return;const m_=
   {const T_=TRAIN,a=(Z.tu1+m_(270))*SEG,b=(Z.detour-m_(20))*SEG,inP=PL.idx>Z.tu1&&PL.idx<Z.b0;T_.g.visible=inP;if(inP){T_.s+=24*rdt;if(T_.s<a||T_.s>b)T_.s=a+(Math.random()<.5?0:R(0,300));
     T_.g.cars.forEach((c,k)=>{const s=T_.s-k*25.5;c.visible=s>a;if(!c.visible)return;const i=wrapI(Math.floor(s/SEG));at(s,60,0,c.position);c.position.y=0;c.rotation.y=yaw(i);});}}
   // the detour: take the exit lane on the right and the road brings you round to Richmond
-  if(DOME.i>=0&&!PL.crash&&PL.safe<=0&&(PL.x-DOME.x)**2+(PL.z-DOME.z)**2<4.6*4.6&&Math.hypot(PL.vx,PL.vz)>4){crashPlayer(14,false);const w=hero.wreck;if(w){w.free=1;w.y=H[PL.idx];w.vy=15;w.vx*=.9;w.vz*=.9;w.wr=R(-3,3);}}   // hit the dome: flung up, then the wreck falls and crashes
+  if(DOME.i>=0&&!PL.crash&&PL.safe<=0&&(PL.x-DOME.x)**2+(PL.z-DOME.z)**2<4.6*4.6&&Math.hypot(PL.vx,PL.vz)>4){DOME.hit=1;crashPlayer(14,false);DOME.hit=0;const w=hero.wreck;if(w){w.free=1;w.y=H[PL.idx];w.vy=15;w.vx*=.9;w.vz*=.9;w.wr=R(-3,3);}}   // hit the dome: flung up, then the wreck falls and crashes
   {const i=PL.idx;if(PORTAL.c&&PL.idx>PORTAL.i-300&&PL.idx<PORTAL.i+40){PORTAL.t+=rdt;if(PORTAL.t>.06){PORTAL.t=0;const c=PORTAL.c,g=c.getContext('2d'),w=c.width,ph=tmNow()*2.2;g.fillStyle='#061a3a';g.fillRect(0,0,w,w);for(let k=0;k<9;k++){g.strokeStyle=k%2?'rgba(210,240,255,.9)':'rgba(60,150,255,.8)';g.lineWidth=5+k%3*2;g.beginPath();for(let r=3;r<w*.62;r+=3){const an=r*.09-ph+k*.7,x=w/2+Math.cos(an)*r*(1-k*.015),y=w/2+Math.sin(an)*r*(1-k*.015);r===3?g.moveTo(x,y):g.lineTo(x,y);}g.stroke();}const rg=g.createRadialGradient(w/2,w/2,2,w/2,w/2,w*.5);rg.addColorStop(0,'rgba(255,255,255,1)');rg.addColorStop(.35,'rgba(150,210,255,.35)');rg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=rg;g.fillRect(0,0,w,w);PORTAL.tex.needsUpdate=true;}}
   {const RL=PORTAL.rail;   // on the exit ramp the car is carried down the lane on rails (steering locked) and drawn into the ring
     if(!RL&&!FADE.go&&!PL.crash&&DETR.a>=0&&G.state==='race'&&PL.idx>=DETR.a+8&&PL.idx<=DETR.a+150&&pe.lat<-(RW+XW[i]+2.5))PORTAL.rail={f:PL.idx,v:Math.max(Math.hypot(PL.vx,PL.vz),20)};
