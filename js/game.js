@@ -2031,6 +2031,25 @@ function tubeFire(dt){const F=TUF;if(!F.st){const m=new THREE.MeshBasicMaterial(
   const len=Z.tu1-Z.tu0;for(let n=0;n<8;n++){const o=F.st[n],j=Math.max(Z.tu0,Math.min(Z.tu1-1,Math.round(PL.idx+(n-3.5)*(len/8)*.6))),w=RW+XW[j];at(j*SEG,(n%2?1:-1)*(w-.6),.45,F.V);o.position.copy(F.V);o.rotation.set(0,yaw(j),0);o.scale.set(1,.7+.5*Math.sin(tmNow()*13+n*2.1),1);o.material.opacity=.45+.3*Math.sin(tmNow()*17+n);o.visible=true;}
   for(let q=0;q<2;q++){const a=R(-60,60),j=Math.max(Z.tu0,Math.min(Z.tu1-1,PL.idx+Math.round(a/SEG))),w=RW+XW[j];at(j*SEG,R(-w+.6,w-.6),R(.2,1.2),F.V);puff(F.V,R(-.4,.4),R(2,5),R(-.4,.4),R(1.2,2.2),R(3,5),R(.7,1.3),.8,q?0xff7a1c:0xffc050);}
   if(Math.random()<dt*6)puff(V.set(PL.x,3.5,PL.z),R(-1,1),R(.5,2),R(-1,1),R(2,3),R(6,9),R(1.5,2.5),.5,0x151311);}
+// Webster Tube approach (I-80 south): a tanker truck ahead loses control, slews off the road and tips over; green liquid spreads from it over one side of the road (low grip there only, the other side stays clear).
+const SPILL={g:1,st:0,done:false,s:0,lat:0,v:0,t:0,sd:1,yw:0,tip:0,R:0,gr:null,pm:null,pc:new THREE.Vector3(),V:new THREE.Vector3()};
+function spillTick(rdt){const K=SPILL,pe=ents.find(e=>e.player);if(!pe||!DRIVE||!Z.wt1)return;const m=x=>Math.round(x/SEG),s0=Z.wt1-m(700);
+  if(!K.gr){const g=new THREE.Group(),mt=(c,r,mm)=>std({color:c,roughness:r,metalness:mm||0}),A=(geo,mat,x,y,z)=>{const o=new THREE.Mesh(geo,mat);o.position.set(x,y,z);g.add(o);return o;};
+    A(new THREE.BoxGeometry(2.4,2.5,2.2),mt(0xc8c8c8,.5),0,1.9,4.2);A(new THREE.BoxGeometry(2.3,.9,9.5),mt(0x222222,.8),0,.7,-.3);A(new THREE.CylinderGeometry(1.25,1.25,7.2,16).rotateX(Math.PI/2),mt(0xc9ccd0,.3,.7),0,2.2,-1.2);
+    A(new THREE.BoxGeometry(2.5,.5,.1),mt(0xd8302a,.6),0,2.8,4.4);g.rotation.order='YXZ';g.visible=false;scene.add(g);K.gr=g;
+    K.pm=new THREE.Mesh(new THREE.CircleGeometry(1,28).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x35e04f,transparent:true,opacity:.72,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-6,fog:true}));K.pm.visible=false;scene.add(K.pm);}
+  if(PL.idx<s0-m(650))K.done=false;
+  const ds=wdiff(K.s-pe.s);
+  if(K.st===0){if(!K.done&&G.state==='race'&&PL.idx>s0-m(330)&&PL.idx<s0+m(60)&&pe.v>8){K.st=1;K.done=true;K.s=pe.s+Math.max(110,pe.v*3.5);K.lat=0;K.v=26;K.t=0;K.yw=0;K.tip=0;K.R=0;K.sd=Math.random()<.5?-1:1;K.gr.visible=true;}}
+  else{K.t+=rdt;if(K.st<3){K.s=wrapS(K.s+K.v*rdt);if(K.st===1&&K.t>1.2)K.st=2;
+      if(K.st===2){const u=K.t-1.2;K.lat+=K.sd*(5+u*5)*rdt;K.yw+=K.sd*-(.4+u*.9)*rdt;K.v=Math.max(7,K.v-11*rdt);const j=wrapI(Math.floor(K.s/SEG)),w=RW+XW[j];K.tip=K.sd*Math.min(1.35,u*.5);
+        if(Math.abs(K.lat)>w-1.4||u>2.6){K.lat=clamp(K.lat,-(w-1.4),w-1.4);K.st=3;K.t=0;K.v=0;sfxCrunch(1);G.shake=Math.max(G.shake,.2);at(K.s+8,K.sd*w*.5,.08,K.pc);K.pm.visible=true;}}
+      if(K.st===1)K.lat=Math.sin(K.t*3)*.25;}
+    else{K.tip+=(K.sd*1.5-K.tip)*clamp(rdt*3,0,1);K.R=Math.min((RW+XW[wrapI(Math.floor(K.s/SEG))])*.5,K.R+rdt*1.6);K.pm.scale.set(K.R,1,K.R*1.25);K.pm.position.copy(K.pc);}
+    const j=wrapI(Math.floor(K.s/SEG));at(K.s,K.lat,0,K.V);K.gr.position.copy(K.V);K.gr.rotation.set(0,yaw(j)+K.yw,K.tip);
+    if(K.st===3&&Math.random()<rdt*5)puff(V.set(K.V.x,2.5,K.V.z),R(-.5,.5),R(1,3),R(-.5,.5),.8,2.5,R(.8,1.5),.35,0xaab8aa);
+    if(ds<-420||ds>900){K.st=0;K.gr.visible=false;K.pm.visible=false;}}
+  const tg=K.st===3&&Math.hypot(PL.x-K.pc.x,PL.z-K.pc.z)<K.R?.3:1;K.g+=(tg-K.g)*clamp(rdt*6,0,1);}
 function crashPlayer(sev,atWall){if(PL.crash||PL.safe>0)return;ohNo();const pe=ents.find(e=>e.player);PL.crash={t:0,sd:Math.sign(pe.lat)||1,s:pe.s};startWreck(pe,PL.vx,PL.vz,sev,atWall);PL.vx=PL.vz=0;pe.v=0;G.slow=.3;G.slowT=2.6;say('ACCIDENT','No. '+LIV().num+' · McQUEEN',3);endSkid();announce('Accident ! La Porsche de McQueen est sortie de la piste !');}
 function fallOff(sd,vn,bi){const n=Nn[bi],h=H[bi],vx=PL.vx,vz=PL.vz;crashPlayer(vn,true);const w=hero.wreck;if(!w)return;const out=Math.max(vn,7);   // through the barrier and down to the ground below
   w.free=1;w.y=h;w.vy=2;w.x+=n.x*sd*2.4;w.z+=n.z*sd*2.4;w.vx=vx*.8+n.x*sd*out;w.vz=vz*.8+n.z*sd*out;w.wr=sd*R(2.5,4.5);w.fire=R(1.9,2.6);PL.crash.cam=1;camP.set(PL.x+n.x*sd*26+T[bi].x*20,2.4,PL.z+n.z*sd*26+T[bi].z*20);say('OVER THE EDGE','No. '+LIV().num+' - McQUEEN',3);}
@@ -2046,7 +2065,7 @@ function readInput(racing){let st=0,thr=0,brk=0;if(!racing)return[0,0,0];
   const gp=navigator.getGamepads?[...navigator.getGamepads()].find(p=>p):null;G.pad=!!gp&&(Math.abs(gp.axes[0]||0)>.08||(gp.buttons[7]&&gp.buttons[7].value>.05)||(gp.buttons[6]&&gp.buttons[6].value>.05));
   if(gp){const ax=gp.axes[0]||0;if(Math.abs(ax)>.08)st=-ax;if(gp.buttons[7])thr=Math.max(thr,gp.buttons[7].value);if(gp.buttons[6])brk=Math.max(brk,gp.buttons[6].value);}
   if(G.autoSt!=null)st=G.autoSt;return[st,thr,brk];}
-function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*(1-(PL.melt||0)*.1),racing=G.state==='race';
+function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*SPILL.g*(1-(PL.melt||0)*.1),racing=G.state==='race';
   if(PL.crash){PL.crash.t+=dt/Math.max(G.slow,.3);return;}
   if(PL.auto&&autoDrive(dt,pe))return;   // backing out of the driveway at the start, pulling in at the finish
   let[st,thr,brk]=readInput(racing);if(G.state==='finish')brk=1;
@@ -2586,7 +2605,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);spillTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
