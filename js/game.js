@@ -1238,7 +1238,7 @@ await BOOT.step('RICHMOND · SHANE DRIVE',.68);
      // flare stacks: a tall thin stack, and a flame on top that is a glowing sprite (so it shows from kilometres away) as well as fire particles close to
      const ft=canvas(128,256,(g,w,h)=>{const r=g.createRadialGradient(w/2,h*.62,4,w/2,h*.55,h*.5);r.addColorStop(0,'rgba(255,236,170,1)');r.addColorStop(.22,'rgba(255,160,40,.95)');r.addColorStop(.55,'rgba(240,80,10,.6)');r.addColorStop(1,'rgba(200,40,0,0)');g.fillStyle=r;g.fillRect(0,0,w,h);});
      if(!flareSites.length&&cand.length)flareSites.push(cand[cand.length-1]);
-     flareSites.sort((a,b)=>b[3]-a[3]).slice(0,3).forEach(([x,y,z])=>{const h=80+rq()*25,st=new THREE.Mesh(cyl(1.1,1.8,h,8),std({color:0x9a3a2a,roughness:.7}));st.position.set(x,y+h/2,z);scene.add(st);
+     flareSites.sort((a,b)=>b[3]-a[3]).slice(0,5).forEach(([x,y,z])=>{const h=80+rq()*25,st=new THREE.Mesh(cyl(1.1,1.8,h,8),std({color:0x9a3a2a,roughness:.7}));st.position.set(x,y+h/2,z);scene.add(st);
        const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:ft,color:0xffffff,depthWrite:false,transparent:true,fog:false}));sp.position.set(x,y+h+20,z);sp.scale.set(26,52,1);scene.add(sp);FLARES.push({sp,b:sp.position.y,ph:rq()*6});REFS.push({x,y:y+h+3,z,t:rq(),k:1.5});BURN.push({x,y:y+h+2,z,s:1.6,flare:1});});
      // tankers at anchor: long dark hulls with a white bridge house at the stern
      const hullM=std({color:0x2a2c30,roughness:.7}),redM=std({color:0x8a2a20,roughness:.8}),whM=std({color:0xe8e4da,roughness:.6}),dkM=std({color:0x5a3a2a,roughness:.8});
@@ -1247,7 +1247,7 @@ await BOOT.step('RICHMOND · SHANE DRIVE',.68);
        A(new THREE.BoxGeometry(22,1,150),dkM,0,10.4,5);A(new THREE.BoxGeometry(18,15,14),whM,0,17,-70);A(new THREE.BoxGeometry(24,2,16),whM,0,25,-70);A(cyl(2.5,2.8,10,10),redM,0,27,-80);
        for(let k=0;k<6;k++)A(cyl(.4,.4,4,6),whM,0,12.5,-40+k*22);const ml=A(new THREE.SphereGeometry(.7,6,5),lampMat,0,33,-80);ml.scale.setScalar(1.4);
        g.position.set(x,-45,z);g.rotation.y=ry;scene.add(g);};
-     let placed=0;for(const[f,sd,o]of[[.25,1,520],[.55,-1,640],[.8,1,420],[.4,-1,900],[.7,1,1100]]){if(placed>=4)break;const i=Z.rb0+Math.round((Z.rb1-Z.rb0)*f);off(i,sd*o,0,V);const ry=yaw(i)+rq()*1.2-.6,dx=Math.sin(ry)*90,dz=Math.cos(ry)*90;
+     let placed=0;for(const[f,sd,o]of[[.06,-1,300],[.14,1,380],[.25,1,520],[.55,-1,640],[.8,1,420],[.4,-1,900],[.7,1,1100]]){if(placed>=6)break;const i=Z.rb0+Math.round((Z.rb1-Z.rb0)*f);off(i,sd*o,0,V);const ry=yaw(i)+rq()*1.2-.6,dx=Math.sin(ry)*90,dz=Math.cos(ry)*90;
        if(onLand(V.x,V.z)||onLand(V.x+dx,V.z+dz)||onLand(V.x-dx,V.z-dz))continue;tanker(V.x,V.z,ry);placed++;}}}
 
 await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
