@@ -1074,6 +1074,7 @@ await BOOT.step('SAN FRANCISCO',.55);
     {const rk=std({color:0x5e554a,roughness:1,side:D2}),[c0,c1]=CLF,ft=i=>13+H[i]*.3;   // Marin: on the left a narrow rocky ledge, then a cliff straight down to the rocks and the bay
       ribbon(i=>9.6+XW[i],13,-.03,-.03,rk,8,c0,c1);ribbon(13,ft,-.03,i=>-H[i],rk,6,c0,c1);ribbon(i=>ft(i)-2,i=>ft(i)+700,i=>.35-H[i],i=>.35-H[i],std({color:0x34596a,roughness:.3,metalness:.2}),20,c0-40,c1+40);
       const N=420,im=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),rk,N);let k=0;for(let i=c0;i<=c1&&k<N-1;i+=1)for(let q=0;q<2;q++){const y=Math.random()<.3?-H[i]*Math.random():-H[i];off(i,y>-H[i]?13+(y/-H[i])*(ft(i)-13):ft(i)+R(-1,6),y,V);M4.compose(V,Q.setFromEuler(new THREE.Euler(R(0,3),R(0,3),R(0,3))),S.set(R(1,3),R(.8,2.4),R(1,3)));im.setMatrixAt(k++,M4);}im.count=k;im.castShadow=true;scene.add(im);}bank(Z.richmond,Z.refinery,grass,40,2);}
+    {const bs=sign(1024,340,'WELCOME TO THE BADLANDS','#7a3f1e','#d9b48a','900 92px Arial','EST. LONG AGO · ENTER AT YOUR OWN RISK');board(Z.sq+m(330),-12,9,3,bs,0,.05);board(Z.sq+m(345),12,9,3,bs,0,.05);}
     {// badlands past San Quentin: banded mud hills in yellow, rust, purple and blue-grey with ridged fans (vertex colours, one mesh per side)
       const BC=[0xe3b04a,0xb4562f,0x7d5a86,0x7f93a8,0xd9a066,0xa04a3a].map(h=>new THREE.Color(h)),a0=Z.sq+m(40),a1=Z.rb0+m(20),LN=12,tc=new THREE.Color(),pos=[],col=[],idx=[];
       for(const sd of[-1,1]){pos.length=0;col.length=0;idx.length=0;let n=0;
