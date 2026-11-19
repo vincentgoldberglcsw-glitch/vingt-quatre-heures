@@ -11,6 +11,7 @@ import {Terrain} from './world/terrain.js';
 
 await BOOT.step('TYRE AND ENGINE TABLES',.02);
 let seed=7; const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646;};
+const ALM={u:{value:0},an:[],cat:null,dust:null,dn:0};   // Alameda scenery: sway clock, wandering animals, the caterpillar, dust
 const rr=(a,b)=>a+rnd()*(b-a), pick=a=>a[rnd()*a.length|0], R=(a,b)=>a+Math.random()*(b-a);
 const clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),lerp=(a,b,t)=>a+(b-a)*t,sst=(x,a,b)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
 const QS=new URLSearchParams(location.search),$=id=>document.getElementById(id);
@@ -837,7 +838,10 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
       g.strokeStyle='#1c1c1c';g.lineWidth=4;g.beginPath();g.arc(hx,hy+4,26,.2,2.94);g.stroke();
       g.font='96px Chewy,"Comic Sans MS",cursive';g.textAlign='center';g.lineJoin='round';g.strokeStyle='#fffdf2';g.lineWidth=14;g.strokeText('Fuzzy Caterpillar School',w/2,412,960);g.fillStyle='#22407a';g.fillText('Fuzzy Caterpillar School',w/2,412,960);g.strokeStyle='#1c2a4a';g.lineWidth=16;g.strokeRect(8,8,w-16,h-16);});
     const i=Z.central+m(320),bb=new THREE.Group(),fm=new THREE.MeshStandardMaterial({map:bt,roughness:.7,emissiveMap:bt,emissive:0xffffff,emissiveIntensity:.25});const bd=new THREE.Mesh(new THREE.BoxGeometry(28,12.6,.4),[steelM,steelM,steelM,steelM,fm,steelM]);bd.position.y=13.6;bb.add(bd);
-    for(const x of[-12.6,12.6])B(.7,8,.7,steelM,x,4,-.3,0,bb);bb.traverse(o=>{o.castShadow=true;});off(i,0,0,bb.position);bb.rotation.y=yaw(i)+Math.PI;scene.add(bb);}
+    for(const x of[-12.6,12.6])B(.7,8,.7,steelM,x,4,-.3,0,bb);bb.traverse(o=>{o.castShadow=true;});{const gm=std({color:0x7ccf3a,roughness:1}),cs=[];for(let k=0;k<9;k++){const sp=new THREE.Mesh(new THREE.SphereGeometry(k===8?1.15:.95,10,8),k%2?gm:std({color:0x4fa02a,roughness:1}));bb.add(sp);cs.push(sp);}
+      const hd=cs[8];for(const sx of[-.4,.4]){const e=new THREE.Mesh(new THREE.SphereGeometry(.28,8,6),std({color:0xffffff}));e.position.set(sx,.3,.9);hd.add(e);const pu=new THREE.Mesh(new THREE.SphereGeometry(.13,6,5),std({color:0x111111}));pu.position.set(sx,.3,1.1);hd.add(pu);}
+      const arm=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,1.6,5).translate(0,.8,0),gm);arm.position.set(1,-.2,0);hd.add(arm);ALM.cat={cs,arm};}
+    off(i,0,0,bb.position);bb.rotation.y=yaw(i)+Math.PI;scene.add(bb);}
   { // ---- telephone poles down San Antonio and Paru, wires strung between them, and crows sitting on the crossarms
     const wd=std({color:0x4a3a2c,roughness:.9}),crowM=std({color:0x101013,roughness:.45,metalness:.15}),bk=std({color:0x2a2a2e,roughness:.5}),wire=new THREE.MeshBasicMaterial({color:0x151515,side:D2}),ids=[];
     // a crow: glossy black body, head, heavy beak, wedge tail, legs, and two wings on hinges so it can fold them or fly. Each one is its own object (CROWS) so it can take off.
@@ -870,7 +874,7 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
       A(cyl(.3,.4,by,12),wht,bx0,by/2,bz0);P2(cyl(2.7,2.5,.8,24),std({color:0xd9a45a,roughness:.8}),.4);P2(cyl(2.85,2.85,.55,24),std({color:0x5a3220,roughness:.9}),1.07);P2(bx(5.1,.12,5.1),std({color:0xf2c230,roughness:.6}),1.41).rotation.y=.5;
       P2(cyl(3,3,.22,14),std({color:0x5fa544,roughness:.9}),1.59);P2(cyl(2.6,2.6,.24,24),std({color:0xc8302a,roughness:.6}),1.82);const bun=P2(new THREE.SphereGeometry(2.75,24,12,0,6.283,0,1.5708),std({color:0xd9a45a,roughness:.75}),1.93);bun.scale.y*=.72;}
     for(let k=0;k<3;k++){A(cyl(.9,.9,.08,12),wht,-1+k*3.6,.78,9.6);A(cyl(.06,.06,2.4,6),steelM,-1+k*3.6,1.2,9.6);A(new THREE.ConeGeometry(1.5,.7,10),k%2?red:wht,-1+k*3.6,2.6,9.6);}
-    g.traverse(o=>{o.castShadow=o.receiveShadow=true;});off(c,46,0,g.position);g.rotation.y=rot;scene.add(g);
+    g.traverse(o=>{o.castShadow=o.receiveShadow=true;});off(c,78,0,g.position);g.position.y+=12;g.rotation.y=rot;scene.add(g);   // up on a hill, far back from the road
     const ob=(x,z,r)=>{V.set(x,0,z).applyAxisAngle(YAX,rot).add(g.position);OBST.push({x:V.x,z:V.z,r});};for(const x of[-8,0,8])ob(x,0,7);ob(11,9,.7);
     const bush=new THREE.InstancedMesh(new THREE.SphereGeometry(1,10,7),std({roughness:1,color:0xffffff}),260);let k=0;
     for(let i=Z.wilma+4;i<Z.tu0-m(130)&&k<260;i+=3)for(const sd of[-1,1]){if(sd>0&&Math.abs(i-c)<m(40))continue;if(k>=260)break;gpos(i,sd*rr(10.5,15)+sd*XW[i],V);M4.compose(V,Q.identity(),S.set(rr(1.4,2.4),rr(.9,1.5),rr(1.4,2.4)));bush.setMatrixAt(k,M4);bush.setColorAt(k++,C.setHex(rnd()<.45?0xd9c23a:pick([0x3f6a34,0x4f7a3a,0x5a7a2f])));}
@@ -880,6 +884,42 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
     const t=canvas(512,300,(kk,w,h)=>{kk.fillStyle='#f6f3ea';kk.fillRect(0,0,w,h);kk.strokeStyle='#c32a22';kk.lineWidth=12;kk.strokeRect(10,10,w-20,h-20);kk.fillStyle='#c32a22';kk.textAlign='center';kk.font='900 74px Georgia';kk.fillText('OUT AND IN',256,100);
       kk.fillStyle='#f2a21e';kk.font='900 58px Georgia';kk.fillText('BURGER',256,162);kk.fillStyle='#2a2a2a';kk.font='700 30px Arial';kk.fillText('WILMA CHAN WAY',256,214);kk.font='900 40px Arial';kk.fillText('NEXT LEFT  ↖',256,266);});
     board(Z.central+m(420),13.6+XW[Z.central+m(420)],6.4,3.75,t);}
+if(DRIVE){ // ---- Alameda scenery: the hill and driveway to the burger, eucalyptus and bushes and a plough team on Wilma Chan Way, turn arrows, wind-blown wildflowers, wildlife
+  const tv=new THREE.Vector3(),tq=new THREE.Quaternion(),tm=new THREE.Matrix4(),ts=new THREE.Vector3(),tc=new THREE.Color(),w0=Z.wilma,wE=Z.tu0-m(160),cB=Z.wilma+m(45),inLot=i=>Math.abs(i-cB)<m(40);
+  const hill=new THREE.Mesh(new THREE.CylinderGeometry(16,46,12,24),std({color:0x6a7f3f,roughness:1}));off(cB,78,6,hill.position);scene.add(hill);
+  {const N=20,pos=[],idx=[],A=new THREE.Vector3();for(let s=0;s<=N;s++){const lat=11+60*s/N,t=Math.min(1,Math.max(0,(lat-32)/30)),y=12*t*t*(3-2*t)+.09;for(const sg of[-1,1]){off(cB,lat,0,A);pos.push(A.x+T[cB].x*3.5*sg,A.y+y,A.z+T[cB].z*3.5*sg);}}
+    for(let s=0;s<N;s++){const a=s*2;idx.push(a,a+1,a+2,a+1,a+3,a+2);}const gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));gg.setIndex(idx);gg.computeVertexNormals();
+    scene.add(new THREE.Mesh(gg,std({color:0x47484b,roughness:.92,side:D2})));}
+  // eucalyptus (tall, pale trunks, grey-green crowns) and bushes on the left of Wilma Chan Way
+  const trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.22,.4,1,6).translate(0,.5,0),std({color:0xb9b2a0,roughness:.95}),60),crown=new THREE.InstancedMesh(new THREE.SphereGeometry(1,8,6),std({roughness:1,color:0xffffff}),60),shr=new THREE.InstancedMesh(new THREE.SphereGeometry(1,8,6),std({roughness:1,color:0xffffff}),140);
+  let nt=0,nb=0;for(let i=w0+m(8);i<wE&&nt<60;i+=m(7)){if(inLot(i))continue;gpos(i,rr(17,34),tv);const h=rr(14,21);tm.compose(tv,tq.identity(),ts.set(rr(.8,1.2),h,1));trunk.setMatrixAt(nt,tm);tm.compose(ts.copy(tv).setY(tv.y+h*.78),tq,new THREE.Vector3(rr(2.6,3.4),h*.42,rr(2.6,3.4)));crown.setMatrixAt(nt,tm);crown.setColorAt(nt++,tc.setHex(pick([0x6f8a6a,0x7d9577,0x5f7c5c])));}
+  for(let i=w0+m(4);i<wE&&nb<140;i+=m(3.5)){if(inLot(i))continue;gpos(i,rr(15,37),tv);tm.compose(tv,tq.identity(),ts.set(rr(1,2),rr(.7,1.2),rr(1,2)));shr.setMatrixAt(nb,tm);shr.setColorAt(nb++,tc.setHex(pick([0x3f6a34,0x4f7a3a,0x5a7a2f,0x6b8a3a])));}
+  trunk.count=crown.count=nt;shr.count=nb;trunk.castShadow=crown.castShadow=true;scene.add(trunk,crown,shr);
+  // wind-blown wildflowers and weeds: small cones swayed in the vertex shader by ALM.u
+  {const tuft=new THREE.InstancedMesh(new THREE.ConeGeometry(.32,1,4).translate(0,.5,0),std({color:0xffffff,roughness:1,side:D2}),900);
+    tuft.material.onBeforeCompile=sh=>{sh.uniforms.uT=ALM.u;sh.vertexShader='uniform float uT;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nfloat ph=instanceMatrix[3].x*.7+instanceMatrix[3].z*.5;transformed.x+=sin(uT*2.2+ph)*.28*position.y*position.y;transformed.z+=cos(uT*1.7+ph)*.2*position.y*position.y;');};
+    const fl=[0xf2d230,0xe8e8f0,0xd45a9a,0x9a6ad8,0xe8803a,0x8a9a4a,0x9aa860];let n=0;
+    for(let i=Z.start+m(20);i<wE&&n<900;i+=m(2.2)){if(zoneArr[i]!==1||curved(i)||nearCross(i,m(12))||inLot(i))continue;const sd=n%2?1:-1,left=i>=w0;for(let q=0;q<2&&n<900;q++){gpos(i,sd*rr(11.6,left?30:16.5),tv);tm.compose(tv,tq.setFromAxisAngle(YAX,rr(0,6.3)),ts.set(rr(.8,1.4),rr(.5,1.3),rr(.8,1.4)));tuft.setMatrixAt(n,tm);tuft.setColorAt(n++,tc.setHex(pick(fl)));}}
+    tuft.count=n;scene.add(tuft);}
+  // turn arrows: a yellow board before each corner, on the side the road bends to
+  {const arrow=(d)=>canvas(256,256,(g,w,h)=>{g.fillStyle='#f2c230';g.fillRect(0,0,w,h);g.strokeStyle='#111';g.lineWidth=12;g.strokeRect(10,10,w-20,h-20);g.fillStyle='#111';g.beginPath();g.moveTo(w/2+d*86,h/2);g.lineTo(w/2+d*8,h/2-76);g.lineTo(w/2+d*8,h/2-30);g.lineTo(w/2-d*86,h/2-30);g.lineTo(w/2-d*86,h/2+30);g.lineTo(w/2+d*8,h/2+30);g.lineTo(w/2+d*8,h/2+76);g.closePath();g.fill();});
+    // dir +1 = left turn (sign on the left, +lat); the board faces back along the road, so its canvas is drawn mirrored (left turn = arrow pointing +x on the canvas)
+    for(const[mk,arc,dir]of[[Z.paru,PR*1.571,-1],[Z.central,CR*1.571,1],[Z.wilma,WR*1.222,-1]]){const i=mk-m(arc+45);board(i,dir*(11.8+XW[i]),3,3,arrow(dir),0,.4);}}
+  // wildlife: a plough team of wildebeest (big horns, dust kicked up behind) on Wilma Chan Way's left, deer and rabbits in the fields
+  const bodyM=std({color:0x4a4640,roughness:1}),hornM=std({color:0xe8e0c8,roughness:.6}),woodM=std({color:0x6a4a2a,roughness:.9}),tanM=std({color:0xa8794a,roughness:1}),pale=std({color:0xd8cdb8,roughness:1}),bx=(a,b,c)=>new THREE.BoxGeometry(a,b,c);
+  const beast=(sc,hornL,col,antl)=>{const g=new THREE.Group(),A=(geo,mm,x,y,z)=>{const o=new THREE.Mesh(geo,mm);o.position.set(x,y,z);g.add(o);return o;},legs=[];
+    A(bx(.8,.8,1.6),col,0,1.1,0);const hd=new THREE.Group();hd.position.set(0,1.45,.95);g.add(hd);const hm=new THREE.Mesh(bx(.5,.55,.8),col);hm.position.z=.25;hd.add(hm);
+    if(hornL)for(const s of[-1,1]){const h=new THREE.Mesh(new THREE.ConeGeometry(.08,hornL,5),hornM);h.position.set(s*(.3+hornL*.18),.35+(antl?hornL*.4:0),.1);h.rotation.z=-s*(antl?.25:1.1);hd.add(h);}
+    for(const[x,z]of[[-.28,.6],[.28,.6],[-.28,-.6],[.28,-.6]]){const l=new THREE.Mesh(bx(.14,.8,.14).translate(0,-.4,0),col);l.position.set(x,.8,z);g.add(l);legs.push(l);}
+    g.scale.setScalar(sc);scene.add(g);return{g,hd,legs};};
+  const mkA=(kind,i0,lat,lo,hi)=>{const b=kind==='w'?beast(1.25,1.2,bodyM,false):kind==='d'?beast(.9,.7,tanM,true):beast(.3,0,pale,false);const o={...b,kind,i:i0,lat,dir:1,ph:Math.random()*6,sp:kind==='w'?.9:kind==='d'?.6:1.4,lo,hi};ALM.an.push(o);return o;};
+  {const a=w0+m(100),b=Math.min(wE-m(10),w0+m(200));for(let k=0;k<4;k++){const an=mkA('w',a+m(k*3),41+(k%2)*3,a,b);const pl=new THREE.Group();   // a plough behind them
+      pl.add(new THREE.Mesh(bx(.15,.15,3.2),woodM));const sh=new THREE.Mesh(bx(.1,.5,.9),std({color:0x555a5e,roughness:.5}));sh.position.set(0,-.4,-1.5);pl.add(sh);pl.position.set(0,.6,-2.2);an.g.add(pl);}
+    for(let k=0;k<3;k++)mkA('d',w0+m(60+k*60),rr(26,36),w0+m(30),wE-m(20));}
+  for(let k=0;k<8;k++){const i0=Z.start+m(120)+((Z.central-Z.start-m(240))*k/8|0);mkA(k%3===2?'d':'r',i0,(k%2?1:-1)*rr(13,19),i0-m(40),i0+m(40));}
+  const dust=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshBasicMaterial({color:0xb59a74,transparent:true,opacity:.45,depthWrite:false}),80);dust.frustumCulled=false;
+  ALM.dust={m:dust,p:Array.from({length:80},()=>({x:0,y:-99,z:0,l:0,vx:0,vz:0}))};tm.makeScale(0,0,0);for(let k=0;k<80;k++)dust.setMatrixAt(k,tm);scene.add(dust);
+}
 
 await BOOT.step('THE PORT OF OAKLAND',.43);
   // ---- I-880 north past the Port of Oakland: cranes along the wharf, container yards, ships at berth, a train beside the freeway; warehouses and the dead steel works on the other side; downtown Oakland beyond
@@ -2215,7 +2255,7 @@ const TK=[];
     A(new THREE.SphereGeometry(.045,6,5),rm,0,1,.44).scale.y=1.8;A(new THREE.ConeGeometry(.025,.09,5),lm,0,1.1,.47).rotation.x=Math.PI/2;for(const s of[-1,1])A(cyl(.02,.02,.32,5),lm,s*.1,.16,0);
     g.w=[1,-1].map(s=>{const p=new THREE.Group();p.position.set(s*.2,.66,0);const w=new THREE.Mesh(new THREE.PlaneGeometry(.62,.42).rotateX(-Math.PI/2),fm);w.position.x=s*.31;p.add(w);g.add(p);return p;});g.scale.setScalar(1.25);scene.add(g);return g;};
   const tm_=x=>Math.round(x/SEG);   // free drive: a few flocks in Alameda, and Richmond is overrun with them
-  for(const ci of DRIVE?[Z.start+tm_(150),Z.paru+tm_(300),Z.paru+tm_(700),Z.bv+tm_(400),Z.rb1+tm_(120),Z.richmond+tm_(120),Z.shane-tm_(200),Z.shane-tm_(60),Z.shane+tm_(80),Z.shane+tm_(220),Z.shane+tm_(380),Z.refinery-tm_(400),Z.refinery-tm_(220)]:[Math.floor(NS*.27),Math.floor(NS*.52),Math.floor(NS*.78)])for(let k=0;k<4;k++)TK.push({m:mk(),ci,lat:R(-11,11),ds:R(-9,9),tl:R(-11,11),td:R(-9,9),tt:R(1,5),st:0,x:0,y:0,z:0,vx:0,vy:0,vz:0,h:R(0,6),sp:0});}
+  for(const ci of DRIVE?[Z.start+tm_(150),Z.paru+tm_(300),Z.paru+tm_(700),Z.central+tm_(120),Z.central+tm_(420),Z.bv+tm_(400),Z.rb1+tm_(120),Z.richmond+tm_(120),Z.shane-tm_(200),Z.shane-tm_(60),Z.shane+tm_(80),Z.shane+tm_(220),Z.shane+tm_(380),Z.refinery-tm_(400),Z.refinery-tm_(220)]:[Math.floor(NS*.27),Math.floor(NS*.52),Math.floor(NS*.78)])for(let k=0;k<4;k++)TK.push({m:mk(),ci,lat:R(-11,11),ds:R(-9,9),tl:R(-11,11),td:R(-9,9),tt:R(1,5),st:0,x:0,y:0,z:0,vx:0,vy:0,vz:0,h:R(0,6),sp:0});}
 // newspapers in the tubes: loose sheets that skitter along the floor in the draught, tumble in the air, and are flung up behind a passing car. A small pool, kept ahead of the player.
 let PAPERS=null;
 function papersTick(rdt){const inT=zoneArr[PL.idx]===2;if(!PAPERS){if(!inT)return;
@@ -2478,7 +2518,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);tumbleTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);crowsTick(rdt);birdsTick(rdt);skunksTick(rdt);tumbleTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -2915,6 +2955,16 @@ if(DRIVE){const ct=canvas(256,128,(g,w,h)=>{for(let k=0;k<90;k++){const r=12+Mat
 function ggCloudTick(rdt){if(!DRIVE||!GGC.length)return;const fc=GGC[0].m.color.copy(scene.fog.color).lerp(new THREE.Color(1,1,1),.3),on=PL.idx>Z.gg0-Math.round(700/SEG)&&PL.idx<Z.gg1+Math.round(300/SEG);
   for(const c of GGC){c.sp.visible=on;if(!on)continue;c.lat-=c.v*rdt;if(c.lat<-320){c.lat=320;c.y=R(-12,50);}
     off(c.i,c.lat,c.y,c.sp.position);c.sp.scale.set(c.w,c.w*.5,1);c.m.color.copy(fc);c.m.opacity=.9*(1-sst(Math.abs(c.lat),220,320));}}
+// Alameda scenery tick: caterpillar crawls and waves, wildebeest/deer/rabbits wander their stretch, dust is kicked up behind the plough team. Nothing allocates per frame.
+const _al=[new THREE.Vector3(),new THREE.Vector3()],_alM=new THREE.Matrix4();
+function almTick(rdt){const t=tmNow();ALM.u.value=t;const c=ALM.cat;if(c){for(let k=0;k<9;k++){const s=c.cs[k],lift=k>5?(k-5)*.55*(1+Math.sin(t*3)*.25):0;s.position.set((k-4)*1.55+Math.sin(t*.5)*2,20.4+Math.max(0,Math.sin(t*2.4-k*.7))*.5+lift,0);}c.arm.rotation.z=-.4+Math.sin(t*7)*.6;}
+  const pi=PL.idx;
+  for(const a of ALM.an){const near=Math.abs(a.i-pi)<320;a.g.visible=near;if(!near)continue;
+    a.i+=a.dir*a.sp*rdt/SEG;if(a.i>a.hi){a.i=a.hi;a.dir=-1;}if(a.i<a.lo){a.i=a.lo;a.dir=1;}
+    const i0=Math.floor(a.i),f=a.i-i0,A=_al[0],B=_al[1];off(i0,a.lat,0,A);A.y=groundAt(A.x,A.z);off(i0+1,a.lat,0,B);B.y=groundAt(B.x,B.z);a.g.position.copy(A).lerp(B,f);a.g.rotation.y=yaw(i0)+(a.dir>0?0:Math.PI);
+    const sw=Math.sin(t*a.sp*5+a.ph);for(let k=0;k<4;k++)a.legs[k].rotation.x=(k%3?-1:1)*sw*.5;a.hd.rotation.x=Math.sin(t*1.3+a.ph)*.25;
+    if(a.kind==='w'&&ALM.dust&&Math.random()<rdt*14){const p=ALM.dust.p[ALM.dn=(ALM.dn+1)%80],sy=Math.sin(a.g.rotation.y),cy=Math.cos(a.g.rotation.y);p.x=a.g.position.x-sy*2.5+R(-.8,.8);p.z=a.g.position.z-cy*2.5+R(-.8,.8);p.y=a.g.position.y+.3;p.l=1.6;p.vx=R(-.4,.4);p.vz=R(-.4,.4);}}
+  const D=ALM.dust;if(D){for(let k=0;k<80;k++){const p=D.p[k];if(p.l<=0){if(p.y>-90){p.y=-99;_alM.makeScale(0,0,0);D.m.setMatrixAt(k,_alM);}continue;}p.l-=rdt;p.x+=p.vx*rdt;p.z+=p.vz*rdt;p.y+=rdt*1.1;const s=.5+(1.6-p.l)*1.1;_alM.makeScale(s,s*.7,s);_alM.setPosition(p.x,p.y,p.z);D.m.setMatrixAt(k,_alM);}D.m.instanceMatrix.needsUpdate=true;}}
 function extrasTick(rdt){const pe=ents.find(e=>e.player);if(!pe)return;const m_=x=>Math.round(x/SEG);
   trafficTick(rdt,pe);logTick(rdt,pe);
   // fires that keep burning: the ruins before the bridge, the wrecks on it, the refinery flare
