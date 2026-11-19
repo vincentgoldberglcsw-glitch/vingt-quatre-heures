@@ -1067,8 +1067,13 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
       const pt=sign(1024,320,'PORTAL TO RICHMOND','#101a3a','#bfe6ff','900 86px Arial','UP AHEAD'),gr=sign(1024,320,"THIS WAY TO GRANDPA'S HOUSE",'#3a5a24','#fff6c8','900 66px Arial','→  →  →'),wd=new THREE.InstancedMesh(new THREE.ConeGeometry(.12,.9,5),std({color:0x5a8a30,roughness:1}),80);let wk=0;
       for(const[k,tx]of[[6,pt],[14,gr],[20,pt],[27,gr],[33,pt]]){const q=lanePos(k);board(q.i,q.lat-7.5,6,1.9,tx,Math.max(q.y,0),.5);off(q.i,q.lat-7.5,q.y,V);for(let j=0;j<12&&wk<80;j++){E.set(rr(-.35,.35),rr(0,6.28),rr(-.35,.35),'YXZ');Q.setFromEuler(E);M4.compose(V2.set(V.x+rr(-1.3,1.3),V.y+.4,V.z+rr(-1.3,1.3)),Q,S.set(1,rr(.7,1.6),1));wd.setMatrixAt(wk++,M4);}}
       wd.count=wk;scene.add(wd);
+      {const ln=new THREE.InstancedMesh(new THREE.BoxGeometry(.22,.06,2.2),new THREE.MeshBasicMaterial({color:0xf2f0e0}),37),gl=new THREE.InstancedMesh(new THREE.BoxGeometry(.3,.3,.3),new THREE.MeshBasicMaterial({color:0x6fd0ff}),38);let nl=0,ng=0;   // centre dashes, and glowing blue guide lights down both edges, straight to the ring
+        for(let k=0;k<=36;k++){const p=lanePos(k);E.set(0,yaw(p.i),0);Q.setFromEuler(E);off(p.i,p.lat,p.y+.06,V);M4.compose(V,Q,S.set(1,1,1));if(k%2===0)ln.setMatrixAt(nl++,M4);
+          if(k%2===1)for(const sd of[-3.7,3.7]){off(p.i,p.lat+sd,p.y+.2,V);M4.compose(V,Q.identity(),S.set(1,1,1));if(ng<38)gl.setMatrixAt(ng++,M4);}}
+        ln.count=nl;gl.count=ng;scene.add(ln,gl);}
       const q=lanePos(36),g=new THREE.Group(),dk=std({color:0x1d2229,roughness:.45,metalness:.8}),bl=new THREE.MeshBasicMaterial({color:0x6fd0ff});
       const pl=new THREE.Mesh(new THREE.CylinderGeometry(7.5,8,.6,28),std({color:0x3a3f46,roughness:.7,metalness:.5}));pl.position.y=.3;g.add(pl);
+      B(8,.62,20,std({color:0x2a2c30,roughness:.8}),0,.31,0,0,g);B(.2,.64,20,std({color:0xf2f0e0,roughness:.6}),0,.32,0,0,g);for(const x of[-3.9,3.9])B(.25,.66,20,bl,x,.33,0,0,g);   // the road runs on up onto the platform and through the ring
       if(q.y>.3){const sp=new THREE.Mesh(new THREE.CylinderGeometry(6,6.5,q.y,16),std({color:0x55524c,roughness:1}));sp.position.y=-q.y/2;g.add(sp);}
       const rg=new THREE.Mesh(new THREE.TorusGeometry(5,.9,12,40),dk);rg.position.y=5.6;g.add(rg);
       for(const[r,tb]of[[4.05,.13],[5.95,.1]]){const lt=new THREE.Mesh(new THREE.TorusGeometry(r,tb,6,48),bl);lt.position.y=5.6;g.add(lt);}
@@ -3162,9 +3167,9 @@ function extrasTick(rdt){const pe=ents.find(e=>e.player);if(!pe)return;const m_=
     T_.g.cars.forEach((c,k)=>{const s=T_.s-k*25.5;c.visible=s>a;if(!c.visible)return;const i=wrapI(Math.floor(s/SEG));at(s,60,0,c.position);c.position.y=0;c.rotation.y=yaw(i);});}}
   // the detour: take the exit lane on the right and the road brings you round to Richmond
   {const i=PL.idx;if(PORTAL.c&&PL.idx>PORTAL.i-300&&PL.idx<PORTAL.i+40){PORTAL.t+=rdt;if(PORTAL.t>.06){PORTAL.t=0;const c=PORTAL.c,g=c.getContext('2d'),w=c.width,ph=tmNow()*2.2;g.fillStyle='#061a3a';g.fillRect(0,0,w,w);for(let k=0;k<9;k++){g.strokeStyle=k%2?'rgba(210,240,255,.9)':'rgba(60,150,255,.8)';g.lineWidth=5+k%3*2;g.beginPath();for(let r=3;r<w*.62;r+=3){const an=r*.09-ph+k*.7,x=w/2+Math.cos(an)*r*(1-k*.015),y=w/2+Math.sin(an)*r*(1-k*.015);r===3?g.moveTo(x,y):g.lineTo(x,y);}g.stroke();}const rg=g.createRadialGradient(w/2,w/2,2,w/2,w/2,w*.5);rg.addColorStop(0,'rgba(255,255,255,1)');rg.addColorStop(.35,'rgba(150,210,255,.35)');rg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=rg;g.fillRect(0,0,w,w);PORTAL.tex.needsUpdate=true;}}
-  if(!FADE.go&&!PL.crash&&i>=PORTAL.i-3&&i<PORTAL.i+m_(40)&&pe.lat<-(RW+XW[i]+3.2)){FADE.go=1;FADE.t=0;say('DETOUR','BERKELEY · RICHMOND',2.5);}
+  if(!FADE.go&&!PL.crash&&i>=PORTAL.i-3&&i<PORTAL.i+m_(40)&&pe.lat<-(RW+XW[i]+3.2)){FADE.go=1;FADE.t=0;PL.air=1;PL.vy=Math.max(PL.vy||0,9);$('fade').style.background='#d8f0ff';say('DETOUR','BERKELEY · RICHMOND',2.5);}
     if(FADE.go){FADE.t+=rdt;FADE.k=clamp(FADE.t/.6,0,1);if(FADE.t>.7&&FADE.go===1){FADE.go=2;const j=PL.idx=wrapI(Z.rb1+m_(30)),sp=Math.max(pe.v,16);pe.s=j*SEG;pe.lat=0;PL.x=P[j].x;PL.z=P[j].z;PL.h=G.camH=yaw(j);PL.vx=Math.sin(PL.h)*sp;PL.vz=Math.cos(PL.h)*sp;PL.cy=PL.gy=H[j];PL.air=0;PL.vy=0;first=true;say('RICHMOND','THE DETOUR BROUGHT YOU ROUND · I-80 SOUTH TO HOME',3);}
-      if(FADE.go===2){FADE.k=clamp(1-(FADE.t-.7)/.8,0,1);if(FADE.k<=0)FADE.go=null;}}
+      if(FADE.go===2){FADE.k=clamp(1-(FADE.t-.7)/.8,0,1);if(FADE.k<=0){FADE.go=null;$('fade').style.background='';}}}
     $('fade').style.opacity=FADE.k.toFixed(3);}}
 // Sunny weather is a heatwave: the tyres slowly melt (a little less grip, black smoke off the wheels) and there are wildfires burning in the country round about, more of them in the city.
 const FIRES=[];
