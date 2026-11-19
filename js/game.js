@@ -2674,12 +2674,20 @@ if(DRIVE){const g=new THREE.Group(),D2=THREE.DoubleSide,A=(par,geo,m,x,y,z)=>{co
   const light=new THREE.PointLight(0xbff4ec,0,70,1.1);
   // and the manatee's pipe
   const pipe=new THREE.Group(),pm=std({color:0x3a2416,roughness:.6});A(pipe,cyl(.028,.028,.5,6).rotateX(Math.PI/2),pm,0,0,.25);A(pipe,cyl(.1,.075,.17,10),pm,0,.07,.5);pipe.position.set(.1,-.16,2.6);pipe.visible=false;manatee.add(pipe);manatee.pipe=pipe;manatee.rotation.order='YXZ';
-  g.visible=false;scene.add(g,oc,dome,light);SEA={g,fish,fd,jel,tu,sk,kelp,rays,oc,dome,light,col:new THREE.Color(0x0e4f58)};}
+  // a crocodilian cruising the dive scene: dark olive scaly body, open toothy mouth
+  const al=new THREE.Group(),alm=std({color:0x3b4524,roughness:.9}),alb=std({color:0x8a8a62,roughness:.8}),tm_=std({color:0xf0ead2,roughness:.5}),alx=(sx,sy,sz,mm,x,y,z,p=al)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mm);o.position.set(x,y,z);p.add(o);return o;};
+  alx(.9,.55,3,alm,0,0,0);alx(.7,.2,2.6,alb,0,-.3,0);for(let q=0;q<8;q++)alx(.16,.14,.2,alm,(q%2?.2:-.2),.32,1.1-q*.34);   // body, pale belly, scale ridges
+  al.tail=new THREE.Group();al.tail.position.set(0,0,-1.5);alx(.55,.4,1.8,alm,0,0,-.9,al.tail);alx(.3,.25,1.6,alm,0,0,-2.4,al.tail);al.add(al.tail);
+  al.jaw=new THREE.Group();al.jaw.position.set(0,-.1,1.5);alx(.55,.12,1.6,alb,0,0,.8,al.jaw);for(let q=0;q<6;q++)for(const s of[-1,1])alx(.05,.12,.05,tm_,s*.24,.08,.25+q*.24,al.jaw);al.add(al.jaw);   // lower jaw with teeth
+  alx(.6,.14,1.6,alm,0,.14,2.3);for(let q=0;q<6;q++)for(const s of[-1,1])alx(.05,.12,.05,tm_,s*.24,.02,1.6+q*.24);alx(.2,.16,.2,alm,.22,.32,1.75);alx(.2,.16,.2,alm,-.22,.32,1.75);   // upper jaw, teeth, eye bumps
+  for(const s of[-1,1])for(const z of[.9,-.9]){const l=alx(.18,.14,.7,alm,s*.6,-.3,z);l.rotation.y=s*.5;}
+  al.scale.setScalar(1.6);g.add(al);  g.visible=false;scene.add(g,oc,dome,light);SEA={g,fish,fd,jel,tu,sk,al,kelp,rays,oc,dome,light,col:new THREE.Color(0x0e4f58)};}
 function seaTick(tm,D){const S_=SEA;S_.g.position.set(D.wx,-45,D.wz);
   S_.fd.forEach((f,i)=>{const a=f.a+tm*f.w,sg=Math.sign(f.w);E.set(0,Math.atan2(-Math.sin(a)*sg,Math.cos(a)*sg),0,'YXZ');M4.compose(V.set(Math.cos(a)*f.r,f.y+Math.sin(tm+i)*.4,Math.sin(a)*f.r),Q.setFromEuler(E),S.set(f.s,f.s,f.s));S_.fish.setMatrixAt(i,M4);});S_.fish.instanceMatrix.needsUpdate=true;
   S_.jel.forEach((j,k)=>{const u=j.userData;j.position.set(Math.cos(u.a)*u.r,u.y+Math.sin(tm*.8+k)*1.3,Math.sin(u.a)*u.r);j.scale.set(1-Math.sin(tm*3+k)*.12,1+Math.sin(tm*3+k)*.22,1-Math.sin(tm*3+k)*.12);});
   {const a=tm*.3;S_.tu.position.set(Math.cos(a)*9,-8+Math.sin(tm*.5),Math.sin(a)*9);S_.tu.rotation.y=Math.atan2(-Math.sin(a),Math.cos(a));S_.tu.fl.forEach((p,k)=>{p.rotation.z=Math.sin(tm*2.5+k)*.5;});}
   {const a=-tm*.22;S_.sk.position.set(Math.cos(a)*16,-11,Math.sin(a)*16);S_.sk.rotation.y=Math.atan2(Math.sin(a),-Math.cos(a));S_.sk.tail.rotation.y=Math.sin(tm*4)*.35;}
+  {const a=tm*.18+2;S_.al.position.set(Math.cos(a)*13,-14+Math.sin(tm*.4)*.8,Math.sin(a)*13);S_.al.rotation.y=Math.atan2(-Math.sin(a),Math.cos(a));S_.al.tail.rotation.y=Math.sin(tm*2.2)*.4;S_.al.jaw.rotation.x=.14+Math.sin(tm*1.6)*.1;}
   S_.kelp.forEach((m,k)=>{m.rotation.z=Math.sin(tm*.9+k)*.06;m.rotation.x=Math.sin(tm*.7+k*1.7)*.05;});S_.rays.forEach((m,k)=>{m.rotation.z=Math.sin(tm*.3+k)*.12;});}
 // water closes over the camera: teal murk, a dome of deepening colour, and a soft light on the car
 function underwater(k){scene.fog.color.lerp(SEA.col,k);scene.fog.near=lerp(scene.fog.near,1,k);scene.fog.far=lerp(scene.fog.far,44,k);SEA.dome.visible=k>.4;SEA.dome.position.copy(camera.position);SEA.light.intensity=k*340;SEA.light.position.copy(hero.position);SEA.light.position.y+=7;}
