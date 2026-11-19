@@ -3198,6 +3198,8 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=4471;return()=>(s=(s*1680
     ball=new THREE.SphereGeometry(.5,12,8),fin=new THREE.ConeGeometry(.5,.5,3).rotateX(-Math.PI/2);
   const mk=(kind)=>{const g=new THREE.Group(),bd=new THREE.Group();g.add(bd);const M_=(geo,mm,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(geo,mm);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;bd.add(o);return o;};
     if(kind==='fish'||kind==='big'){const s=kind==='big'?LR(3.6,4.4):LR(.8,1.25),fm=fishMs[lr()*fishMs.length|0];M_(ball,fm,0,.06*s,0,.34*s,.12*s,.9*s);M_(fin,fm,0,.06*s,-.55*s,.34*s,.04*s,.3*s);M_(ball,eyeM,.09*s,.12*s,.32*s,.05*s,.05*s,.05*s);}
+    else if(kind==='skel'){const s=LR(.7,1.3),bn=std({color:0xe8e2cc,roughness:.8});M_(new THREE.BoxGeometry(1,1,1),bn,0,.03,0,.035*s,.03*s,.95*s);M_(ball,bn,0,.04,.52*s,.1*s,.07*s,.17*s);M_(fin,bn,0,.03,-.55*s,.2*s,.02*s,.22*s);
+      for(let k=0;k<7;k++){const z=(k-3)*.11*s;M_(new THREE.BoxGeometry(1,1,1),bn,0,.03,z,.34*s*(1-Math.abs(k-3)*.1),.014*s,.014*s);}}
     else if(kind==='squid'){M_(new THREE.ConeGeometry(.5,1,8).rotateX(Math.PI/2),sqM,0,.07,.18,.18,.18,.42);M_(ball,sqM,0,.07,-.06,.17,.14,.2);
       for(let k=0;k<7;k++){const a=(k/6-.5)*1.4,t=new THREE.Mesh(new THREE.BoxGeometry(.025,.02,.36+lr()*.2),sqM);t.position.set(Math.sin(a)*.12,.02,-.2-Math.cos(a)*.14);t.rotation.y=a;bd.add(t);}}
     else if(kind==='octo'){const om=octM[lr()*2|0];M_(ball,om,0,.16,0,.42,.3,.5);for(let k=0;k<8;k++){const a=k/8*6.283+LR(-.2,.2),L=LR(.5,.8),t=new THREE.Mesh(new THREE.BoxGeometry(.07,.03,L).translate(0,0,L/2),om);t.position.set(Math.sin(a)*.16,.03,Math.cos(a)*.16);t.rotation.y=a+LR(-.5,.5);bd.add(t);}}
@@ -3210,17 +3212,19 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=4471;return()=>(s=(s*1680
     MAR.deb.push({g,bd:g.children[0],kind,o,on:false,age:0,life:60,flop:0,ph:0,gy:0,fly:false,vx:0,vy:0,vz:0,sp:0});}
   for(let k=0;k<30;k++){const kind=k%5<3?'weed':'squid',g=mk(kind);MAR.deb.push({g,bd:g.children[0],kind,o:null,on:false,age:0,life:60,flop:0,ph:0,gy:0,fly:false,vx:0,vy:0,vz:0,sp:0});}   // a bigger pool for the extra squid and seaweed
   for(let k=0;k<60;k++){const kind=['bottle','trash','octo','weed','squid','bottle','trash','weed'][k%8],g=mk(kind);MAR.deb.push({g,bd:g.children[0],kind,o:null,on:false,age:0,life:60,flop:0,ph:0,gy:0,fly:false,vx:0,vy:0,vz:0,sp:0});}   // bottles, rubbish and octopus
+  for(let k=0;k<44;k++){const g=mk('skel');MAR.deb.push({g,bd:g.children[0],kind:'skel',o:null,on:false,age:0,life:60,flop:0,ph:0,gy:0,fly:false,vx:0,vy:0,vz:0,sp:0});}   // fish skeletons
   G1.visible=false;}
-const MARK=['fish','weed','squid','bottle','weed','trash','squid','octo','fish','weed','bottle','trash'];
+const MARK=['fish','weed','squid','bottle','weed','trash','squid','octo','fish','weed','bottle','trash','skel','skel','skel'];
 function marSpawn(big,s,lat,kind){let d=null;for(const q of MAR.deb)if((q.kind==='big')===big&&(!kind||q.kind===kind)&&!q.on){d=q;break;}
   if(!d){for(const q of MAR.deb)if((q.kind==='big')===big&&(!kind||q.kind===kind)&&(!d||q.age-q.life>d.age-d.life))d=q;}if(!d)return;
   const i=wrapI(Math.floor(s/SEG));at(s,lat,.02,d.g.position);d.gy=d.g.position.y;d.g.rotation.y=Math.random()*6.283;d.g.scale.setScalar(1);d.g.visible=true;
-  Object.assign(d,{on:true,age:0,life:R(55,120),flop:d.kind==='fish'?R(3,9):d.kind==='big'?R(4,7):0,ph:Math.random()*6,fly:false});if(d.o){d.o.x=d.g.position.x;d.o.z=d.g.position.z;}}
+  Object.assign(d,{on:true,i,age:0,life:R(55,120),flop:d.kind==='fish'?R(3,9):d.kind==='big'?R(4,7):0,ph:Math.random()*6,fly:false});if(d.o){d.o.x=d.g.position.x;d.o.z=d.g.position.z;}return d;}
 MAR.tick=rdt=>marinaTick(rdt);MAR.stick=d=>marStick(d);   /* for scripted tests: the autopilot only steps sim(), and this runs per frame */
 function marinaTick(rdt){if(!DRIVE||!MAR.g)return;const LW=40;   /* the length of road one wave washes over, as in the build above */
  const pe=ents.find(e=>e.player);if(!pe)return;
   const i0=PL.idx,on=i0>Z.hyde&&i0<Z.gg0+Math.round(500/SEG);PL.wash=Math.max(0,(PL.wash||0)-rdt*1.4);
-  if(on!==MAR.on){MAR.on=on;MAR.g.visible=on;if(!on){MAR.gust=0;MAR.stk=null;for(const d of MAR.deb){if(d.stk){MAR.g.add(d.g);d.stk=0;d.g.scale.setScalar(1);}d.on=false;d.g.visible=false;if(d.o)d.o.x=1e9;}for(const w of MAR.waves){w.t=-1;w.g.visible=false;}}}
+  if(on!==MAR.on){MAR.on=on;MAR.g.visible=on;if(on){for(let k=0;k<30;k++){const s=MAR.a*SEG+R(-40,330),i=wrapI(Math.floor(s/SEG)),e=edgeAt[i]-.7,d=marSpawn(false,s,R(-e,e),'skel');if(d)d.life=R(400,900);}}   /* the Marina opens with a scatter of fish skeletons on the road */
+    if(!on){MAR.gust=0;MAR.stk=null;for(const d of MAR.deb){if(d.stk){MAR.g.add(d.g);d.stk=0;d.g.scale.setScalar(1);}d.on=false;d.g.visible=false;if(d.o)d.o.x=1e9;}for(const w of MAR.waves){w.t=-1;w.g.visible=false;}}}
   if(!on)return;MAR.t+=rdt;const t=MAR.t;
   // the swell
   {const S=MAR.sea,n=S.la.length,nc=S.nc;for(let q=0;q<n;q++){const c=q%nc;if(c===nc-1)continue;const l=S.la[q],s=S.sa[q],sw=.42*Math.sin(.11*l-1.25*t+.02*s)+.28*Math.sin(.045*s-.7*t+.03*l)+.15*Math.sin(.29*l+.21*s-2.1*t),
@@ -3252,6 +3256,7 @@ function marinaTick(rdt){if(!DRIVE||!MAR.g)return;const LW=40;   /* the length o
     if(d.fly){d.vy-=9.8*rdt;p.x+=d.vx*rdt;p.y+=d.vy*rdt;p.z+=d.vz*rdt;d.bd.rotation.x+=d.sp*rdt;if(p.y<=d.gy){p.y=d.gy;d.fly=false;d.bd.rotation.x=0;}}
     else if(d.age<d.flop){const k=1-d.age/d.flop,s=Math.sin(d.age*11+d.ph);p.y=d.gy+Math.abs(s)*(d.kind==='big'?.05:.1)*k;d.bd.rotation.z=s*.35*k;}
     if(d.kind!=='big'&&!d.fly&&Math.abs(pe.v)>4){const dx=p.x-PL.x,dz=p.z-PL.z;if(dx*dx+dz*dz<1.7*1.7){d.fly=true;d.vy=R(3,6)+Math.abs(pe.v)*.04;d.vx=PL.vx*.55+R(-2,2);d.vz=PL.vz*.55+R(-2,2);d.sp=R(-12,12);if((d.kind==='weed'||d.kind==='squid'||d.kind==='octo')&&!MAR.stk&&Math.random()<.25)marStick(d);}}
+    if(!d.fly&&d.i!=null&&d.kind!=='big'){const n=Nn[d.i],tg=T[d.i],tv=2.1*Math.sin(t*.42+d.ph*.15)+.5*Math.sin(t*1.1+d.ph),al=.7*Math.sin(t*.3+1),e=edgeAt[d.i]-.4;p.x+=(n.x*tv+tg.x*al)*rdt;p.z+=(n.z*tv+tg.z*al)*rdt;d.bd.rotation.y+=tv*.25*rdt;const l=(p.x-P[d.i].x)*n.x+(p.z-P[d.i].z)*n.z;if(Math.abs(l)>e){const c=(l>0?e:-e)-l;p.x+=n.x*c;p.z+=n.z*c;}}   /* the water ebbs and flows, dragging the fish and skeletons about the road */
     if(d.age>d.life){const s=Math.max(0,1-(d.age-d.life)/3);d.g.scale.setScalar(s);if(s<=0){d.on=false;d.g.visible=false;if(d.o)d.o.x=1e9;}}}
   // the cows: heads down grazing, now and then a look up (at a passing car, often) or a slow step or two
   for(const c of MAR.cows){c.tm-=rdt;
