@@ -31,6 +31,7 @@ const camera=new THREE.PerspectiveCamera(16,innerWidth/innerHeight,0.12,5000);
 function canvas(w,h,fn,srgb=true){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);
   const t=new THREE.CanvasTexture(c);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=ANISO;return t;}
 const std=o=>new THREE.MeshStandardMaterial(o);
+const DETR={a:-1};   // the detour ramp: starts at index a, 240 segments long, drops to the ground by 60% of the way
 const PORTAL={c:null,tex:null,g:null,i:1e9,t:0};   // the Richmond portal: its swirl canvas is redrawn a few times a second
 const PPLM={};const pplM=c=>PPLM[c]||(PPLM[c]=std({color:c,roughness:.9}));
 const SHIRTS=[0x8a3a30,0x2f5f7a,0xd8cfb0,0x4a6a4a,0x3a3a4a,0xc9a84a,0x6a4a6a,0xe8e4d8,0x1f3a5a,0xb3241c],PANTS=[0x2a2a30,0x3a4a6a,0x5a4a3a,0x1c1c1e,0x6a6a62],SKINS=[0xe0b896,0xc8946a,0x8a5a3a,0xf0d0b0,0x5a3a28];
@@ -1060,11 +1061,11 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
     // the detour: orange signs, a gantry pointing right, and the exit lane peeling off the viaduct towards Berkeley and Richmond
     const det=sign(512,512,'DETOUR','#f08a1c','#141414','900 110px Arial','→');for(const d of[400,300,200])board(Z.detour-m(d),-(11+XW[Z.detour-m(d)]),2.6,2.6,det,1,.45);
     gant(Z.detour-m(60),'DETOUR  ↗','BERKELEY · RICHMOND',"#f08a1c",'#141414',-3.8);
-    const a=Z.detour-m(30),n=60,pos=[],uv=[],idx=[];for(let k=0;k<=n;k++){const u=k/n,i=a+k*4,lat=-(RW+XW[i])-4.2-70*u*u,y=H[i]*(1-sst(u,.25,1)),p=P[i],nn=Nn[i];for(const s of[-4,4])pos.push(p.x+nn.x*(lat+s),y+.02,p.z+nn.z*(lat+s));uv.push(0,k*.6,1,k*.6);if(k<n){const q=k*2;idx.push(q,q+2,q+1,q+1,q+2,q+3);}}
+    const a=Z.detour-m(30),n=60,pos=[],uv=[];DETR.a=a;const _x=[],idx=[];for(let k=0;k<=n;k++){const u=k/n,i=a+k*4,lat=-(RW+XW[i])-4.2-70*u*u,y=H[i]*(1-sst(u,.08,.6)),p=P[i],nn=Nn[i];for(const s of[-4,4])pos.push(p.x+nn.x*(lat+s),y+.02,p.z+nn.z*(lat+s));uv.push(0,k*.6,1,k*.6);if(k<n){const q=k*2;idx.push(q,q+2,q+1,q+1,q+2,q+3);}}
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const rm=new THREE.Mesh(g,new THREE.MeshStandardMaterial({map:roadTex,roughness:.72,side:D2}));rm.receiveShadow=true;scene.add(rm);
     const cone=new THREE.InstancedMesh(new THREE.ConeGeometry(.28,.8,10),std({color:0xf06a1c,roughness:.6}),30);for(let k=0;k<30;k++){const i=a-m(40)+k*3,lat=-(RW+XW[i])-.4-k*.1;off(i,lat,.4,V);M4.compose(V,Q.identity(),S.set(1,1,1));cone.setMatrixAt(k,M4);}scene.add(cone);
     { // the portal to Richmond: signs with weeds, then a platform and a ring gate with a swirling blue tunnel (the detour fade fires when the car reaches it)
-      const lanePos=k=>{const u=k/n,i=a+k*4;return{i,u,lat:-(RW+XW[i])-4.2-70*u*u,y:H[i]*(1-sst(u,.25,1))};};
+      const lanePos=k=>{const u=k/n,i=a+k*4;return{i,u,lat:-(RW+XW[i])-4.2-70*u*u,y:H[i]*(1-sst(u,.08,.6))};};
       const pt=sign(1024,320,'PORTAL TO RICHMOND','#101a3a','#bfe6ff','900 86px Arial','UP AHEAD'),gr=sign(1024,320,"THIS WAY TO GRANDPA'S HOUSE",'#3a5a24','#fff6c8','900 66px Arial','→  →  →'),wd=new THREE.InstancedMesh(new THREE.ConeGeometry(.12,.9,5),std({color:0x5a8a30,roughness:1}),80);let wk=0;
       for(const[k,tx]of[[6,pt],[14,gr],[20,pt],[27,gr],[33,pt]]){const q=lanePos(k);board(q.i,q.lat-7.5,6,1.9,tx,Math.max(q.y,0),.5);off(q.i,q.lat-7.5,q.y,V);for(let j=0;j<12&&wk<80;j++){E.set(rr(-.35,.35),rr(0,6.28),rr(-.35,.35),'YXZ');Q.setFromEuler(E);M4.compose(V2.set(V.x+rr(-1.3,1.3),V.y+.4,V.z+rr(-1.3,1.3)),Q,S.set(1,rr(.7,1.6),1));wd.setMatrixAt(wk++,M4);}}
       wd.count=wk;scene.add(wd);
@@ -2127,6 +2128,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*SPILL.g*(1-(PL.melt
   let best=1e9,bi=PL.idx;for(let k=-14;k<=14;k++){const i=wrapI(PL.idx+k),dx=PL.x-P[i].x,dz=PL.z-P[i].z,d=dx*dx+dz*dz;if(d<best){best=d;bi=i;}}
   PL.idx=bi;const dx=PL.x-P[bi].x,dz=PL.z-P[bi].z;let lat=dx*Nn[bi].x+dz*Nn[bi].z;const ns=wrapS(bi*SEG+dx*T[bi].x+dz*T[bi].z);
   {const k=clamp((dx*T[bi].x+dz*T[bi].z)/SEG,-1,1),j=wrapI(bi+(k>=0?1:-1));PL.gy=H[bi]+(H[j]-H[bi])*Math.abs(k)+bkY(bi,lat);
+    if(DETR.a>=0&&bi>=DETR.a&&bi<=DETR.a+240&&lat<-(RW+XW[bi])-1.2){const u=(bi-DETR.a)/240;PL.gy=H[bi]*(1-sst(u,.08,.6));}   // on the detour ramp the ground goes down with the lane
     if(DRIVE){const e=RW+XW[bi],al=Math.abs(lat);if((KB[bi]&(lat>0?1:2))&&al>e+.25&&al<e+3.1)PL.gy+=.13;}   // up the kerb onto the pavement (KB: which sides have pavement here)
     PL.slope=(H[wrapI(bi+1)]-H[wrapI(bi-1)])/(2*SEG)*(fx*T[bi].x+fz*T[bi].z);GY=PL.gy;
     if(PL.cy===undefined||dt<=0){PL.cy=PL.gy;PL.vy=0;PL.air=0;}
