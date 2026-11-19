@@ -1248,6 +1248,19 @@ await BOOT.step('SAN FRANCISCO',.55);
       ribbon(i=>9.6+XW[i],13,-.03,-.03,rk,8,c0,c1);ribbon(13,ft,-.03,i=>-H[i],rk,6,c0,c1);ribbon(i=>ft(i)-2,i=>ft(i)+700,i=>.35-H[i],i=>.35-H[i],std({color:0x34596a,roughness:.3,metalness:.2}),20,c0-40,c1+40);
       const N=420,im=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),rk,N);let k=0;for(let i=c0;i<=c1&&k<N-1;i+=1)for(let q=0;q<2;q++){const y=Math.random()<.3?-H[i]*Math.random():-H[i];off(i,y>-H[i]?13+(y/-H[i])*(ft(i)-13):ft(i)+R(-1,6),y,V);M4.compose(V,Q.setFromEuler(new THREE.Euler(R(0,3),R(0,3),R(0,3))),S.set(R(1,3),R(.8,2.4),R(1,3)));im.setMatrixAt(k++,M4);}im.count=k;im.castShadow=true;scene.add(im);}bank(Z.richmond,Z.refinery,grass,40,2);}
     {const bs=sign(1024,340,'WELCOME TO THE BADLANDS','#7a3f1e','#d9b48a','900 92px Arial','EST. LONG AGO · ENTER AT YOUR OWN RISK');board(Z.sq+m(350),-12,9,3,bs,0,.05);board(Z.sq+m(365),12,9,3,bs,0,.05);}
+    {const P=[['VISIT THE BADLANDS','#f2a63a','#2a1a3a',0],['SEE THE PAINTED ROCKS','#5ab8c8','#3a1a10',1],['BADLANDS: STOP, SNAP A PHOTO!','#e8604a','#fff6d8',2],['GREETINGS FROM THE BADLANDS','#9ac85a','#2a2a10',0]];   // retro tourist posters on the approach: sun, rocks, cactus; some sun-faded, some bullet-pocked
+      P.forEach(([t,bg,fg,art],k)=>{const tx=canvas(512,384,(c,w,h)=>{c.fillStyle=bg;c.fillRect(0,0,w,h);c.fillStyle='#ffe9a8';c.beginPath();c.arc(w*.72,h*.38,56,0,7);c.fill();c.fillStyle='#b8532c';c.beginPath();c.moveTo(0,h*.8);c.lineTo(w*.2,h*.45);c.lineTo(w*.32,h*.55);c.lineTo(w*.5,h*.3);c.lineTo(w*.7,h*.8);c.lineTo(w,h*.62);c.lineTo(w,h);c.lineTo(0,h);c.fill();c.fillStyle='#8a3a1e';for(let y=h*.5;y<h*.9;y+=14)c.fillRect(w*.25,y,w*.35,3);
+          c.fillStyle='#3a6a2a';c.fillRect(w*.8,h*.62,12,h*.2);c.fillRect(w*.8-14,h*.68,14,8);c.fillRect(w*.8-14,h*.62,8,14);c.fillRect(w*.8+12,h*.7,14,8);
+          c.fillStyle=fg;c.font='900 '+(t.length>20?34:44)+'px Arial Black,Arial';c.textAlign='center';c.fillText(t,w/2,h*.14,480);
+          if(k%2===0){c.fillStyle='rgba(235,225,200,.4)';c.fillRect(0,0,w,h);}   // sun-faded
+          if(k%2===1)for(let b=0;b<7;b++){c.fillStyle='#0c0b0a';c.beginPath();c.arc(Math.random()*w,Math.random()*h,3+Math.random()*3,0,7);c.fill();}   // bullet holes
+        });board(Z.sq+m(110+k*60),(k%2?1:-1)*12.5,5.4,4,tx,0,.05);});}
+    {const w1=canvas(512,384,(c,w,h)=>{c.fillStyle='#f6c81c';c.fillRect(0,0,w,h);c.strokeStyle='#111';c.lineWidth=10;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#111';c.font='900 58px Arial Black,Arial';c.textAlign='center';c.fillText('WARNING',w/2,72);
+        c.font='900 34px Arial Black,Arial';c.fillText('YOU ARE APPROACHING',w/2,118,470);c.fillText('A FEDERAL PRISON',w/2,158,470);
+        c.fillRect(w/2-90,300,180,12);c.fillRect(w/2-20,200,40,100);c.fillRect(w/2-34,176,68,28);c.beginPath();c.moveTo(w/2-44,176);c.lineTo(w/2,150);c.lineTo(w/2+44,176);c.fill();   // a generic guard tower
+        for(let x=w/2-140;x<=w/2-60;x+=20)c.fillRect(x,190,8,110);for(let x=w/2+60;x<=w/2+140;x+=20)c.fillRect(x,190,8,110);c.fillRect(w/2-150,190,100,8);c.fillRect(w/2+50,190,100,8);}),   // and cell bars either side
+        w2=canvas(512,384,(c,w,h)=>{c.fillStyle='#f4f1e8';c.fillRect(0,0,w,h);c.strokeStyle='#c8241c';c.lineWidth=12;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#d8261c';c.font='900 86px Arial Black,Arial';c.textAlign='center';c.fillText('DO NOT',w/2,130);c.fillText('STOP FOR',w/2,230);c.fillText('PRISONERS',w/2,330,470);});
+      board(Z.sq-m(300),12.5,5.6,4.2,w1,0,.05);board(Z.sq-m(150),12.5,5.6,4.2,w2,0,.05);}
     {// badlands past San Quentin: banded mud hills in yellow, rust, purple and blue-grey with ridged fans (vertex colours, one mesh per side)
     {// plain desert between San Quentin and the badlands: sand, cacti, tombstones, skeletons (three instanced meshes)
       const d0=Z.sq+m(40),d1=Z.sq+m(340),sand=std({color:0xc9aa72,roughness:1,side:D2});for(const sd of[-1,1])ribbon(i=>sd*(9.6+XW[i]),sd*120,-.03,-.05,sand,12,d0,d1);
