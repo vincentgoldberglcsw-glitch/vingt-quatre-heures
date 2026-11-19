@@ -31,6 +31,7 @@ const camera=new THREE.PerspectiveCamera(16,innerWidth/innerHeight,0.12,5000);
 function canvas(w,h,fn,srgb=true){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);
   const t=new THREE.CanvasTexture(c);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=ANISO;return t;}
 const std=o=>new THREE.MeshStandardMaterial(o);
+const MILLC={i:-1,t:0};   // the steel mill: its track index, and a timer for the falling pieces during the quake
 const SHOP={ic:0,F:0,list:null,t:0};   // the supermarket shoppers (see shopTick)
 const DOME={x:0,z:0,i:-1};   // the green eyed dome in the road before the Posey Tube
 const DETR={a:-1};   // the detour ramp: starts at index a, 240 segments long, drops to the ground by 60% of the way
@@ -1027,7 +1028,7 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
     const broken=std({roughness:.9,map:canvas(256,128,(g,w,h)=>{g.fillStyle='#7a5a44';g.fillRect(0,0,w,h);for(const[x,y,lit,brk,a,b]of MW){g.fillStyle=lit?'#ffb35a':'#3a4a52';g.fillRect(x,y,16,22);if(brk){g.fillStyle='#141210';g.beginPath();g.moveTo(x,y);g.lineTo(x+16,y+a);g.lineTo(x+b,y+22);g.fill();}}speck(g,w,h,800,['rgba(40,20,10,.4)','rgba(160,90,40,.3)'],6);}),
       emissiveMap:canvas(256,128,(g,w,h)=>{g.fillStyle='#000';g.fillRect(0,0,w,h);for(const[x,y,lit]of MW)if(lit){g.fillStyle='#ff8a30';g.fillRect(x,y,16,22);}}),emissive:0xffffff,emissiveIntensity:.9});
     for(let i=Z.tu1+m(250);i<Z.detour-m(200);i+=m(90)){const sd=-1,lat=-rr(70,120);gpos(i,lat,V);const w=rr(40,80),d=rr(30,60),h=rr(9,16),wm=pick([fade,fade2,rust2]);if(!farFromRoad(V.x,V.z,Math.hypot(w,d)/2+12))continue;B(w,h,d,wm,V.x,h/2,V.z,yaw(i));const rf=B(w+1,1,d+1,mat('roofgrey',{color:0x5a5c5e}),V.x,h+.3,V.z,yaw(i));}
-    const mill=Z.tu1+m(1300);gpos(mill,-230,V);const mx=V.x,mz=V.z,ry=yaw(mill);const R2=(lx,lz)=>{const c=Math.cos(ry),s=Math.sin(ry);return[mx+lx*c+lz*s,mz-lx*s+lz*c];};
+    const mill=Z.tu1+m(1300);MILLC.i=mill;gpos(mill,-230,V);const mx=V.x,mz=V.z,ry=yaw(mill);const R2=(lx,lz)=>{const c=Math.cos(ry),s=Math.sin(ry);return[mx+lx*c+lz*s,mz-lx*s+lz*c];};
     {const blk=std({color:0x0e0d0c,roughness:1}),pipeM=corrM(0x7a4a32),M=(lx,lz,y,w,h,d,mt,rot=0)=>{const[x,z]=R2(lx,lz);return B(w,h,d,mt,x,y,z,ry+rot);};   // the works in partial ruin, spread over a big footprint (local x across, z along)
       for(const sx of[-40,40]){const L=210,W=46,Hh=15;M(sx,0,Hh/2,W,Hh,L,broken);   // two long sheds with sawtooth roofs and holes shot in the walls and roof
         for(let q=-L/2+8;q<L/2-6;q+=14){const t=M(sx,q,Hh+2.4,W,5,.8,rust);t.rotation.order='YXZ';t.rotation.x=.45;}
@@ -2181,7 +2182,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*SPILL.g*(1-(PL.melt
       if(close>2&&!isW&&!(e.bT>tmNow())){e.bT=tmNow()+.5;e.lat+=Math.sign(dxs||1)*(Nn[bi].x*fz-Nn[bi].z*fx>0?1:-1)*clamp(close*.08,.4,1.6);G.shake=Math.max(G.shake,.25);sfxBoing(clamp(close/20+.45,.45,1));}   // below that a rubbery bump: boing, and it is shoved aside
       const push=(1.95-Math.abs(dxs))*.5*Math.sign(dxs||1);PL.x-=fz*push;PL.z+=fx*push;if(!isW)e.lat+=push*(Nn[bi].x*fz-Nn[bi].z*fx>0?1:-1)*.5;
       if(close>0){if(dzf>0){const nf=Math.max(0,ev-1.5),k=f>1?nf/f:1;PL.vx*=k;PL.vz*=k;if(!isW)e.v+=1.2;}else if(!isW)e.v=Math.max(0,f-1.5);sfxScrape(.5);G.shake=Math.max(G.shake,.3);}}}
-  for(const o of OBST){const ox=PL.x-o.x,oz=PL.z-o.z,d2=ox*ox+oz*oz,R0=o.r||2.5;if(d2<R0*R0&&d2>.01){const d=Math.sqrt(d2),k=(R0-d)/d;PL.x+=ox*k;PL.z+=oz*k;if(o.soft){PL.vx*=.995;PL.vz*=.995;}else if(v>3){PL.vx*=.7;PL.vz*=.7;sfxScrape(clamp(v/20,.3,1));G.shake=Math.max(G.shake,.3);}}}   // parked cars
+  for(const o of OBST){const ox=PL.x-o.x,oz=PL.z-o.z,d2=ox*ox+oz*oz,R0=o.r||2.5;if(o.deb&&d2<R0*R0&&v>3){const dd=o.deb,kk=OBST.indexOf(o);if(kk>=0)OBST.splice(kk,1);dd.ob=null;dd.done=false;dd.vy=R(7,13);dd.vx=PL.vx*1.1+R(-4,4);dd.vz=PL.vz*1.1+R(-4,4);dd.w=R(-7,7);PL.vx*=.94;PL.vz*=.94;sfxScrape(.8);G.shake=Math.max(G.shake,.35);continue;}if(d2<R0*R0&&d2>.01){const d=Math.sqrt(d2),k=(R0-d)/d;PL.x+=ox*k;PL.z+=oz*k;if(o.soft){PL.vx*=.995;PL.vz*=.995;}else if(v>3){PL.vx*=.7;PL.vz*=.7;sfxScrape(clamp(v/20,.3,1));G.shake=Math.max(G.shake,.3);}}}   // parked cars
   for(const hl of HOLES){if(hl.cd>0){hl.cd-=dt;continue;}const hx=PL.x-hl.x,hz=PL.z-hl.z;if(v>6&&hx*hx+hz*hz<(hl.r+.8)**2){hl.cd=.7;const k=clamp(v/50,.3,1.5);PL.h+=R(-.03,.03)*k;PL.vx*=1-.035*k;PL.vz*=1-.035*k;PL.bump=.09*k;G.shake=Math.max(G.shake,.6*k);sfxThump(k);}}
   if(PL.land){PL.bump=Math.max(PL.bump||0,PL.land);PL.land=0;}PL.bump=(PL.bump||0)*Math.exp(-9*dt);
   const ln=Math.floor(pe.dist/LEN);if(!DRIVE&&pe.dist>=0&&ln>PL.lapN){PL.last=G.raceT-PL.lapStart;PL.lapStart=G.raceT;PL.lapN=ln;if(!PL.best||PL.last<PL.best)PL.best=PL.last;if(ln<LAPS)say(ln===LAPS-1?'DERNIER TOUR':'LAP '+(ln+1),ln===LAPS-1?'FINAL LAP · '+fmt(PL.last):fmt(PL.last),2);announce(`McQueen boucle son tour en ${Math.round(PL.last)} secondes.`);}
@@ -2798,7 +2799,7 @@ function spawnDeb(s,lat,h,kind,delay,water,inward=0,sc=1){const M=debMats();let 
 function debrisTick(rdt){for(let k=DEB.length-1;k>=0;k--){const d=DEB[k];if(d.done)continue;if(d.t>0){d.t-=rdt;if(d.t>0)continue;d.m.visible=true;}
     d.vy-=(d.kind==='glass'?9:20)*rdt;d.m.position.x+=d.vx*rdt;d.m.position.z+=d.vz*rdt;d.m.position.y+=d.vy*rdt;d.m.rotation.x+=d.w*rdt;d.m.rotation.z+=d.w*.7*rdt;
     const p=d.m.position,dx=p.x-PL.x,dz=p.z-PL.z;
-    if(!d.water&&p.y<=d.gy+d.sz){p.y=d.gy+d.sz;d.done=true;if(d.kind==='glass'){d.m.rotation.x=-Math.PI/2;continue;}if(d.kind==='metal'){d.m.rotation.set(R(-.15,.15),R(0,6.3),d.m.geometry.type==='CylinderGeometry'?Math.PI/2:0);if(dx*dx+dz*dz<900)sfxScrape(.35);continue;}if(d.kind!=='brick'&&d.sz>.5){d.ob={x:p.x,z:p.z,r:d.sz*1.6+.4};OBST.push(d.ob);}
+    if(!d.water&&p.y<=d.gy+d.sz){p.y=d.gy+d.sz;d.done=true;if(d.kind==='glass'){d.m.rotation.x=-Math.PI/2;continue;}if(d.kind==='metal'){d.m.rotation.set(R(-.15,.15),R(0,6.3),d.m.geometry.type==='CylinderGeometry'?Math.PI/2:0);if(dx*dx+dz*dz<900)sfxScrape(.35);continue;}if(d.kind!=='brick'&&d.sz>.5){d.ob={x:p.x,z:p.z,r:d.sz*1.6+.4,deb:d};OBST.push(d.ob);}
       if(d.sz>.5){sfxCrunch(clamp(d.sz*.35,.25,.8));NOGY=1;for(let q=0;q<9;q++)puff(V.set(p.x+R(-1,1),p.y,p.z+R(-1,1)),R(-4,4),R(1,4),R(-4,4),1,R(4,7),R(1.5,3),.55,0xa8a094);NOGY=0;}
       if(dx*dx+dz*dz<(d.sz+1.6)**2&&!PL.crash){G.shake=Math.max(G.shake,.9);PL.vx*=.55;PL.vz*=.55;sfxScrape(1);}}   // landed on the car, or just in front of it
     else if(d.water&&p.y<-44){d.done=true;d.m.visible=false;if(d.sz>.5){sfxSplash();NOGY=1;for(let q=0;q<10;q++)puff(V.set(p.x,-44.6,p.z),R(-3,3),R(4,10),R(-3,3),.8,R(3,6),R(1.2,2.2),.7,0xeef2f4);NOGY=0;}}}}
@@ -3423,8 +3424,8 @@ const t=A.t,acc=3.4,vR=68,tR=vR/acc;let s,y=0,p=0;
 // The steel mill's stacks and blast furnace belch black smoke while you are anywhere along I-880.
 function craneTick(rdt){if(!CRN.length)return;const i=PL.idx;if(!(i>Z.tu1&&i<Z.detour))return;   // the port cranes slew a little now and then
   for(const c of CRN){if(c.a>0){c.a-=rdt;c.g.rotation.y=c.ry+Math.sin((1-Math.max(c.a,0)/c.d)*Math.PI)*c.k;}else{c.t-=rdt;if(c.t<=0){c.t=R(10,35);c.d=R(6,10);c.a=c.d;c.k=R(-.16,.16);}}}}
-function millTick(rdt){if(!MILL.length||!millP)return;const i=PL.idx;if(!(i>Z.tu1&&i<Z.toll))return;
-  for(const s of MILL){s.t-=rdt;if(s.t>0)continue;s.t=R(.22,.45)/s.k;NOGY=1;emit(millP,mi++,V.set(s.x,s.y,s.z),R(-.8,.8)+2.6,R(5,8),R(-.8,.8),R(9,13)*s.k,R(45,75)*s.k,R(9,13),1,[0x121010,0x1c1916,0x26211d][Math.random()*3|0],-.25);NOGY=0;}}
+function millTick(rdt){if(!MILL.length||!millP)return;const i=PL.idx;if(!(i>Z.tu1&&i<Z.toll))return;const fq=FQ.list[0],qk=!!(fq&&fq.st===1&&fq.t>.5&&fq.t<12&&Math.abs(i-MILLC.i)<Math.round(900/SEG));if(qk){MILLC.t-=rdt;if(MILLC.t<=0){MILLC.t=R(.12,.3);spawnDeb(MILLC.i*SEG+R(-130,130),-230+R(-70,70),R(25,70),Math.random()<.5?"slab":"chunk",0,false,0,R(1.4,2.4));NOGY=1;const s=MILL[Math.random()*MILL.length|0];if(s)puff(V.set(s.x+R(-20,20),R(8,30),s.z+R(-20,20)),R(-2,2),R(3,8),R(-2,2),2,R(18,34),R(3,5),.6,0x2a2622);NOGY=0;}}
+  for(const s of MILL){s.t-=rdt;if(s.t>0)continue;s.t=R(.22,.45)/s.k/(qk?3:1);NOGY=1;emit(millP,mi++,V.set(s.x,s.y,s.z),R(-.8,.8)+2.6,R(5,8),R(-.8,.8),R(9,13)*s.k,R(45,75)*s.k,R(9,13),1,[0x121010,0x1c1916,0x26211d][Math.random()*3|0],-.25);NOGY=0;}}
 // The refinery columns and flare stacks send up grey smoke, from the end of the bridge to the I-80 ramp.
 function refTick(rdt){if(!REFS.length||!refP)return;const i=PL.idx;if(!(i>Z.rb1-Math.round(900/SEG)&&i<Z.i80+Math.round(300/SEG)))return;
   for(const s of REFS){s.t-=rdt;if(s.t>0)continue;s.t=R(.7,1.3)/s.k;NOGY=1;emit(refP,ri++,V.set(s.x,s.y,s.z),R(-.8,.8)+3,R(4,7),R(-.8,.8),R(10,14)*s.k,R(55,90)*s.k,R(10,14),1,[0x4a4846,0x5e5b57,0x777470][Math.random()*3|0],-.2);NOGY=0;}}
