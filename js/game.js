@@ -31,6 +31,7 @@ const camera=new THREE.PerspectiveCamera(16,innerWidth/innerHeight,0.12,5000);
 function canvas(w,h,fn,srgb=true){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);
   const t=new THREE.CanvasTexture(c);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=ANISO;return t;}
 const std=o=>new THREE.MeshStandardMaterial(o);
+const DOME={x:0,z:0,i:-1};   // the green eyed dome in the road before the Posey Tube
 const DETR={a:-1};   // the detour ramp: starts at index a, 240 segments long, drops to the ground by 60% of the way
 // hyperspace jump into the portal: streaking stars stretch out from the centre (w 0..1 building), then on arrival they shrink away again (w 0..-1)
 const WARP={c:null,s:null};
@@ -1072,6 +1073,11 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
     const a=Z.detour-m(30),n=60,pos=[],uv=[];DETR.a=a;const _x=[],idx=[];for(let k=0;k<=n;k++){const u=k/n,i=a+k*4,lat=-(RW+XW[i])-4.2-70*u*u,y=H[i]*(1-sst(u,.08,.6)),p=P[i],nn=Nn[i];for(const s of[-4,4])pos.push(p.x+nn.x*(lat+s),y+.02-s*.09*Math.sin(Math.PI*u),p.z+nn.z*(lat+s));uv.push(0,k*.6,1,k*.6);if(k<n){const q=k*2;idx.push(q,q+2,q+1,q+1,q+2,q+3);}}
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const rm=new THREE.Mesh(g,new THREE.MeshStandardMaterial({map:roadTex,roughness:.72,side:D2}));rm.receiveShadow=true;scene.add(rm);
     const cone=new THREE.InstancedMesh(new THREE.ConeGeometry(.28,.8,10),std({color:0xf06a1c,roughness:.6}),30);for(let k=0;k<30;k++){const i=a-m(40)+k*3,lat=-(RW+XW[i])-.4-k*.1;off(i,lat,.4,V);M4.compose(V,Q.identity(),S.set(1,1,1));cone.setMatrixAt(k,M4);}scene.add(cone);
+    { // a green dome with big cartoon eyes sitting in the middle of the road just before the Posey Tube: hit it and the car is flung into the air and crashes
+      const i=Z.tu0-m(110),g=new THREE.Group(),gm=std({color:0x2fbf3a,roughness:.45}),wh=new THREE.MeshBasicMaterial({color:0xffffff}),bk=new THREE.MeshBasicMaterial({color:0x101010});
+      const dm=new THREE.Mesh(new THREE.SphereGeometry(2.4,20,10,0,6.2832,0,1.5708),gm);g.add(dm);
+      for(const x of[-.85,.85]){const e=new THREE.Mesh(new THREE.SphereGeometry(.62,12,10),wh);e.position.set(x,1.35,-1.75);g.add(e);const p=new THREE.Mesh(new THREE.SphereGeometry(.28,10,8),bk);p.position.set(x*.9,1.3,-2.3);g.add(p);}
+      off(i,0,0,g.position);g.rotation.y=yaw(i);g.traverse(o=>{o.castShadow=true;});scene.add(g);DOME.x=g.position.x;DOME.z=g.position.z;DOME.i=i;}
     { // the portal to Richmond: signs with weeds, then a platform and a ring gate with a swirling blue tunnel (the detour fade fires when the car reaches it)
       const lanePos=k=>{const u=k/n,i=a+k*4;return{i,u,lat:-(RW+XW[i])-4.2-70*u*u,y:H[i]*(1-sst(u,.08,.6))};};
       const pt=sign(1024,320,'PORTAL TO RICHMOND','#101a3a','#bfe6ff','900 86px Arial','UP AHEAD'),gr=sign(1024,320,"THIS WAY TO GRANDPA'S HOUSE",'#3a5a24','#fff6c8','900 66px Arial','→  →  →'),wd=new THREE.InstancedMesh(new THREE.ConeGeometry(.12,.9,5),std({color:0x5a8a30,roughness:1}),80);let wk=0;
@@ -3179,6 +3185,7 @@ function extrasTick(rdt){const pe=ents.find(e=>e.player);if(!pe)return;const m_=
   {const T_=TRAIN,a=(Z.tu1+m_(270))*SEG,b=(Z.detour-m_(20))*SEG,inP=PL.idx>Z.tu1&&PL.idx<Z.b0;T_.g.visible=inP;if(inP){T_.s+=24*rdt;if(T_.s<a||T_.s>b)T_.s=a+(Math.random()<.5?0:R(0,300));
     T_.g.cars.forEach((c,k)=>{const s=T_.s-k*25.5;c.visible=s>a;if(!c.visible)return;const i=wrapI(Math.floor(s/SEG));at(s,60,0,c.position);c.position.y=0;c.rotation.y=yaw(i);});}}
   // the detour: take the exit lane on the right and the road brings you round to Richmond
+  if(DOME.i>=0&&!PL.crash&&PL.safe<=0&&(PL.x-DOME.x)**2+(PL.z-DOME.z)**2<4.6*4.6&&Math.hypot(PL.vx,PL.vz)>4){crashPlayer(14,false);const w=hero.wreck;if(w){w.free=1;w.y=H[PL.idx];w.vy=15;w.vx*=.9;w.vz*=.9;w.wr=R(-3,3);}}   // hit the dome: flung up, then the wreck falls and crashes
   {const i=PL.idx;if(PORTAL.c&&PL.idx>PORTAL.i-300&&PL.idx<PORTAL.i+40){PORTAL.t+=rdt;if(PORTAL.t>.06){PORTAL.t=0;const c=PORTAL.c,g=c.getContext('2d'),w=c.width,ph=tmNow()*2.2;g.fillStyle='#061a3a';g.fillRect(0,0,w,w);for(let k=0;k<9;k++){g.strokeStyle=k%2?'rgba(210,240,255,.9)':'rgba(60,150,255,.8)';g.lineWidth=5+k%3*2;g.beginPath();for(let r=3;r<w*.62;r+=3){const an=r*.09-ph+k*.7,x=w/2+Math.cos(an)*r*(1-k*.015),y=w/2+Math.sin(an)*r*(1-k*.015);r===3?g.moveTo(x,y):g.lineTo(x,y);}g.stroke();}const rg=g.createRadialGradient(w/2,w/2,2,w/2,w/2,w*.5);rg.addColorStop(0,'rgba(255,255,255,1)');rg.addColorStop(.35,'rgba(150,210,255,.35)');rg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=rg;g.fillRect(0,0,w,w);PORTAL.tex.needsUpdate=true;}}
   if(!FADE.go&&!PL.crash&&i>=PORTAL.i-3&&i<PORTAL.i+m_(40)&&pe.lat<-(RW+XW[i]+3.2)){FADE.go=1;FADE.t=0;PL.air=1;PL.vy=Math.max(PL.vy||0,9);$('fade').style.background='#d8f0ff';say('DETOUR','BERKELEY · RICHMOND',2.5);}
     if(FADE.go){FADE.t+=rdt;FADE.k=clamp((FADE.t-.75)/.3,0,1);warpDraw(FADE.go===1?FADE.t/1.05:-(FADE.t-1.05)/.9);if(FADE.t>1.05&&FADE.go===1){FADE.go=2;const j=PL.idx=wrapI(Z.rb1+m_(30)),sp=Math.max(pe.v,16);pe.s=j*SEG;pe.lat=0;PL.x=P[j].x;PL.z=P[j].z;PL.h=G.camH=yaw(j);PL.vx=Math.sin(PL.h)*sp;PL.vz=Math.cos(PL.h)*sp;PL.cy=PL.gy=H[j];PL.air=0;PL.vy=0;first=true;say('RICHMOND','THE DETOUR BROUGHT YOU ROUND · I-80 SOUTH TO HOME',3);}
