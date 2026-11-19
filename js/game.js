@@ -1000,6 +1000,18 @@ if(DRIVE){ // ---- Alameda scenery: the hill and driveway to the burger, eucalyp
       const sv=c.createLinearGradient(620,0,780,0);sv.addColorStop(0,'#6a675f');sv.addColorStop(.5,'#ece9de');sv.addColorStop(1,'#5a574f');c.fillStyle=sv;c.beginPath();c.ellipse(700,90,48,54,0,0,7);c.fill();c.fillStyle='#12100c';c.fillRect(656,76,88,16);c.fillStyle=sv;c.fillRect(670,138,60,26);c.beginPath();c.roundRect(620,160,160,170,26);c.fill();c.fillRect(580,170,36,150);c.fillRect(784,170,36,150);c.fillRect(640,326,56,170);c.fillRect(704,326,56,170);
       c.fillStyle='#e8dcc0';c.textAlign='left';c.font='900 96px Georgia,serif';c.fillText('KLAATU',40,150);c.fillText('BARADA',40,260);c.fillText('NIKTO',40,370);c.font='700 30px Georgia,serif';c.fillText('THE ROBOT IS WAITING',44,440);});
     board(Z.tu1+m(980),12+XW[Z.tu1+m(980)],9,4.5,kp,0,.35);}
+  {// one recruiting-poster billboard: a bespectacled chimp in a leather jacket points at you, "GO APE!" (invented sponsor "APE CORPS")
+    const ap=canvas(1024,512,(c,w,h)=>{c.fillStyle='#b9ccd8';c.fillRect(0,0,w,h);c.fillStyle='#f4f1e8';c.fillRect(12,12,w-24,h-24);c.fillStyle='#b9ccd8';c.fillRect(24,24,w-48,h-48);
+      c.fillStyle='#1f4a7a';c.fillRect(60,36,300,64);c.fillStyle='#f4f1e8';c.font='900 40px Arial Black,Arial';c.textAlign='center';c.fillText('APE CORPS',210,82);
+      const tx=(t,x,y,sz,al='left')=>{c.textAlign=al;c.font='900 '+sz+'px Impact,"Arial Black",Arial';c.lineWidth=8;c.strokeStyle='#1f4a7a';c.strokeText(t,x,y);c.fillStyle='#d8472a';c.fillText(t,x,y);};
+      tx('WANTS YOU',60,170,58);tx('TO...',60,232,58);tx('GO APE!',40,470,150);
+      c.fillStyle='#2a2a2c';c.beginPath();c.ellipse(700,430,210,150,0,Math.PI,0);c.fill();c.fillStyle='#6a3a1e';c.fillRect(740,360,26,150);   // the jacket and a strap
+      c.fillStyle='#2a2a2a';c.beginPath();c.ellipse(700,215,115,130,0,0,7);c.fill();c.fillStyle='#b8845c';c.beginPath();c.ellipse(700,240,78,92,0,0,7);c.fill();c.beginPath();c.ellipse(590,225,26,32,0,0,7);c.ellipse(810,225,26,32,0,0,7);c.fill();   // fur, face, ears
+      c.fillStyle='#a07048';c.beginPath();c.ellipse(700,290,36,30,0,0,7);c.fill();c.fillStyle='#2a1a10';c.beginPath();c.ellipse(690,278,5,4,0,0,7);c.ellipse(712,278,5,4,0,0,7);c.fill();c.fillRect(680,308,40,4);
+      c.strokeStyle='#5a3a24';c.lineWidth=6;for(const x of[656,744]){c.beginPath();c.arc(x,232,30,0,7);c.stroke();}c.beginPath();c.moveTo(686,230);c.lineTo(714,230);c.stroke();c.fillStyle='#5a8ac8';for(const x of[656,744]){c.beginPath();c.arc(x,232,8,0,7);c.fill();}
+      c.fillStyle='#161618';c.beginPath();c.ellipse(560,360,70,84,-.3,0,7);c.fill();c.beginPath();c.ellipse(540,300,26,52,-.1,0,7);c.fill();   // a big gloved hand, finger pointing at you
+    });
+    board(Z.i80+m(800),12+XW[Z.i80+m(800)],9,4.5,ap,0,.35);}
   // turn arrows: a yellow board before each corner, on the side the road bends to
   {const arrow=(d)=>canvas(256,256,(g,w,h)=>{g.fillStyle='#f2c230';g.fillRect(0,0,w,h);g.strokeStyle='#111';g.lineWidth=12;g.strokeRect(10,10,w-20,h-20);g.fillStyle='#111';g.beginPath();g.moveTo(w/2+d*86,h/2);g.lineTo(w/2+d*8,h/2-76);g.lineTo(w/2+d*8,h/2-30);g.lineTo(w/2-d*86,h/2-30);g.lineTo(w/2-d*86,h/2+30);g.lineTo(w/2+d*8,h/2+30);g.lineTo(w/2+d*8,h/2+76);g.closePath();g.fill();});
     // dir +1 = left turn (sign on the left, +lat); the board faces back along the road, so its canvas is drawn mirrored (left turn = arrow pointing +x on the canvas)
