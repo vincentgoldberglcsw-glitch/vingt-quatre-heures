@@ -31,6 +31,7 @@ const camera=new THREE.PerspectiveCamera(16,innerWidth/innerHeight,0.12,5000);
 function canvas(w,h,fn,srgb=true){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);
   const t=new THREE.CanvasTexture(c);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=ANISO;return t;}
 const std=o=>new THREE.MeshStandardMaterial(o);
+const SFSM=[];   // smoke sources on the decayed San Francisco towers
 const BBQ=[];   // the roadside billboards on I-880 that fall during the quake (see bbQuakeTick)
 const VANS=[];   // the ice-cream truck and the taco truck, driving up and down Paru (see vanTick)
 const MILLC={i:-1,t:0};   // the steel mill: its track index, and a timer for the falling pieces during the quake
@@ -1062,6 +1063,16 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
         B(.5,8,.5,std({color:0x4a4c50,roughness:.8}),0,4,0,0,g);B(.4,4.2,11,std({map:tx,roughness:.7}),0,9.6,0,0,g);
         off(i,sd*(RW+XW[i]+9),0,g.position);g.rotation.y=yaw(i);g.updateMatrixWorld(true);const ex=Math.cos(yaw(i))*Nn[i].x-Math.sin(yaw(i))*Nn[i].z;
         scene.add(g);BBQ.push({g,i,dir:-Math.sign(ex*sd)||1,t:-1,ang:0,w:0});});}
+    {const dec=canvas(256,512,(c,w,h)=>{c.fillStyle='#57534c';c.fillRect(0,0,w,h);for(let y=10;y<h-8;y+=26)for(let x=8;x<w-8;x+=22){const r=Math.random();c.fillStyle=r<.22?'#1b1814':r<.3?'#6a6258':'#161c22';c.fillRect(x,y,14,16);if(r>.85){c.strokeStyle='#9aa8b0';c.lineWidth=1;c.beginPath();c.moveTo(x,y+14);c.lineTo(x+13,y+2);c.stroke();}}
+        for(let k=0;k<26;k++){c.fillStyle=Math.random()<.5?'rgba(10,8,6,.35)':'rgba(130,70,34,.3)';c.fillRect(Math.random()*w,Math.random()*h*.7,3+Math.random()*7,60+Math.random()*220);}
+        c.strokeStyle='rgba(0,0,0,.55)';c.lineWidth=2;for(let k=0;k<5;k++){c.beginPath();let x=Math.random()*w,y=Math.random()*h;c.moveTo(x,y);for(let j=0;j<6;j++){x+=Math.random()*24-12;y+=14+Math.random()*20;c.lineTo(x,y);}c.stroke();}}),
+        dm=std({map:dec,roughness:.95}),blk=std({color:0x0d0c0b,roughness:1}),rst=std({color:0x6a3a24,roughness:1});   // dark and missing windows, soot, rust streaks and cracks
+      for(let k=0;k<9;k++){const i=Z.b1+m(110+k*135),lat=70+rr(0,70)+(k%2)*30;gpos(i,lat,V);const g=new THREE.Group(),pyr=k%3!==2,h=pyr?rr(95,150):rr(70,115),r=pyr?rr(10,13):rr(15,20),broken=k%3===0||k%4===1;
+        if(pyr){const body=new THREE.Mesh(new THREE.CylinderGeometry(broken?r*.28:r*.04,r,h,4),dm);body.position.y=h/2;g.add(body);   // the Transamerica-style pyramid: tapering to a point, with a wing either side
+          for(const s of[-1,1]){B(2.6,h*.42,9,dm,s*r*.62,h*.21+h*.05,0,0,g);}
+          if(broken){const jg=new THREE.Mesh(new THREE.ConeGeometry(r*.3,7,5),blk);jg.position.y=h+2;jg.rotation.z=rr(-.5,.5);g.add(jg);}else{const sp=new THREE.Mesh(cyl(.25,.8,30,6),rst);sp.position.y=h+12;g.add(sp);}}
+        else{B(r*1.8,h,r*1.4,dm,0,h/2,0,0,g);const top=B(r*1.6,5,r*1.2,rst,0,h+1,0,0,g);top.rotation.z=rr(-.25,.25);B(r*1.8+.3,6,r*1.4+.3,blk,0,h*rr(.35,.7),0,0,g);}   // a box tower with a tilted broken top and one floor collapsed
+        g.position.set(V.x,0,V.z);g.rotation.order='YXZ';g.rotation.set(rr(-.04,.04),yaw(i),rr(-.05,.05));g.traverse(o=>{if(o.isMesh)o.castShadow=true;});scene.add(g);if(broken||k%2)SFSM.push({x:V.x,y:h*.95,z:V.z,i,t:R(0,2)});}}
     // the left (bay) side, in order: warehouses, then the rail yard, then the port with its cranes
     for(let i=Z.tu1+m(150);i<Z.tu1+m(620);i+=m(rr(55,80))){gpos(i,rr(150,200),V);const w=rr(40,70),d=rr(26,44),h=rr(9,15);B(w,h,d,pick([fade,fade2,rust2,rust]),V.x,V.y+h/2,V.z,yaw(i));B(w+1,1,d+1,mat('roofgrey',{color:0x5a5c5e}),V.x,V.y+h+.3,V.z,yaw(i));
       for(let q=-1;q<=1;q++){const[dx,dz]=[Math.cos(yaw(i))*q*w*.28,-Math.sin(yaw(i))*q*w*.28];B(5,5,.3,mat('dock',{color:0x3a3c3e}),V.x+dx-Nn[i].x*d/2,V.y+2.5,V.z+dz-Nn[i].z*d/2,yaw(i));}}   // loading doors facing the freeway
@@ -2719,7 +2730,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);sfSmokeTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -3443,6 +3454,7 @@ const t=A.t,acc=3.4,vR=68,tR=vR/acc;let s,y=0,p=0;
 // The steel mill's stacks and blast furnace belch black smoke while you are anywhere along I-880.
 function craneTick(rdt){if(!CRN.length)return;const i=PL.idx;if(!(i>Z.tu1&&i<Z.detour))return;   // the port cranes slew a little now and then
   for(const c of CRN){if(c.a>0){c.a-=rdt;c.g.rotation.y=c.ry+Math.sin((1-Math.max(c.a,0)/c.d)*Math.PI)*c.k;}else{c.t-=rdt;if(c.t<=0){c.t=R(10,35);c.d=R(6,10);c.a=c.d;c.k=R(-.16,.16);}}}}
+function sfSmokeTick(rdt){if(!SFSM.length||Math.abs(PL.idx-Z.b1-Math.round(600/SEG))>Math.round(1100/SEG))return;for(const s of SFSM){s.t-=rdt;if(s.t>0)continue;s.t=R(.7,1.4);NOGY=1;puff(V.set(s.x,s.y,s.z),R(-.5,.5)+1.5,R(3,6),R(-.5,.5),4,R(14,24),R(5,8),.45,0x2a2622);NOGY=0;}}
 function bbQuakeTick(rdt){if(!BBQ.length)return;const fq=FQ.list[0],on=!!(fq&&fq.st===1&&fq.t>2.5&&fq.t<14);
   if(fq&&fq.st===0){for(const b of BBQ){if(b.t>=0){b.t=-1;b.ang=0;b.w=0;b.g.rotation.z=0;b.g.position.y=0;}}return;}
   for(const b of BBQ){if(b.t<0){if(on&&Math.abs(PL.idx-b.i)<Math.round(900/SEG)){b.t=0;b.dl=R(0,3.5);}continue;}if(b.t>=0&&b.ang>=1.5)continue;b.t+=rdt;if(b.t<b.dl)continue;
