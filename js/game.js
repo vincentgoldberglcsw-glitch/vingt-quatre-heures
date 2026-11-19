@@ -3271,6 +3271,10 @@ function prisTick(rdt){const K=PRIS,N=K.N,a=Z.sq+Math.round(260/SEG),near=PL.idx
     const sw=Math.sin(o.t*10);at(o.s,o.lat,run?Math.abs(sw)*.08:0,K.V);
     if(run)at(o.s,o.lat+Math.sign(d),0,K.W);else K.W.set(PL.x,0,PL.z);
     K.QY.setFromAxisAngle(K.Y,Math.atan2(K.W.x-K.V.x,K.W.z-K.V.z));K.F.compose(K.V,K.QY,K.S1);
+    const wave=!run&&o.t>0,by=wave?Math.abs(Math.sin(o.t*7))*.05:0,rl=run?sw*.7:0;
+    prisPut(K.im[0],n,0,1.15+by,0,0);prisPut(K.im[1],n,0,1.68+by,0,0);
+    prisPut(K.im[2],n*2,-.12,.8+by,0,rl);prisPut(K.im[2],n*2+1,.12,.8+by,0,-rl);
+    for(let k=0;k<2;k++)prisPut(K.im[3],n*2+k,(k?1:-1)*.32,1.45+by,0,wave?-2.7+Math.sin(o.t*14+k*1.7)*.35:(k?1:-1)*rl*-.9);}
   for(const m of K.im){m.count=m===K.im[2]||m===K.im[3]?N*2:N;m.instanceMatrix.needsUpdate=true;}}
 // gulls: a few loose flocks wheeling over the water below the cliff and off San Quentin
 const GULL={im:null,b:[],M:new THREE.Matrix4(),Q:new THREE.Quaternion(),S:new THREE.Vector3(),V:new THREE.Vector3(),W:new THREE.Vector3(),E:new THREE.Euler()};
