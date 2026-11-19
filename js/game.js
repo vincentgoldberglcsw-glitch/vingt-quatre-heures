@@ -137,7 +137,7 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
   for(let i=0;i<NS;i++){const c=zoneArr[i];xwT[i]=c===1?2.2:c===3?(i<z.tu0?1.4:2.4):c===4?1.8:c===5?1.2:c===8?.6:0;if((i>z.tu0-m(220)&&i<z.tu1+m(220))||(i>z.wt1-m(220)&&i<z.wt0+m(220)))xwT[i]=0;}
   for(let i=0;i<NS;i++){let s=0;for(let j=-25;j<=25;j++)s+=xwT[wrapI(i+j)];XW[i]=s/51+4.6*bump(i,z.toll+m(70),z.toll+m(120),z.toll+m(240),z.toll+m(290))+1.3*bump(i,z.detour+m(170),z.detour+m(260),z.toll+m(110),z.toll+m(170))+2.4*bump(i,z.hyde-m(20),z.hyde+m(40),z.marina-m(70),z.marina-m(10));   /* the approach to the toll plaza is a little wider, with lane lines */
     H[i]=5.4*bump(i,z.wilma+WL*.10,z.wilma+WL*.36,z.wilma+WL*.5,z.wilma+WL*.665)+1.5*bump(i,z.wilma+WL*.33,z.wilma+WL*.365,z.wilma+WL*.365,z.wilma+WL*.40)+1.6*bump(i,z.wilma+WL*.10,z.wilma+WL*.36,z.wilma+WL*.685,z.wilma+WL*.705)   /* Wilma Chan overpass: comes down to a short level lip and drops off it - a small jump on the way to the tube */
-      +18*bump(i,z.tu1+m(160),z.tu1+m(560),z.toll-m(520),z.toll-m(260))
+      +22*bump(i,z.tu1+m(240),z.tu1+m(520),z.toll-m(520),z.toll-m(260))
       +22*bump(i,z.b0-m(240),z.b0-m(10),z.b1-m(460),z.b1-m(120))
       +15*bump(i,z.rb0-m(1150),z.rb0-m(750),z.rb0-m(480),z.rb0-m(15))   /* before the Richmond-San Rafael bridge: the road climbs to a headland over the bay, then comes gently down onto the deck */
       +78*bump(i,z.hyde+m(50),z.hyde+m(360),z.hyde+m(425),z.hyde+m(645))   /* Hyde St: a long, very steep climb, a short crest, then a sharp drop towards the Wharf */
@@ -956,7 +956,7 @@ if(DRIVE){ // ---- Alameda scenery: the hill and driveway to the burger, eucalyp
     scene.add(new THREE.Mesh(gg,std({color:0x47484b,roughness:.92,side:D2})));}
   // eucalyptus (tall, pale trunks, grey-green crowns) and bushes on the left of Wilma Chan Way
   const trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.22,.4,1,6).translate(0,.5,0),std({color:0xb9b2a0,roughness:.95}),60),crown=new THREE.InstancedMesh(new THREE.SphereGeometry(1,8,6),std({roughness:1,color:0xffffff}),60),shr=new THREE.InstancedMesh(new THREE.SphereGeometry(1,8,6),std({roughness:1,color:0xffffff}),140);
-  let nt=0,nb=0;for(let i=w0+m(8);i<wE&&nt<60;i+=m(7)){if(inLot(i))continue;gpos(i,rr(17,34),tv);const h=rr(14,21);tm.compose(tv,tq.identity(),ts.set(rr(.8,1.2),h,1));trunk.setMatrixAt(nt,tm);tm.compose(ts.copy(tv).setY(tv.y+h*.78),tq,new THREE.Vector3(rr(2.6,3.4),h*.42,rr(2.6,3.4)));crown.setMatrixAt(nt,tm);crown.setColorAt(nt++,tc.setHex(pick([0x6f8a6a,0x7d9577,0x5f7c5c])));}
+  let nt=0,nb=0;for(let i=w0+m(8);i<wE&&nt<60;i+=m(14)){if(inLot(i))continue;gpos(i,rr(17,34),tv);const h=rr(14,21);tm.compose(tv,tq.identity(),ts.set(rr(.8,1.2),h,1));trunk.setMatrixAt(nt,tm);tm.compose(ts.copy(tv).setY(tv.y+h*.78),tq,new THREE.Vector3(rr(2.6,3.4),h*.42,rr(2.6,3.4)));crown.setMatrixAt(nt,tm);crown.setColorAt(nt++,tc.setHex(pick([0x6f8a6a,0x7d9577,0x5f7c5c])));}
   for(let i=w0+m(4);i<wE&&nb<140;i+=m(3.5)){if(inLot(i))continue;gpos(i,rr(15,37),tv);tm.compose(tv,tq.identity(),ts.set(rr(1,2),rr(.7,1.2),rr(1,2)));shr.setMatrixAt(nb,tm);shr.setColorAt(nb++,tc.setHex(pick([0x3f6a34,0x4f7a3a,0x5a7a2f,0x6b8a3a])));}
   trunk.count=crown.count=nt;shr.count=nb;trunk.castShadow=crown.castShadow=true;scene.add(trunk,crown,shr);
   // wind-blown wildflowers and weeds: small cones swayed in the vertex shader by ALM.u
@@ -965,6 +965,15 @@ if(DRIVE){ // ---- Alameda scenery: the hill and driveway to the burger, eucalyp
     const fl=[0xf2d230,0xe8e8f0,0xd45a9a,0x9a6ad8,0xe8803a,0x8a9a4a,0x9aa860];let n=0;
     for(let i=Z.start+m(20);i<wE&&n<900;i+=m(2.2)){if(zoneArr[i]!==1||curved(i)||nearCross(i,m(12))||inLot(i))continue;const sd=n%2?1:-1,left=i>=w0;for(let q=0;q<2&&n<900;q++){gpos(i,sd*rr(11.6,left?30:16.5),tv);tm.compose(tv,tq.setFromAxisAngle(YAX,rr(0,6.3)),ts.set(rr(.8,1.4),rr(.5,1.3),rr(.8,1.4)));tuft.setMatrixAt(n,tm);tuft.setColorAt(n++,tc.setHex(pick(fl)));}}
     tuft.count=n;scene.add(tuft);}
+  {// a convenience store and gas station on the right of Wilma Chan Way before the Posey Tube: a lit shop with a red and yellow band, a canopy with two pumps, a tall price sign (invented brand "QUIK MART")
+    const B=(sx,sy,sz,mm,x,y,z,ry=0,par=scene)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mm);o.position.set(x,y,z);o.rotation.y=ry;par.add(o);return o;},i=Z.tu0-m(330),g=new THREE.Group(),asp=std({color:0x3a3b3e,roughness:.95}),wal=std({color:0xe8e4d6,roughness:.85}),stl=std({color:0x9aa0a4,metalness:.6,roughness:.4}),glw=std({color:0x1f2a30,roughness:.1,metalness:.4}),
+      lit=(w,h,fn)=>new THREE.MeshBasicMaterial({map:canvas(w,h,fn),side:THREE.DoubleSide});
+    off(i,-(RW+XW[i]+20),0,V);g.position.set(V.x,H[i]-.05,V.z);g.rotation.y=yaw(i)+Math.PI/2;   // local +z faces the road
+    B(40,.06,30,asp,0,.03,0,0,g);B(18,4.2,9,wal,0,2.1,-9,0,g);B(18.4,.9,9.4,std({color:0xc8241c,roughness:.7}),0,3.9,-9,0,g);B(18.4,.4,9.4,std({color:0xf2c230,roughness:.7}),0,3.35,-9,0,g);B(11,2.4,.1,glw,0,1.6,-4.45,0,g);
+    const sg=new THREE.Mesh(new THREE.PlaneGeometry(9,1.5),lit(512,96,(c,w,h)=>{c.fillStyle='#c8241c';c.fillRect(0,0,w,h);c.fillStyle='#f2c230';c.font='900 64px Arial Black,Arial';c.textAlign='center';c.textBaseline='middle';c.fillText('QUIK MART · 24 HRS',w/2,h/2+3,w-20);}));sg.position.set(0,5.4,-4.4);g.add(sg);
+    B(18,.4,9,wal,5,5.2,4,0,g);for(const x of[-2,12])for(const z of[1,7])B(.4,5,.4,stl,x,2.5,z,0,g);for(const x of[2,8]){B(.7,1.5,.6,std({color:0xc8241c,roughness:.5}),x,.75,4,0,g);}
+    const pm=new THREE.Mesh(new THREE.PlaneGeometry(2.4,3.6),lit(128,192,(c,w,h)=>{c.fillStyle='#1c1c1e';c.fillRect(0,0,w,h);c.fillStyle='#f2c230';c.font='900 26px Arial Black,Arial';c.textAlign='center';c.fillText('QUIK',w/2,34);c.fillStyle='#fff';c.font='900 34px Arial';for(let k=0;k<3;k++)c.fillText(['3.89','4.19','4.49'][k],w/2,84+k*40);}));pm.position.set(-14,8.5,10);g.add(pm);B(.3,7,.3,stl,-14,3.5,10,0,g);
+    g.traverse(o=>{if(o.isMesh)o.castShadow=o.receiveShadow=true;});scene.add(g);}
   // turn arrows: a yellow board before each corner, on the side the road bends to
   {const arrow=(d)=>canvas(256,256,(g,w,h)=>{g.fillStyle='#f2c230';g.fillRect(0,0,w,h);g.strokeStyle='#111';g.lineWidth=12;g.strokeRect(10,10,w-20,h-20);g.fillStyle='#111';g.beginPath();g.moveTo(w/2+d*86,h/2);g.lineTo(w/2+d*8,h/2-76);g.lineTo(w/2+d*8,h/2-30);g.lineTo(w/2-d*86,h/2-30);g.lineTo(w/2-d*86,h/2+30);g.lineTo(w/2+d*8,h/2+30);g.lineTo(w/2+d*8,h/2+76);g.closePath();g.fill();});
     // dir +1 = left turn (sign on the left, +lat); the board faces back along the road, so its canvas is drawn mirrored (left turn = arrow pointing +x on the canvas)
