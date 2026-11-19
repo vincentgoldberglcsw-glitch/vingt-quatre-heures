@@ -540,8 +540,8 @@ await BOOT.step('BORING THE TUBES',.29);
   tunLampB=new THREE.MeshBasicMaterial({map:lampT,color:new THREE.Color(.8,1.15,1.8),transparent:true,side:D2,depthWrite:false,fog:false});   // the Posey Tube's own lamps: cold and bluish, and they flicker
   tube(Z.tu0,Z.tu1,'P O S E Y   T U B E',1.2,1.3,tunLampB);tube(Z.wt1,Z.wt0,'W E B S T E R   T U B E');
   {// graffiti along the Posey Tube's walls, above the railing: tags and big letters in spray paint, with drips
-    const TAGS=['OAKTOWN','24H','McQ','VQH','ESTUARY','ZORRO','RIP','POSEY','510','KRUSH','BAYSIDE','LE MANS','TUBE RAT','ALAMEDA','NO EXIT','DEEP','FISH','SKEET','ROACH','WET FLOOR','HI MOM','GHOST','NEON','9 LIVES','DIG','OHM','WAVE','ISLAND','BOP'],COL=['#e8432e','#2fb7e8','#f2c230','#7ad13a','#e85bd0','#f4f1e8','#ff8a1c'];
-    const gm=TAGS.map((s,n)=>{const tx=canvas(512,192,(g,w,h)=>{g.clearRect(0,0,w,h);const c1=COL[n%COL.length],c2=COL[(n*3+2)%COL.length];g.save();g.translate(w/2,h/2);g.rotate(R(-.12,.08));
+    const TAGS=['OAKTOWN','24H','McQ','VQH','ESTUARY','ZORRO','RIP','POSEY','510','KRUSH','BAYSIDE','LE MANS','TUBE RAT','ALAMEDA','NO EXIT','DEEP','FISH','SKEET','ROACH','WET FLOOR','HI MOM','GHOST','NEON','9 LIVES','DIG','OHM','WAVE','ISLAND','BOP'],COL=['#f4f1e8','#f4f1e8','#f4f1e8','#c8c8c8','#e8432e','#f4f1e8','#2fb7e8'];
+    const gm=TAGS.map((s,n)=>{const tx=canvas(512,192,(g,w,h)=>{g.clearRect(0,0,w,h);const c1=COL[n%COL.length],c2=n%6===0?COL[4]:n%6===3?COL[6]:'#111';g.save();g.translate(w/2,h/2);g.rotate(R(-.12,.08));
       g.font=`900 ${s.length>6?78:110}px Impact, "Arial Black", sans-serif`;g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';
       const sty=n%4;if(sty===1)g.font=`italic 900 ${s.length>6?70:100}px Georgia, serif`;else if(sty===2)g.font=`900 ${s.length>6?64:92}px "Comic Sans MS", Chewy, cursive`;g.lineWidth=sty===3?10:22;g.strokeStyle='#111';g.strokeText(s,0,0);g.lineWidth=9;g.strokeStyle=c2;g.strokeText(s,0,0);g.fillStyle=sty===3?'rgba(0,0,0,0)':c1;g.fillText(s,0,0);
       g.strokeStyle=c2;g.fillStyle=c1;g.lineWidth=6;const dk=n%5;if(dk===0){g.beginPath();for(let q=0;q<10;q++){const a=q*.628-1.57,r=q%2?14:30;g.lineTo(-w*.36+Math.cos(a)*r,-52+Math.sin(a)*r);}g.closePath();g.fill();}else if(dk===1){g.beginPath();g.arc(w*.34,-50,24,0,7);g.stroke();g.fillRect(w*.34-9,-56,5,5);g.fillRect(w*.34+5,-56,5,5);g.beginPath();g.arc(w*.34,-46,11,.2,2.9);g.stroke();}else if(dk===2){g.beginPath();g.moveTo(-w*.4,58);g.lineTo(w*.4,58);g.lineTo(w*.4-16,46);g.moveTo(w*.4,58);g.lineTo(w*.4-16,70);g.stroke();}else if(dk===3){g.beginPath();g.moveTo(-26,-70);g.lineTo(-14,-92);g.lineTo(0,-72);g.lineTo(14,-92);g.lineTo(26,-70);g.closePath();g.fill();}
@@ -550,8 +550,8 @@ await BOOT.step('BORING THE TUBES',.29);
       off(i,sd*(6.5*1.2-.05),2.6,me.position);me.rotation.y=Math.atan2(-sd*Nn[i].x,-sd*Nn[i].z);scene.add(me);n++;}}
   {// haze hanging in the Posey Tube's air: faint motes
     const pts=[],hz=canvas(32,32,(g,w,h)=>{const r=g.createRadialGradient(16,16,0,16,16,16);r.addColorStop(0,'rgba(255,255,255,.8)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,w,h);});
-    for(let k=0;k<700;k++){const i=Math.floor(R(Z.tu0+m(5),Z.tu1-m(5)));off(i,R(-6,6),R(.4,4.8),V);pts.push(V.x,V.y,V.z);}
-    const gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));scene.add(new THREE.Points(gg,new THREE.PointsMaterial({map:hz,size:1.6,transparent:true,opacity:.22,depthWrite:false,color:0xb8c8e0,sizeAttenuation:true})));}
+    for(let k=0;k<300;k++){const i=Math.floor(R(Z.tu0+m(5),Z.tu1-m(5)));off(i,R(-6,6),R(.4,4.8),V);pts.push(V.x,V.y,V.z);}
+    const gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));scene.add(new THREE.Points(gg,new THREE.PointsMaterial({map:hz,size:.8,transparent:true,opacity:.22,depthWrite:false,color:0xb8c8e0,sizeAttenuation:true})));}
   tunL=new THREE.PointLight(0xffc27a,0,46,1.3);scene.add(tunL);
 
 await BOOT.step('BUILDING ALAMEDA · HOUSE BY HOUSE',.33);
@@ -1995,7 +1995,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*(1-(PL.melt||0)*.1)
   const WLL=lat<0&&wallR[bi]?wallR[bi]:wallAt[bi];
   if(Math.abs(lat)>WLL){const sd=Math.sign(lat),vn=(PL.vx*Nn[bi].x+PL.vz*Nn[bi].z)*sd,spd=Math.hypot(PL.vx,PL.vz);
     if(racing&&DRIVE&&zoneArr[bi]===4&&PL.safe<=0&&spd>44.7&&vn>3.5){startDive(sd,vn,bi);return;}   // on the bridge the rail holds the car up to 100 mph (44.7 m/s); a real hit above that takes you through
-    if(racing&&DRIVE&&zoneArr[bi]===3&&H[bi]>6&&PL.safe<=0&&spd>44.7&&vn>3.5){pe.lat=lat;fallOff(sd,vn,bi);return;}   // and off the elevated freeway
+    if(racing&&DRIVE&&zoneArr[bi]===3&&H[bi]>6&&PL.safe<=0&&spd>(bi>Z.tu1&&bi<Z.b0?67:44.7)&&vn>(bi>Z.tu1&&bi<Z.b0?6:3.5)){pe.lat=lat;fallOff(sd,vn,bi);return;}   // and off the elevated freeway
     if(racing&&DRIVE&&CLF&&sd>0&&bi>=CLF[0]&&bi<=CLF[1]&&PL.safe<=0&&spd>22&&vn>4.5){pe.lat=lat;fallOff(sd,vn,bi);say('OFF THE CLIFF','No. '+LIV().num+' - McQUEEN',3);return;}   // Marin: through the rail and off the cliff into the rocks
     if(racing&&PL.safe<=0&&spd>50&&vn>7){pe.lat=lat;crashPlayer(vn,true);return;}                              // only a hit at real speed wrecks the car
     PL.x-=Nn[bi].x*sd*(Math.abs(lat)-WLL);PL.z-=Nn[bi].z*sd*(Math.abs(lat)-WLL);lat=WLL*sd;
