@@ -3150,24 +3150,25 @@ function mqTick(rdt,pe){const q=FQ.list.find(q=>q.nm==='MARIN');if(!q)return;
 // the quake's hole: drop into it and the car goes down burning, then the usual reset
 function holeFall(pe){const i=PL.idx;crashPlayer(Math.abs(pe.v)*.3,false);const w=hero.wreck;if(!w)return;w.free=1;w.y=H[i];w.vy=0;w.vx*=.25;w.vz*=.25;w.wr=R(-2,2);w.fire=R(1.6,2.2);
   PL.crash.cam=1;camP.set(PL.x+Nn[i].x*14-T[i].x*16,H[i]+12,PL.z+Nn[i].z*14-T[i].z*16);say('INTO THE CRACK','No. '+LIV().num+' - McQUEEN',3);}
-// San Quentin: a handful of prisoners in stripes, ball and chain, come running out towards the road shaking their fists as you pass; they stop at the kerb
-const PRIS={l:[],on:0,V:new THREE.Vector3(),W:new THREE.Vector3(),Y:new THREE.Vector3(0,1,0)};
-function prisTick(rdt){const K=PRIS,a=Z.sq+Math.round(260/SEG),near=PL.idx>a-Math.round(360/SEG)&&PL.idx<a+Math.round(200/SEG);
-  if(!K.l.length){const st=std({map:canvas(32,64,(g,w,h)=>{for(let y=0;y<h;y+=16){g.fillStyle='#f0ece0';g.fillRect(0,y,w,8);g.fillStyle='#1a1a1a';g.fillRect(0,y+8,w,8);}}),roughness:1}),sk=std({color:0xc89a78,roughness:1}),ir=std({color:0x1c1c1e,roughness:.5,metalness:.6});
-    for(let n=0;n<6;n++){const g=new THREE.Group(),b=new THREE.Group();g.add(b);const box=(w,h,d,m,x,y,z,p=b)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);p.add(o);return o;};
-      box(.5,.7,.3,st,0,1.15,0);const hd=new THREE.Mesh(new THREE.SphereGeometry(.15,8,6),sk);hd.position.set(0,1.68,0);b.add(hd);
-      const legs=[-.12,.12].map(x=>{const p=new THREE.Group();p.position.set(x,.8,0);b.add(p);box(.18,.8,.2,st,0,-.4,0,p);return p;});
-      const arms=[-1,1].map(x=>{const p=new THREE.Group();p.position.set(x*.32,1.45,0);b.add(p);box(.13,.6,.13,st,0,-.28,0,p);const f=new THREE.Mesh(new THREE.SphereGeometry(.085,6,5),sk);f.position.y=-.6;p.add(f);return p;});
-      const ball=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),ir),ch=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,1,4),ir);
-      g.visible=ball.visible=ch.visible=false;scene.add(g,ball,ch);K.l.push({g,b,legs,arms,ball,ch,s:0,lat:0,t:0,mv:0});}}
-  if(!near||G.state!=='race'){if(K.on){K.on=0;for(const o of K.l)o.g.visible=o.ball.visible=o.ch.visible=false;}return;}
-  if(!K.on){K.on=1;for(const o of K.l){o.s=a*SEG+R(-30,30);o.lat=-R(30,46);o.mv=R(2.6,3.6);o.t=R(0,2);o.g.visible=o.ball.visible=o.ch.visible=true;}}
-  for(const o of K.l){o.t+=rdt;const kb=-(RW+XW[wrapI(Math.floor(o.s/SEG))]+1.4),run=o.lat<kb-.05;if(run)o.lat=Math.min(kb,o.lat+o.mv*rdt);   // run in until the kerb
-    const sw=Math.sin(o.t*10);at(o.s,o.lat,run?Math.abs(sw)*.08:0,K.V);o.g.position.copy(K.V);
-    if(run){at(o.s,o.lat+1,0,K.W);o.legs[0].rotation.x=sw*.7;o.legs[1].rotation.x=-sw*.7;o.arms[0].rotation.x=-sw*.6;o.arms[1].rotation.x=sw*.6;}
-    else{K.W.set(PL.x,0,PL.z);o.legs[0].rotation.x=o.legs[1].rotation.x=0;for(const[k,am]of o.arms.entries())am.rotation.x=-2.7+Math.sin(o.t*14+k*1.7)*.35;o.b.position.y=Math.abs(Math.sin(o.t*7))*.05;}   // at the kerb: both fists up, shaking
-    o.g.rotation.y=Math.atan2(K.W.x-K.V.x,K.W.z-K.V.z);
-    at(o.s,o.lat-1.3,.2,o.ball.position);at(o.s,o.lat-.05,.12,K.W);const cv=K.V.copy(o.ball.position).sub(K.W),cl=cv.length()||1;o.ch.position.copy(K.W).addScaledVector(cv,.5);o.ch.scale.set(1,cl,1);o.ch.quaternion.setFromUnitVectors(K.Y,cv.divideScalar(cl));}}   // the ball drags behind on its chain
+// San Quentin: ~30 prisoners in stripes (instanced) pour out onto the road and wave both arms to flag you down. Harmless: nothing collides, you drive straight through them
+const PRIS={l:[],on:0,V:new THREE.Vector3(),W:new THREE.Vector3(),Y:new THREE.Vector3(0,1,0),X:new THREE.Vector3(1,0,0),P:new THREE.Vector3(),S1:new THREE.Vector3(1,1,1),Q:new THREE.Quaternion(),QY:new THREE.Quaternion(),F:new THREE.Matrix4(),L:new THREE.Matrix4(),M:new THREE.Matrix4(),N:30};
+function prisPut(im,k,x,y,z,rx){const K=PRIS;K.P.set(x,y,z);K.Q.setFromAxisAngle(K.X,rx);K.L.compose(K.P,K.Q,K.S1);K.M.multiplyMatrices(K.F,K.L);im.setMatrixAt(k,K.M);}
+function prisTick(rdt){const K=PRIS,N=K.N,a=Z.sq+Math.round(260/SEG),near=PL.idx>a-Math.round(360/SEG)&&PL.idx<a+Math.round(200/SEG);
+  if(!K.im){const st=std({map:canvas(32,64,(g,w,h)=>{for(let y=0;y<h;y+=16){g.fillStyle='#f0ece0';g.fillRect(0,y,w,8);g.fillStyle='#1a1a1a';g.fillRect(0,y+8,w,8);}}),roughness:1}),sk=std({color:0xc89a78,roughness:1});
+    const mk=(g,m,n)=>{const o=new THREE.InstancedMesh(g,m,n);o.frustumCulled=false;o.count=0;scene.add(o);return o;};
+    K.im=[mk(new THREE.BoxGeometry(.5,.7,.3),st,N),mk(new THREE.SphereGeometry(.15,8,6),sk,N),mk(new THREE.BoxGeometry(.18,.8,.2).translate(0,-.4,0),st,N*2),mk(new THREE.BoxGeometry(.13,.6,.13).translate(0,-.28,0),st,N*2)];
+    for(let n=0;n<N;n++)K.l.push({s:0,lat:0,tg:0,t:0,mv:0});}
+  if(!near||G.state!=='race'){if(K.on){K.on=0;for(const m of K.im)m.count=0;}return;}
+  if(!K.on){K.on=1;for(const o of K.l){const w=RW+XW[wrapI(Math.floor(a))];o.s=a*SEG+R(-50,50);o.lat=(Math.random()<.5?-1:1)*R(w+14,w+40);o.tg=R(-w+1,w-1);o.mv=R(3,4.6);o.t=-R(0,3);}}
+  for(let n=0;n<N;n++){const o=K.l[n];o.t+=rdt;const d=o.tg-o.lat,run=o.t>0&&Math.abs(d)>.1;if(run)o.lat+=Math.sign(d)*Math.min(Math.abs(d),o.mv*rdt);
+    const sw=Math.sin(o.t*10);at(o.s,o.lat,run?Math.abs(sw)*.08:0,K.V);
+    if(run)at(o.s,o.lat+Math.sign(d),0,K.W);else K.W.set(PL.x,0,PL.z);
+    K.QY.setFromAxisAngle(K.Y,Math.atan2(K.W.x-K.V.x,K.W.z-K.V.z));K.F.compose(K.V,K.QY,K.S1);
+    const wave=!run&&o.t>0,by=wave?Math.abs(Math.sin(o.t*7))*.05:0,rl=run?sw*.7:0;
+    prisPut(K.im[0],n,0,1.15+by,0,0);prisPut(K.im[1],n,0,1.68+by,0,0);
+    prisPut(K.im[2],n*2,-.12,.8+by,0,rl);prisPut(K.im[2],n*2+1,.12,.8+by,0,-rl);
+    for(let k=0;k<2;k++)prisPut(K.im[3],n*2+k,(k?1:-1)*.32,1.45+by,0,wave?-2.7+Math.sin(o.t*14+k*1.7)*.35:(k?1:-1)*rl*-.9);}
+  for(const m of K.im){m.count=m===K.im[2]||m===K.im[3]?N*2:N;m.instanceMatrix.needsUpdate=true;}}
 // gulls: a few loose flocks wheeling over the water below the cliff and off San Quentin
 const GULL={im:null,b:[],M:new THREE.Matrix4(),Q:new THREE.Quaternion(),S:new THREE.Vector3(),V:new THREE.Vector3(),W:new THREE.Vector3(),E:new THREE.Euler()};
 function gullTick(){const B=GULL,on=PL.idx>CLF[0]-200&&PL.idx<Z.rb0;
