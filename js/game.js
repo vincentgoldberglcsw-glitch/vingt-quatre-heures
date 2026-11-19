@@ -2309,8 +2309,8 @@ function startDrive(){clearCrack();fqArm();initAudio();if(AC&&AC.state==='suspen
 // Jump points: the Alameda drive can start partway round instead of at the house (chosen on the home screen, ?from=bb|sf|gg|i80). The car sits stopped in the right-hand lane,
 // and the distance already "driven" is counted from the house, so getting home still finishes the drive.
 const JUMPS=DRIVE?{bb:[Z.b0-Math.round(200/SEG),'BAY BRIDGE','THE TOLL PLAZA BEHIND YOU · WEST TO SAN FRANCISCO'],sf:[Z.b1,'SAN FRANCISCO','OFF THE BAY BRIDGE · DOWNTOWN'],
-  gg:[Z.gg0-Math.round(250/SEG),'GOLDEN GATE BRIDGE','NORTH TO MARIN'],i80:[Z.i80,'I-80 SOUTH','BERKELEY, EMERYVILLE, OAKLAND · THEN HOME']}:{};
-const JUMPN={'':'THE HOUSE',bb:'THE BAY BRIDGE',sf:'SAN FRANCISCO',gg:'THE GOLDEN GATE',i80:'I-80'};
+  gg:[Z.gg0-Math.round(250/SEG),'GOLDEN GATE BRIDGE','NORTH TO MARIN'],i80:[Z.i80,'I-80 SOUTH','BERKELEY, EMERYVILLE, OAKLAND · THEN HOME'],i880:[Z.tu1+20,'I-880 NORTH','OUT OF THE TUBE · OAKLAND AND THE PORT'],marin:[Z.gg1+20,'MARIN','THE REDWOODS · NORTH OF THE GOLDEN GATE']}:{};
+const JUMPN={'':'THE HOUSE',bb:'THE BAY BRIDGE',sf:'SAN FRANCISCO',gg:'THE GOLDEN GATE',i80:'I-80',i880:'I-880',marin:'MARIN'};
 let JUMP=JUMPS[QS.get('from')]?QS.get('from'):'';
 function jumpTo(j){j=wrapI(j);PL.auto=null;G.mist=0;const pe=ents.find(e=>e.player),lat=-(RW+XW[j])/2;pe.s=j*SEG;pe.lat=lat;pe.v=0;pe.dist=wrapI(j-START_I)*SEG;at(pe.s,lat,0,V);
   PL.x=V.x;PL.z=V.z;PL.idx=j;PL.h=G.camH=yaw(j);PL.vx=PL.vz=0;PL.cy=PL.gy=H[j];PL.air=0;PL.vy=0;PL.steer=0;resetVehicle(VS,hero.M.dyn,0);placeAll(0);first=true;}
@@ -3501,7 +3501,7 @@ function showHome(){$('title').classList.toggle('home',HOME);$('trk1').classList
 // from: where the Alameda drive starts ('' the house, or a jump point)
 function pickTrack(drive,from=''){if(drive===DRIVE){if(drive)JUMP=from;HOME=false;showHome();return;}const q=new URLSearchParams();if(drive){q.set('mode','drive');if(from)q.set('from',from);}q.set('go','1');q.set('model',G.model);q.set('liv',G.liv);if(!drive)q.set('wx',G.weather);location.search=q.toString();}
 $('trk1').onclick=()=>pickTrack(false);$('trk2').onclick=()=>pickTrack(true);for(const b of document.querySelectorAll('#jmp button,#bonus button'))b.onclick=()=>pickTrack(true,b.dataset.j);showHome();
-const JKEY={Digit3:'bb',Numpad3:'bb',Digit4:'sf',Numpad4:'sf',Digit5:'gg',Numpad5:'gg',Digit6:'i80',Numpad6:'i80',KeyH:''};
+const JKEY={Digit3:'bb',Numpad3:'bb',Digit4:'sf',Numpad4:'sf',Digit5:'gg',Numpad5:'gg',Digit6:'i80',Numpad6:'i80',Digit7:'i880',Numpad7:'i880',Digit8:'marin',Numpad8:'marin',KeyH:''};
 if(MODELS[G.model]&&MODELS[G.model].cls)MKEYS=CLASSICS;
 function setSens(d){G.sens=clamp(Math.round((G.sens+d)*10)/10,.1,1);try{localStorage.setItem('vqh-sens',G.sens);}catch(e){}$('oSens').textContent=Math.round(G.sens*100)+'%';say('STEERING '+Math.round(G.sens*100)+'%','[ LESS SENSITIVE · MORE SENSITIVE ]',1.4);}
 addEventListener('keydown',e=>{const c=codeOf(e);keys[c]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(c))e.preventDefault();if(e.repeat)return;
