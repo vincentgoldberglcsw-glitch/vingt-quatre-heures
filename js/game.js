@@ -843,6 +843,23 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
       const hd=cs[8];for(const sx of[-.4,.4]){const e=new THREE.Mesh(new THREE.SphereGeometry(.28,8,6),std({color:0xffffff}));e.position.set(sx,.3,.9);hd.add(e);const pu=new THREE.Mesh(new THREE.SphereGeometry(.13,6,5),std({color:0x111111}));pu.position.set(sx,.3,1.1);hd.add(pu);}
       const arm=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,1.6,5).translate(0,.8,0),gm);arm.position.set(1,-.2,0);hd.add(arm);ALM.cat={cs,arm};}
     off(i,0,0,bb.position);bb.rotation.y=yaw(i)+Math.PI;scene.add(bb);}
+  { // ---- a huge billboard before the Bay Bridge: a stern three-eyed man, monochrome torn paper, "DOG MOAT HAS A POSSE", one little yellow sticker
+    const bt=canvas(1024,512,(g,w,h)=>{g.fillStyle='#cfcac0';g.fillRect(0,0,w,h);
+      for(let k=0;k<7;k++){const x=rr(0,w-200),y=rr(0,h-160),pw=rr(220,520),ph=rr(120,300),v=Math.floor(rr(150,235));g.fillStyle=`rgb(${v},${v-3},${v-10})`;g.beginPath();g.moveTo(x,y);for(let q=1;q<=10;q++)g.lineTo(x+pw*q/10,y+rr(-9,9));for(let q=1;q<=8;q++)g.lineTo(x+pw+rr(-9,9),y+ph*q/8);for(let q=9;q>=0;q--)g.lineTo(x+pw*q/10,y+ph+rr(-9,9));for(let q=7;q>=0;q--)g.lineTo(x+rr(-9,9),y+ph*q/8);g.fill();}   // torn-paper layers
+      g.fillStyle='#262626';g.beginPath();g.ellipse(300,250,150,185,0,0,7);g.fill();   // the head
+      g.fillStyle='#d9d6cd';g.beginPath();g.ellipse(300,262,122,160,0,0,7);g.fill();
+      g.fillStyle='#262626';g.beginPath();g.moveTo(170,170);g.quadraticCurveTo(300,40,430,170);g.quadraticCurveTo(300,110,170,170);g.fill();   // cropped hair
+      g.lineWidth=14;g.strokeStyle='#161616';g.lineCap='round';g.beginPath();g.moveTo(205,215);g.lineTo(282,235);g.moveTo(395,215);g.lineTo(318,235);g.stroke();   // heavy, angry brows
+      for(const[ex,ey,er]of[[245,262,20],[355,262,20],[300,170,17]]){g.fillStyle='#f4f2ea';g.beginPath();g.ellipse(ex,ey,er*1.3,er*.8,0,0,7);g.fill();g.fillStyle='#111';g.beginPath();g.arc(ex,ey,er*.5,0,7);g.fill();g.strokeStyle='#111';g.lineWidth=4;g.stroke();}   // two eyes and the third on the forehead
+      g.strokeStyle='#161616';g.lineWidth=8;g.beginPath();g.moveTo(300,275);g.lineTo(288,345);g.lineTo(312,347);g.stroke();g.lineWidth=11;g.beginPath();g.moveTo(255,395);g.lineTo(345,395);g.stroke();   // nose and a flat, stern mouth
+      g.fillStyle='rgba(0,0,0,.25)';for(let k=0;k<160;k++)g.fillRect(rr(190,410),rr(130,400),2,2);
+      g.fillStyle='#161616';g.fillRect(500,80,470,310);g.fillStyle='#e6e3da';g.font='900 100px Impact,"Arial Black",Arial';g.textAlign='left';g.textBaseline='alphabetic';g.fillText('DOG MOAT',520,180,430);g.fillText('HAS A',520,282,430);g.fillText('POSSE',520,382,430);   // headline
+      g.fillStyle='#f2d11a';g.beginPath();g.arc(930,440,40,0,7);g.fill();g.strokeStyle='#161616';g.lineWidth=3;g.stroke();g.fillStyle='#161616';g.font='900 20px Arial';g.textAlign='center';g.fillText('JOIN',930,436);g.fillText('US',930,458);   // small yellow sticker
+      g.strokeStyle='#161616';g.lineWidth=10;g.strokeRect(5,5,w-10,h-10);});
+    const q=Z.b0-m(170),bb=new THREE.Group(),fm=new THREE.MeshStandardMaterial({map:bt,roughness:.75,emissiveMap:bt,emissive:0xffffff,emissiveIntensity:.3});
+    const bd=new THREE.Mesh(new THREE.BoxGeometry(44,22,.6),[steelM,steelM,steelM,steelM,fm,steelM]);bd.position.y=20;bb.add(bd);
+    for(const x of[-15,15])B(1,12,1,steelM,x,6,-.5,0,bb);bb.traverse(o=>{o.castShadow=true;});
+    off(q,-(26+XW[q]),0,bb.position);bb.rotation.y=yaw(q)+Math.PI;scene.add(bb);}
   { // ---- telephone poles down San Antonio and Paru, wires strung between them, and crows sitting on the crossarms
     const wd=std({color:0x4a3a2c,roughness:.9}),crowM=std({color:0x101013,roughness:.45,metalness:.15}),bk=std({color:0x2a2a2e,roughness:.5}),wire=new THREE.MeshBasicMaterial({color:0x151515,side:D2}),ids=[];
     // a crow: glossy black body, head, heavy beak, wedge tail, legs, and two wings on hinges so it can fold them or fly. Each one is its own object (CROWS) so it can take off.
