@@ -51,7 +51,7 @@ const D2R=Math.PI/180;
 const MR=220;
 // Alameda: every corner is a wide sweep. PR: San Antonio onto Paru (the straight before it is shortened by PR-52 so Paru St stays where it was), CR: Paru onto Central, WR: Central onto Wilma Chan Way,
 // HR1..HR3: the way home (San Antonio from Grand, Grand from Buena Vista, Buena Vista from the Webster Tube). Grand St stays where it was too.
-const PB=72,PLEN=PB*9+62,PR=110,CR=160,WR=160,HR1=120,HR2=110,HR3=110;
+const PB=72,PLEN=PB*9+62,PR=220,CR=260,WR=260,HR1=120,HR2=110,HR3=110;
 function routeTurtle(x,z,th){const pts=[],mk={},T={pts,mk,get x(){return x},get z(){return z},get th(){return th},
   push(){pts.push([x,z]);},
   S(len,st=40){const n=Math.max(1,Math.round(len/st));for(let k=0;k<n;k++){x+=Math.sin(th)*len/n;z+=Math.cos(th)*len/n;T.push();}return T;},
@@ -135,7 +135,8 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
   bankOn(z.refinery-m(60),z.i80+m(60),.1);   // the wide sweep from Shane Drive onto I-80, taken at speed
   bankOn(z.sq+m(40),z.rb0+m(20),.1);   // past San Quentin: a gentle banked curve through the badlands
   bankOn(z.richmond+m(40),z.shane,.08);   // Richmond's sloping bend
-  bankOn(z.tu0-m(200),z.tu0-m(10),.1);   // into the Posey Tube
+  bankOn(z.paru-m(PR*1.571+40),z.paru+m(40),.26);bankOn(z.central-m(CR*1.571+40),z.central+m(40),.26);bankOn(z.wilma-m(WR*1.222+40),z.wilma+m(40),.26);   // the Alameda corners: wide and steeply banked, for 175 mph
+  bankOn(z.tu0-m(200),z.tu0-m(10),.2);   // into the Posey Tube
   bankOn(z.tu1+m(200),z.tu1+m(430),.08);   // out of the tube and up onto I-880
   bankOn(z.wt1-m(420),z.wt1-m(50),.08);   // the long, gentle bend down off I-80 into the Webster Tube
   XW[NS]=XW[0];H[NS]=H[0];for(let i=0;i<=NS;i++)P[i].y=H[i];
@@ -2504,19 +2505,19 @@ function partyTick(rdt,pe){const P=PARTY,H0=Z.home;if(!DRIVE||!H0||G.state!=='ra
 function skunksTick(rdt){const K=SKUNK,pe=ents.find(e=>e.player);if(!pe)return;partyTick(rdt,pe);
   if(!K.l.length){const blk=std({color:0x121214,roughness:1}),wht=std({color:0xf4f4ee,roughness:1}),gry=std({color:0x9a968c,roughness:1}),pf=std({color:0xece6da,roughness:1}),pk=std({color:0xd9a0a0,roughness:.8}),rg=std({color:0x6e6a62,roughness:1}),rh=std({color:0x9a958a,roughness:1});
     // kind 0 a skunk, 1 a possum (grizzled grey, white face, long bare pink tail), 2 a raccoon (grey, black mask, ringed bushy tail)
-    const mk=(sc,kd)=>{const g=new THREE.Group(),b=new THREE.Group();g.add(b);const S=(r,mm,sx,sy,sz,x,y,z,p=b)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,8,6),mm);o.scale.set(sx,sy,sz);o.position.set(x,y,z);p.add(o);return o;};
+    const mk=(sc,kd)=>{let kn=null;const g=new THREE.Group(),b=new THREE.Group();g.add(b);const S=(r,mm,sx,sy,sz,x,y,z,p=b)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,8,6),mm);o.scale.set(sx,sy,sz);o.position.set(x,y,z);p.add(o);return o;};
       const bm=[blk,gry,rg][kd],hm=[blk,pf,rh][kd];
       S(1,bm,kd===2?.22:.2,kd===2?.19:.17,kd===1?.38:.34,0,.24,0);
       if(kd===0){for(const x of[-.06,.06]){const st=new THREE.Mesh(new THREE.BoxGeometry(.05,.035,.6),wht);st.position.set(x,.4,-.02);b.add(st);}const bz=new THREE.Mesh(new THREE.BoxGeometry(.03,.02,.16),wht);bz.position.set(0,.33,.38);b.add(bz);}   // the two white stripes down the back
       S(.11,hm,1,.9,kd===1?1.7:1.3,0,.24,kd===1?.4:.36);
       if(kd===1){S(.03,pk,1,1,1,0,.23,.58);for(const x of[-.06,.06])S(.035,blk,1,1,.4,x,.34,.36);}   // pink nose, dark round ears
-      if(kd===2){const mask=new THREE.Mesh(new THREE.BoxGeometry(.23,.05,.1),blk);mask.position.set(0,.27,.44);b.add(mask);S(.03,blk,1,1,1,0,.22,.5);for(const x of[-.07,.07])S(.04,rg,1,1.2,.5,x,.35,.34);}
+      if(kd===2){kn=new THREE.Group();kn.position.set(.1,.3,.4);kn.visible=false;b.add(kn);const bl=new THREE.Mesh(new THREE.BoxGeometry(.02,.03,.22),std({color:0xd8dce0,metalness:.6,roughness:.3}));bl.position.z=.12;kn.add(bl);const hd2=new THREE.Mesh(new THREE.BoxGeometry(.035,.035,.08),blk);kn.add(hd2);const mask=new THREE.Mesh(new THREE.BoxGeometry(.23,.05,.1),blk);mask.position.set(0,.27,.44);b.add(mask);S(.03,blk,1,1,1,0,.22,.5);for(const x of[-.07,.07])S(.04,rg,1,1.2,.5,x,.35,.34);}
       for(const[x,z]of[[-.11,.2],[.11,.2],[-.11,-.2],[.11,-.2]]){const lg=new THREE.Mesh(new THREE.BoxGeometry(.06,.14,.06),kd===1?pf:blk);lg.position.set(x,.07,z);b.add(lg);}
       const tp=new THREE.Group();tp.position.set(0,.3,-.3);b.add(tp);
       if(kd===0){S(1,blk,.16,.15,.36,0,0,-.3,tp);S(1,wht,.1,.08,.3,0,.11,-.3,tp);}
       else if(kd===1){const tl=new THREE.Mesh(cyl(.012,.035,.55,6),pk);tl.rotation.x=Math.PI/2;tl.position.z=-.28;tp.add(tl);}
       else for(let q=0;q<5;q++)S(.075,q%2?blk:rh,1,1,1.1,0,-.02*q,-.08-q*.1,tp);
-      g.scale.setScalar(sc);g.visible=false;scene.add(g);return{g,b,tp,kd,st:0,t:0,s:0,lat:0,side:1,tg:0,ry:0,mv:0,sp:0,ma:null,n:0,baby:sc<1};};
+      g.scale.setScalar(sc);g.visible=false;scene.add(g);return{g,b,tp,kn,ks:0,kd,st:0,t:0,s:0,lat:0,side:1,tg:0,ry:0,mv:0,sp:0,ma:null,n:0,baby:sc<1};};
     for(let kd=0;kd<3;kd++){for(let n=0;n<6;n++)K.l.push(mk(1.5,kd));for(let n=0;n<10;n++)K.l.push(mk(.85,kd));}}
   const town=zoneArr[PL.idx]===1&&G.state==='race',v=Math.abs(pe.v),act=K.l.filter(o=>o.st&&!o.baby).length;
   if(town){K.cd-=rdt;if(K.cd<=0){K.cd=R(2,4.5);const kd=Math.random()*3|0,k=K.l.find(o=>!o.st&&!o.baby&&o.kd===kd);
@@ -2525,6 +2526,7 @@ function skunksTick(rdt){const K=SKUNK,pe=ents.find(e=>e.player);if(!pe)return;p
       if(k.cross){k.mv=kd===1?R(1.3,1.9):R(1.8,2.6);k.lat=Math.random()<.3?k.side*R(1,w-1.5):k.side*(w+1.6);k.tg=-k.side*(w+9);}
       else if(Math.random()<.15){k.lat=k.side*R(1,w-1.5);k.tg=-k.side*R(0,w-2);}   // already out in the road, crossing
       else{k.lat=k.side*(w+1.6);k.tg=k.side*(w-R(2,5));}
+      k.ks=kd===2&&Math.random()<.45?1:0;if(k.kn)k.kn.visible=!!k.ks;if(k.ks){k.cross=false;k.lat=k.side*(w+1.6);k.tg=k.lat;}   /* a raccoon with a knife stands at the kerb and stabs at the car */
       const up=kd===0?.55:kd===1?.1:.2;k.g.visible=true;k.tp.rotation.x=up;
       if(fam||pair){const nb=pair?1:2+(Math.random()*3|0);let c=0;for(const b of K.l){if(c>=nb)break;if(b.baby&&!b.st&&b.kd===kd){b.st=1;b.ma=k;b.n=c++;b.t=R(0,1);b.s=k.s+R(-.35,.35);b.lat=k.lat+k.side*(b.n+1)*.55;b.g.scale.setScalar(pair?1.45:.85);b.g.visible=true;b.tp.rotation.x=up+.15;}}}}}}
   for(const k of K.l){if(!k.st)continue;k.t+=rdt;
@@ -2542,11 +2544,12 @@ function skunksTick(rdt){const K=SKUNK,pe=ents.find(e=>e.player);if(!pe)return;p
     let mv=0,face=Math.sign(k.tg-k.lat)||-k.side;
     if(k.st===1){mv=k.mv;if(Math.abs(k.tg-k.lat)<.05){if(k.cross){k.st=0;k.g.visible=false;continue;}k.st=2;k.t=0;}}   // run out into the road
     else if(k.st===2){face=0;const tr=clamp((k.t-.25)/.35,0,1);k.tp.rotation.x=lerp(.55,1.6,tr);k.b.rotation.x=-tr*.12;   // stop, turn round, tail up...
-      if(k.t>2){k.st=3;k.t=0;k.sp=0;const w=RW+XW[wrapI(Math.floor(k.s/SEG))];k.tg=(Math.random()<.6?-k.side:k.side)*(w+9);k.mv=R(3,4.2);}}
+      if(k.t>(k.ks?5:2)){k.st=3;k.t=0;k.sp=0;const w=RW+XW[wrapI(Math.floor(k.s/SEG))];k.tg=(Math.random()<.6?-k.side:k.side)*(w+9);k.mv=R(3,4.2);}}
     else if(k.st===3){mv=k.mv;k.b.rotation.x=0;k.tp.rotation.x=lerp(k.tp.rotation.x,.45,clamp(rdt*3,0,1));if(Math.abs(k.lat-k.tg)<.2){k.st=0;k.g.visible=false;continue;}}   // move on, off the road
     if(mv){const d=k.tg-k.lat;k.lat+=Math.sign(d)*Math.min(Math.abs(d),mv*rdt);}
     at(k.s,k.lat,0,K.V);k.g.position.copy(K.V);
-    if(face){at(k.s,k.lat+face,0,K.W);k.ry=Math.atan2(K.W.x-K.V.x,K.W.z-K.V.z);}else k.ry=Math.atan2(K.V.x-PL.x,K.V.z-PL.z);   /* spraying: back to the car */
+    if(face){at(k.s,k.lat+face,0,K.W);k.ry=Math.atan2(K.W.x-K.V.x,K.W.z-K.V.z);}else k.ry=Math.atan2(K.V.x-PL.x,K.V.z-PL.z)+(k.ks?Math.PI:0);   /* spraying: back to the car; the knife raccoon faces it */
+    if(k.ks&&k.kn){const q=Math.max(0,Math.sin(k.t*9));k.kn.position.z=.4+.22*q;k.kn.rotation.x=-.9+1.5*q;k.b.position.z=.1*q;}
     k.g.rotation.y=k.ry;const wd=mv&&Math.abs(k.tg-k.lat)>.05?1:0;k.b.rotation.z=wd*Math.sin(k.t*22)*.12;k.b.position.y=wd*Math.abs(Math.sin(k.t*22))*.035;}}
 function skunkSpray(k){const K=SKUNK;at(k.s,k.lat,.55,K.V);const dx=PL.x-K.V.x,dz=PL.z-K.V.z,d=Math.hypot(dx,dz)||1;   // only when the car hits a skunk
   for(let n=0;n<22;n++)puff(K.V,dx/d*R(3,9)+R(-1.8,1.8),R(.3,2.4),dz/d*R(3,9)+R(-1.8,1.8),.9,R(5,10),R(2.5,4.5),.7,n%3?0xc2d24e:0x8fb02a);
