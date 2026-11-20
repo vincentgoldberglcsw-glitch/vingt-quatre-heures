@@ -2386,7 +2386,7 @@ function sim(dt){const pe=ents.find(e=>e.player);
   if(wx.wet>.5&&!PL.crash&&pe.v>20&&Math.random()<dt*26)puff(V.set(PL.x-Math.sin(PL.h)*2.6,.5,PL.z-Math.cos(PL.h)*2.6),R(-1.5,1.5),R(1,3),R(-1.5,1.5),1.2,5.5,R(.7,1.2),.34,0xd0d6da);
   if(PL.crash&&PL.crash.dive)diveTick(dt,pe);
   else if(PL.crash){const w=hero.wreck,still=!w||(Math.hypot(w.vx,w.vz)<1&&w.y<=0&&!w.wr);tubeFire(dt);const tb=PL.crash.tf>2.3;
-    if(tb||PL.crash.t>8||(PL.crash.t>5&&still)){const i=PL.idx=wrapI(tb?Z.tu1+30:(w?w.idx:PL.idx)+35);if(w)endWreck(w);if(TUF.st){TUF.on=0;for(const o of TUF.st)o.visible=false;}pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();
+    if(tb||PL.crash.t>8||(PL.crash.t>5&&still)){const i=PL.idx=wrapI(tb?Z.tu1+30:(w?w.idx:PL.idx)+35);if(w)endWreck(w);if(TUF.st){TUF.on=0;for(const o of TUF.st)o.visible=false;}pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;sndRestore();PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();
       hero.position.set(PL.x,H[i],PL.z);hero.rotation.set(0,PL.h,0);GY=PL.gy=PL.cy=H[i];PL.air=0;PL.vy=0;say(DRIVE?'BACK ON THE ROAD':'BACK IN THE RACE','',1.5);}}
   if(G.state==='race'){G.doomT-=dt;if(G.doomT<=0){G.doomT=R(38,70);const c=ents.filter(e=>!e.player&&e.out<=0&&!e.doom&&wdiff(e.s-pe.s)>45&&wdiff(e.s-pe.s)<230&&e.v>35);if(c.length){const e=c[Math.random()*c.length|0];e.doom=Math.random()<.5?-1:1;}else G.doomT=6;}
     if(!DRIVE&&pe.dist>=LAPS*LEN){G.state='finish';G.finT=0;G.slow=.3;G.slowT=3.2;first=true;sfxCheer();say('DRAPEAU À DAMIER','P'+(standings().indexOf(pe)+1)+' · '+LAPS+' LAPS',4);announce("Le drapeau à damier ! Les vingt-quatre heures sont terminées !");}}
@@ -2790,15 +2790,17 @@ function iguanaTick(rdt){const I_=IGU,pe=ents.find(e=>e.player);if(!pe||!DRIVE)r
       bx(.07,.06,.4,dm,0,.08,-.4);bx(.04,.04,.35,dm,0,.07,-.72);
       for(let q=0;q<7;q++){const sp=bx(.025,.07,.04,dm,0,.19,.3-q*.1);sp.rotation.x=-.4;}   // spiny crest down the back
       for(const s of[-1,1])for(const z of[-.12,.14]){const l=bx(.04,.1,.05,dm,s*.11,.05,z);l.rotation.z=s*.5;}
-      g.visible=false;scene.add(g);I_.l.push({g,b,st:0,s:0,lat:0,tl:0,v:0,vl:0,y:0,vy:0,t:0,x:0,z:0,vx:0,vz:0,sp:0});}}
-  const i=PL.idx,zn=zoneArr[i],on=G.state==='race'&&(zn===1||zn===7);
+      g.visible=false;scene.add(g);const tr=new THREE.Mesh(new THREE.CylinderGeometry(.55,.7,34,8),std({color:0x6a3a26,roughness:1}));tr.visible=false;scene.add(tr);I_.l.push({g,b,tr,st:0,s:0,lat:0,tl:0,v:0,vl:0,y:0,vy:0,t:0,x:0,z:0,vx:0,vz:0,sp:0});}}
+  const i=PL.idx,zn=zoneArr[i],on=G.state==='race'&&(zn===1||zn===7||zn===8);
   if(on){I_.cd-=rdt;if(I_.cd<=0){I_.cd=R(3,8);const k=I_.l.find(o=>!o.st);
-    if(k){const s=pe.s+Math.max(50,Math.abs(pe.v)*3)+R(0,60),j=wrapI(Math.floor(s/SEG)),w=RW+XW[j],sd=Math.random()<.5?-1:1;k.st=1;k.s=s;k.lat=sd*(w+R(1,3));k.tl=k.lat;k.v=R(1,3)*(Math.random()<.5?-1:1);k.vl=0;k.y=0;k.vy=0;k.t=R(0,5);k.b.rotation.set(0,0,0);k.g.visible=true;}}}
-  for(const k of I_.l){if(!k.st)continue;const ds=wdiff(k.s-pe.s);if(ds<-40||ds>320){k.st=0;k.g.visible=false;continue;}
+    if(k){const s=pe.s+Math.max(50,Math.abs(pe.v)*3)+R(0,60),j=wrapI(Math.floor(s/SEG)),w=RW+XW[j],sd=Math.random()<.5?-1:1;k.st=1;k.s=s;k.lat=sd*(w+R(1,3));k.tl=k.lat;k.v=R(1,3)*(Math.random()<.5?-1:1);k.vl=0;k.y=0;k.vy=0;k.t=R(0,5);k.climb=zn===7&&Math.random()<.6;k.b.rotation.set(0,0,0);k.g.visible=true;}}}
+  for(const k of I_.l){if(!k.st)continue;const ds=wdiff(k.s-pe.s);if(ds<-40||ds>320){k.st=0;k.g.visible=false;k.tr.visible=false;continue;}
     k.t+=rdt;const j=wrapI(Math.floor(k.s/SEG)),w=RW+XW[j];
     if(k.st===2){k.vy-=14*rdt;k.x+=k.vx*rdt;k.z+=k.vz*rdt;k.y+=k.vy*rdt;k.b.rotation.x+=k.sp*rdt;
       if(k.y<=H[j]&&k.vy<0&&k.t>.2){k.st=1;k.b.rotation.set(0,0,0);k.y=0;k.s=wrapS(pe.s+ds);k.lat=Math.sign(k.lat||1)*(w+2);k.tl=k.lat;k.vl=0;k.v=R(3,5)*(Math.random()<.5?-1:1);continue;}   // landed: scurries away
       k.g.position.set(k.x,k.y,k.z);continue;}
+    if(k.st===3){k.y+=2.4*rdt;at(k.s,k.lat,0,I_.V);I_.V.y+=k.y;k.g.position.copy(I_.V);k.g.rotation.y=yaw(j)+Math.sign(k.lat)*Math.PI/2;k.b.rotation.set(-Math.PI/2,0,Math.sin(k.t*14)*.12);k.b.position.y=0;if(k.y>26){k.st=0;k.g.visible=false;k.tr.visible=false;}continue;}   // up the trunk, head first
+    if(k.climb&&k.st===1&&ds>28&&ds<130&&Math.abs(k.lat)>=w&&Math.random()<rdt*.7){k.st=3;k.y=0;k.v=0;k.lat=Math.sign(k.lat)*(w+3.2);at(k.s,Math.sign(k.lat)*(w+3.9),0,I_.V);k.tr.position.set(I_.V.x,I_.V.y+16,I_.V.z);k.tr.visible=true;continue;}   // in the redwoods: scurry up a tree
     k.s=wrapS(k.s+k.v*rdt);const dl=k.tl-k.lat;
     if(Math.abs(dl)>.1)k.lat+=Math.sign(dl)*Math.min(Math.abs(dl),k.vl*rdt);
     else if(Math.random()<rdt*.15&&ds>25){k.tl=-Math.sign(k.lat)*(w+R(1,3));k.vl=R(5,7);}   // dart across the road
@@ -3752,14 +3754,14 @@ function fqTick(rdt){if(!FQ.list.length)return;const pe=ents.find(e=>e.player);i
 function startDive(sd,vn,bi,hole){ohNo();{const e=ents.find(e=>e.player);if(e)e.v=0;}const n=Nn[bi],out=hole?vn:Math.max(vn,9),fs=Math.hypot(PL.vx,PL.vz)||1,kf=hole?Math.min(.75,Math.max(1,hole.room)/2.4/fs):.75;
   PL.crash={t:0,dive:1,ph:0,tt:0,sd,x:PL.x,z:PL.z,y:H[bi],vx:PL.vx*kf+n.x*sd*out,vz:PL.vz*kf+n.z*sd*out,vy:hole?0:5.5,idx:bi,dir:PL.x<2350?-1:1,hole:!!hole,rep:(startDive.n=(startDive.n||0)+1)>1};PL.vx=PL.vz=0;   // rep: a second or later fall this game plays only up to the octopus, then the car is back on the road where it went off
  
-  V.set(PL.x,.8,PL.z);shed(V,PL.crash.vx,PL.crash.vz,8,0x7f868b);for(let i=0;i<40;i++)spark(V,PL.crash.vx*.5+R(-9,9),R(1,9),PL.crash.vz*.5+R(-9,9));sfxCrunch(1);G.shake=1;G.slow=.45;G.slowT=2.6;say(hole?'THE BRIDGE GAVE WAY':'OVER THE RAIL','',2.4);endSkid();
+  V.set(PL.x,.8,PL.z);shed(V,PL.crash.vx,PL.crash.vz,8,0x7f868b);for(let i=0;i<40;i++)spark(V,PL.crash.vx*.5+R(-9,9),R(1,9),PL.crash.vz*.5+R(-9,9));sfxCrunch(1);if(AC&&master){master.gain.cancelScheduledValues(AC.currentTime);master.gain.setTargetAtTime(0,AC.currentTime+.35,.05);}G.shake=1;G.slow=.45;G.slowT=2.6;say(hole?'THE BRIDGE GAVE WAY':'OVER THE RAIL','',2.4);endSkid();
   if(hole)at(bi*SEG+Math.min(40,hole.room*.6),sd*2.5,16,PL.crash.cam=new THREE.Vector3());   // over the gap, looking back and down as the car drops through it
   else at(bi*SEG+24,-sd*4.5,3.2,PL.crash.cam=new THREE.Vector3());}
 function diveTick(dt,pe){const D=PL.crash;D.tt+=dt;
   if(D.rep){let h=document.getElementById("skiph");if(!h){h=document.createElement("div");h.id="skiph";h.textContent="SPACE to skip";h.style.cssText="position:fixed;bottom:9%;left:50%;transform:translateX(-50%);color:#fff;font:700 15px Arial;letter-spacing:.2em;background:rgba(0,0,0,.5);padding:8px 16px;border-radius:6px;z-index:9;pointer-events:none";document.body.appendChild(h);}h.style.display="block";   // a repeat fall: Space skips the scene, back on the road where the car went off
     if(!keys.Space)D.rel=1;else if(D.rel&&D.tt>.5){D.skip=1;if(D.ph===0){D.ph=1;D.t1=D.tt-99;D.wx=D.x;D.wz=D.z;}}}
   if(D.ph===0){D.x+=D.vx*dt;D.z+=D.vz*dt;D.vy-=11*dt;D.y+=D.vy*dt;hero.position.set(D.x,D.y,D.z);hero.rotation.x=Math.min(1.25,hero.rotation.x+.45*dt);hero.rotation.z+=D.sd*.4*dt;   /* a slower fall, seen from the driver's seat */
-    if(D.y<-45){D.ph=1;D.t1=D.tt;D.wx=D.x;D.wz=D.z;V.set(D.x,-44.6,D.z);for(let i=0;i<70;i++){const a=R(0,6.283),sp=R(2,11);puff(V,Math.cos(a)*sp,R(6,22),Math.sin(a)*sp,R(.8,1.6),R(4,8),R(1.2,2.6),.8,0xeef2f4);}sfxSplash();G.shake=.8;}return;}
+    if(D.y<-45){D.ph=1;D.t1=D.tt;D.wx=D.x;D.wz=D.z;V.set(D.x,-44.6,D.z);for(let i=0;i<70;i++){const a=R(0,6.283),sp=R(2,11);puff(V,Math.cos(a)*sp,R(6,22),Math.sin(a)*sp,R(.8,1.6),R(4,8),R(1.2,2.6),.8,0xeef2f4);}sndRestore();sfxSplash();sfxThump(1.4);G.shake=.8;}return;}
   const u=D.tt-D.t1,S=9.2;   // S: the moment McQueen breaks the surface
   if(u<S){hero.position.y=Math.max(-61,hero.position.y-(u<1?5:1.9)*dt);hero.rotation.x+=(.3-hero.rotation.x)*Math.min(1,dt*1.2);hero.rotation.z+=(.22-hero.rotation.z)*Math.min(1,dt*1.2);   // the car sinks, slowly righting itself
     if(Math.random()<dt*16)puff(V.set(D.x+R(-1,1),hero.position.y+.8,D.z+R(-1.6,1.6)),R(-.3,.3),R(1.5,3.5),R(-.3,.3),.1,R(.25,.6),R(1.2,2.4),.7,0xeaf6f8);
@@ -3774,11 +3776,20 @@ function diveTick(dt,pe){const D=PL.crash;D.tt+=dt;
   if(u>S+6.5&&!D.m6){D.m6=1;say('A TANKER !','COMING STRAIGHT AT THEM',2);sfxHorn();}
   if(u>S+8.3&&!D.said){D.said=1;say('THEY SWIM FOR THE SHORE','',4);}
   if(u>S+8.5){D.wx+=D.dir*15*dt*sst(u,S+8.5,S+9.6);if(Math.random()<dt*10)puff(V.set(D.wx-D.dir*2.2,-44.9,D.wz+R(-.6,.6)),0,.4,0,.5,1.8,R(.8,1.4),.5,0xeef2f4);}
-  if(u>(D.rep?4.6:S+14)||D.skip){{const h=document.getElementById("skiph");if(h)h.style.display="none";}const i=PL.idx=wrapI(D.rep&&!D.hole?D.idx-40:(Z.BR.find(r=>D.idx>=r[0]&&D.idx<=r[1])||[Z.b0])[0]-45);pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();first=true;G.uw=0;
+  if(u>(D.rep?4.6:S+14)||D.skip){{const h=document.getElementById("skiph");if(h)h.style.display="none";}const i=PL.idx=wrapI(D.rep&&!D.hole?D.idx-40:(Z.BR.find(r=>D.idx>=r[0]&&D.idx<=r[1])||[Z.b0])[0]-45);pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;sndRestore();PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();first=true;G.uw=0;
     hero.visible=true;hero.position.set(PL.x,H[i],PL.z);hero.rotation.set(0,PL.h,0);mcq.rotation.set(0,0,0);manatee.visible=false;manatee.pipe.visible=false;SEA.g.visible=SEA.oc.visible=SEA.dome.visible=SEA.tk.visible=false;SEA.light.intensity=0;say('BACK ON DRY LAND','',2);}}
-function diveScene(tm){const D=PL.crash,S=9.2;if(D.ph<1){manatee.visible=false;SEA.g.visible=SEA.oc.visible=false;G.uw=0;return;}
+// iguanas swimming gracefully by in the dive scene (three, circling the car at a distance, tails swaying)
+const UWI={l:[]};
+function uwIguanas(D,u,tm,S){if(!UWI.l.length){const bm=std({color:0x7d8a68,roughness:.85}),dm=std({color:0x56633f,roughness:.9});
+    for(let n=0;n<3;n++){const g=new THREE.Group(),b=new THREE.Group();g.add(b);const bx=(sx,sy,sz,mm,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mm);o.position.set(x,y,z);b.add(o);return o;};
+      bx(.16,.1,.4,bm,0,0,0);bx(.11,.09,.15,bm,0,.02,.27);const tl=bx(.07,.06,.4,dm,0,-.02,-.4);for(let q=0;q<5;q++){const sp=bx(.025,.07,.04,dm,0,.09,.2-q*.1);sp.rotation.x=-.4;}
+      for(const s of[-1,1])for(const z of[-.12,.14]){const l=bx(.04,.1,.05,dm,s*.11,-.05,z);l.rotation.z=s*1.1;}
+      g.scale.setScalar(3.4);g.visible=false;scene.add(g);UWI.l.push({g,b,tl});}}
+  const on=u>2&&u<S+4;UWI.l.forEach((k,n)=>{k.g.visible=on;if(!on)return;const a=tm*.22+n*2.1,r=9+n*3.5;k.g.position.set(D.wx+Math.cos(a)*r,-50-n*1.8+Math.sin(tm*.7+n)*1.2,D.wz+Math.sin(a)*r);k.g.rotation.y=Math.atan2(-Math.sin(a),Math.cos(a));k.b.rotation.y=Math.sin(tm*3+n)*.22;k.tl.rotation.y=Math.sin(tm*3+n)*.5;k.tl.position.x=Math.sin(tm*3+n)*.06;});}
+function sndRestore(){if(AC&&master){master.gain.cancelScheduledValues(AC.currentTime);master.gain.setTargetAtTime(.85,AC.currentTime,.02);}}
+function diveScene(tm){const D=PL.crash,S=9.2;if(D.ph<1){manatee.visible=false;SEA.g.visible=SEA.oc.visible=false;G.uw=0;for(const k of UWI.l)k.g.visible=false;return;}
   const u=D.tt-D.t1,bob=Math.sin(tm*1.6)*.07,th=D.dir>0?Math.PI/2:-Math.PI/2;
-  G.uw=sst(u,.9,1.5)*(1-sst(u,S-.5,S));SEA.g.visible=u<S+.5;if(SEA.g.visible)seaTick(tm,D);
+  G.uw=sst(u,.9,1.5)*(1-sst(u,S-.5,S));SEA.g.visible=u<S+.5;if(SEA.g.visible)seaTick(tm,D);uwIguanas(D,u,tm,S);
   const oc=SEA.oc;oc.visible=u>3.2&&u<S;if(oc.visible){const k=sst(u,3.2,5.4);oc.position.copy(hero.position);oc.position.y-=(1-k)*9;oc.quaternion.copy(hero.quaternion);oc.arms.scale.set(2.4-1.4*k+Math.sin(tm*3)*.04,1+(1-k)*.25,1);}   // it comes up from below and its arms close round the car
   const lift=sst(u,S+8,S+8.5),q=sst(u,S,S+.9);mcq.visible=u>6.3;
   if(u<S){mcq.rotation.set(0,tm*.5,Math.sin(tm*1.3)*.15);mcq.position.set(D.wx-D.dir*.55,lerp(hero.position.y+.6,-46.6,sst(u,6.3,S)),D.wz);}   // he drifts up out of the car, upright, cigarette still going
