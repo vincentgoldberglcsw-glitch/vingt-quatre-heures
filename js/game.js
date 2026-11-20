@@ -1591,7 +1591,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
       tall(Z.rb1+m(60+k*130),k%2?-1:1,ldr(a,b,['#7a1414','#14284a','#3a1458'][k%3],'#d8a83a')));
     // Hyde Street: WE LOVE THE LEADER boards on the way down, and a big propaganda board at the bottom (an invented stern figure in a peaked cap)
     [[Z.hyde+m(365),-1,'WE LOVE THE LEADER','He keeps the city safe.','#8a1010'],[Z.hyde+m(430),1,'WE LOVE THE LEADER','Gratitude is duty.','#14284a'],[Z.marina-m(150),1,'WE ♥ THE LEADER','His eyes are on Hyde Street.','#3a1458']].forEach(([i,sd,a,b,bg])=>tall(i,sd,leaderPoster(a,b,bg)));
-    {const n0=scene.children.length;tall(Z.marina-m(35),-1,leaderPoster('THE LEADER','KNOWS · SEES · PROVIDES','#8a1010'));const g=scene.children[n0];if(g)g.scale.setScalar(1.35);}
+    {const n0=scene.children.length;tall(Z.marina-m(35),-1,leaderPoster('THE LEADER','KNOWS · SEES · PROVIDES','#8a1010',1));   /* the big one shows the Leader's other face, the tiger mask */const g=scene.children[n0];if(g)g.scale.setScalar(1.35);}
     {// leaking toxic-waste barrels on I-880 and the bridges, glowing green ooze spreading out into the lane (drive through it and the car is slimed green for a while: TOX, toxTick)
       const bm=std({color:0xc8a820,roughness:.5,metalness:.4}),bm2=std({color:0x2a5a8a,roughness:.5,metalness:.4}),om=new THREE.MeshBasicMaterial({color:0x7dff2e,transparent:true,opacity:.92,polygonOffset:true,polygonOffsetFactor:-4,depthWrite:false}),gm=new THREE.MeshBasicMaterial({color:0xaaff55,transparent:true,opacity:.3,blending:THREE.AdditiveBlending,polygonOffset:true,polygonOffsetFactor:-5,depthWrite:false,fog:false});
       TOX.mm=[om,gm];
@@ -3682,15 +3682,30 @@ function prisonRunner(c,x,y,s,col='#111'){c.save();c.translate(x,y);c.scale(s,s)
   c.strokeStyle='#f4f1e8';c.lineWidth=3;for(let k=0;k<3;k++){const u=.2+k*.27,px=9-13*u,py=-45+37*u;c.beginPath();c.moveTo(px-7,py+1);c.lineTo(px+7,py-1);c.stroke();}
   c.strokeStyle=col;c.lineWidth=3;c.beginPath();c.moveTo(8,42);c.lineTo(32,50);c.stroke();c.beginPath();c.arc(39,50,9,0,7);c.fill();c.restore();}
 // propaganda poster for the Leader (invented): a stern figure in a peaked cap and uniform in a sunburst, bold lettering
-function leaderPoster(title,sub,bg){return canvas(1024,460,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);const cx=250,cy=250;g.save();g.translate(cx,cy);for(let k=0;k<20;k++){g.rotate(Math.PI/10);g.fillStyle=k%2?'#e0b23a':bg;g.globalAlpha=k%2?.55:1;g.beginPath();g.moveTo(0,0);g.lineTo(700,-110);g.lineTo(700,110);g.fill();}g.restore();g.globalAlpha=1;
+function leaderPoster(title,sub,bg,mask){return canvas(1024,460,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);const cx=250,cy=mask?215:250;g.save();g.translate(cx,cy);for(let k=0;k<20;k++){g.rotate(Math.PI/10);g.fillStyle=k%2?'#e0b23a':bg;g.globalAlpha=k%2?.55:1;g.beginPath();g.moveTo(0,0);g.lineTo(700,-110);g.lineTo(700,110);g.fill();}g.restore();g.globalAlpha=1;
+  if(mask){leaderMask(g,cx,cy);leaderText(g,title,sub);return;}   // the other face of the Leader: a carved, painted tiger mask
   g.fillStyle='#2e3a26';g.beginPath();g.moveTo(cx-190,h);g.quadraticCurveTo(cx-170,cy+70,cx,cy+60);g.quadraticCurveTo(cx+170,cy+70,cx+190,h);g.fill();   // shoulders in uniform
   g.fillStyle='#d8b84a';g.fillRect(cx-170,cy+92,70,16);g.fillRect(cx+100,cy+92,70,16);for(let k=0;k<4;k++){g.beginPath();g.arc(cx-30+k*14,cy+150,5,0,7);g.fill();}   // epaulettes and medals
   g.fillStyle='#e9c29a';g.beginPath();g.ellipse(cx,cy-10,62,78,0,0,7);g.fill();g.fillRect(cx-28,cy+40,56,30);   // face and neck
   g.fillStyle='#1a1a1a';g.fillRect(cx-46,cy-34,36,9);g.fillRect(cx+10,cy-34,36,9);g.fillRect(cx-34,cy-18,14,9);g.fillRect(cx+20,cy-18,14,9);g.fillRect(cx-30,cy+26,60,8);g.fillRect(cx-22,cy+8,44,10);   // stern brows, eyes, mustache, set mouth
   g.fillStyle='#2e3a26';g.beginPath();g.ellipse(cx,cy-82,96,30,0,Math.PI,0);g.fill();g.fillRect(cx-70,cy-112,140,32);g.fillStyle='#141414';g.beginPath();g.ellipse(cx,cy-74,82,14,0,0,Math.PI);g.fill();   // the peaked cap
   g.fillStyle='#d8b84a';g.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,q=k%2?9:22;g.lineTo(cx+Math.cos(a)*q,cy-98+Math.sin(a)*q);}g.fill();
-  g.fillStyle='rgba(0,0,0,.6)';g.fillRect(470,70,520,320);g.strokeStyle='#e0b23a';g.lineWidth=8;g.strokeRect(470,70,520,320);g.textAlign='center';g.textBaseline='middle';
-  g.font='900 '+(title.length>12?84:120)+'px Impact,"Arial Black",Arial';g.fillStyle='#000';g.fillText(title,736,186,480);g.fillStyle='#f4ead2';g.fillText(title,730,180,480);g.font='700 38px Georgia,serif';g.fillStyle='#e0b23a';g.fillText(sub,730,320,480);});}
+  leaderText(g,title,sub);});}
+function leaderText(g,title,sub){g.fillStyle='rgba(0,0,0,.6)';g.fillRect(470,70,520,320);g.strokeStyle='#e0b23a';g.lineWidth=8;g.strokeRect(470,70,520,320);g.textAlign='center';g.textBaseline='middle';
+  g.font='900 '+(title.length>12?84:120)+'px Impact,"Arial Black",Arial';g.fillStyle='#000';g.fillText(title,736,186,480);g.fillStyle='#f4ead2';g.fillText(title,730,180,480);g.font='700 38px Georgia,serif';g.fillStyle='#e0b23a';g.fillText(sub,730,320,480);}
+// the Leader's mask (invented, in the spirit of a carved folk tiger mask): worn red and dark green-blue paint, big curled red and orange eye rings, a tubular snout,
+// a wide red mouth full of small teeth and a lolling tongue, stiff bristle whiskers all round, cloth strips hanging below
+function leaderMask(g,cx,cy){let sd=31;const q=()=>(sd=(sd*16807)%2147483647)/2147483647,E=(x,y,rx,ry,c)=>{g.fillStyle=c;g.beginPath();g.ellipse(x,y,rx,ry,0,0,7);g.fill();};
+  for(const x of[-40,40]){g.fillStyle='#cdb98e';g.beginPath();g.moveTo(cx+x-22,cy+110);for(let y=0;y<=110;y+=10)g.lineTo(cx+x-22+Math.sin(y*.15+x)*6,cy+110+y);g.lineTo(cx+x+22,cy+225);for(let y=110;y>=0;y-=10)g.lineTo(cx+x+22+Math.sin(y*.13-x)*5,cy+110+y);g.fill();g.strokeStyle='rgba(90,70,40,.5)';g.lineWidth=2;for(let k=0;k<4;k++){g.beginPath();g.moveTo(cx+x-14+k*9,cy+120);g.lineTo(cx+x-16+k*9,cy+220);g.stroke();}}   // cloth strips
+  g.lineCap='round';for(let k=0;k<110;k++){const a=q()*6.283,r0=95+q()*30,r1=r0+60+q()*110;g.strokeStyle=q()<.5?'rgba(214,200,170,.9)':'rgba(120,100,80,.85)';g.lineWidth=1+q()*1.6;g.beginPath();g.moveTo(cx+Math.cos(a)*r0*1.25,cy+Math.sin(a)*r0);g.lineTo(cx+Math.cos(a)*r1*1.25,cy+Math.sin(a)*r1*.85);g.stroke();}   // bristle whiskers
+  for(const s of[-1,1]){g.fillStyle='#6a1e1a';g.beginPath();g.moveTo(cx+s*60,cy-100);g.quadraticCurveTo(cx+s*120,cy-170,cx+s*175,cy-150);g.quadraticCurveTo(cx+s*150,cy-110,cx+s*105,cy-70);g.fill();}   // ears flaring up and out
+  E(cx,cy,140,128,'#24414a');E(cx,cy-20,118,96,'#2e5a4e');   // the dark green-blue head
+  for(let k=0;k<26;k++){const a=q()*6.283,r=q()*120;g.fillStyle=q()<.55?'rgba(170,40,34,.85)':'rgba(214,190,150,.55)';g.beginPath();g.ellipse(cx+Math.cos(a)*r,cy+Math.sin(a)*r*.9,6+q()*16,4+q()*9,q()*3,0,7);g.fill();}   // red paint patches and chips worn through to the wood
+  for(const s of[-1,1]){const x=cx+s*78,y=cy-42;E(x,y,50,50,'#b8231c');E(x,y,36,36,'#e8932a');g.fillStyle='#5a2a10';for(let k=0;k<9;k++){const a=k/9*6.283;g.beginPath();g.arc(x+Math.cos(a)*29,y+Math.sin(a)*29,3,0,7);g.fill();}E(x,y,20,20,'#b8231c');E(x+s*4,y+3,10,10,'#120c08');}   // curled eye rings
+  g.fillStyle='#4e6672';g.fillRect(cx-26,cy-120,52,108);E(cx,cy-120,26,10,'#6e8894');E(cx,cy-12,30,14,'#3a4e58');E(cx-10,cy-12,6,5,'#111');E(cx+10,cy-12,6,5,'#111');g.fillStyle='#a62a22';g.fillRect(cx-26,cy-80,52,10);   // the long tubular snout
+  g.fillStyle='#b82820';g.beginPath();g.roundRect(cx-122,cy+18,244,92,36);g.fill();g.fillStyle='#2a0a08';g.beginPath();g.roundRect(cx-100,cy+34,200,60,22);g.fill();   // wide red lips and the dark mouth
+  g.fillStyle='#efe4c8';for(let k=0;k<13;k++){const x=cx-92+k*15.3;g.beginPath();g.moveTo(x,cy+34);g.lineTo(x+13,cy+34);g.lineTo(x+6.5,cy+52+q()*6);g.fill();g.beginPath();g.moveTo(x,cy+94);g.lineTo(x+13,cy+94);g.lineTo(x+6.5,cy+78-q()*6);g.fill();}   // rows of small teeth
+  g.fillStyle='#d03a40';g.beginPath();g.moveTo(cx-24,cy+70);g.lineTo(cx+24,cy+70);g.quadraticCurveTo(cx+28,cy+150,cx,cy+156);g.quadraticCurveTo(cx-28,cy+150,cx-24,cy+70);g.fill();}   // the tongue
 // gulls: a few loose flocks wheeling over the water below the cliff and off San Quentin
 const GULL={im:null,b:[],M:new THREE.Matrix4(),Q:new THREE.Quaternion(),S:new THREE.Vector3(),V:new THREE.Vector3(),W:new THREE.Vector3(),E:new THREE.Euler()};
 function gullTick(){const B=GULL,on=PL.idx>CLF[0]-200&&PL.idx<Z.rb0;
