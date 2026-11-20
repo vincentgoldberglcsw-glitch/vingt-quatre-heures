@@ -1677,9 +1677,10 @@ const MODELS={
   f400:{cls:1,name:'Ferrari 400 Superamerica',year:'1962',desc:'Coupé aerodinamico: a long nose with covered lamps and a fastback tail. Smooth, stable and quick.',CL:4.7,B:[.2,.46,.56,.60,.60,.58,.57,.56,.54,.48,.30],W:[.66,.84,.91,.93,.93,.92,.92,.92,.91,.86,.64],rb:.07,fb:.12,top:77,grip:.88,acc:.78,twitch:0,cy:1.45,cw:.9,cz:-.55,cs:1.3,wh:'wire',road:.62,int:{dash:0x2a1a12,panel:0x3a3a3c,rim:0x8a5a2a,spoke:0xc9cbc8,hub:0x141414}},
   van:{cls:1,name:'Ford Econoline window van',year:'1962',desc:'A flat-fronted box on wheels with windows all round. Slow, soft and leans in the corners: take it easy.',CL:4.3,B:[1.7,1.75,1.76,1.76,1.76,1.76,1.76,1.76,1.75,1.73,1.68],W:[.9,.93,.94,.94,.94,.94,.94,.94,.94,.93,.91],rb:.001,fb:.001,top:40,grip:.74,acc:.46,twitch:0,cy:1,lamp:'none',plain:1,roll:1,road:.9,int:{dash:0x8f8f8a,panel:0x2a2a2a,rim:0xe8e4d6,spoke:0xc9cbc8,hub:0x141414}},
   bz:{cls:1,name:'Bizzarrini 5300 Strada',year:'1965',desc:'A Corvette V8 under a very low, very long nose, and a short fastback cut off square. Fast and lively.',CL:4.37,B:[.48,.52,.53,.52,.48,.42,.36,.3,.24,.17,.09],W:[.84,.89,.91,.91,.9,.88,.88,.89,.88,.82,.66],rb:.1,fb:.1,top:82,grip:.9,acc:.87,twitch:0,cy:1.25,cw:.92,cz:-.45,cs:1.02,lamp:'none',road:.75,int:{dash:0x1c1c1e,panel:0x2a2a2c,rim:0x8a5a2a,spoke:0xc9cbc8,hub:0x141414}},
+  b507:{cls:1,name:'BMW 507',year:'1957',desc:'A V8 roadster with its hardtop on: a long low bonnet, a wide twin-kidney grille and round lamps in the wings. Smooth and balanced, a grand tourer rather than a racer.',CL:4.38,B:[.3,.5,.56,.58,.58,.57,.56,.55,.54,.5,.4],W:[.7,.83,.87,.88,.88,.87,.87,.88,.87,.84,.72],rb:.08,fb:.1,top:70,grip:.88,acc:.72,twitch:0,cy:1.4,cw:.86,cz:-.55,cs:1.0,lamp:'none',plain:1,wh:'cap',road:.62,tlx:.72,int:{dash:0xb89a72,panel:0x2a2a2c,rim:0xe8e0c8,spoke:0xc9cbc8,hub:0xc9cbc8}},
   ac:{cls:1,name:'Concept Coupe',year:'2025',desc:'A low, wide, matte mid-engined concept: a black grille face with light-strip lamps, louvres over the engine and dark wheels. Fast, grippy and a little stiff.',CL:4.42,B:[.46,.5,.51,.5,.46,.41,.36,.31,.26,.2,.09],W:[.94,.97,.98,.98,.97,.96,.96,.97,.96,.91,.78],rb:.1,fb:.08,top:88,grip:1.0,acc:.92,twitch:0,cy:.98,cw:1.04,cz:.12,lamp:'none',road:.85,int:{dash:0x1a1a1a,panel:0x262626,rim:0x101010,spoke:0x2a2a2a,hub:0x141414}}};
 buildTables();for(const k in MODELS)MODELS[k].dyn=makeDyn(k,MODELS[k]);   // tyre and engine tables, and each car's weights, gearing and aerodynamics (js/sim/vehicle.js)
-const RACERS=['o','k','lh','lhs','f512','gt40'],CLASSICS=['m1','p904','ghibli','bb','lp400','f400','bz','van'],ZF=2.2,WZ=[1.25,-1.3];let MKEYS=RACERS;
+const RACERS=['o','k','lh','lhs','f512','gt40'],CLASSICS=['m1','p904','ghibli','bb','lp400','f400','bz','b507','van'],ZF=2.2,WZ=[1.25,-1.3];let MKEYS=RACERS;
 function arch(z){for(const zw of WZ){const d=z-zw;if(Math.abs(d)<.41)return .33+Math.sqrt(.41*.41-d*d);}return 0;}
 for(const k in MODELS){const m=MODELS[k];m.Bf=spl(m.B);m.Wf=spl(m.W);m.zR=ZF-m.CL;
   m.topY=(u,v,z)=>{const a=Math.abs(u),e=Math.exp(-(((a-.78)/.24)**2));return .14+m.Bf(v)*Math.sqrt(1-a**8)+e*((m.fb||.25)*Math.exp(-(((z-1.25)/.44)**2))+m.rb*Math.exp(-(((z+1.3)/.75)**2)));};
@@ -1787,6 +1788,7 @@ const spokeG=new THREE.BoxGeometry(.045,.03,.15),wireG=new THREE.BoxGeometry(.00
 function wheel(k,rimMat=rimSilver,st){const g=new THREE.Group(),W=WHEELG[k],h=W.h;
   const tyre=new THREE.Mesh(W.tyre,tyreMat);tyre.castShadow=true;g.add(tyre);g.add(new THREE.Mesh(W.rim,rimMat));
   if(st==='dial'){const d=new THREE.Mesh(cyl(.19,.19,.02,28),rimMat);d.position.y=h-.07;g.add(d);for(let i=0;i<5;i++){const a=i/5*6.283,ho=new THREE.Mesh(cyl(.045,.045,.024,14),dark);ho.position.set(Math.sin(a)*.118,h-.064,Math.cos(a)*.118);g.add(ho);}}   // telephone-dial wheel: a flat disc with five round holes
+  else if(st==='cap'){const d=new THREE.Mesh(cyl(.19,.19,.02,28),rimMat);d.position.y=h-.07;g.add(d);const c=new THREE.Mesh(cyl(.105,.125,.06,24),chrome);c.position.y=h-.035;g.add(c);}   // painted steel wheel with a chrome hubcap
   else if(st==='wire'){for(let i=0;i<36;i++){const s=new THREE.Mesh(wireG,chrome),a=i/36*6.283;s.position.set(Math.sin(a)*.1,h-.06-(i%2)*.04,Math.cos(a)*.1);s.rotation.y=a+(i%2?.18:-.18);g.add(s);}   // wire wheel and a three-eared knock-off
     for(let i=0;i<3;i++){const e=new THREE.Mesh(earG,chrome);e.position.y=h-.02;e.rotation.y=i*2.094;g.add(e);}}
   else for(let i=0,n=st==='multi'?12:5;i<n;i++){const s=new THREE.Mesh(spokeG,rimMat);const a=i/n*6.283;if(n>5)s.scale.x=.45;s.position.set(Math.sin(a)*.105,h-.075,Math.cos(a)*.105);s.rotation.y=a;g.add(s);}
@@ -1850,6 +1852,22 @@ function makeCar(o){
       for(let k=0;k<3;k++)bx(.035,.22,.05,dark,sd*.885,.46,.5+k*.09);
       bx(.42,.03,.05,chrome,sd*.48,.2,ZF-.08).rotation.y=sd*.4;bx(.5,.03,.05,chrome,sd*.42,.22,zR-.02);
       add(new THREE.Mesh(cyl(.055,.055,.03,14),tlM),sd*.6,.14+M.B[0]*.62,zR-.005,false).rotation.x=Math.PI/2;}}
+  if(o.model==='b507'){   // BMW 507: painted nose, wide low twin-kidney grille with chrome bars, roundel, round lamps in the wings, bonnet crease, gills behind the front wheels, slim bumpers with overriders
+    add(new THREE.Mesh(M.cap,paint),0,0,-.004,false);
+    {const p=M.geo.attributes.position.array,NU=80,b=(p.length/3-NU-1)*3,cp=[0,.3,ZF],ci=[];for(let j=0;j<=NU;j++){cp.push(p[b+j*3],p[b+j*3+1],p[b+j*3+2]);if(j<NU)ci.push(0,j+1,j+2);}
+      const cg=new THREE.BufferGeometry();cg.setAttribute('position',new THREE.Float32BufferAttribute(cp,3));cg.setIndex(ci);cg.computeVertexNormals();add(new THREE.Mesh(cg,new THREE.MeshPhysicalMaterial({color:o.base,roughness:.34,clearcoat:.8,side:THREE.DoubleSide})),0,0,.002,false);}
+    const lampM=std({color:0xf4f0dc,emissive:0xffe6b0,emissiveIntensity:.6,roughness:.2});
+    for(const sd of[-1,1]){const k=add(new THREE.Mesh(cyl(.17,.17,.04,28),dark),sd*.19,.3,ZF+.01,false);k.rotation.x=Math.PI/2;k.scale.z=.36;
+      const kr=add(new THREE.Mesh(new THREE.TorusGeometry(.17,.011,6,32),chrome),sd*.19,.3,ZF+.03,false);kr.scale.y=.36;
+      for(const y of[-.03,-.01,.01,.03])bx(.3-Math.abs(y)*3,.007,.01,chrome,sd*.19,.3+y,ZF+.032);
+      add(new THREE.Mesh(new THREE.TorusGeometry(.1,.016,8,24),chrome),sd*.56,.39,ZF+.035,false);add(new THREE.Mesh(new THREE.SphereGeometry(.088,16,10),lampM),sd*.56,.39,ZF+.005,false).scale.z=.5;
+      bx(.03,.15,.3,dark,sd*.875,.38,.6);for(const y of[-.045,-.015,.015,.045])bx(.035,.012,.28,chrome,sd*.878,.38+y,.6);
+      bx(.42,.03,.05,chrome,sd*.5,.2,ZF-.02).rotation.y=sd*.32;bx(.04,.15,.07,chrome,sd*.36,.25,ZF+.05);
+      bx(.42,.03,.05,chrome,sd*.48,.2,zR+.06).rotation.y=-sd*.4;bx(.04,.15,.07,chrome,sd*.3,.25,zR-.05);}
+    bx(.5,.03,.05,chrome,0,.2,ZF+.05);bx(.5,.03,.05,chrome,0,.2,zR-.04);
+    add(new THREE.Mesh(new THREE.CircleGeometry(.045,24),std({map:canvas(64,64,(g)=>{g.fillStyle='#141414';g.beginPath();g.arc(32,32,32,0,7);g.fill();for(let q=0;q<4;q++){g.fillStyle=q%2?'#f0f0ec':'#2a6ec4';g.beginPath();g.moveTo(32,32);g.arc(32,32,21,q*Math.PI/2,(q+1)*Math.PI/2);g.fill();}}),roughness:.3})),0,.42,ZF+.012,false);
+    for(let k=0;k<9;k++){const z=.5+k*.18,y=M.topY(0,(z-zR)/M.CL,z),sl=(M.topY(0,(z+.05-zR)/M.CL,z+.05)-M.topY(0,(z-.05-zR)/M.CL,z-.05))/.1;bx(.022,.018,.19,chrome,0,y+.004,z).rotation.x=-Math.atan(sl);}
+    {const z=zR+.1,y=M.topY(0,.1/M.CL,z);bx(.3,.025,.04,chrome,0,y-.05,z-.03);}}
   if(o.model==='ac'){   // Concept Coupe: black grille face, light-strip lamps, louvres over the engine, black sills and diffuser, red light-bar tail
     add(new THREE.Mesh(M.cap,paint),0,0,-.004,false);const led=std({color:0xf4f8ff,emissive:0xcfe4ff,emissiveIntensity:1.6,roughness:.2}),bar=std({color:0x5a0d08,emissive:0xff2a12,emissiveIntensity:1.8});
     bx(.86,.2,.05,dark,0,.3,ZF+.005);for(let k=-3;k<=3;k++)bx(.01,.17,.055,chrome,k*.11,.3,ZF+.012);
@@ -1877,7 +1895,7 @@ function makeCar(o){
     if(o.logos==='shell')[[LOGO.shell[0],.5,.3,.24,.08],[LOGO.shell[1],.05,.12,.62,.1]].forEach(([t,z,y,dw,dh])=>{const d=decal(t,dw,dh);add(d,sd*.99,y,z,false);d.rotation.order='YXZ';d.rotation.set(-.1,sd*Math.PI/2,0);});
     else if(o.logos==='gulf'){const d=decal(LOGO.gulf,.16,.16);add(d,sd*.99,.36,-.42,false);d.rotation.order='YXZ';d.rotation.set(-.12,sd*Math.PI/2,0);}
     else if(!M.road&&!o.bare)[[.5,.3,0],[.5,.2,1],[-.62,.3,2]].forEach(([z,y,k])=>{const d=decal(DEC[k],.24,.08);add(d,sd*.99,y,z,false);d.rotation.order='YXZ';d.rotation.set(-.1,sd*Math.PI/2,0);});
-    const tl=add(new THREE.Mesh(cyl(.055,.055,.03,14),tailM),sd*tw*.42,.14+M.B[0]*.62,zR-.005,false);tl.rotation.x=Math.PI/2;
+    const tl=add(new THREE.Mesh(cyl(.055,.055,.03,14),tailM),sd*tw*(M.tlx||.42),.14+M.B[0]*.62,zR-.005,false);tl.rotation.x=Math.PI/2;
     const ex=add(new THREE.Mesh(new THREE.CylinderGeometry(.075,.04,.42,14,1,true),std({color:0x6a665c,metalness:.85,roughness:.35,side:THREE.DoubleSide})),sd*.2,.24,zR-.1);ex.rotation.x=-Math.PI/2+.12;}
   if(o.model==='k')add(new THREE.Mesh(new THREE.BoxGeometry(1.5,.02,.2),paint),0,tailY+.045,zR+.1).rotation.x=.25;
   if(o.model==='f512')add(new THREE.Mesh(new THREE.BoxGeometry(tw*2-.12,.11,.025),paint),0,tailY+.03,zR+.03).rotation.x=-.3;
@@ -1890,7 +1908,7 @@ function makeCar(o){
   const pool=new THREE.Mesh(new THREE.PlaneGeometry(9,22),new THREE.MeshBasicMaterial({map:glowTex,color:0xffe2a8,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0}));pool.rotation.x=-Math.PI/2;pool.position.set(0,.06,ZF+9);car.add(pool);car.pool=pool.material;
   car.wheels=[];car.knuckles=[];car.corners=[];car.tail=tailM;
   WZ.forEach((z,k)=>{for(const sd of[-1,1]){const wd=k?.42:.32,kn=new THREE.Group(),holder=new THREE.Group();kn.position.set(sd*(.965-wd/2),.33,z);holder.rotation.z=-sd*Math.PI/2;
-    const w=wheel(k,o.rim==='gold'?rimGold:o.rim==='black'?rimDark:rimSilver,M.wh);if(M.road){w.children.pop();w.scale.y=M.road;}holder.add(w);kn.add(holder);car.add(kn);w.userData.dir=sd;car.wheels.push(w);car.corners.push(kn);if(!k)car.knuckles.push(kn);}});
+    const w=wheel(k,M.wh==='cap'?paintOf(o.base):o.rim==='gold'?rimGold:o.rim==='black'?rimDark:rimSilver,M.wh);if(M.road){w.children.pop();w.scale.y=M.road;}holder.add(w);kn.add(holder);car.add(kn);w.userData.dir=sd;car.wheels.push(w);car.corners.push(kn);if(!k)car.knuckles.push(kn);}});
   car.bodyMat=bodyMat;car.canopy=can;car.M=M;car.o=o;scene.add(car);return car;
 }
 // the colours the player can choose for their own car
@@ -1910,6 +1928,7 @@ const LIVS={   // each car has its own set of colours
   lp400:[{name:'ROSSO ARANCIO',d:'Red-orange, as in the brochure.',base:'#d8401c',num:'71',helmet:'#e6e1d0'},{name:'BLU TAHITI',d:'Bright mid blue.',base:'#2c56b8',num:'72',helmet:'#e6e1d0'},{name:'ARGENTO',d:'Metallic silver.',base:'#b8bcbe',num:'73',helmet:'#c4231a'},{name:'GIALLO FLY',d:'Yellow.',base:'#e8c21e',num:'74',helmet:'#141414'}],
   f400:[{name:'BLU SERA',d:'Deep metallic blue, chrome and wire wheels.',base:'#1b2a4a',num:'81',helmet:'#e6e1d0'},{name:'ROSSO SCURO',d:'Dark red.',base:'#6a1418',num:'82',helmet:'#e6e1d0'},{name:'ARGENTO',d:'Silver.',base:'#b4b8ba',num:'83',helmet:'#1b2a4a'}],
   bz:[{name:'ROSSO, AS FOUND',d:'Barn find: faded red, rust spots and dust.',base:'#b8402e',patina:1,num:'91',helmet:'#e6e1d0'},{name:'ROSSO RESTAURATO',d:'Restored: deep gloss red.',base:'#b3201a',num:'92',helmet:'#e6e1d0'},{name:'ARGENTO',d:'Silver.',base:'#b8bcbe',num:'93',helmet:'#b3201a'},{name:'BLU',d:'Mid blue.',base:'#2a4a8a',num:'94',helmet:'#e6e1d0'}],
+  b507:[{name:'GRAPHITE',d:'Dark metallic grey, chrome and painted wheels.',base:'#3b3f44',num:'57',helmet:'#e6e1d0'},{name:'SILBER',d:'Silver.',base:'#b8bcbe',num:'58',helmet:'#2a3a5a'},{name:'WEISS',d:'White.',base:'#e8e6dc',num:'59',helmet:'#b3201a'},{name:'ROT',d:'Red.',base:'#a81f1c',num:'60',helmet:'#e6e1d0'}],
   ac:[{name:'GREIGE MATTE',d:'Warm matte grey-beige, black wheels.',base:'#a9a393',num:'101',helmet:'#e6e1d0',rim:'black'},{name:'NERO',d:'Satin black.',base:'#1a1b1d',num:'102',helmet:'#c9cbc8',rim:'black'},{name:'ROSSO',d:'Deep red.',base:'#a5201c',num:'103',helmet:'#e6e1d0',rim:'black'},{name:'BLEU',d:'Dark blue.',base:'#1f2f55',num:'104',helmet:'#e6e1d0',rim:'black'}],
   van:[{name:'GREY AND MAROON',d:'Silver-grey below, maroon roof and stripe.',base:'#8f8f8a',upper:'#7a1e22',num:'1',helmet:'#e6e1d0'},{name:'CREAM AND TURQUOISE',d:'Turquoise below, a cream roof.',base:'#4aa8a0',upper:'#ece6d2',num:'2',helmet:'#e6e1d0'},{name:'BEIGE AND BROWN',d:'Beige below, brown above.',base:'#cfc2a0',upper:'#5a3a26',num:'3',helmet:'#e6e1d0'}]};
 const LIV=()=>{const a=LIVS[G.model];return a[G.liv%a.length];};

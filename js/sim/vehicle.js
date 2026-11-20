@@ -55,6 +55,7 @@ const SPEC = {
   bb:     { m: 1580, hp: 360, cla: 0.12, wf: 0.43, mu: 1.12, h: 0.47 },
   lp400:  { m: 1310, hp: 375, cla: 0.08, wf: 0.42, mu: 1.12, h: 0.45, aeroF: 0.62 },   // light, little rear downforce: quick to rotate
   f400:   { m: 1480, hp: 340, cla: 0.06, wf: 0.52, mu: 1.10, h: 0.50 },
+  b507:   { m: 1330, hp: 210, cla: 0.04, wf: 0.51, mu: 1.08, h: 0.50 },   // 1950s V8 roadster with its hardtop: soft and even
 };
 export const MU_REF = 1.45;
 const GEAR_V = [0.30, 0.46, 0.63, 0.83, 1.07];   // road speed at the redline in each gear, as a share of top speed
