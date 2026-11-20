@@ -87,13 +87,13 @@ function buildRoute(X80=-600){
    .S(791,35).M('downtown').R(90,100).M('hyde').S(655,30).M('marina').L(90,MR).S(415,45).R(90,120).M('gg0').S(1560,60).M('gg1')
    .S(260).R(25,500).M('woods').S(700,50).R(30,400).S(600,50).M('sq').R(35,300).S(700,50).M('rb0').S(2150,70).M('rb1')
    .S(380,40).M('richmond').L(25,260).S(400,40).M('shane').S(300,40).R(25,260);
-  f.S(X80-420-f.x,50).M('refinery').R(90,420).M('i80');
+  f.S(X80-700-f.x,50).M('refinery').R(90,700).M('i80');   // a wide, gentle sweep onto I-80, banked for speed
   // the way home, driven backwards from the house so the two ends can be made to meet: east on San Antonio, north on Grand, west on Buena Vista, north through the Webster Tube, then up to the I-80 line
   const tu=f.pts[f.mk.tu0],Xt=tu[0]+90,r1=HR1,r2=HR2,r3=HR3,S0=280-r1,n=-tu[1]-r1-r2-r3-250,w=S0+r1-r2-r3-Xt;
-  const ret=d=>{const r=routeTurtle(0,0,90*D2R);r.S(S0).L(90,r1).S(n).M('bv').L(90,r2).S(w).R(90,r3).S(250).M('wt0').S(580,40).M('wt1').S(80).R(35,520).S(d,60).L(35,300);return r;};
+  const ret=d=>{const r=routeTurtle(0,0,90*D2R);r.S(S0).L(90,r1).S(n).M('bv').L(90,r2).S(w).R(90,r3).S(250).M('wt0').S(580,40).M('wt1').S(80).R(35,700).S(d,60).L(35,700);return r;};
   const g=d=>ret(d).x-X80;let a=50,b=4000;for(let k=0;k<60;k++){const mid=(a+b)/2;if(g(a)*g(mid)<=0)b=mid;else a=mid;}const r=ret((a+b)/2);
-  // I-80 south: two gentle S-bends that cancel out, then straight on to meet the way home
-  f.S(500,60).R(6,900).S(350,60).L(6,900).M('berkeley').S(1000,60).L(6,900).S(350,60).R(6,900).M('emeryville').S(1200,60).M('oakland');f.S(r.z-f.z,60);
+  // I-80 south: a climb, then two winding S-bends (each cancels out, so the road comes back to the I-80 line), a short run to Berkeley, the Emeryville interchange, then straight on towards Oakland to meet the way home
+  f.S(120,60).R(8,1100).S(100,60).L(16,1100).S(100,60).R(8,1100).M('berkeley').S(100,60).L(10,1100).S(120,60).R(20,1100).S(120,60).L(10,1100).M('emeryville').S(1650,60).M('oakland');f.S(r.z-f.z,60);
   const pts=f.pts.slice(),mk={...f.mk},rp=r.pts.slice().reverse();rp.pop();
   const o=pts.length-1;for(const[k,v]of Object.entries(r.mk))mk[k]=o+(r.pts.length-1-v);
   for(let i=1;i<rp.length;i++)pts.push(rp[i]);
@@ -147,19 +147,19 @@ if(DRIVE){const bump=(i,a,b,c,d)=>sst(i,a,b)*(1-sst(i,c,d)),m=x=>Math.round(x/SE
       +16*bump(i,z.rb0+m(500),z.rb0+m(1000),z.rb0+m(1500),z.rb0+m(2000))
       +24*bump(i,z.richmond+m(80),z.shane-m(80),z.shane+m(150),z.refinery-m(300))
       +7*Math.sin((i-z.richmond)*SEG/140)*bump(i,z.richmond+m(60),z.richmond+m(200),z.shane-m(60),z.shane-m(10))   /* rolling hills through Richmond */
-      +12*bump(i,z.i80+m(150),z.i80+m(330),z.wt1-m(600),z.wt1-m(380));
+      +12*bump(i,z.i80+m(150),z.i80+m(330),z.wt1-m(600),z.wt1-m(380))+16*bump(i,z.i80+m(260),z.i80+m(700),z.berkeley-m(260),z.berkeley+m(200));   /* I-80: up onto the viaduct, then a climb over the first bends, and down towards Berkeley */
     wallAt[i]+=XW[i];edgeAt[i]+=XW[i];if(i>=z.wilma+m(10)&&i<=z.wilma+m(75))wallAt[i]=edgeAt[i]=38;   // the drive-in lot on Wilma Chan Way is open ground
     if(i>=z.detour-m(30)&&i<=z.detour-m(30)+175){const u=(i-(z.detour-m(30)))/240;wallR[i]=RW+XW[i]+14+150*u*u;}}   // the detour exit lane opens on the right
   // banked bends: the outside of the curve raised, by how tightly the road turns (from the tangents), faded in and out at the ends of each stretch
-  const bankOn=(a,b,amt)=>{const fd=m(25);for(let i=a;i<=b;i++){let c=0;for(let q=-8;q<8;q++){const u=wrapI(i+q),v=wrapI(u+1);c+=(T[v].x-T[u].x)*Nn[u].x+(T[v].z-T[u].z)*Nn[u].z;}const env=sst(i,a,a+fd)*(1-sst(i,b-fd,b));BK[wrapI(i)]=clamp(-c/(16*SEG)*45,-amt,amt)*env;}};
-  bankOn(z.refinery-m(60),z.i80+m(60),.1);   // the wide sweep from Shane Drive onto I-80, taken at speed
+  const bankOn=(a,b,amt,g=45)=>{const fd=m(25);for(let i=a;i<=b;i++){let c=0;for(let q=-8;q<8;q++){const u=wrapI(i+q),v=wrapI(u+1);c+=(T[v].x-T[u].x)*Nn[u].x+(T[v].z-T[u].z)*Nn[u].z;}const env=sst(i,a,a+fd)*(1-sst(i,b-fd,b));BK[wrapI(i)]=clamp(-c/(16*SEG)*g,-amt,amt)*env;}};
+  bankOn(z.refinery-m(60),z.i80+m(60),.17,120);bankOn(z.i80+m(80),z.berkeley+m(40),.12,120);bankOn(z.berkeley+m(60),z.emeryville+m(40),.12,120);   // the wide sweep from Shane Drive onto I-80, taken at speed
   bankOn(z.rb1+m(80),z.richmond+m(60),.16);bankOn(z.rb0-m(1000),z.rb0-m(60),.16);bankOn(z.sq+m(40),z.rb0+m(20),.1);   // past San Quentin: a gentle banked curve through the badlands
   bankOn(z.richmond+m(40),z.shane,.08);   // Richmond's sloping bend
   bankOn(z.wilma-m(WR*1.222+40),z.wilma+m(40),.26);   // the Alameda corners: wide and steeply banked, for 175 mph
   bankOn(z.sq-m(830),z.sq-m(590),.22);   // the bend out of the redwoods into the prison field, for 150 mph
   bankOn(z.tu0-m(200),z.tu0-m(10),.2);   // into the Posey Tube
   bankOn(z.tu1+m(200),z.tu1+m(430),.08);   // out of the tube and up onto I-880
-  bankOn(z.wt1-m(420),z.wt1-m(50),.08);   // the long, gentle bend down off I-80 into the Webster Tube
+  bankOn(z.oakland+m(100),z.wt1-m(50),.12,120);   // the long, gentle bend down off I-80 into the Webster Tube
   bankOn(z.marina-m(30),z.marina+m(MR*1.571+30),.26);   // Marina Blvd: the left turn is wide and steeply banked, for 150 mph
   XW[NS]=XW[0];H[NS]=H[0];for(let i=0;i<=NS;i++)P[i].y=H[i];
   for(let i=0;i<NS;i++){const c=zoneArr[i];if((c===1||c===3||c===7||c===8)&&H[i]<.5)landIdx.push(i);}}
@@ -1166,7 +1166,23 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
     const gant=(i,txt,sub,bg='#1f5a3a',fg='#f4f1e8',off2=-2.5)=>{const g=new THREE.Group(),w=10+XW[i]*2;for(const x of[-(9.4+XW[i]),9.4+XW[i]])B(.35,8,.35,steelM,x,4,0,0,g);B(2*(9.4+XW[i]),.5,.5,steelM,0,8,0,0,g);
       const s=new THREE.Mesh(new THREE.BoxGeometry(11,3.2,.12),std({roughness:.6,map:sign(1024,296,txt,bg,fg,'900 96px Arial',sub),emissive:0xffffff,emissiveIntensity:.15}));s.position.set(off2,6.5,-.3);g.add(s);g.traverse(o=>{o.castShadow=true;});g.position.copy(P[i]);g.rotation.y=yaw(i);scene.add(g);};
     gant(Z.tu1+m(500),'I-880 NORTH','OAKLAND · PORT');gant(Z.tu1+m(1500),'BAY BRIDGE','SAN FRANCISCO  ↑');gant(Z.detour-m(140),'BAY BRIDGE','SAN FRANCISCO  ↑',undefined,undefined,3);
-    gant(Z.i80+m(400),'I-80 WEST','BERKELEY · OAKLAND');gant(Z.berkeley-m(200),'UNIVERSITY AVE','UC BERKELEY  ←');gant(Z.emeryville-m(200),'POWELL ST','EMERYVILLE');gant(Z.oakland-m(300),'WEBSTER TUBE','ALAMEDA  ↓');
+    gant(Z.i80+m(400),'I-80 WEST','BERKELEY · OAKLAND');gant(Z.berkeley-m(200),'UNIVERSITY AVE','UC BERKELEY  ←');gant(Z.emeryville-m(900),'POWELL ST','EMERYVILLE');
+    { // the Emeryville interchange: I-80 West peels off to the right, back over the Bay Bridge to San Francisco (scenery only - the barrier stays closed), keep left for Oakland
+      const gant2=(i,pn)=>{const g=new THREE.Group(),hw=9.4+XW[i];for(const x of[-hw,hw])B(.35,8,.35,steelM,x,4,0,0,g);B(2*hw,.5,.5,steelM,0,8,0,0,g);
+        for(const[txt,sub,x]of pn){const s=new THREE.Mesh(new THREE.BoxGeometry(9.6,3.2,.12),std({roughness:.6,map:sign(1024,296,txt,'#1f5a3a','#f4f1e8','900 96px Arial',sub),emissive:0xffffff,emissiveIntensity:.15}));s.position.set(x,6.5,-.3);g.add(s);}
+        g.traverse(o=>{o.castShadow=true;});g.position.copy(P[i]);g.rotation.y=yaw(i);scene.add(g);};
+      const E=Z.emeryville;gant2(E-m(200),[['OAKLAND','580 · 980   KEEP LEFT  ↖',4.9],['SAN FRANCISCO','80 WEST · BAY BRIDGE  ↗  1/2 MI',-5.3]]);
+      gant2(E+m(150),[['OAKLAND','WEBSTER TUBE · ALAMEDA  ↑',4.9],['SAN FRANCISCO','BAY BRIDGE   EXIT ONLY  ↘',-5.3]]);
+      const pts=[],i0=E+m(250),i1=E+m(450);for(let i=i0;i<=i1;i+=5){const u=(i-i0)/(i1-i0);off(i,-(RW+XW[i]+5.2)-50*u*u,u*u*3,V);pts.push(V.clone());}   // the ramp leaves alongside the barrier, then sweeps away west on a rising flyover
+      {const n0=pts.length,y0=pts[n0-1].y;let p=pts[n0-1],th=Math.atan2(p.x-pts[n0-2].x,p.z-pts[n0-2].z);for(let k=1;k<=36;k++){const u=k/36;th-=90*D2R/36;p=new THREE.Vector3(p.x+Math.sin(th)*15,y0+9*sst(u,0,.6)-4*sst(u,.75,1),p.z+Math.cos(th)*15);pts.push(p);}}
+      const N=pts.length,tg=pts.map((_,k)=>{const a=pts[Math.max(0,k-1)],b=pts[Math.min(N-1,k+1)];return Math.atan2(b.x-a.x,b.z-a.z);});
+      const strip=(o1,y1,o2,y2,mm,vs)=>{const pos=[],uv=[],idx=[];let L=0;for(let k=0;k<N;k++){const p=pts[k];if(k)L+=p.distanceTo(pts[k-1]);const nx=Math.cos(tg[k]),nz=-Math.sin(tg[k]);pos.push(p.x+nx*o1,p.y+y1,p.z+nz*o1,p.x+nx*o2,p.y+y2,p.z+nz*o2);uv.push(0,L/vs,1,L/vs);if(k<N-1){const q=k*2;idx.push(q,q+2,q+1,q+1,q+2,q+3);}}
+        const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const o=new THREE.Mesh(g,mm);o.receiveShadow=true;scene.add(o);return o;};
+      const at2=canvas(64,256,(c,w,h)=>{c.fillStyle='#3c3d40';c.fillRect(0,0,w,h);c.fillStyle='#e8e4d6';c.fillRect(3,0,3,h);c.fillRect(w-6,0,3,h);c.fillRect(w/2-1.5,0,3,h*.45);});at2.wrapS=at2.wrapT=THREE.RepeatWrapping;
+      const cc=std({color:0xb8b4aa,roughness:.9,side:THREE.DoubleSide});strip(4.6,.02,-4.6,.02,std({map:at2,roughness:.85,side:THREE.DoubleSide}),12);
+      for(const sd of[-1,1]){strip(sd*4.6,-1.4,sd*4.6,.9,cc,8).castShadow=true;strip(sd*4.6,.9,sd*4.95,.9,cc,8);}strip(4.6,-1.4,-4.6,-1.4,cc,8);
+      for(let k=6;k<N;k+=3){const p=pts[k];if(p.y<3)continue;const c=new THREE.Mesh(cyl(1.1,1.3,p.y+4,10),cc);c.position.set(p.x,p.y/2-2.7,p.z);c.castShadow=true;scene.add(c);}}
+gant(Z.oakland-m(300),'WEBSTER TUBE','ALAMEDA  ↓');
     // the detour: orange signs, a gantry pointing right, and the exit lane peeling off the viaduct towards Berkeley and Richmond
     const det=sign(512,512,'DETOUR','#f08a1c','#141414','900 110px Arial','→');for(const d of[400,300,200])board(Z.detour-m(d),-(11+XW[Z.detour-m(d)]),2.6,2.6,det,1,.45);
     gant(Z.detour-m(60),'DETOUR  ↗','BERKELEY · RICHMOND',"#f08a1c",'#141414',-3.8);
@@ -1339,7 +1355,7 @@ await BOOT.step('SAN FRANCISCO',.55);
       site(Z.shane+m(740),1,g=>{B(40,.06,26,asp,0,.03,-3,0,g);B(15,4.6,10,wal,0,2.3,-13,0,g);B(15.6,.9,10.6,wal2,0,4.9,-13,0,g);B(10,1.8,.1,glw,0,2.3,-7.95,0,g);   // a fast-food restaurant with a drive-through lane and a tall lit pole sign
         B(5,.04,24,asp,-13,.08,-6,0,g);B(1.2,1.6,.8,stl,-9.6,.9,-8,0,g);B(.6,10,.6,stl,14,5,0,0,g);
         const bs=new THREE.Mesh(new THREE.BoxGeometry(5.4,5.4,.5),lit(256,256,(c,w,h)=>{c.fillStyle='#c8241c';c.fillRect(0,0,w,h);c.fillStyle='#e8a43a';c.beginPath();c.ellipse(128,90,70,40,0,Math.PI,0);c.fill();c.fillStyle='#4a2a1a';c.fillRect(58,92,140,16);c.fillStyle='#5aa83a';c.fillRect(54,108,148,8);c.fillStyle='#e8a43a';c.fillRect(60,116,136,18);c.fillStyle='#ffe23a';c.font='900 38px Arial Black,Arial';c.textAlign='center';c.fillText('BURGER BARON',w/2,186,236);c.font='700 26px Arial';c.fillStyle='#fff';c.fillText('DRIVE-THRU',w/2,230);}));bs.position.set(14,10.6,0);g.add(bs);});}
-    {const a=Z.i80,b=Z.berkeley,wt=canvas(256,256,(c,w,h)=>{c.fillStyle='#34373a';c.fillRect(0,0,w,h);for(let k=0;k<110;k++){c.strokeStyle=k%3?'rgba(120,126,130,.3)':'rgba(235,240,240,.55)';c.lineWidth=1+Math.random()*2;const x=Math.random()*w,y=Math.random()*h;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+20,y-8,x+44,y);c.stroke();}});   // a stormy sea down the whole right-hand side of I-80 to Berkeley: dark grey-green, whitecaps, ships bobbing
+    {const a=Z.i80,b=Z.emeryville-m(250),wt=canvas(256,256,(c,w,h)=>{c.fillStyle='#34373a';c.fillRect(0,0,w,h);for(let k=0;k<110;k++){c.strokeStyle=k%3?'rgba(120,126,130,.3)':'rgba(235,240,240,.55)';c.lineWidth=1+Math.random()*2;const x=Math.random()*w,y=Math.random()*h;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+20,y-8,x+44,y);c.stroke();}});   // a stormy sea down the whole right-hand side of I-80 to Berkeley: dark grey-green, whitecaps, ships bobbing
       wt.wrapS=wt.wrapT=THREE.RepeatWrapping;STORM.tex=wt;STORM.a=a;STORM.b=b;ribbon(i=>-RW-XW[i]-26,i=>-RW-XW[i]-520,i=>-H[i]+.1,i=>-H[i]+.1,new THREE.MeshStandardMaterial({map:wt,color:0x9a9ea2,roughness:.5,metalness:.2,side:THREE.DoubleSide}),30,a,b);
       {const N=90,cr=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),std({color:0xd8dcdc,roughness:.7}),N),bd=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),std({color:0x2c2f32,roughness:.6}),N);cr.frustumCulled=bd.frustumCulled=false;   // big rolling swells with white crests, marching in toward the freeway
         STORM.wv={cr,bd,l:Array.from({length:N},()=>({i:a+Math.floor(Math.random()*(b-a)),ph:Math.random(),L:rr(18,42),sp:rr(.05,.09)}))};scene.add(cr,bd);}
@@ -1484,7 +1500,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
     for(let k=0;k<4;k++){const f=new THREE.Mesh(new THREE.CircleGeometry(3.6,24),new THREE.MeshBasicMaterial({map:clockT}));const a=k*Math.PI/2;f.position.set(cx+Math.sin(a)*7.05,87,cz+Math.cos(a)*7.05);f.rotation.y=a;scene.add(f);}
     {const st=new THREE.Mesh(new THREE.CylinderGeometry(110,90,24,32,1,true),std({color:0x9a968c,roughness:.9,side:D2}));st.position.set(cx+520,40,cz-80);st.scale.z=.7;scene.add(st);const fld=new THREE.Mesh(new THREE.CircleGeometry(88,32).rotateX(-Math.PI/2),std({color:0x4f7a3a,roughness:1}));fld.scale.z=.7;fld.position.set(cx+520,29,cz-80);scene.add(fld);
       const bk=new THREE.Mesh(new THREE.SphereGeometry(1,20,10),hm);bk.scale.set(160,40,140);bk.position.set(cx+520,-12,cz-80);scene.add(bk);}
-    skyline(-1250,P[Z.emeryville].z,200,260,40,110,30);skyline(-200,P[Z.emeryville].z-200,260,300,40,80,30);
+    skyline(-1350,P[Z.emeryville].z,200,240,40,110,30);skyline(-200,P[Z.emeryville].z-200,260,300,40,80,30);
     for(const[x,z]of[[-1350,P[Z.emeryville].z+300],[-1310,P[Z.emeryville].z+380]]){const tw=new THREE.Mesh(cyl(18,18,90,6),cityMats[8]);tw.position.set(x,45,z);tw.castShadow=true;scene.add(tw);}}
 
   { // ---- advertising for the new economy: boards for made-up AI companies, each with its own robot, all round the route but thickest in the city
@@ -1574,7 +1590,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
       g.fillStyle='#ff4c3a';g.font='900 46px Arial Black,Arial';g.textAlign='center';g.fillText(ang?'WE ARE WATCHING YOU.  ·  OMNISIGHT AI':'WE SEE YOU.  ·  OMNISIGHT AI',w/2,432);});
     const ET=[];for(const a of[0,1])ET.push(eyeTex(0,1,0,a),eyeTex(-1,1,0,a),eyeTex(1,1,0,a),eyeTex(0,.45,0,a),eyeTex(0,.04,0,a),eyeTex(-.75,1,1,a),eyeTex(.75,1,1,a),eyeTex(0,1,1,a));
     EYES={tex:ET,mats:[],bd:[],t:0,look:0,blink:-1,ang:0,at:R(6,10)};
-    for(const[i,sd,sc]of[[Z.b1+m(90),1,1.6],[Z.hyde+m(200),-1,1.2],[Z.i80+m(2200),-1,1.6],[Z.tu1+m(1100),-1,1.4]]){const mm=new THREE.MeshStandardMaterial({map:ET[0],emissiveMap:ET[0],emissive:0xffffff,emissiveIntensity:.7,roughness:.6});EYES.mats.push(mm);EYES.bd.push({mm,s:i*SEG,sd,k:-1});
+    for(const[i,sd,sc]of[[Z.b1+m(90),1,1.6],[Z.hyde+m(200),-1,1.2],[Z.i80+m(1300),-1,1.6],[Z.tu1+m(1100),-1,1.4]]){const mm=new THREE.MeshStandardMaterial({map:ET[0],emissiveMap:ET[0],emissive:0xffffff,emissiveIntensity:.7,roughness:.6});EYES.mats.push(mm);EYES.bd.push({mm,s:i*SEG,sd,k:-1});
       const g=new THREE.Group(),bd=new THREE.Mesh(new THREE.PlaneGeometry(22*sc,9.9*sc),mm);bd.position.y=12+5*sc;g.add(bd);B(22*sc+.4,9.9*sc+.4,.3,steelM,0,12+5*sc,-.2,0,g);const leg=12+(H[i]>2?H[i]:0);for(const x of[-7*sc,7*sc])B(.6,leg,.6,steelM,x,12-leg/2,-.4,0,g);
       g.traverse(o=>{o.castShadow=true;});off(i,sd*(wallAt[i]+14),0,g.position);g.rotation.y=yaw(i)+Math.PI-sd*.3;scene.add(g);}}
 
