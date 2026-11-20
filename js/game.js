@@ -36,7 +36,7 @@ const LIT={p:null,t:3};   // litter thrown from passing cars (see litterTick)
 const SFSM=[];   // smoke sources on the decayed San Francisco towers
 const BBQ=[];   // the roadside billboards on I-880 that fall during the quake (see bbQuakeTick)
 const VANS=[];   // the ice-cream truck and the taco truck, driving up and down Paru (see vanTick)
-const BEARS=[],BUFF=[];
+const BEARS=[],BUFF=[];let DRUMG=null,DRUMM=null;
 const MILLC={tw:[],i:-1,t:0,x:0,z:0,ry:0,y:0,w:null};   // the steel mill: its track index, and a timer for the falling pieces during the quake
 const SHOP={ic:0,F:0,list:null,t:0};   // the supermarket shoppers (see shopTick)
 const DOME={x:0,z:0,i:-1,hit:0},SAFEZ=()=>DRIVE&&PL.idx<Z.tu0&&!DOME.hit;   // the green eyed dome in the road before the Posey Tube
@@ -3064,7 +3064,6 @@ function bearsTick(rdt){if(!BEARS.length)return;BEART+=rdt;const t=BEART;for(con
     else{const u=(Math.sin(t*.5+b.ph)+1)/2,s=-.2+1.8*u*u*(3-2*u);b.g.position.set(b.tx+b.nx*1.9+b.tx2*s*b.sd,b.ty,b.tz+b.nz*1.9+b.tz2*s*b.sd);const ya=Math.atan2(PL.x-b.g.position.x,PL.z-b.g.position.z);b.g.rotation.set(0,ya,0);b.b.rotation.set(0,0,0);b.b.hd.rotation.y=Math.sin(t*.9+b.ph)*.3;}}}
 // Richmond-San Rafael Bridge: waves break over the side onto the deck, spread across it and recede, leaving small tin cans (RSR). Also the loose bits (BITS): toxic-waste drums shaken off trucks, and kicked tin cans.
 const RSR={w:[],cans:[],next:3,init:0},BITS=[];
-let DRUMG=null,DRUMM=null;
 function drumMesh(){if(!DRUMG){DRUMG=new THREE.CylinderGeometry(.3,.3,.9,10);DRUMM=[std({color:0xc8a820,roughness:.5,metalness:.4}),std({color:0x2a6a30,roughness:.5,metalness:.4})];}return new THREE.Mesh(DRUMG,DRUMM[Math.random()<.5?0:1]);}
 function addDrums(g,zc,yt,L){const a=[];const n=4+(Math.random()*3|0);for(let k=0;k<n;k++){const m=drumMesh();m.position.set((k%2?1:-1)*.55,yt+.45,zc+((k>>1)-.9)*Math.min(1.7,L/3.5));m.castShadow=true;g.add(m);a.push(m);
     const b=new THREE.Mesh(new THREE.CylinderGeometry(.305,.305,.12,10),std({color:0x151515,roughness:.6}));b.position.y=.1;m.add(b);}g.drums=a;}
