@@ -457,7 +457,7 @@ await BOOT.step('ROADSIDE',.20);
 // A quiet island town street, the tube under the estuary with its portal buildings, a freeway past the port, then a long suspension bridge.
 // The whole route is level: the bay is simply 45 m below the road, so the bridge is high without the engine needing hills.
 const MILL=[],CRN=[],REFS=[],AIR={g:null,st:0,t:0,cd:6};let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
-const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null,SEAM=null,SEAW=null;const BURN=[],OILX=[],OILB={t:6,q:[]};   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
+const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null,SEAM=null,SEAW=null;const BURN=[],OILX=[],OILB={t:6,q:[]},TOX={l:[],slime:0,hit:0,mm:null,car:null},SQX={};   /* TOX: leaking toxic barrels and their ooze; SQX: the San Quentin yard fence, its hole, the watchtower searchlight */   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
 if(!DRIVE){ // roadside advertising boards, as on the old circuit: cigarettes, wine and bread, by turns
   const ad=(kind,name,sub)=>canvas(1024,460,(g,w,h)=>{const bg={cig:'#1d4f8a',wine:'#efe6cc',bread:'#f0c23a'}[kind],ink={cig:'#f4f1e8',wine:'#7a1626',bread:'#3a2412'}[kind];g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=ink;g.lineWidth=10;g.strokeRect(14,14,w-28,h-28);
     if(kind==='cig'){g.save();g.translate(190,250);g.rotate(-.1);g.fillStyle='#f4f1e8';g.fillRect(-90,-110,180,250);g.fillStyle='#c8302a';g.fillRect(-90,-30,180,90);g.fillStyle='#f4f1e8';g.beginPath();g.ellipse(0,15,62,30,0,0,7);g.fill();g.fillStyle='#c8302a';g.font='900 30px Georgia';g.textAlign='center';g.fillText('M',0,26);
@@ -1333,8 +1333,8 @@ await BOOT.step('SAN FRANCISCO',.55);
     {const w1=canvas(512,384,(c,w,h)=>{c.fillStyle='#f6c81c';c.fillRect(0,0,w,h);c.strokeStyle='#111';c.lineWidth=10;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#111';c.font='900 58px Arial Black,Arial';c.textAlign='center';c.fillText('WARNING',w/2,72);
         c.font='900 34px Arial Black,Arial';c.fillText('YOU ARE APPROACHING',w/2,118,470);c.fillText('A FEDERAL PRISON',w/2,158,470);
         c.fillRect(w/2-90,300,180,12);c.fillRect(w/2-20,200,40,100);c.fillRect(w/2-34,176,68,28);c.beginPath();c.moveTo(w/2-44,176);c.lineTo(w/2,150);c.lineTo(w/2+44,176);c.fill();   // a generic guard tower
-        for(let x=w/2-140;x<=w/2-60;x+=20)c.fillRect(x,190,8,110);for(let x=w/2+60;x<=w/2+140;x+=20)c.fillRect(x,190,8,110);c.fillRect(w/2-150,190,100,8);c.fillRect(w/2+50,190,100,8);}),   // and cell bars either side
-        w2=canvas(512,384,(c,w,h)=>{c.fillStyle='#f4f1e8';c.fillRect(0,0,w,h);c.strokeStyle='#c8241c';c.lineWidth=12;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#d8261c';c.font='900 86px Arial Black,Arial';c.textAlign='center';c.fillText('DO NOT',w/2,130);c.fillText('STOP FOR',w/2,230);c.fillText('PRISONERS',w/2,330,470);});
+        for(let x=w/2-140;x<=w/2-60;x+=20)c.fillRect(x,190,8,110);for(let x=w/2+60;x<=w/2+140;x+=20)c.fillRect(x,190,8,110);c.fillRect(w/2-150,190,100,8);c.fillRect(w/2+50,190,100,8);prisonSeal(c,62,326,42);prisonRunner(c,452,318,.5);}),   // and cell bars either side; the seal and a running prisoner
+        w2=canvas(512,384,(c,w,h)=>{c.fillStyle='#f4f1e8';c.fillRect(0,0,w,h);c.strokeStyle='#c8241c';c.lineWidth=12;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#d8261c';c.font='900 70px Arial Black,Arial';c.textAlign='center';c.fillText('DO NOT',320,125,330);c.fillText('STOP FOR',320,215,330);c.fillText('PRISONERS',320,305,330);prisonRunner(c,95,140,.95,'#d8261c');prisonSeal(c,95,298,56);});
       board(Z.sq-m(300),12.5,5.6,4.2,w1,0,.05);board(Z.sq-m(150),12.5,5.6,4.2,w2,0,.05);}
     {const RS=[['DANGER','FLAMMABLE VAPOURS','w'],['VOLTEX','SYNTHETIC MOTOR OIL','p'],['NO STOPPING','REFINERY ZONE','w'],['SLICKO','PETROLEUM JELLY · SOFT AS SIN','p'],['AUTHORIZED','VEHICLES ONLY','w'],['KRONOS PREMIUM','UNLEADED · FUELING THE BAY','p'],['RICHMOND REFINING','FUELING THE BAY · SINCE 1902','p']];   // ominous refinery warnings and invented petroleum brands, some dim and sooty
       RS.forEach(([a1,a2,ty],k)=>{const tx=canvas(512,256,(c,w,h)=>{const wr=ty==='w';c.fillStyle=wr?'#e8b81c':'#1a0f0e';c.fillRect(0,0,w,h);c.strokeStyle=wr?'#111':'#c8241c';c.lineWidth=10;c.strokeRect(8,8,w-16,h-16);
@@ -1407,9 +1407,17 @@ await BOOT.step('THE MARIN REDWOODS',.63);
         B_(bg,bm,0,1.15,0,.62,.62,1.05);B_(bg,bm,0,1.55,.45,.55,.45,.5);const hd=new THREE.Group();hd.position.set(0,1.1,1.05);g.add(hd);B_(bg,bm,0,0,.1,.3,.33,.4,hd);for(const s of[-1,1]){const h=B_(new THREE.ConeGeometry(.07,.8,6),hm,s*.36,.12,.05,1,1,1,hd);h.rotation.z=-s*1.15;}
         for(const[x,z]of[[-.35,.6],[.35,.6],[-.35,-.6],[.35,-.6]])B_(new THREE.BoxGeometry(.22,.9,.24),bm,x,.45,z,1,1,1);
         g.position.copy(V);g.rotation.y=R(0,6.3);g.scale.setScalar(1.4);scene.add(g);BUFF.push({g,hd,ph:R(0,6.3)});}
-      const wF=canvas(512,384,(c,w,h)=>{c.fillStyle='#f6c81c';c.fillRect(0,0,w,h);c.strokeStyle='#111';c.lineWidth=10;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#111';c.font='900 52px Arial Black,Arial';c.textAlign='center';c.fillText('WARNING',w/2,76);c.font='900 36px Arial Black,Arial';c.fillText('ENTERING A',w/2,132,470);c.fillText('FEDERAL PRISON',w/2,178,470);c.fillText('SECURE ZONE',w/2,224,470);c.font='900 28px Arial';c.fillText('NO STOPPING · NO HITCHHIKERS',w/2,290,470);}),
-        wB=canvas(512,384,(c,w,h)=>{c.fillStyle='#f4f1e8';c.fillRect(0,0,w,h);c.strokeStyle='#c8241c';c.lineWidth=14;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#d8261c';c.font='900 76px Arial Black,Arial';c.textAlign='center';c.fillText('BEWARE OF',w/2,120,470);c.fillText('ESCAPED',w/2,215,470);c.fillText('PRISONERS',w/2,310,470);});
-      board(Z.sq-m(560),12.5,5.6,4.2,wF,0,.05);board(Z.sq-m(450),-12.5,5.6,4.2,wF,0,.05);board(Z.sq-m(380),12.5,5.6,4.2,wB,0,.05);board(Z.sq-m(230),-12.5,5.6,4.2,wB,0,.05);board(Z.sq-m(80),12.5,5.6,4.2,wB,0,.05);}
+      const wF=canvas(512,384,(c,w,h)=>{c.fillStyle='#f6c81c';c.fillRect(0,0,w,h);c.strokeStyle='#111';c.lineWidth=10;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#111';c.font='900 52px Arial Black,Arial';c.textAlign='center';c.fillText('WARNING',w/2,76);c.font='900 36px Arial Black,Arial';c.fillText('ENTERING A',w/2,132,470);c.fillText('FEDERAL PRISON',w/2,178,470);c.fillText('SECURE ZONE',w/2,224,470);c.font='900 25px Arial';c.fillText('NO STOPPING',w/2,292,250);c.fillText('NO HITCHHIKERS',w/2,326,250);prisonSeal(c,82,302,56);prisonRunner(c,436,312,.62);}),
+        wB=canvas(512,384,(c,w,h)=>{c.fillStyle='#f4f1e8';c.fillRect(0,0,w,h);c.strokeStyle='#c8241c';c.lineWidth=14;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#d8261c';c.font='900 64px Arial Black,Arial';c.textAlign='center';c.fillText('BEWARE OF',335,120,320);c.fillText('ESCAPED',335,205,320);c.fillText('PRISONERS',335,290,320);
+          c.font='700 20px Arial';c.fillStyle='#1c2f5a';c.fillText('BY ORDER OF THE BUREAU',335,334,320);prisonRunner(c,100,140,1,'#d8261c');prisonSeal(c,100,296,60);});   // a running prisoner and the (invented) federal seal
+      board(Z.sq-m(560),12.5,5.6,4.2,wF,0,.05);board(Z.sq-m(450),-12.5,5.6,4.2,wF,0,.05);board(Z.sq-m(380),12.5,5.6,4.2,wB,0,.05);board(Z.sq-m(230),-12.5,5.6,4.2,wB,0,.05);board(Z.sq-m(80),12.5,5.6,4.2,wB,0,.05);
+      // STEEP CLIFF: yellow warning boards before the road runs out along the cliff edge (a car going over the edge into the water)
+      const wC=canvas(512,384,(c,w,h)=>{c.fillStyle='#f6c81c';c.fillRect(0,0,w,h);c.strokeStyle='#111';c.lineWidth=10;c.strokeRect(8,8,w-16,h-16);c.fillStyle='#111';
+        c.beginPath();c.moveTo(60,120);c.lineTo(250,120);c.lineTo(262,140);c.lineTo(255,175);c.lineTo(268,215);c.lineTo(60,215);c.closePath();c.fill();   // the clifftop and its broken face
+        c.lineWidth=6;c.strokeStyle='#111';for(let k=0;k<3;k++){c.beginPath();for(let x=280;x<=460;x+=10)c.lineTo(x,200+k*16+Math.sin(x*.12+k)*4);c.stroke();}   // the water below
+        c.save();c.translate(330,120);c.rotate(.75);c.fillRect(-40,-14,80,26);c.fillRect(-24,-30,44,18);c.beginPath();c.arc(-24,14,11,0,7);c.arc(24,14,11,0,7);c.fill();c.restore();   // a car tipping over
+        c.font='900 78px Arial Black,Arial';c.textAlign='center';c.fillText('STEEP CLIFF',w/2,298,470);c.font='900 30px Arial';c.fillText('DROP-OFF · KEEP RIGHT',w/2,346,470);});
+      board(CLF[0]-m(330),-12.5,5.6,4.2,wC,0,.05);board(CLF[0]-m(200),12.5,5.6,4.2,wC,0,.05);board(CLF[0]-m(70),-12.5,5.6,4.2,wC,0,.05);}
     // an old silver Airstream trailer parked off the road where the redwoods thin out, its wheels sunk in the dirt
     {const i=Z.sq-m(250),g=new THREE.Group(),al=std({color:0xc9ccce,metalness:.85,roughness:.3}),dk=std({color:0x1a1e22,roughness:.15,metalness:.3}),tyr=std({color:0x141414,roughness:.9}),dirt=std({color:0x7a4a30,roughness:1}),blk=std({color:0x1c1c1e,roughness:.8});
       const bod=new THREE.Mesh(new THREE.CapsuleGeometry(1.2,4.6,10,20).rotateX(Math.PI/2),al);bod.scale.set(.95,1.05,1);bod.position.y=1.62;bod.castShadow=true;g.add(bod);
@@ -1425,8 +1433,8 @@ await BOOT.step('THE MARIN REDWOODS',.63);
     for(const[lx,lz,w,d,h,mm]of[[0,0,140,30,26,tan],[-60,-60,30,110,20,tan2],[60,-60,30,110,20,tan2],[0,-110,120,26,18,tan],[0,40,40,20,34,tan]]){const[x,z]=R2(lx,lz);B(w,h,d,mm,x,h/2,z,ry);}
     for(const[lx,lz]of[[-110,60],[110,60],[-110,-160],[110,-160]]){const[x,z]=R2(lx,lz);B(6,16,6,tan2,x,8,z,ry);B(8,4,8,glassM,x,18,z,ry);}
     for(const[a2,b2,c2,d2]of[[-110,60,110,60],[-110,-160,110,-160],[-110,60,-110,-160],[110,60,110,-160]]){const[x0,z0]=R2(a2,b2),[x1,z1]=R2(c2,d2);const L=Math.hypot(x1-x0,z1-z0);B(L,7,1.4,tan,(x0+x1)/2,3.5,(z0+z1)/2,Math.atan2(-(z1-z0),x1-x0));}
-    board(Z.sq+m(120),-(12),9,3,sign(1024,340,'SAN QUENTIN','#1f5a3a','#f4f1e8','900 120px Arial','STATE PRISON  →'));
-    board(Z.sq-m(90),-12,10,3.6,canvas(1024,368,(c,w,h)=>{c.fillStyle='#f2c230';c.fillRect(0,0,w,h);c.strokeStyle='#111';c.lineWidth=16;c.strokeRect(14,14,w-28,h-28);c.fillStyle='#111';c.textAlign='center';c.textBaseline='middle';c.font='900 92px Arial';c.fillText('YOU ARE APPROACHING',w/2,h*.34,w*.9);c.fillText('A FEDERAL PRISON',w/2,h*.68,w*.9);}));
+    board(Z.sq+m(120),-(12),9,3,canvas(1024,340,(c,w,h)=>{c.fillStyle='#1f5a3a';c.fillRect(0,0,w,h);c.strokeStyle='#f4f1e8';c.lineWidth=17;c.strokeRect(17,17,w-34,h-34);c.fillStyle='#f4f1e8';c.textAlign='center';c.textBaseline='middle';c.font='900 112px Arial';c.fillText('SAN QUENTIN',590,130,700);c.font='900 70px Arial';c.fillText('STATE PRISON  →',590,250,700);prisonSeal(c,150,170,118);}));
+    board(Z.sq-m(90),-12,10,3.6,canvas(1024,368,(c,w,h)=>{c.fillStyle='#f2c230';c.fillRect(0,0,w,h);c.strokeStyle='#111';c.lineWidth=16;c.strokeRect(14,14,w-28,h-28);c.fillStyle='#111';c.textAlign='center';c.textBaseline='middle';c.font='900 84px Arial';c.fillText('YOU ARE APPROACHING',600,h*.34,700);c.fillText('A FEDERAL PRISON',600,h*.68,700);prisonSeal(c,140,h/2,112);}));
     // the perimeter fence a little way outside the walls: steel posts, chain-link, and coils of razor wire all along the top
     {const fh=5,lnk=canvas(64,64,(g,w,h)=>{g.clearRect(0,0,w,h);g.strokeStyle='#d8dce0';g.lineWidth=7;g.beginPath();g.moveTo(0,0);g.lineTo(w,h);g.moveTo(w,0);g.lineTo(0,h);g.stroke();});
      const corners=[[124,74],[124,-174],[-124,-174],[-124,74]].map(([a,b])=>R2(a,b)),posts=[],coils=[];
@@ -1435,7 +1443,22 @@ await BOOT.step('THE MARIN REDWOODS',.63);
        for(let d=0;d<=L;d+=4)posts.push([x0+(x1-x0)*d/L,z0+(z1-z0)*d/L]);for(let d=0;d<L;d+=.32)coils.push([x0+(x1-x0)*d/L,z0+(z1-z0)*d/L,a]);}
      const pm=new THREE.InstancedMesh(cyl(.09,.09,fh+.6,6),steelM,posts.length);posts.forEach(([x,z],n)=>{M4.compose(V.set(x,(fh+.6)/2,z),Q.identity(),S.set(1,1,1));pm.setMatrixAt(n,M4);});
      const cm=new THREE.InstancedMesh(new THREE.TorusGeometry(.45,.038,4,14),std({color:0xb8bcc0,metalness:.8,roughness:.35}),coils.length);coils.forEach(([x,z,a],n)=>{M4.compose(V.set(x,fh+.45,z),Q.setFromAxisAngle(YAX,a+Math.PI/2+(n%2?.22:-.22)),S.set(1,1,1));cm.setMatrixAt(n,M4);});
-     pm.castShadow=true;scene.add(pm,cm);}}
+     pm.castShadow=true;scene.add(pm,cm);}
+    {// the yard beside the road: a chain-link fence with a hole torn in it (the prisoners pour out of it as you come by), and a watchtower whose searchlight sweeps the yard
+     const a=Z.sq+m(260),w=RW+XW[a],FL=-(w+26),sh=a*SEG,fh=3.6,lk=canvas(64,64,(g,ww,hh)=>{g.clearRect(0,0,ww,hh);g.strokeStyle='#cfd4d8';g.lineWidth=6;g.beginPath();g.moveTo(0,0);g.lineTo(ww,hh);g.moveTo(ww,0);g.lineTo(0,hh);g.stroke();});lk.wrapS=lk.wrapT=THREE.RepeatWrapping;lk.repeat.set(5/1.4,fh/1.4);
+     const fm=std({map:lk,transparent:true,alphaTest:.3,side:THREE.DoubleSide,metalness:.6,roughness:.5}),pa=new THREE.Vector3(),pb=new THREE.Vector3();
+     const panel=(s0,s1,lat,flap)=>{at(s0,lat,0,pa);at(s1,lat,0,pb);const L=pa.distanceTo(pb),pl=new THREE.Mesh(new THREE.PlaneGeometry(L,fh),fm);pl.position.set((pa.x+pb.x)/2,(pa.y+pb.y)/2+fh/2,(pa.z+pb.z)/2);pl.rotation.y=Math.atan2(-(pb.z-pa.z),pb.x-pa.x)+(flap||0);scene.add(pl);
+       const po=new THREE.Mesh(cyl(.08,.08,fh+.3,6),steelM);po.position.set(pa.x,pa.y+(fh+.3)/2,pa.z);scene.add(po);return pl;};
+     for(let s=sh-60;s<sh+60;s+=5){const s1=Math.min(s+5,sh+60);if(s1<=sh-1.8||s>=sh+1.8)panel(s,s1,FL);else{if(s<sh-1.8)panel(s,sh-1.8,FL);if(s1>sh+1.8)panel(sh+1.8,s1,FL);}}
+     {const f1=panel(sh-1.8,sh-.4,FL,.9),f2=panel(sh+.4,sh+1.8,FL,-.9);f1.position.y-=.5;f1.rotation.z=.15;f2.position.y-=.3;f2.rotation.z=-.2;}   // the cut chain-link bent back either side of the hole
+     at(sh,FL+.6,.03,pa);const hole=new THREE.Mesh(new THREE.CircleGeometry(1.7,12),std({color:0x3a2c1c,roughness:1}));hole.rotation.x=-Math.PI/2;hole.position.copy(pa);hole.scale.set(1,.6,1);scene.add(hole);   // trampled dirt through the gap
+     const st=sh+40,tl=FL-22;at(st,tl,0,pa);const tw=new THREE.Group();tw.position.copy(pa);tw.rotation.y=yaw(a);scene.add(tw);const dk=std({color:0x3a3a3c,roughness:.7,metalness:.4});
+     for(const[x,z]of[[-1.8,-1.8],[1.8,-1.8],[-1.8,1.8],[1.8,1.8]])B(.35,13,.35,steelM,x,6.5,z,0,tw);B(4.6,2.6,4.6,mat('sq2',{color:0xc4b48c,roughness:.9}),0,14.3,0,0,tw);B(5.4,.4,5.4,dk,0,15.8,0,0,tw);B(4.7,.9,4.7,glassM,0,14.6,0,0,tw);
+     const lamp=new THREE.Mesh(cyl(.45,.55,.8,12).rotateX(Math.PI/2),dk);lamp.position.set(2.6,15.2,0);tw.add(lamp);tw.traverse(o=>{o.castShadow=true;});tw.updateMatrixWorld(true);
+     const lp=new THREE.Vector3();lamp.getWorldPosition(lp);const sp=new THREE.SpotLight(0xfff2d0,2,260,.17,.5,0),tg=new THREE.Object3D();sp.position.copy(lp);sp.target=tg;scene.add(sp,tg);
+     const bg=new THREE.ConeGeometry(1,1,20,1,true).translate(0,-.5,0).rotateX(-Math.PI/2),beam=new THREE.Mesh(bg,new THREE.MeshBasicMaterial({color:0xfffbe8,transparent:true,opacity:.25,depthWrite:false,side:THREE.DoubleSide,fog:false}));beam.position.copy(lp);
+     const pool=new THREE.Mesh(new THREE.CircleGeometry(1,24),new THREE.MeshBasicMaterial({color:0xfff4d8,transparent:true,opacity:.2,blending:THREE.AdditiveBlending,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3}));pool.rotation.x=-Math.PI/2;
+     Object.assign(SQX,{a,s:sh,lat:FL,sp,tg,beam,pool,lp,t:0});}}
 
 await BOOT.step('RICHMOND · SHANE DRIVE',.68);
   // ---- Richmond: ranch houses up the hill, Shane Drive and number 3060, and the refinery down by the freeway
@@ -1566,6 +1589,18 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
     tall(Z.sq+m(600),-1,chem('BAYCHEM CHLORINE WORKS','CHLORINE · CAUSTIC SODA · ACIDS','#2f6b45'));tall(Z.sq+m(780),1,chem('TRI-COUNTY PETROCHEMICAL','BENZENE · TOLUENE · XYLENE','#8a3a1a'));
     [['WE LOVE THE LEADER','Richmond is grateful.'],['WE ♥ THE LEADER','He watches over us.'],['THE LEADER PROVIDES','Thank him tonight.'],['WE LOVE THE LEADER','Obey with joy.'],['ONE CITY · ONE LEADER','Unity is strength.']].forEach(([a,b],k)=>
       tall(Z.rb1+m(60+k*130),k%2?-1:1,ldr(a,b,['#7a1414','#14284a','#3a1458'][k%3],'#d8a83a')));
+    // Hyde Street: WE LOVE THE LEADER boards on the way down, and a big propaganda board at the bottom (an invented stern figure in a peaked cap)
+    [[Z.hyde+m(365),-1,'WE LOVE THE LEADER','He keeps the city safe.','#8a1010'],[Z.hyde+m(430),1,'WE LOVE THE LEADER','Gratitude is duty.','#14284a'],[Z.marina-m(150),1,'WE ♥ THE LEADER','His eyes are on Hyde Street.','#3a1458']].forEach(([i,sd,a,b,bg])=>tall(i,sd,leaderPoster(a,b,bg)));
+    {const n0=scene.children.length;tall(Z.marina-m(35),-1,leaderPoster('THE LEADER','KNOWS · SEES · PROVIDES','#8a1010'));const g=scene.children[n0];if(g)g.scale.setScalar(1.35);}
+    {// leaking toxic-waste barrels on I-880 and the bridges, glowing green ooze spreading out into the lane (drive through it and the car is slimed green for a while: TOX, toxTick)
+      const bm=std({color:0xc8a820,roughness:.5,metalness:.4}),bm2=std({color:0x2a5a8a,roughness:.5,metalness:.4}),om=new THREE.MeshBasicMaterial({color:0x7dff2e,transparent:true,opacity:.92,polygonOffset:true,polygonOffsetFactor:-4,depthWrite:false}),gm=new THREE.MeshBasicMaterial({color:0xaaff55,transparent:true,opacity:.3,blending:THREE.AdditiveBlending,polygonOffset:true,polygonOffsetFactor:-5,depthWrite:false,fog:false});
+      TOX.mm=[om,gm];
+      for(const[i,sd]of[[Z.tu1+m(1200),-1],[Z.tu1+m(2600),1],[Z.b0+m(520),1],[Z.b0+m(1700),-1],[Z.rb0+m(500),-1]]){const w=RW+XW[i],s=i*SEG,ol=sd*(w-3.3),sh=new THREE.Shape();
+        for(let k=0;k<16;k++){const an=k/16*6.283,r=(k%2?2.3:3)*(.85+Math.random()*.3),x=Math.cos(an)*r,y=Math.sin(an)*r*1.5;k?sh.lineTo(x,y):sh.moveTo(x,y);}
+        const g=new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2);at(s,ol,.05,V);for(const[mm,sc,dy]of[[om,1,0],[gm,1.3,.02]]){const pd=new THREE.Mesh(g,mm);pd.position.copy(V);pd.position.y+=dy;pd.rotation.y=yaw(i);pd.scale.setScalar(sc);scene.add(pd);}
+        for(let k=0;k<3;k++){const d=new THREE.Mesh(cyl(.3,.3,.9,12),k===1?bm2:bm);if(k===1){at(s,sd*(w-.35),.3,V);d.position.copy(V);d.rotation.set(0,yaw(i),Math.PI/2);}else{at(s+(k-1)*1.2,sd*(w+.25),.45,V);d.position.copy(V);}
+          const st=new THREE.Mesh(cyl(.31,.31,.16,12),om);st.position.y=k===1?0:.32;d.add(st);d.castShadow=true;scene.add(d);}   // a band of glowing slime round each drum
+        TOX.l.push({s,lat:ol,rs:4.2,rl:2.7});}}
     // the Posey Tube: oil-drum fires along both walls, their smoke hanging under the roof
     {const drum=std({color:0x4a3a2c,roughness:.8,metalness:.4});for(let k=0;k<8;k++){const i=Z.tu0+m(40)+Math.round(k*(Z.tu1-Z.tu0-m(80))/7),sd=k%2?1:-1;off(i,sd*4.6,0,V);
       const d=new THREE.Mesh(cyl(.32,.3,.9,12),drum);d.position.set(V.x,V.y+.45,V.z);scene.add(d);OBST.push({x:V.x,z:V.z,r:.7});BURN.push({x:V.x,y:V.y+1,z:V.z,s:.45});}}
@@ -2901,7 +2936,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);toxTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -3595,26 +3630,67 @@ function holeFall(pe){const i=PL.idx;crashPlayer(Math.abs(pe.v)*.3,false);const 
 // San Quentin: ~30 prisoners in stripes (instanced) pour out onto the road and wave both arms to flag you down. Harmless: nothing collides, you drive straight through them
 const PRIS={l:[],on:0,V:new THREE.Vector3(),W:new THREE.Vector3(),Y:new THREE.Vector3(0,1,0),X:new THREE.Vector3(1,0,0),P:new THREE.Vector3(),S1:new THREE.Vector3(1,1,1),Q:new THREE.Quaternion(),QY:new THREE.Quaternion(),F:new THREE.Matrix4(),L:new THREE.Matrix4(),M:new THREE.Matrix4(),N:30};
 function prisPut(im,k,x,y,z,rx,sc){const K=PRIS;K.P.set(x,y,z);K.Q.setFromAxisAngle(K.X,rx);K.L.compose(K.P,K.Q,sc||K.S1);K.M.multiplyMatrices(K.F,K.L);im.setMatrixAt(k,K.M);}
-function prisTick(rdt){const K=PRIS,N=K.N,a=Z.sq+Math.round(260/SEG),near=PL.idx>a-Math.round(900/SEG)&&PL.idx<a+Math.round(200/SEG);
-  if(!K.im){const st=std({map:canvas(32,64,(g,w,h)=>{for(let y=0;y<h;y+=16){g.fillStyle='#f0ece0';g.fillRect(0,y,w,8);g.fillStyle='#1a1a1a';g.fillRect(0,y+8,w,8);}}),roughness:1}),sk=std({color:0xc89a78,roughness:1});
+function prisTick(rdt){const K=PRIS,N=K.N,a=SQX.a||Z.sq+Math.round(260/SEG),near=PL.idx>a-Math.round(900/SEG)&&PL.idx<a+Math.round(200/SEG);searchTick(rdt,near);
+  if(!K.im){const st=std({map:canvas(32,64,(g,w,h)=>{for(let y=0;y<h;y+=16){g.fillStyle='#f0ece0';g.fillRect(0,y,w,8);g.fillStyle='#1a1a1a';g.fillRect(0,y+8,w,8);}}),roughness:1}),sk=std({color:0xc89a78,roughness:1}),wd=std({color:0x5a4026,roughness:1}),ir=std({color:0x55585c,roughness:.6,metalness:.5});
     const mk=(g,m,n)=>{const o=new THREE.InstancedMesh(g,m,n);o.frustumCulled=false;o.count=0;scene.add(o);return o;};
-    K.im=[mk(new THREE.BoxGeometry(.5,.7,.3),st,N),mk(new THREE.SphereGeometry(.15,8,6),sk,N),mk(new THREE.BoxGeometry(.18,.8,.2).translate(0,-.4,0),st,N*2),mk(new THREE.BoxGeometry(.13,.6,.13).translate(0,-.28,0),st,N*2),mk(new THREE.BoxGeometry(.06,.9,.06).translate(0,.3,0),std({color:0x5a4026,roughness:1}),N),mk(new THREE.BoxGeometry(.3,.14,.14),std({color:0x55585c,roughness:.6,metalness:.5}),N)];
-    K.Z=new THREE.Vector3(0,0,0);K.SH=new THREE.Vector3(.7,2,.3);
-    const ft=canvas(64,64,(g,w,h)=>{const gr=g.createRadialGradient(32,40,2,32,36,30);gr.addColorStop(0,'rgba(255,240,170,1)');gr.addColorStop(.4,'rgba(255,150,30,.8)');gr.addColorStop(1,'rgba(255,60,0,0)');g.fillStyle=gr;g.fillRect(0,0,w,h);});
-    K.fl=[];for(let q=0;q<5;q++){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:ft,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,fog:false}));sp.visible=false;scene.add(sp);K.fl.push(sp);}
-    for(let n=0;n<N;n++){const ro=n<4?1:n<7?2:0,tl=ro===2?0:1+n%3;K.l.push({s:0,lat:0,tg:0,t:0,mv:0,ro,tl});}}   // ro: 0 running, 1 crouched in the road, 2 lying in the road; tl: 0 none, 1 shovel, 2 hammer, 3 stick, 4 flaming torch
-  if(!near||G.state!=='race'){if(K.on){K.on=0;for(const m of K.im)m.count=0;for(const f of K.fl)f.visible=false;}return;}
-  if(!K.on){K.on=1;for(const o of K.l){const w=RW+XW[wrapI(Math.floor(a))];o.s=a*SEG+R(-50,50);o.lat=(Math.random()<.5?-1:1)*R(w+14,w+(o.tl?70:40));o.tg=R(-w+1,w-1);o.mv=R(1.3,2.1);o.t=-R(0,14);if(o.ro){o.lat=o.tg=R(-w+2,w-2);o.t=R(0,3);}}}   // the ones running come out of the prison grounds; a few are already in the road, crouched or lying
-  let fi=0;
-  for(let n=0;n<N;n++){const o=K.l[n];o.t+=rdt;const d=o.tg-o.lat,run=o.t>0&&Math.abs(d)>.1;if(run)o.lat+=Math.sign(d)*Math.min(Math.abs(d),o.mv*rdt);
-    const sw=Math.sin(o.t*10);at(o.s,o.lat,run?Math.abs(sw)*.08:0,K.V);
-    if(run)at(o.s,o.lat+Math.sign(d),0,K.W);else K.W.set(PL.x,0,PL.z);
-    K.QY.setFromAxisAngle(K.Y,Math.atan2(K.W.x-K.V.x,K.W.z-K.V.z));K.F.compose(K.V,K.QY,K.S1);
-    const wave=!run&&o.t>0,by=wave?Math.abs(Math.sin(o.t*7))*.05:0,rl=run?sw*.7:0;
+    // body, head, legs, arms, tool handles, then the tool heads: hammer, pickaxe, shovel blade
+    K.im=[mk(new THREE.BoxGeometry(.5,.7,.3),st,N),mk(new THREE.SphereGeometry(.15,8,6),sk,N),mk(new THREE.BoxGeometry(.18,.8,.2).translate(0,-.4,0),st,N*2),mk(new THREE.BoxGeometry(.13,.6,.13).translate(0,-.28,0),st,N*2),
+      mk(new THREE.BoxGeometry(.06,.9,.06).translate(0,.3,0),wd,N),mk(new THREE.BoxGeometry(.14,.14,.32),ir,N),mk(new THREE.BoxGeometry(.07,.07,.86),ir,N),mk(new THREE.BoxGeometry(.26,.34,.03).translate(0,.17,0),ir,N)];
+    for(let n=0;n<N;n++)K.l.push({s:0,lat:0,t:0,mv:0,ph:0,st:0,dl:0,ts:0,tl2:0,ry:0,tl:n%5});}   // tl: 0 bare hands, 1 shovel, 2 hammer, 3 stick, 4 pickaxe
+  if(!near||G.state!=='race'){if(K.on){K.on=0;for(const m of K.im)m.count=0;}return;}
+  const sh=SQX.s!==undefined?SQX.s:a*SEG,hl=SQX.lat!==undefined?SQX.lat:-(RW+XW[a]+26),pe=ents.find(e=>e.player);
+  if(!K.on){K.on=1;K.go=0;for(let n=0;n<N;n++){const o=K.l[n];o.st=0;o.s=sh+R(-12,12);o.lat=hl-R(2,14);o.t=R(0,3);o.mv=R(3.8,5.6);o.ph=R(0,6.3);o.ts=sh+R(-55,55);o.tl2=-(RW+XW[wrapI(Math.floor(o.ts/SEG))]+R(.9,2.6));o.dl=n*.3+R(0,.25);o.ry=0;}}   // they wait in the yard behind the fence...
+  if(!K.go&&pe&&wdiff(sh-pe.s)<330)K.go=1;   // ...and break out through the hole, one after another, as the car comes; then run for the road and stop at its edge
+  let nt=0;const nh=[0,0,0];
+  for(let n=0;n<N;n++){const o=K.l[n];o.t+=rdt;if(o.st===0&&K.go){o.dl-=rdt;if(o.dl<=0)o.st=1;}
+    const tgS=o.st===1||o.st===2?sh:o.ts,tgL=o.st===1?hl-1.2:o.st===2?hl+1.6:o.tl2;let run=false;
+    if(o.st>=1&&o.st<=3){const ds=tgS-o.s,dl=tgL-o.lat,d=Math.hypot(ds,dl);if(d<.15)o.st++;else{const k=Math.min(d,o.mv*rdt)/d;o.s+=ds*k;o.lat=Math.min(o.lat+dl*k,-(RW+XW[wrapI(Math.floor(o.s/SEG))]+.5));run=true;at(o.s,o.lat,0,K.V);at(o.s+ds/d,o.lat+dl/d,0,K.W);o.ry=Math.atan2(K.W.x-K.V.x,K.W.z-K.V.z);}}
+    const sw=Math.sin(o.t*10),stand=!run;at(o.s,o.lat,run?Math.abs(sw)*.08:0,K.V);
+    if(stand){K.W.set(PL.x,0,PL.z);o.ry=Math.atan2(K.W.x-K.V.x,K.W.z-K.V.z);}
+    K.QY.setFromAxisAngle(K.Y,o.ry);K.F.compose(K.V,K.QY,K.S1);
+    const wave=stand&&o.st===4,by=wave?Math.abs(Math.sin(o.t*7))*.05:0,rl=run?sw*.7:0,idle=stand&&!wave?Math.sin(o.t*1.3+o.ph)*.15:0;
     prisPut(K.im[0],n,0,1.15+by,0,0);prisPut(K.im[1],n,0,1.68+by,0,0);
     prisPut(K.im[2],n*2,-.12,.8+by,0,rl);prisPut(K.im[2],n*2+1,.12,.8+by,0,-rl);
-    for(let k=0;k<2;k++)prisPut(K.im[3],n*2+k,(k?1:-1)*.32,1.45+by,0,wave?-2.7+Math.sin(o.t*14+k*1.7)*.35:(k?1:-1)*rl*-.9);}
-  for(const m of K.im){m.count=m===K.im[2]||m===K.im[3]?N*2:N;m.instanceMatrix.needsUpdate=true;}}
+    let rA=0;for(let k=0;k<2;k++){const ax=wave?-2.7+Math.sin(o.t*14+k*1.7)*.35:(k?1:-1)*rl*-.9+idle;if(k)rA=ax;prisPut(K.im[3],n*2+k,(k?1:-1)*.32,1.45+by,0,ax);}
+    if(o.tl){const ta=.9+.35*rA,hy=1.45+by-.56*Math.cos(rA),hz=-.56*Math.sin(rA);prisPut(K.im[4],nt++,.32,hy,hz,ta);   // the tool in the right hand: brandished overhead once they are at the road
+      const ty=hy+.72*Math.cos(ta),tz=hz+.72*Math.sin(ta);if(o.tl===2)prisPut(K.im[5],nh[0]++,.32,ty,tz,ta);else if(o.tl===4)prisPut(K.im[6],nh[1]++,.32,ty,tz,ta);else if(o.tl===1)prisPut(K.im[7],nh[2]++,.32,ty,tz,ta);}}
+  K.im[0].count=K.im[1].count=N;K.im[2].count=K.im[3].count=N*2;K.im[4].count=nt;K.im[5].count=nh[0];K.im[6].count=nh[1];K.im[7].count=nh[2];for(const m of K.im)m.instanceMatrix.needsUpdate=true;}
+// the watchtower searchlight: sweeps back and forth across the yard, the hole and the road edge; a pale beam you can see by day, bright at dusk and at night
+function searchTick(rdt,near){const S=SQX;if(!S.sp)return;const on=near&&G.state==='race';S.beam.visible=S.pool.visible=on;S.sp.intensity=on?1.5+6*(1-dayK):0;if(!on)return;S.t+=rdt;if(S.beam.parent!==scene){S.beam.removeFromParent();S.pool.removeFromParent();scene.add(S.beam,S.pool);}   /* (the static merge after the build takes loose meshes out of the scene) */
+  const u=Math.sin(S.t*.55),v=Math.sin(S.t*.31+1);at(S.s+v*48,lerp(S.lat-24,S.lat+24,.5+.5*u),0,S.tg.position);S.tg.updateMatrixWorld();
+  const d=S.lp.distanceTo(S.tg.position),r=d*.17;S.beam.scale.set(r,r,d);S.beam.lookAt(S.tg.position);S.beam.material.opacity=.24+.2*(1-dayK);S.beam.material.blending=dayK<.5?THREE.AdditiveBlending:THREE.NormalBlending;
+  S.pool.position.copy(S.tg.position);S.pool.position.y+=.08;S.pool.scale.set(r,r,1);S.pool.material.opacity=.26+.35*(1-dayK);}
+// leaking toxic barrels: drive through the glowing ooze and the car is slimed green (fading off over ~10 s); it slithers a little while in the slick. No crash.
+function toxTick(rdt){const K=TOX;if(!DRIVE||!K.l.length||!hero)return;const pe=ents.find(e=>e.player);if(!pe)return;const t=tmNow();if(K.mm)K.mm[1].opacity=.24+.12*Math.sin(t*2.3);
+  if(!K.V){K.V=new THREE.Vector3();K.G=new THREE.Color(0x5cff2a);K.G2=new THREE.Color(0x2cff10);}
+  if(G.state==='race'&&!PL.crash)for(const o of K.l){if(Math.abs(wdiff(pe.s-o.s))<o.rs&&Math.abs(pe.lat-o.lat)<o.rl){if(K.slime<9.6){if(K.slime<=0)say('TOXIC OOZE!','Slimed green',2.2);sfxSquelch();}K.slime=10;
+      const sp=Math.hypot(PL.vx,PL.vz);if(sp>3){PL.vx*=1-.5*rdt;PL.vz*=1-.5*rdt;PL.h+=Math.sin(t*9)*.22*rdt;if(Math.random()<rdt*25)puff(K.V.set(PL.x+R(-1,1),PL.gy+.2,PL.z+R(-1,1)),PL.vx*.2+R(-2,2),R(1,3),PL.vz*.2+R(-2,2),.8,R(2,4),R(.5,1),.75,0x7dff2e);}}}
+  if(K.slime>0){if(K.car!==hero){K.car=hero;K.mats=[];hero.traverse(o=>{if(!o.isMesh||!o.material||Array.isArray(o.material)||!o.material.color||o.material.transparent)return;if(!o.userData.tox){o.material=o.material.clone();o.userData.tox=1;}K.mats.push([o.material,o.material.color.clone(),o.material.emissive?o.material.emissive.clone():null]);});}   // the car gets its own copies, so nothing else turns green
+    K.slime-=rdt;const k=clamp(K.slime/4,0,1)*.8;for(const[m,c0,e0]of K.mats){m.color.copy(c0).lerp(K.G,k);if(e0)m.emissive.copy(e0).lerp(K.G2,k*.45);}
+    if(K.slime<=0){for(const[m,c0,e0]of K.mats){m.color.copy(c0);if(e0)m.emissive.copy(e0);}K.car=null;}}}
+function sfxSquelch(){if(!AC)return;const t=AC.currentTime;tone('sine',190,t,.28,.45,master,{to:55});hit(t,.35,.5,700,'lowpass',master);hit(t+.08,.25,.25,1800,'bandpass',master);}
+// sign art: an invented federal corrections seal (navy and gold, a shield with a star and a key) and a running-prisoner pictogram (striped, with ball and chain)
+function prisonSeal(c,x,y,r){c.save();c.translate(x,y);c.fillStyle='#1c2f5a';c.beginPath();c.arc(0,0,r,0,7);c.fill();c.strokeStyle='#d8b84a';c.lineWidth=Math.max(2,r*.06);c.beginPath();c.arc(0,0,r*.93,0,7);c.stroke();c.beginPath();c.arc(0,0,r*.64,0,7);c.stroke();
+  c.fillStyle='#d8b84a';c.font='900 '+Math.max(7,r*.16|0)+'px Arial';c.textAlign='center';c.textBaseline='middle';const tx='FEDERAL BUREAU OF CORRECTIONAL CUSTODY ★ ';for(let k=0;k<tx.length;k++){c.save();c.rotate(k/tx.length*Math.PI*2);c.fillText(tx[k],0,-r*.79);c.restore();}
+  c.beginPath();c.moveTo(0,-r*.5);c.lineTo(r*.4,-r*.36);c.lineTo(r*.34,r*.18);c.lineTo(0,r*.52);c.lineTo(-r*.34,r*.18);c.lineTo(-r*.4,-r*.36);c.closePath();c.fill();
+  c.fillStyle='#1c2f5a';c.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,q=k%2?r*.08:r*.19;c.lineTo(Math.cos(a)*q,-r*.17+Math.sin(a)*q);}c.closePath();c.fill();
+  c.beginPath();c.arc(0,r*.14,r*.07,0,7);c.fill();c.fillRect(-r*.025,r*.14,r*.05,r*.26);c.fillRect(0,r*.32,r*.09,r*.04);c.restore();}
+function prisonRunner(c,x,y,s,col='#111'){c.save();c.translate(x,y);c.scale(s,s);c.strokeStyle=col;c.fillStyle=col;c.lineCap='round';c.lineJoin='round';c.lineWidth=12;
+  c.beginPath();c.arc(16,-62,11,0,7);c.fill();c.beginPath();c.moveTo(9,-45);c.lineTo(-4,-8);c.stroke();
+  c.beginPath();c.moveTo(-4,-8);c.lineTo(16,12);c.lineTo(8,42);c.moveTo(-4,-8);c.lineTo(-20,14);c.lineTo(-44,18);c.stroke();
+  c.beginPath();c.moveTo(6,-38);c.lineTo(28,-22);c.lineTo(42,-34);c.moveTo(6,-38);c.lineTo(-14,-28);c.lineTo(-30,-42);c.stroke();
+  c.strokeStyle='#f4f1e8';c.lineWidth=3;for(let k=0;k<3;k++){const u=.2+k*.27,px=9-13*u,py=-45+37*u;c.beginPath();c.moveTo(px-7,py+1);c.lineTo(px+7,py-1);c.stroke();}
+  c.strokeStyle=col;c.lineWidth=3;c.beginPath();c.moveTo(8,42);c.lineTo(32,50);c.stroke();c.beginPath();c.arc(39,50,9,0,7);c.fill();c.restore();}
+// propaganda poster for the Leader (invented): a stern figure in a peaked cap and uniform in a sunburst, bold lettering
+function leaderPoster(title,sub,bg){return canvas(1024,460,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);const cx=250,cy=250;g.save();g.translate(cx,cy);for(let k=0;k<20;k++){g.rotate(Math.PI/10);g.fillStyle=k%2?'#e0b23a':bg;g.globalAlpha=k%2?.55:1;g.beginPath();g.moveTo(0,0);g.lineTo(700,-110);g.lineTo(700,110);g.fill();}g.restore();g.globalAlpha=1;
+  g.fillStyle='#2e3a26';g.beginPath();g.moveTo(cx-190,h);g.quadraticCurveTo(cx-170,cy+70,cx,cy+60);g.quadraticCurveTo(cx+170,cy+70,cx+190,h);g.fill();   // shoulders in uniform
+  g.fillStyle='#d8b84a';g.fillRect(cx-170,cy+92,70,16);g.fillRect(cx+100,cy+92,70,16);for(let k=0;k<4;k++){g.beginPath();g.arc(cx-30+k*14,cy+150,5,0,7);g.fill();}   // epaulettes and medals
+  g.fillStyle='#e9c29a';g.beginPath();g.ellipse(cx,cy-10,62,78,0,0,7);g.fill();g.fillRect(cx-28,cy+40,56,30);   // face and neck
+  g.fillStyle='#1a1a1a';g.fillRect(cx-46,cy-34,36,9);g.fillRect(cx+10,cy-34,36,9);g.fillRect(cx-34,cy-18,14,9);g.fillRect(cx+20,cy-18,14,9);g.fillRect(cx-30,cy+26,60,8);g.fillRect(cx-22,cy+8,44,10);   // stern brows, eyes, mustache, set mouth
+  g.fillStyle='#2e3a26';g.beginPath();g.ellipse(cx,cy-82,96,30,0,Math.PI,0);g.fill();g.fillRect(cx-70,cy-112,140,32);g.fillStyle='#141414';g.beginPath();g.ellipse(cx,cy-74,82,14,0,0,Math.PI);g.fill();   // the peaked cap
+  g.fillStyle='#d8b84a';g.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,q=k%2?9:22;g.lineTo(cx+Math.cos(a)*q,cy-98+Math.sin(a)*q);}g.fill();
+  g.fillStyle='rgba(0,0,0,.6)';g.fillRect(470,70,520,320);g.strokeStyle='#e0b23a';g.lineWidth=8;g.strokeRect(470,70,520,320);g.textAlign='center';g.textBaseline='middle';
+  g.font='900 '+(title.length>12?84:120)+'px Impact,"Arial Black",Arial';g.fillStyle='#000';g.fillText(title,736,186,480);g.fillStyle='#f4ead2';g.fillText(title,730,180,480);g.font='700 38px Georgia,serif';g.fillStyle='#e0b23a';g.fillText(sub,730,320,480);});}
 // gulls: a few loose flocks wheeling over the water below the cliff and off San Quentin
 const GULL={im:null,b:[],M:new THREE.Matrix4(),Q:new THREE.Quaternion(),S:new THREE.Vector3(),V:new THREE.Vector3(),W:new THREE.Vector3(),E:new THREE.Euler()};
 function gullTick(){const B=GULL,on=PL.idx>CLF[0]-200&&PL.idx<Z.rb0;
@@ -4004,7 +4080,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={PRIS,CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={PRIS,TOX,SQX,CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
