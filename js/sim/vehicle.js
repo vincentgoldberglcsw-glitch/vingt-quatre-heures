@@ -46,6 +46,7 @@ const SPEC = {
   k:      { m: 900,  hp: 620, cla: 1.55, wf: 0.42, mu: 1.45, h: 0.37 },
   o:      { m: 880,  hp: 585, cla: 0.95, wf: 0.43, mu: 1.45, h: 0.37, aeroF: 0.56 },   // 1969 tail: little rear downforce, light at speed
   lh:     { m: 920,  hp: 620, cla: 1.05, wf: 0.42, mu: 1.45, h: 0.37 },
+  lhs:    { m: 925,  hp: 620, cla: 0.98, wf: 0.42, mu: 1.43, h: 0.37 },   // bare-aluminium long tail: a little less downforce and grip
   f512:   { m: 940,  hp: 610, cla: 1.45, wf: 0.43, mu: 1.45, h: 0.38 },
   gt40:   { m: 1060, hp: 430, cla: 0.60, wf: 0.44, mu: 1.42, h: 0.40 },
   m1:     { m: 1420, hp: 277, cla: 0.18, wf: 0.44, mu: 1.12, h: 0.47 },

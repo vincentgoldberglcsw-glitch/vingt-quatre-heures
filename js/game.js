@@ -1630,6 +1630,7 @@ const MODELS={
   k:{name:'Porsche 917K',year:'1970',desc:'Kurzheck. Short upswept tail: the most grip, the classic.',CL:4.4,B:[.54,.53,.50,.46,.42,.39,.37,.35,.30,.19,.03],W:[.90,.95,.98,.98,.97,.96,.97,.98,.96,.88,.66],rb:.2,top:100,grip:1,acc:1,twitch:0},
   o:{name:'Porsche 917',year:'1969',desc:'The original. Sloping tail: fast but nervous at speed.',CL:4.55,B:[.24,.35,.44,.46,.43,.39,.37,.35,.30,.19,.03],W:[.86,.93,.97,.98,.97,.96,.97,.98,.96,.88,.66],rb:.15,top:104,grip:.9,acc:1.03,twitch:1},
   lh:{name:'Porsche 917LH',year:'1971',desc:'Langheck. Long low-drag tail: highest top speed, less grip.',CL:5.3,B:[.30,.36,.41,.45,.47,.44,.40,.36,.31,.19,.03],W:[.78,.86,.92,.96,.98,.97,.96,.97,.96,.88,.66],rb:.13,top:108,grip:.92,acc:.97,twitch:0},
+  lhs:{name:'Porsche 917LH Aluminium',year:'1970',desc:'Langheck in bare silver: an even longer, flatter tail ending in two fins and a blade. The fastest 917, a touch less grip.',CL:5.55,B:[.40,.41,.43,.46,.47,.44,.40,.36,.31,.19,.03],W:[.88,.91,.94,.96,.98,.97,.96,.97,.96,.88,.66],rb:.15,fb:.33,top:109,grip:.9,acc:.97,twitch:0,wh:'multi'},
   f512:{name:'Ferrari 512 S',year:'1970',desc:'The V12 rival. Low wedge nose, tall front wings, a flat high tail with a lip.',CL:4.3,B:[.60,.60,.585,.54,.46,.40,.37,.34,.25,.13,.035],W:[.99,1.01,1.02,1.02,1,.99,1,1.02,1.01,.95,.8],rb:.2,fb:.36,top:101,grip:.97,acc:1.03,twitch:0,cy:.95,cw:1.05,cz:.14,lamp:'rect'},
   gt40:{name:'Ford GT40 Spyder',year:'1965',desc:'Open-top, older and heavier, with a blunt nose and a chopped tail: slower on the straight, steady in the corners.',CL:4.05,B:[.50,.51,.50,.47,.43,.40,.39,.39,.38,.33,.16],W:[.90,.92,.93,.92,.91,.90,.91,.92,.93,.92,.84],rb:.07,fb:.1,top:95,grip:1.01,acc:.92,twitch:0,cy:.6,cw:.94,open:1,lamp:'round'},
   // classic cars: a separate class from the racers. int: the cockpit (dash, instrument panel, wheel rim, spokes)
@@ -1643,7 +1644,7 @@ const MODELS={
   bz:{cls:1,name:'Bizzarrini 5300 Strada',year:'1965',desc:'A Corvette V8 under a very low, very long nose, and a short fastback cut off square. Fast and lively.',CL:4.37,B:[.48,.52,.53,.52,.48,.42,.36,.3,.24,.17,.09],W:[.84,.89,.91,.91,.9,.88,.88,.89,.88,.82,.66],rb:.1,fb:.1,top:82,grip:.9,acc:.87,twitch:0,cy:1.25,cw:.92,cz:-.45,cs:1.02,lamp:'none',road:.75,int:{dash:0x1c1c1e,panel:0x2a2a2c,rim:0x8a5a2a,spoke:0xc9cbc8,hub:0x141414}},
   ac:{cls:1,name:'Concept Coupe',year:'2025',desc:'A low, wide, matte mid-engined concept: a black grille face with light-strip lamps, louvres over the engine and dark wheels. Fast, grippy and a little stiff.',CL:4.42,B:[.46,.5,.51,.5,.46,.41,.36,.31,.26,.2,.09],W:[.94,.97,.98,.98,.97,.96,.96,.97,.96,.91,.78],rb:.1,fb:.08,top:88,grip:1.0,acc:.92,twitch:0,cy:.98,cw:1.04,cz:.12,lamp:'none',road:.85,int:{dash:0x1a1a1a,panel:0x262626,rim:0x101010,spoke:0x2a2a2a,hub:0x141414}}};
 buildTables();for(const k in MODELS)MODELS[k].dyn=makeDyn(k,MODELS[k]);   // tyre and engine tables, and each car's weights, gearing and aerodynamics (js/sim/vehicle.js)
-const RACERS=['o','k','lh','f512','gt40'],CLASSICS=['m1','p904','ghibli','bb','lp400','f400','bz','van'],ZF=2.2,WZ=[1.25,-1.3];let MKEYS=RACERS;
+const RACERS=['o','k','lh','lhs','f512','gt40'],CLASSICS=['m1','p904','ghibli','bb','lp400','f400','bz','van'],ZF=2.2,WZ=[1.25,-1.3];let MKEYS=RACERS;
 function arch(z){for(const zw of WZ){const d=z-zw;if(Math.abs(d)<.41)return .33+Math.sqrt(.41*.41-d*d);}return 0;}
 for(const k in MODELS){const m=MODELS[k];m.Bf=spl(m.B);m.Wf=spl(m.W);m.zR=ZF-m.CL;
   m.topY=(u,v,z)=>{const a=Math.abs(u),e=Math.exp(-(((a-.78)/.24)**2));return .14+m.Bf(v)*Math.sqrt(1-a**8)+e*((m.fb||.25)*Math.exp(-(((z-1.25)/.44)**2))+m.rb*Math.exp(-(((z+1.3)/.75)**2)));};
@@ -1714,7 +1715,9 @@ function livery(o,M,res){const ky=4.4/M.CL;
     if(!M.lamp)for(const x of[92,420]){g.fillStyle='#d9d2b4';g.beginPath();g.ellipse(x,150,34,58,0,0,7);g.fill();
       for(const yy of[128,172]){const rg=g.createRadialGradient(x,yy,2,x,yy,18);rg.addColorStop(0,'#fffbe8');rg.addColorStop(.6,'#cfc9ae');rg.addColorStop(1,'#77735f');g.fillStyle=rg;g.beginPath();g.arc(x,yy,17,0,7);g.fill();}
       g.strokeStyle='#202224';g.lineWidth=3.5;g.beginPath();g.ellipse(x,150,34,58,0,0,7);g.stroke();g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=1.5;g.beginPath();g.ellipse(x-6,140,22,44,0,3.4,4.7);g.stroke();}
-    if(!M.cls){g.fillStyle='#f3efe2';g.beginPath();g.ellipse(w/2,186,56,50,0,0,7);g.fill();g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=1.5;g.stroke();   // race number on the nose (the classic cars carry none)
+    if(o.bare){g.fillStyle='#ecebe4';g.fillRect(w/2-46,52,92,16);g.strokeStyle='#202224';g.lineWidth=1.5;g.strokeRect(w/2-46,52,92,16);g.save();g.translate(w/2,60);g.rotate(Math.PI);g.fillStyle='#202224';g.font='700 12px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText('S - 917',0,1);g.restore();   // slim plate on the nose, little Porsche crest above it
+      g.save();g.translate(w/2,150);g.fillStyle='#b8943c';g.beginPath();g.moveTo(-13,-15);g.lineTo(13,-15);g.lineTo(13,3);g.quadraticCurveTo(12,13,0,17);g.quadraticCurveTo(-12,13,-13,3);g.closePath();g.fill();g.fillStyle='#b3241c';g.fillRect(-10,-12,9,6);g.fillRect(1,1,9,6);g.fillStyle='#141414';g.fillRect(1,-12,9,6);g.fillRect(-10,1,9,6);g.fillStyle='#e3b63a';g.fillRect(-4,-5,8,8);g.restore();}
+    if(!M.cls&&!o.bare){g.fillStyle='#f3efe2';g.beginPath();g.ellipse(w/2,186,56,50,0,0,7);g.fill();g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=1.5;g.stroke();   // race number on the nose (the classic cars carry none)
     g.save();g.translate(w/2,186);g.rotate(Math.PI);g.fillStyle='#111';g.font='900 70px Arial Black,Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(o.num,0,4);g.restore();}
     if(o.logos==='shell'){g.save();g.translate(w/2,262);g.rotate(Math.PI);g.fillStyle='#f3efe2';g.fillRect(-46,-13,92,26);g.fillStyle='#c4231a';g.font='900 19px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText('Shell',0,1);g.fillStyle='#f3efe2';g.font='900 15px Arial';g.fillText('PORSCHE',0,-28);g.restore();}   // Salzburg: Shell badge and PORSCHE under the number
     if(o.logos==='gulf'){g.save();g.translate(w/2,262);g.rotate(Math.PI);g.fillStyle='#1c2f55';g.beginPath();g.arc(0,0,22,0,7);g.fill();g.fillStyle='#e0612a';g.beginPath();g.arc(0,0,18,0,7);g.fill();g.fillStyle='#1c2f55';g.font='900 13px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText('Gulf',0,1);g.restore();}   // Gulf badge on the nose
@@ -1722,7 +1725,7 @@ function livery(o,M,res){const ky=4.4/M.CL;
     for(const[x,y]of[[112,350],[400,350]]){g.fillStyle='#b9b6aa';g.beginPath();g.arc(x,y,9,0,7);g.fill();g.strokeStyle='#33352f';g.lineWidth=2;g.stroke();g.beginPath();g.moveTo(x-6,y);g.lineTo(x+6,y);g.stroke();}
     g.fillStyle='#c9c6b8';for(const[x,y]of[[170,300],[342,300],[60,326],[452,326],[170,700],[342,700],[30,700],[482,700]]){g.beginPath();g.arc(x,y,3.2,0,7);g.fill();}
     const stick=(x,y,t,bg,fg,ww=44)=>{g.save();g.translate(x,y);g.rotate(Math.PI);g.fillStyle=bg;g.fillRect(-ww/2,-8,ww,16);g.fillStyle=fg;g.font='900 11px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(t,0,1);g.restore();};
-    if(!M.road){stick(52,250,'HUILES','#f2ead2','#a3301f');stick(460,250,'PNEUS','#e3b63a','#111');stick(44,292,'BOUGIES','#1f4f8a','#f2ead2',50);stick(468,292,'FREINS','#f2ead2','#111');}
+    if(!M.road&&!o.bare){stick(52,250,'HUILES','#f2ead2','#a3301f');stick(460,250,'PNEUS','#e3b63a','#111');stick(44,292,'BOUGIES','#1f4f8a','#f2ead2',50);stick(468,292,'FREINS','#f2ead2','#111');}
     g.fillStyle='#0e0f10';if(!M.road)for(let y=792;y<980;y+=11){g.fillRect(168,y,74,5);g.fillRect(270,y,74,5);}
     for(const x of[60,452]){for(let y=742;y<800;y+=9)g.fillRect(x-22,y,44,4);}
     liveryLines(g,w,h,'rgba(18,26,34,.6)',1.6);g.restore();}
@@ -1735,7 +1738,7 @@ function livery(o,M,res){const ky=4.4/M.CL;
     if(!M.road)for(let y=792;y<980;y+=11){g.fillRect(168,y,74,5);g.fillRect(270,y,74,5);}g.fillStyle='#c8c8c8';for(const x of[92,420]){g.beginPath();g.ellipse(x,150,34,58,0,0,7);g.fill();}},false);
   const emis=canvas(256,512,(g,w,h)=>{g.fillStyle='#000';g.fillRect(0,0,w,h);g.scale(1,ky);g.fillStyle='#fff';
     for(const[x,y,r]of(M.lamp==='rect'?[[42,85,11],[214,85,11],[118,15,6],[138,15,6]]:M.lamp==='round'?[[44,46,10],[44,75,10],[212,46,10],[212,75,10]]:[[46,64,7.5],[46,86,7.5],[210,64,7.5],[210,86,7.5]])){g.beginPath();g.arc(x,y,r,0,7);g.fill();}});
-  return new THREE.MeshPhysicalMaterial({map,bumpMap:bump,bumpScale:2.5,emissiveMap:emis,emissive:0xffe6b0,emissiveIntensity:M.lamp==='none'?0:5,roughness:o.patina?.78:.34,metalness:.05,clearcoat:o.patina?.05:.8,clearcoatRoughness:.2,side:THREE.DoubleSide});
+  return new THREE.MeshPhysicalMaterial({map,bumpMap:bump,bumpScale:2.5,emissiveMap:emis,emissive:o.bare?0xffcf78:0xffe6b0,emissiveIntensity:M.lamp==='none'?0:5,roughness:o.patina?.78:o.bare?.3:.34,metalness:o.bare?.3:.05,clearcoat:o.patina?.05:.8,clearcoatRoughness:.2,side:THREE.DoubleSide});
 }
 const hubTex=canvas(256,256,(g)=>{g.clearRect(0,0,256,256);g.fillStyle='#111';g.beginPath();g.arc(128,128,127,0,7);g.arc(128,128,78,0,7,true);g.fill();
   g.strokeStyle='#1d1d1d';g.lineWidth=2;for(const r of[120,112,86]){g.beginPath();g.arc(128,128,r,0,7);g.stroke();}
@@ -1751,7 +1754,7 @@ function wheel(k,rimMat=rimSilver,st){const g=new THREE.Group(),W=WHEELG[k],h=W.
   if(st==='dial'){const d=new THREE.Mesh(cyl(.19,.19,.02,28),rimMat);d.position.y=h-.07;g.add(d);for(let i=0;i<5;i++){const a=i/5*6.283,ho=new THREE.Mesh(cyl(.045,.045,.024,14),dark);ho.position.set(Math.sin(a)*.118,h-.064,Math.cos(a)*.118);g.add(ho);}}   // telephone-dial wheel: a flat disc with five round holes
   else if(st==='wire'){for(let i=0;i<36;i++){const s=new THREE.Mesh(wireG,chrome),a=i/36*6.283;s.position.set(Math.sin(a)*.1,h-.06-(i%2)*.04,Math.cos(a)*.1);s.rotation.y=a+(i%2?.18:-.18);g.add(s);}   // wire wheel and a three-eared knock-off
     for(let i=0;i<3;i++){const e=new THREE.Mesh(earG,chrome);e.position.y=h-.02;e.rotation.y=i*2.094;g.add(e);}}
-  else for(let i=0;i<5;i++){const s=new THREE.Mesh(spokeG,rimMat);const a=i/5*6.283;s.position.set(Math.sin(a)*.105,h-.075,Math.cos(a)*.105);s.rotation.y=a;g.add(s);}
+  else for(let i=0,n=st==='multi'?12:5;i<n;i++){const s=new THREE.Mesh(spokeG,rimMat);const a=i/n*6.283;if(n>5)s.scale.x=.45;s.position.set(Math.sin(a)*.105,h-.075,Math.cos(a)*.105);s.rotation.y=a;g.add(s);}
   const nut=new THREE.Mesh(nutG,nutMat);nut.position.y=h-.05;g.add(nut);
   const wall=new THREE.Mesh(ringG,wallMat);wall.rotation.x=-Math.PI/2;wall.position.y=h+.002;g.add(wall);return g;}
 const dark=std({color:0x0c0c0d,roughness:.8,side:THREE.DoubleSide}),chrome=std({color:0xd8d8d0,metalness:1,roughness:.18});
@@ -1768,7 +1771,7 @@ function makeCar(o){
   const M=MODELS[o.model],zR=M.zR,car=new THREE.Group(),bodyMat=livery(o,M,o.res||1);car.rotation.order='YXZ';
   const add=(m,x,y,z,sh=true)=>{m.position.set(x,y,z);m.castShadow=sh;car.add(m);return m;};
   const body=add(new THREE.Mesh(M.geo,bodyMat),0,0,0);body.receiveShadow=true;car.body=body;
-  const paint=new THREE.MeshPhysicalMaterial({color:o.base,roughness:.34,clearcoat:.8,clearcoatRoughness:.2}),acc=new THREE.MeshPhysicalMaterial({color:o.stripe||o.edge||o.base,roughness:.34,clearcoat:.8});
+  const paint=new THREE.MeshPhysicalMaterial({color:o.base,roughness:o.bare?.3:.34,metalness:o.bare?.3:0,clearcoat:.8,clearcoatRoughness:.2}),acc=new THREE.MeshPhysicalMaterial({color:o.stripe||o.edge||o.base,roughness:.34,clearcoat:.8});
   add(new THREE.Mesh(M.cap,dark),0,0,0,false);
   add(new THREE.Mesh(new THREE.BoxGeometry(1.2,.26,M.CL-1.3),dark),0,.22,(ZF+zR)/2-.1);
   add(new THREE.Mesh(new THREE.BoxGeometry(1.5,.03,.5),dark),0,.105,ZF-.2);
@@ -1833,16 +1836,18 @@ function makeCar(o){
     add(new THREE.Mesh(new THREE.BoxGeometry(.035,.09,1.5),acc),sd*.955,.2,-.03);
     if(o.model==='k'){const f=add(new THREE.Mesh(FING,paint),sd*.8-.012,tailY-.03,zR+.62);f.rotation.y=Math.PI/2;f.scale.set(.6,.62,1);}
     if(o.model==='lh'){const f=add(new THREE.Mesh(FING,paint),sd*(tw-.1)-.012,tailY-.04,zR+1.05);f.rotation.y=Math.PI/2;f.scale.set(1.05,1.05,1);}
+    if(o.model==='lhs'){const f=add(new THREE.Mesh(FING,paint),sd*(tw-.08)-.012,tailY-.05,zR+1.2);f.rotation.y=Math.PI/2;f.scale.set(1.2,1.15,1);}   // the long tail's two upswept fins
     if(o.model==='o')add(new THREE.Mesh(new THREE.BoxGeometry(.5,.02,.2),acc),sd*.5,tailY+.03,zR+.08).rotation.x=.35;
-    if(!M.cls){const rd=decal(o.rt,.4,.4);add(rd,sd*.985,.36,-.12,false);rd.rotation.order='YXZ';rd.rotation.set(-.12,sd*Math.PI/2,0);}
+    if(!M.cls&&!o.bare){const rd=decal(o.rt,.4,.4);add(rd,sd*.985,.36,-.12,false);rd.rotation.order='YXZ';rd.rotation.set(-.12,sd*Math.PI/2,0);}
     if(o.logos==='shell')[[LOGO.shell[0],.5,.3,.24,.08],[LOGO.shell[1],.05,.12,.62,.1]].forEach(([t,z,y,dw,dh])=>{const d=decal(t,dw,dh);add(d,sd*.99,y,z,false);d.rotation.order='YXZ';d.rotation.set(-.1,sd*Math.PI/2,0);});
     else if(o.logos==='gulf'){const d=decal(LOGO.gulf,.16,.16);add(d,sd*.99,.36,-.42,false);d.rotation.order='YXZ';d.rotation.set(-.12,sd*Math.PI/2,0);}
-    else if(!M.road)[[.5,.3,0],[.5,.2,1],[-.62,.3,2]].forEach(([z,y,k])=>{const d=decal(DEC[k],.24,.08);add(d,sd*.99,y,z,false);d.rotation.order='YXZ';d.rotation.set(-.1,sd*Math.PI/2,0);});
+    else if(!M.road&&!o.bare)[[.5,.3,0],[.5,.2,1],[-.62,.3,2]].forEach(([z,y,k])=>{const d=decal(DEC[k],.24,.08);add(d,sd*.99,y,z,false);d.rotation.order='YXZ';d.rotation.set(-.1,sd*Math.PI/2,0);});
     const tl=add(new THREE.Mesh(cyl(.055,.055,.03,14),tailM),sd*tw*.42,.14+M.B[0]*.62,zR-.005,false);tl.rotation.x=Math.PI/2;
     const ex=add(new THREE.Mesh(new THREE.CylinderGeometry(.075,.04,.42,14,1,true),std({color:0x6a665c,metalness:.85,roughness:.35,side:THREE.DoubleSide})),sd*.2,.24,zR-.1);ex.rotation.x=-Math.PI/2+.12;}
   if(o.model==='k')add(new THREE.Mesh(new THREE.BoxGeometry(1.5,.02,.2),paint),0,tailY+.045,zR+.1).rotation.x=.25;
   if(o.model==='f512')add(new THREE.Mesh(new THREE.BoxGeometry(tw*2-.12,.11,.025),paint),0,tailY+.03,zR+.03).rotation.x=-.3;
   if(o.model==='lh')add(new THREE.Mesh(new THREE.BoxGeometry(tw*2-.2,.025,.26),paint),0,tailY+.27,zR+.2).rotation.x=.06;
+  if(o.model==='lhs'){add(new THREE.Mesh(new THREE.BoxGeometry(tw*2-.18,.025,.3),paint),0,tailY+.3,zR+.22).rotation.x=.06;add(new THREE.Mesh(new THREE.BoxGeometry(.4,.012,.02),dark),.42,.66,.95,false).rotation.set(.55,0,.5);}   // spoiler blade between the fins, second wiper
   const wip=add(new THREE.Mesh(new THREE.BoxGeometry(.4,.012,.02),dark),-.05,.66,.95,false);wip.rotation.set(.55,0,.5);
   // night glow
   const glowM=new THREE.SpriteMaterial({map:glowTex,color:0xffe2a8,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0});car.glow=glowM;
@@ -1859,6 +1864,7 @@ const GULF20={...GULF,name:'GULF',d:'Gulf light blue, orange stripe down the mid
 const LIVS={   // each car has its own set of colours
   k:[GULF20,SALZ23,{name:'BLANC ET BLEU',d:'White with a dark blue stripe. No. 21.',base:'#eae6d8',stripe:'#1f3358',pin:'#b3241c',num:'21',helmet:'#b3241c'}],
   o:[{name:'BLANC USINE',d:'Works white with a red nose and sills. No. 12.',base:'#ece8dc',nose:'#b3241c',edge:'#b3241c',num:'12',helmet:'#b3241c'},{name:'BLEU NUIT',d:'Midnight blue with a yellow stripe. No. 14.',base:'#1f3358',stripe:'#e3c94a',pin:'#0e1830',num:'14',helmet:'#e3c94a'},{name:'VERT ANGLAIS',d:'Dark green with a white nose. No. 15.',base:'#23492f',nose:'#ece8dc',edge:'#ece8dc',num:'15',helmet:'#ece8dc'},SALZ23,GULF20],
+  lhs:[{name:'ALUMINIUM',d:'Bare silver aluminium, no numbers, no stickers. Black wheels.',base:'#d4d7d9',bare:1,num:'917',helmet:'#e6e1d0',rim:'black'},GULF20,SALZ23],
   lh:[{name:'PSYCHÉDÉLIQUE',d:'Purple with green swirls. No. 3.',base:'#4a2f7a',swirl:'#7fc46a',num:'3',helmet:'#e6e1d0'},{name:'ARGENT RAYÉ',d:'Silver with blue and red stripes. No. 21.',base:'#c9cbc8',twin:'#1f3358',stripe:'#b3241c',pin:'#7a1512',num:'21',helmet:'#1f3358'},{...GULF,d:GULF.d+' No. 18.',num:'18'},SALZ23,GULF20],
   f512:[{name:'ROSSO CORSA',d:'Racing red, white band and roundel, gold wheels. No. 7.',base:'#c4231a',band:'#f3efe2',num:'7',helmet:'#e6e1d0',rim:'gold'},{name:'GIALLO',d:'Yellow with a red stripe, gold wheels. No. 9.',base:'#e3b92e',stripe:'#b3241c',pin:'#3a0c08',num:'9',helmet:'#1a1a1a',rim:'gold'},{name:'ROSSO E BLU',d:'Red with a blue and white nose band. No. 11.',base:'#b81f18',band:'#1f3f8a',nose:'#f3efe2',num:'11',helmet:'#1f3f8a',rim:'gold'}],
   gt40:[{name:'WHITE AND BLUE',d:'White with twin blue stripes. No. 2.',base:'#ece8dc',twin:'#1f3f8a',num:'2',helmet:'#1f3f8a'},{name:'BLACK AND SILVER',d:'Black with a silver stripe. No. 1.',base:'#1c1d1f',stripe:'#b9bcc0',pin:'#55585c',num:'1',helmet:'#b9bcc0'},{...GULF,d:GULF.d+' No. 6.',num:'6'}],
