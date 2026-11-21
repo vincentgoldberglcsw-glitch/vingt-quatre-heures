@@ -993,6 +993,10 @@ if(DRIVE){ // ---- Alameda scenery: the hill and driveway to the burger, eucalyp
       cafe=pic('cafe-con-pan.jpg',30,88,300,468),
       sun=pic('red-sun-poster.jpg',0,68,728,758),
       clown=pic('clown-mask.jpg',0,28,512,612);
+    const lead=pic('red-leader-film-poster.jpg',0,0,484,596,[[412,12,66,46,478,90]]),afr=pic('africa-poster.jpg',76,56,328,556),apes=pic('apes-startrek-comic.jpg',0,0,640,640,[[564,514,56,88,628,505]]);
+    pboard(Z.tu1+m(2200),-1,[[apes,1]],15);   // I-880, on towards the Bay Bridge
+    pboard(Z.berkeley+m(900),-1,[[afr,328/556]],17);   // I-80, past Berkeley
+    pboard(Z.emeryville+m(700),1,[[lead,484/596]],18);   // I-80, Emeryville into Oakland
     pboard(Z.tu1+m(450),1,[[sol,512/614]]);   // I-880, out of the Posey Tube
     pboard(Z.i80+m(220),-1,[[gp,476/596]],15);   // I-80 south, off the Richmond bridge
     pboard(Z.oakland+m(600),-1,[[cafe,300/468]],18);   // the last freeway, through Oakland to the Webster Tube: the two biggest
