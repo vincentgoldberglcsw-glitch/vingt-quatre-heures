@@ -34,6 +34,7 @@ const std=o=>new THREE.MeshStandardMaterial(o);
 const STORM={ships:[],tex:null,a:0,b:0};   // the stormy sea on the right of I-80 South, out to Berkeley (see stormTick)
 const LIT={p:null,t:3};   // litter thrown from passing cars (see litterTick)
 const SFSM=[];   // smoke sources on the decayed San Francisco towers
+const SFP=[];    // the San Francisco pyramid towers, left unbaked so they can fall in the city quake (sfPyrTick)
 const BBQ=[];   // the roadside billboards on I-880 that fall during the quake (see bbQuakeTick)
 const VANS=[];   // the ice-cream truck and the taco truck, driving up and down Paru (see vanTick)
 const BEARS=[],BUFF=[];let DRUMG=null,DRUMM=null;
@@ -1085,9 +1086,9 @@ await BOOT.step('THE PORT OF OAKLAND',.43);
       for(let k=0;k<9;k++){const i=Z.b1+m(110+k*135),lat=70+rr(0,70)+(k%2)*30;gpos(i,lat,V);const g=new THREE.Group(),pyr=k%3!==2,h=pyr?rr(95,150):rr(70,115),r=pyr?rr(10,13):rr(15,20),broken=k%3===0||k%4===1;
         if(pyr){const body=new THREE.Mesh(new THREE.CylinderGeometry(broken?r*.28:r*.04,r,h,4),dm);body.position.y=h/2;g.add(body);   // the Transamerica-style pyramid: tapering to a point, with a wing either side
           for(const s of[-1,1]){B(2.6,h*.42,9,dm,s*r*.62,h*.21+h*.05,0,0,g);}
-          if(broken){const jg=new THREE.Mesh(new THREE.ConeGeometry(r*.3,7,5),blk);jg.position.y=h+2;jg.rotation.z=rr(-.5,.5);g.add(jg);}else{const sp=new THREE.Mesh(cyl(.25,.8,30,6),rst);sp.position.y=h+12;g.add(sp);}}
+          if(broken){const jg=new THREE.Mesh(new THREE.ConeGeometry(r*.3,7,5),blk);jg.position.y=h+2;jg.rotation.z=rr(-.5,.5);g.add(jg);g.userData.tip=jg;}else{const sp=new THREE.Mesh(cyl(.25,.8,30,6),rst);sp.position.y=h+12;g.add(sp);g.userData.tip=sp;}}
         else{B(r*1.8,h,r*1.4,dm,0,h/2,0,0,g);const top=B(r*1.6,5,r*1.2,rst,0,h+1,0,0,g);top.rotation.z=rr(-.25,.25);B(r*1.8+.3,6,r*1.4+.3,blk,0,h*rr(.35,.7),0,0,g);}   // a box tower with a tilted broken top and one floor collapsed
-        g.position.set(V.x,0,V.z);g.rotation.order='YXZ';g.rotation.set(rr(-.04,.04),yaw(i),rr(-.05,.05));g.traverse(o=>{if(o.isMesh)o.castShadow=true;});scene.add(g);if(broken||k%2)SFSM.push({x:V.x,y:h*.95,z:V.z,i,t:R(0,2)});}}
+        g.position.set(V.x,0,V.z);g.rotation.order='YXZ';g.rotation.set(rr(-.04,.04),yaw(i),rr(-.05,.05));g.traverse(o=>{if(o.isMesh)o.castShadow=true;});scene.add(g);if(pyr)SFP.push({g,i,h,r});if(broken||k%2)SFSM.push({x:V.x,y:h*.95,z:V.z,i,t:R(0,2)});}}
     // the left (bay) side, in order: warehouses, then the rail yard, then the port with its cranes
     for(let i=Z.tu1+m(150);i<Z.tu1+m(620);i+=m(rr(55,80))){gpos(i,rr(150,200),V);const w=rr(40,70),d=rr(26,44),h=rr(9,15);B(w,h,d,pick([fade,fade2,rust2,rust]),V.x,V.y+h/2,V.z,yaw(i));B(w+1,1,d+1,mat('roofgrey',{color:0x5a5c5e}),V.x,V.y+h+.3,V.z,yaw(i));
       for(let q=-1;q<=1;q++){const[dx,dz]=[Math.cos(yaw(i))*q*w*.28,-Math.sin(yaw(i))*q*w*.28];B(5,5,.3,mat('dock',{color:0x3a3c3e}),V.x+dx-Nn[i].x*d/2,V.y+2.5,V.z+dz-Nn[i].z*d/2,yaw(i));}}   // loading doors facing the freeway
@@ -1636,7 +1637,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
   {const ch=std({color:0x1c1a18,roughness:1});for(const f of[.12,.27,.45,.6,.83]){const i=Z.b0+Math.round((Z.b1-Z.b0)*f),sd=f*10%2<1?1:-1,g=new THREE.Group();g.add(new THREE.Mesh(carG,ch),new THREE.Mesh(whG,ch));off(i,sd*7.4,0,g.position);g.rotation.set(0,yaw(i)+rr(-.6,.6),sd*.12);scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:2.2});BURN.push({x:g.position.x,y:g.position.y+1,z:g.position.z,s:.8});}}
   // last of all, merge the static scenery by material and by area, so the whole bay draws in a few hundred calls instead of tens of thousands
   Terrain.occupy(scene.children.slice(A0));Terrain.start(scene,CULL,LANDM,grassTex);   // the real hills: level ground is kept under everything built above, and the rest is queued to be raised tile by tile
-  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...(BAYV?[BAYV.g]:[]),...CROWS.map(c=>c.g),...MILLC.tw.map(t=>t.g),...BEARS.map(b=>b.g),...Object.values(BTL.br).flat().map(x=>x[0])]));
+  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...(BAYV?[BAYV.g]:[]),...CROWS.map(c=>c.g),...MILLC.tw.map(t=>t.g),...BEARS.map(b=>b.g),...SFP.map(o=>o.g),...Object.values(BTL.br).flat().map(x=>x[0])]));
   for(const o of [...scene.children])if(o.isInstancedMesh&&o.frustumCulled&&o.count>60)splitInstanced(o);
 }
 
@@ -3044,7 +3045,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);bigIguTick(rdt);tubeIguTick(rdt);rigiTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);eyeMonTick(rdt);bigfootTick(rdt);seaMonTick(rdt);sfBldTick(rdt);hydMosqTick(rdt);hydIguTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);bigIguTick(rdt);tubeIguTick(rdt);rigiTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);eyeMonTick(rdt);bigfootTick(rdt);seaMonTick(rdt);sfBldTick(rdt);sfPyrTick(rdt);clayTick(rdt);hydMosqTick(rdt);hydIguTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -4140,6 +4141,62 @@ function sfBldTick(rdt){if(!DRIVE)return;const m_=x=>Math.round(x/SEG);
       if(Math.random()<rdt*12){NOGY=1;const p=o.g.localToWorld(V.set(R(-8,8),R(0,o.h*(1-o.sk*k)),-o.d*R(.2,.8)));puff(p,R(-3,3),R(-2,2),R(-3,3),R(3,6),R(10,18),R(2,3.5),.6,0x9a948a);
         puff(o.g.localToWorld(V.set(R(-10,10),1,-o.d*R(0,1.2))),R(-6,6),R(2,6),R(-6,0),R(6,10),R(16,26),R(2.5,4),.65,0xa8a094);NOGY=0;}}   // dust pouring off it and rolling out at the base
     else{o.st=2;o.snd=0;}}}
+// San Francisco: the Transamerica-style pyramid towers fall in the city quake. One after another each shudders, its tip snaps and drops, then it leans away from the road
+// and sags into its own rubble with dust pouring off and rolling out at the base and a deep rumble (visual only: nothing reaches the road). Put back up for the next pass.
+const PYQ=new THREE.Quaternion();
+function sfPyrTick(rdt){if(!DRIVE||!SFP.length)return;const pe=ents.find(e=>e.player);if(!pe)return;
+  if(!SFP[0].q0)for(const o of SFP){const g=o.g,c=off(o.i,0,0,new THREE.Vector3()),dx=g.position.x-c.x,dz=g.position.z-c.z,l=Math.hypot(dx,dz)||1;o.out=[dx/l,dz/l];
+    o.ax=new THREE.Vector3(dz/l,0,-dx/l);o.q0=g.quaternion.clone();o.p0=g.position.clone();o.tip=g.userData.tip;o.tp0=o.tip.position.clone();o.tz0=o.tip.rotation.z;
+    const wx=Math.cos(g.rotation.y),wz=-Math.sin(g.rotation.y);o.sx=Math.sign(wx*o.out[0]+wz*o.out[1])||1;o.ta=R(.38,.55);o.sk=R(.35,.5);}   // which way is "away from the road", in the tower's own frame too
+  if(CQ.st===0){for(const o of SFP)if(o.st){o.st=0;o.snd=0;o.g.quaternion.copy(o.q0);o.g.position.copy(o.p0);o.g.scale.y=1;o.tip.position.copy(o.tp0);o.tip.rotation.z=o.tz0;}return;}
+  for(const o of SFP){const ds=o.i*SEG-pe.s;
+    if(!o.st){if(ds<560&&ds>-250){o.st=1;o.t=0;o.dl=R(0,3.5);}continue;}
+    if(o.st===2)continue;o.t+=rdt;const t=o.t-o.dl;if(t<0)continue;const k=sst(t,1.4,7),kt=sst(t,.5,2.4),sh=t<1.8?.7*(1-t/1.8):0,near=Math.abs(ds)<650;
+    PYQ.setFromAxisAngle(o.ax,o.ta*k*k);o.g.quaternion.copy(PYQ).multiply(o.q0);o.g.scale.y=1-o.sk*k;
+    o.g.position.set(o.p0.x+R(-sh,sh),o.p0.y-o.h*.1*k,o.p0.z+R(-sh,sh));   // shudders, then leans back and sinks
+    o.tip.rotation.z=o.tz0-o.sx*1.5*kt;o.tip.position.set(o.tp0.x+o.sx*o.r*.9*kt,o.tp0.y-o.h*.3*kt*kt,o.tp0.z);   // the tip snaps off and drops away behind
+    if(near&&!o.snd&&t>.5){o.snd=1;sfxCrunch(.6);if(AC){const a=AC.currentTime+.9;hit(a,3.5,.9,90,'lowpass',master);tone('sine',36,a,3.5,.6,master,{to:24,a:.2,h:.6});}
+      setTimeout(()=>sfxCrunch(1),1100);setTimeout(()=>sfxCrunch(.7),1700);setTimeout(()=>sfxCrunch(.5),2600);G.shake=Math.max(G.shake,.3);}
+    if(t<8){if(Math.random()<rdt*16){NOGY=1;const p=o.g.localToWorld(V.set(R(-o.r,o.r)*.7,R(0,o.h*.8),R(-o.r,o.r)*.7));puff(p,R(-3,3),R(-3,1),R(-3,3),R(4,7),R(12,22),R(2.5,4),.6,0x9a948a);
+        const a=R(-1.2,1.2),ox=o.out[0]*Math.cos(a)-o.out[1]*Math.sin(a),oz=o.out[0]*Math.sin(a)+o.out[1]*Math.cos(a),q=R(0,o.r*1.2);
+        puff(V.set(o.p0.x+ox*q,o.p0.y+2,o.p0.z+oz*q),ox*R(4,9),R(1,5),oz*R(4,9),R(8,12),R(22,36),R(3,5),.7,0xa8a094);NOGY=0;}}   // dust pouring off it and rolling out at the base, away from the street
+    else o.st=2;}}
+// San Francisco, off the Bay Bridge: a giant terracotta figure (an ancient west-Mexican clay horn player, some 75 m tall) stands among the buildings on the right,
+// well back from the road, blowing his long horn. He just stands; in the city quake dust and a few chips fall off him (CLAY, clayTick; visual only).
+const CLAY={g:null,ch:[],nc:0};
+function clayBuild(){const C=CLAY,m_=x=>Math.round(x/SEG),i=Z.b1+m_(560),g=new THREE.Group(),S=.7;C.i=i;
+  const tc=canvas(256,256,(c,w,h)=>{c.fillStyle='#a8643f';c.fillRect(0,0,w,h);for(let k=0;k<1100;k++){const r=Math.random();c.fillStyle=r<.45?'rgba(220,204,186,.2)':r<.75?'rgba(124,66,40,.35)':'rgba(70,40,28,.22)';c.beginPath();c.arc(Math.random()*w,Math.random()*h,1+Math.random()*9,0,6.283);c.fill();}});
+  const EM={emissive:0xffffff,emissiveIntensity:.32},clay=std({map:tc,emissiveMap:tc,...EM,roughness:.95}),clayD=std({map:tc,emissiveMap:tc,...EM,roughness:.95,side:THREE.DoubleSide}),dark=std({color:0x2e1a12,roughness:1}),
+    crest=std({roughness:.95,map:canvas(256,256,(c,w,h)=>{c.drawImage(tc.image,0,0);c.strokeStyle='rgba(60,30,18,.75)';c.lineWidth=3;for(let k=0;k<56;k++){const a=k/56*6.283;c.beginPath();c.moveTo(128+Math.cos(a)*62,128+Math.sin(a)*62);c.lineTo(128+Math.cos(a)*122,128+Math.sin(a)*122);c.stroke();}
+      c.lineWidth=5;c.beginPath();c.arc(128,128,124,0,6.283);c.stroke();})}),   // the sun-ray crest: incised radiating lines
+    belly=std({roughness:.95,map:canvas(256,256,(c,w,h)=>{c.drawImage(tc.image,0,0);c.strokeStyle='rgba(60,30,18,.8)';c.lineWidth=3;for(const x of[40,88]){c.beginPath();c.moveTo(x,40);c.lineTo(x,216);c.stroke();}c.lineWidth=2;for(let y=46;y<214;y+=9){c.beginPath();c.moveTo(44,y);c.lineTo(84,y+4);c.stroke();}})});   // the incised belly panel
+  for(const mm of[crest,belly]){mm.emissiveMap=mm.map;mm.emissive.set(0xffffff);mm.emissiveIntensity=.32;}   // a little self-glow so the terracotta reads in dull weather
+  const SPH=new THREE.SphereGeometry(1,22,16),UP=new THREE.Vector3(0,1,0),
+    P_=(geo,mt,x,y,z,sx=1,sy=1,sz=1,rx=0,ry=0,rz=0)=>{const o=new THREE.Mesh(geo,mt);o.position.set(x*S,y*S,z*S);o.scale.set(sx*S,sy*S,sz*S);o.rotation.set(rx,ry,rz);o.castShadow=true;g.add(o);return o;},
+    limb=(a,b,r0,r1,mt=clay)=>{const A=new THREE.Vector3(...a).multiplyScalar(S),Bv=new THREE.Vector3(...b).multiplyScalar(S),d=Bv.clone().sub(A),o=new THREE.Mesh(cyl(r1*S,r0*S,d.length(),14),mt);
+      o.position.copy(A).add(Bv).multiplyScalar(.5);o.quaternion.setFromUnitVectors(UP,d.normalize());o.castShadow=true;g.add(o);return o;};
+  for(const sx of[-1,1]){P_(SPH,clay,sx*10,3,4,8,4.5,11);for(let q=0;q<4;q++)P_(new THREE.ConeGeometry(1,1,8),clay,sx*10+(q-1.5)*3.8,2.2,14.5,1.7,4.5,1.7,Math.PI/2);   // stubby clawed toes
+    limb([sx*10,4,1],[sx*11,38,0],8,9.5);P_(new THREE.TorusGeometry(1,.25,10,26),clay,sx*10.4,25,.6,9.4,9.4,9.4,Math.PI/2);   // short thick legs with a rolled band at the knee
+    P_(SPH,clay,sx*22,72,0,8.5,8.5,8.5);P_(SPH,clay,sx*3.6,92,11.8,3.6,1,1.4);P_(new THREE.BoxGeometry(1,1,1),dark,sx*4.2,89.6,12.6,4.4,.7,1.2,0,0,sx*.12);}   // shoulders, brows and slit eyes
+  P_(SPH,clay,0,40,0,22,11,15);P_(SPH,clay,0,57,0,25,27,17);P_(SPH,belly,0,48,13.6,6.5,14,3.6);   // the stocky body and its belly panel
+  P_(new THREE.TorusGeometry(1,.13,10,30,Math.PI),clay,0,72,11,12,12,12,-.45,0,Math.PI);P_(SPH,clay,0,63.5,16.4,2.6,6,2);   // the U-shaped collar and its pendant
+  P_(SPH,clay,0,78,2,9,6,9);P_(SPH,clay,0,88,3,11,11.5,10.5);P_(SPH,clay,0,86.5,13.6,1.8,2.6,2);   // neck, round head and nose
+  P_(new THREE.CylinderGeometry(1,1,1,44),[clay,crest,clay],0,90,-3,18,2.5,18,Math.PI/2);P_(new THREE.ConeGeometry(1,1,10),clay,4,109,-3,3.5,9,3.5,0,0,-.3);   // the sun-ray crest and the pointed knob on top
+  const M0=[0,83.5,13],E=[36,90,19],lp=(f)=>M0.map((v,j)=>v+(E[j]-v)*f);limb(M0,E,1.7,2.6);   // the long horn, from his mouth out to his left (away from the road)
+  {const d=new THREE.Vector3(E[0]-M0[0],E[1]-M0[1],E[2]-M0[2]).normalize(),b=new THREE.Mesh(new THREE.CylinderGeometry(7*S,2.6*S,7*S,20,1,true),clayD);b.position.set(...E).multiplyScalar(S).addScaledVector(d,3.5*S);b.quaternion.setFromUnitVectors(UP,d);g.add(b);
+    const rim=new THREE.Mesh(new THREE.TorusGeometry(7*S,.7*S,8,24),clay);rim.position.set(...E).multiplyScalar(S).addScaledVector(d,7*S);rim.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),d);g.add(rim);}   // its flared bell
+  const H1=lp(.62),H2=[-6,82.5,15.5];limb([22,72,0],[31,75,11],6.5,5.6);limb([31,75,11],H1,5.6,4.6);P_(SPH,clay,...H1,5,4.6,5);   // both arms raised holding the horn
+  limb([-22,72,0],[-27,75,13],6.5,5.6);limb([-27,75,13],H2,5.6,4.6);P_(SPH,clay,...H2,5,4.6,5);
+  const p=off(i,-(RW+XW[i]+72),0);p.y=groundAt(p.x,p.z)-1;g.position.copy(p);const tg=off(i-m_(260),0,0);tg.y=p.y;g.lookAt(tg);scene.add(g);C.g=g;C.y0=p.y+1;   // facing the traffic coming off the bridge
+  for(let k=0;k<6;k++){const c=new THREE.Mesh(new THREE.DodecahedronGeometry(1),clay);c.scale.setScalar(R(1,2));c.visible=false;c.castShadow=true;scene.add(c);C.ch.push({m:c});}}
+function clayTick(rdt){if(!DRIVE)return;const C=CLAY;if(!C.g)clayBuild();const pe=ents.find(e=>e.player);if(!pe)return;
+  if(CQ.st===0){if(C.q){C.q=0;C.nc=0;for(const c of C.ch)c.m.visible=false;}return;}
+  if(!C.q){const ds=C.i*SEG-pe.s;if(ds<700&&ds>-300){C.q=1;C.t=0;}else return;}
+  C.t+=rdt;const t=C.t,sp=()=>C.g.localToWorld(V.set(R(-24,24),R(30,100),R(5,14)).multiplyScalar(.7));
+  if(t<9&&Math.random()<rdt*(t<4?9:3)){NOGY=1;puff(sp(),R(-2,2),R(-4,-1),R(-2,2),R(2,4),R(7,12),R(2,3),.5,0xb9a28a);NOGY=0;}   // dust shaken off him
+  if(t<8&&C.nc<C.ch.length&&Math.random()<rdt*1.1){const c=C.ch[C.nc++];c.m.position.copy(sp());c.vx=R(-3,3);c.vz=R(-3,3);c.vy=R(0,2);c.down=0;c.m.visible=true;}   // and a chip or two breaks off
+  for(const c of C.ch){if(!c.m.visible||c.down)continue;c.vy-=20*rdt;c.m.position.x+=c.vx*rdt;c.m.position.y+=c.vy*rdt;c.m.position.z+=c.vz*rdt;c.m.rotation.x+=rdt*3;c.m.rotation.z+=rdt*2;
+    if(c.m.position.y<=C.y0+.8){c.m.position.y=C.y0+.8;c.down=1;NOGY=1;for(let q=0;q<5;q++)puff(c.m.position,R(-3,3),R(1,3),R(-3,3),2,R(6,10),R(1.5,2.5),.55,0xa8907a);NOGY=0;}}}
 // Hyde St, on the way up: the giant mosquito flies across in front of the car and over the street. At the top of the hill he is back: he swoops at the car,
 // then grabs one of the skaters rolling down ahead, carries him up a few metres and drops him; the kid lands on his board and skates on (HMQ, hydMosqTick; visual only).
 const HMQ={g:null,on:0,armed:1,armed2:1,t:0};
