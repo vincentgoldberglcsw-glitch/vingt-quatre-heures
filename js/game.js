@@ -457,7 +457,7 @@ await BOOT.step('ROADSIDE',.20);
 // A quiet island town street, the tube under the estuary with its portal buildings, a freeway past the port, then a long suspension bridge.
 // The whole route is level: the bay is simply 45 m below the road, so the bridge is high without the engine needing hills.
 const MILL=[],CRN=[],REFS=[],AIR={g:null,st:0,t:0,cd:6};let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
-const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null,SEAM=null,SEAW=null;const BURN=[],OILX=[],OILB={t:6,q:[]},TOX={l:[],slime:0,hit:0,mm:null,car:null},SQX={},MOSQ={g:null,on:0,t:0,armed:1};   /* TOX: leaking toxic barrels and their ooze; SQX: the San Quentin yard fence, its hole, the watchtower searchlight */   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
+const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null,SEAM=null,SEAW=null;const BURN=[],OILX=[],OILB={t:6,q:[]},TOX={l:[],slime:0,hit:0,mm:null,car:null},SQX={},MOSQ={g:null,on:0,t:0,armed:1,lift:null};   /* TOX: leaking toxic barrels and their ooze; SQX: the San Quentin yard fence, its hole, the watchtower searchlight */   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
 if(!DRIVE){ // roadside advertising boards, as on the old circuit: cigarettes, wine and bread, by turns
   const ad=(kind,name,sub)=>canvas(1024,460,(g,w,h)=>{const bg={cig:'#1d4f8a',wine:'#efe6cc',bread:'#f0c23a'}[kind],ink={cig:'#f4f1e8',wine:'#7a1626',bread:'#3a2412'}[kind];g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=ink;g.lineWidth=10;g.strokeRect(14,14,w-28,h-28);
     if(kind==='cig'){g.save();g.translate(190,250);g.rotate(-.1);g.fillStyle='#f4f1e8';g.fillRect(-90,-110,180,250);g.fillStyle='#c8302a';g.fillRect(-90,-30,180,90);g.fillStyle='#f4f1e8';g.beginPath();g.ellipse(0,15,62,30,0,0,7);g.fill();g.fillStyle='#c8302a';g.font='900 30px Georgia';g.textAlign='center';g.fillText('M',0,26);
@@ -2380,6 +2380,7 @@ function readInput(racing){let st=0,thr=0,brk=0;if(!racing)return[0,0,0];
   if(G.autoSt!=null)st=G.autoSt;return[st,thr,brk];}
 function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*SPILL.g*(1-(PL.melt||0)*.1),racing=G.state==='race';
   if(PL.crash){PL.crash.t+=dt/Math.max(G.slow,.3);return;}
+  if(MOSQ.lift&&mosqCarry(dt,pe))return;   // held up by the giant mosquito: driving paused, the car carried along the road (mosqCarry)
   if(PL.auto&&autoDrive(dt,pe))return;   // backing out of the driveway at the start, pulling in at the finish
   let[st,thr,brk]=readInput(racing);if(G.state==='finish')brk=1;
   const rev=racing&&keys.KeyX?1:0;                                                                           // reverse is its own key; the brake only ever stops the car
@@ -3705,21 +3706,38 @@ function mosqBuild(){const M=MOSQ,g=new THREE.Group(),dk=std({color:0x1d1b19,rou
   const wm=new THREE.MeshBasicMaterial({map:wt,transparent:true,side:THREE.DoubleSide,depthWrite:false});M.w=[];
   for(const s of[-1,1]){const pv=new THREE.Group();pv.position.set(s*.3,.65,.1);pv.rotation.y=s*.4;const wg=new THREE.Mesh(new THREE.PlaneGeometry(4,1.4).translate(2,0,0).rotateX(-Math.PI/2),wm);wg.scale.x=s;pv.add(wg);g.add(pv);M.w.push([pv,s]);}
   g.scale.setScalar(1.1);g.visible=false;scene.add(g);M.g=g;M.p=new THREE.Vector3();M.q=new THREE.Vector3();M.V=new THREE.Vector3();}
+function mosqStart(t0){const M=MOSQ,i=PL.idx;if(!M.g)mosqBuild();M.on=1;M.armed=0;M.t=t0||0;M.got=0;M.ta=0;M.lift=null;M.g.scale.setScalar(1.1);
+  M.bay=Terrain.landAt(...(at(i*SEG,250,0,M.V),[M.V.x,M.V.z]))<.2?1:-1;M.from=-M.bay;say('BZZZZZZZ!','',1.6);mosqSnd(1);}
 function mosqTick(rdt){const M=MOSQ;if(!DRIVE||!CLF)return;const pe=ents.find(e=>e.player);if(!pe)return;const ex=Z.sq-Math.round(610/SEG),i=PL.idx;
   if(i<ex-Math.round(300/SEG)||i>Z.rb0)M.armed=1;   // ready again for the next pass
-  if(!M.on&&M.armed&&G.state==='race'&&i>=ex-Math.round(40/SEG)&&i<ex+Math.round(40/SEG)){if(!M.g)mosqBuild();M.on=1;M.armed=0;M.t=0;M.sw=null;
-    M.bay=Terrain.landAt(...(at(i*SEG,250,0,M.V),[M.V.x,M.V.z]))<.2?1:-1;M.from=-M.bay;say('BZZZZZZZ!','',1.6);mosqSnd(1);}
-  if(!M.on)return;if(G.state!=='race'){M.on=0;M.g.visible=false;mosqSnd(0);return;}
-  M.t+=rdt;const t=M.t,fr=M.from;let sr,la,y;
-  if(t<2.4){const k=t/2.4;sr=100-82*k;la=fr*(38-50*k);y=26-23.4*k*(2-k);}   // out of the trees and down across the road just in front of the car
-  else if(t<3.6){const k=(t-2.4)/1.2;sr=18+8*k;la=fr*(-12-14*k);y=2.6+8*k;}
-  else if(t<8){const r=21.8,th0=Math.atan2(-21,-6),th=th0+Math.PI*2*(t-3.6)/4.4;sr=32+r*Math.cos(th);la=fr*(-5+r*Math.sin(th));y=10.6+3*Math.sin(th*2);}   // once round the car
-  if(t<8){M.s=pe.s+sr;M.la=la;}else{const k=Math.min(1,(t-8)/5);sr=null;la=lerp(M.la,M.bay*340,k*k);y=10.6+60*k;}   // then off over the bay
-  const s=t<8?M.s:M.s+70*Math.min(1,(t-8)/5);M.q.copy(M.g.position);at(s,la,y,M.p);M.g.position.copy(M.p);
-  if(M.q.distanceToSquared(M.p)>1e-4&&t>.05){M.V.copy(M.p).multiplyScalar(2).sub(M.q);M.g.lookAt(M.V);M.g.rotateZ(Math.sin(t*1.7)*.25);}M.g.visible=true;
-  for(const[pv,sg]of M.w)pv.rotation.z=sg*(.25+.55*Math.sin(t*48));
-  if(M.snd){const d=M.p.distanceTo(camera.position),k=clamp(1-d/220,0,1),ct=AC.currentTime;M.snd.g.gain.setTargetAtTime(.55*k*k+.02,ct,.05);const vr=M.pd!==undefined?(d-M.pd)/Math.max(rdt,.001):0;M.pd=d;const f=clamp(1-vr/260,.75,1.3);M.snd.o1.frequency.setTargetAtTime(520*f,ct,.05);M.snd.o2.frequency.setTargetAtTime(527*f,ct,.05);}
-  if(t>13){M.on=0;M.g.visible=false;mosqSnd(0);}}
+  if(!M.on&&M.armed&&G.state==='race'&&i>=ex-Math.round(40/SEG)&&i<ex+Math.round(40/SEG))mosqStart(0);
+  if(!M.on)return;if(G.state!=='race'){if(M.lift){M.lift.drop=-9;mosqCarry(0,pe);}M.on=0;M.g.visible=false;mosqSnd(0);return;}
+  M.t+=rdt;const t=M.t,fr=M.from;let s,la,y;M.q.copy(M.g.position);
+  if(M.lift){M.p.set(PL.x,PL.cy+3.4,PL.z);M.g.position.copy(M.p);M.g.rotation.set(Math.sin(t*5)*.06,PL.h+Math.sin(t*3.1)*.06,Math.sin(t*6.3)*.08);}   // hanging on to the car, legs round it
+  else{if(t<2.4){const k=t/2.4;s=pe.s+100-82*k;la=fr*(38-50*k);y=26-23.4*k*(2-k);}   // out of the trees and down across the road just in front of the car
+    else if(!M.got){const e=sst(t,2.4,3.3);s=pe.s+18*(1-e);la=lerp(fr*-12,pe.lat,e);y=lerp(2.6,PL.cy-PL.gy+3.4,e);   // then round onto the car itself
+      if(PL.crash){M.got=1;M.ta=0;M.s0=s;M.la0=la;M.y0=y;}else if(e>=1){M.got=1;mosqGrab(pe);}}
+    else{M.ta+=rdt;const k=Math.min(1,M.ta/7),e=k*k*(3-2*k),s1=SQX.s!==undefined?SQX.s:(Z.sq+Math.round(260/SEG))*SEG,l1=SQX.lat!==undefined?SQX.lat:-40;   // he lets go and flies off to San Quentin, climbing and shrinking away
+      s=lerp(M.s0,s1,e);la=lerp(M.la0,l1,e);y=M.y0+130*k*k;M.g.scale.setScalar(1.1*(1-.93*k));}
+    if(s!==undefined){at(s,la,y,M.p);M.g.position.copy(M.p);if(M.q.distanceToSquared(M.p)>1e-4&&t>.05){M.V.copy(M.p).multiplyScalar(2).sub(M.q);M.g.lookAt(M.V);M.g.rotateZ(Math.sin(t*1.7)*.25);}}}
+  M.g.visible=true;for(const[pv,sg]of M.w)pv.rotation.z=sg*(.25+.55*Math.sin(t*(M.lift?62:48)));
+  if(M.snd){const d=M.p.distanceTo(camera.position),k=clamp(1-d/220,0,1),ct=AC.currentTime,L=M.lift;M.snd.g.gain.setTargetAtTime(L?.95:.55*k*k+.02,ct,.05);const vr=M.pd!==undefined?(d-M.pd)/Math.max(rdt,.001):0;M.pd=d;const f=L?1.15+.1*(L.wr||0):clamp(1-vr/260,.75,1.3);M.snd.o1.frequency.setTargetAtTime(520*f,ct,.05);M.snd.o2.frequency.setTargetAtTime(527*f,ct,.05);}   // a loud straining buzz while he holds the car
+  if(M.got&&!M.lift&&M.ta>7){M.on=0;M.g.visible=false;mosqSnd(0);}}
+// he grips the car and lifts it 3-5 m off the road for about 2 s; tapping the throttle or steering twice wriggles it free. The car is carried along the road and always set back down on it, upright, pointing the same way, keeping its speed; no crashing meanwhile or for a second after
+function mosqGrab(pe){let dh=PL.h-yaw(PL.idx);dh=Math.atan2(Math.sin(dh),Math.cos(dh));MOSQ.lift={t:0,v:clamp(pe.v,8,40),lat:pe.lat,dh:clamp(dh,-.35,.35),H:R(3.5,4.6),taps:0,pr:1,drop:0,wr:0};
+  PL.safe=Math.max(PL.safe,1.5);endSkid();G.shake=Math.max(G.shake,.6);sfxThump(.5);say('THE MOSQUITO HAS YOU !','tap the throttle or steer to wriggle free',2.2);}
+function mosqCarry(dt,pe){const L=MOSQ.lift;L.t+=dt;PL.safe=Math.max(PL.safe,1.2);
+  const[st,thr]=readInput(true),on=thr>.5||Math.abs(st)>.5;if(on&&!L.pr&&!L.drop){L.taps++;L.wr=1;G.shake=Math.max(G.shake,.5);}L.pr=on;L.wr=Math.max(0,L.wr-dt*3);
+  if(!L.drop&&(L.taps>=2||L.t>2.4)){L.drop=L.t;say(L.taps>=2?'WRIGGLED FREE !':'DROPPED !','',1.4);}
+  const u=L.drop?clamp((L.t-L.drop)/.6,0,1):0,h=L.H*sst(L.t,0,.7)*(1-u*u*(3-2*u)),k=L.drop?1-u:clamp(L.t/.5,0,1);   // up, hold, then a short ease back down
+  L.v*=Math.exp(-.15*dt);pe.s=wrapS(pe.s+L.v*dt);pe.dist+=L.v*dt;const i=PL.idx=wrapI(Math.round(pe.s/SEG)),ed=Math.max(0,edgeAt[i]-1.3);L.lat=lerp(L.lat,clamp(L.lat,-ed,ed),clamp(dt*4,0,1));pe.lat=L.lat;
+  at(pe.s,L.lat,0,V);PL.x=V.x;PL.z=V.z;GY=PL.gy=V.y;PL.cy=PL.gy+h+Math.sin(L.t*7)*.12*k*(1-u);PL.air=0;PL.vy=0;PL.slope=0;
+  L.dh*=Math.exp(-1.5*dt);PL.h=yaw(i)+L.dh+Math.sin(L.t*2.3)*.05*k;PL.vx=Math.sin(PL.h)*L.v;PL.vz=Math.cos(PL.h)*L.v;pe.v=L.v;
+  hero.position.set(PL.x,PL.cy,PL.z);hero.rotation.set(Math.sin(L.t*4.1)*.07*k,PL.h,(Math.sin(L.t*5.7)*.1+Math.sin(L.t*31)*.1*L.wr)*k);G.shake=Math.max(G.shake,.3*k);
+  for(const w of hero.wheels)w.rotation.y+=w.userData.dir*L.v*dt/.33;
+  if(u>=1){const M=MOSQ;PL.cy=PL.gy;PL.h=yaw(i)+L.dh;PL.vx=Math.sin(PL.h)*L.v;PL.vz=Math.cos(PL.h)*L.v;resetVehicle(VS,hero.M.dyn,L.v);VS.x=PL.x;VS.z=PL.z;VS.h=PL.h;PL.safe=Math.max(PL.safe,1.2);sfxThump(.6);G.shake=Math.max(G.shake,.5);
+    M.lift=null;M.ta=0;M.s0=pe.s;M.la0=pe.lat;M.y0=3.4;}
+  return true;}
 function mosqSnd(on){const M=MOSQ;if(!AC)return;if(!on){if(M.snd){const ct=AC.currentTime;M.snd.g.gain.setTargetAtTime(0,ct,.1);const s=M.snd;setTimeout(()=>{try{s.o1.stop();s.o2.stop();s.l.stop();}catch(e){}},600);M.snd=null;}return;}if(M.snd)return;
   const o1=AC.createOscillator(),o2=AC.createOscillator(),l=AC.createOscillator(),lg=AC.createGain(),bp=AC.createBiquadFilter(),g=AC.createGain();o1.type=o2.type='sawtooth';o1.frequency.value=520;o2.frequency.value=527;l.frequency.value=31;lg.gain.value=26;l.connect(lg);lg.connect(o1.frequency);lg.connect(o2.frequency);   // two detuned saws, warbled at wingbeat rate
   bp.type='bandpass';bp.frequency.value=1100;bp.Q.value=1.4;g.gain.value=0;o1.connect(bp);o2.connect(bp);bp.connect(g);g.connect(master);o1.start();o2.start();l.start();M.snd={o1,o2,l,g};M.pd=undefined;}
@@ -4149,7 +4167,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={PRIS,TOX,SQX,MOSQ,CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
