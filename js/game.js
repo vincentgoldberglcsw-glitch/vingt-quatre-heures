@@ -457,7 +457,7 @@ await BOOT.step('ROADSIDE',.20);
 // A quiet island town street, the tube under the estuary with its portal buildings, a freeway past the port, then a long suspension bridge.
 // The whole route is level: the bay is simply 45 m below the road, so the bridge is high without the engine needing hills.
 const MILL=[],CRN=[],REFS=[],AIR={g:null,st:0,t:0,cd:6};let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
-const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null,SEAM=null,SEAW=null;const BURN=[],OILX=[],OILB={t:6,q:[]},TOX={l:[],slime:0,hit:0,mm:null,car:null},SQX={},MOSQ={g:null,on:0,t:0,armed:1,lift:null},BTL={g:null,on:0,t:0,wat:-44.6,rs:0,armed:{bb:1,gg:1,rb:1}};   /* TOX: leaking toxic barrels and their ooze; SQX: the San Quentin yard fence, its hole, the watchtower searchlight */   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
+const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null,SEAM=null,SEAW=null;const BURN=[],OILX=[],OILB={t:6,q:[]},TOX={l:[],slime:0,hit:0,mm:null,car:null},SQX={},MOSQ={g:null,on:0,t:0,armed:1,lift:null},BTL={g:null,on:0,t:0,wat:-44.6,rs:0,armed:{bb:1,gg:1,rb:1},br:{},bsA:0,bsT:0,wv:0,wt:0};   /* TOX: leaking toxic barrels and their ooze; SQX: the San Quentin yard fence, its hole, the watchtower searchlight */   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
 if(!DRIVE){ // roadside advertising boards, as on the old circuit: cigarettes, wine and bread, by turns
   const ad=(kind,name,sub)=>canvas(1024,460,(g,w,h)=>{const bg={cig:'#1d4f8a',wine:'#efe6cc',bread:'#f0c23a'}[kind],ink={cig:'#f4f1e8',wine:'#7a1626',bread:'#3a2412'}[kind];g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=ink;g.lineWidth=10;g.strokeRect(14,14,w-28,h-28);
     if(kind==='cig'){g.save();g.translate(190,250);g.rotate(-.1);g.fillStyle='#f4f1e8';g.fillRect(-90,-110,180,250);g.fillStyle='#c8302a';g.fillRect(-90,-30,180,90);g.fillStyle='#f4f1e8';g.beginPath();g.ellipse(0,15,62,30,0,0,7);g.fill();g.fillStyle='#c8302a';g.font='900 30px Georgia';g.textAlign='center';g.fillText('M',0,26);
@@ -1255,9 +1255,10 @@ await BOOT.step('SPANNING THE BAY · THREE BRIDGES',.49);
         for(const y of o.deco?[TH*.34,TH*.59,TH*.81,TH]:[11.5,34,57,TH])B(20.6+2*xw,o.deco?5:2.2,o.deco?3.4:2.8,sm,0,y,0,0,g);
         if(!o.deco){for(const[y0,y1]of[[12.6,33],[35,56],[58,TH-1]])for(const s of[-1,1]){const x=B(Math.hypot(18+2*xw,y1-y0),.9,.9,sm,0,(y0+y1)/2,0,0,g);x.rotation.z=s*Math.atan2(y1-y0,18+2*xw);}}
         for(const sd of[-1,1]){const bc=new THREE.Mesh(new THREE.SphereGeometry(.8,8,6),beacon);bc.position.set(sd*(10.3+xw),TH+3.2,0);g.add(bc);}g.position.copy(P[i]);g.rotation.y=yaw(i);scene.add(g);}};
-    bridge(Z.b0,Z.b1,{col:0x8b9196,TH:80,open:1,sup:[.4,.55,.7,.85,1],truss:[[.004,.36,9.5]],pier:70});
-    bridge(Z.gg0,Z.gg1,{col:0xc0392b,cable:0xb8402e,TH:150,sup:[0,.18,.82,1],deco:1,leg:4.2,legD:5,cr:.9,rail:1,pier:90});
-    bridge(Z.rb0,Z.rb1,{col:0x8a7f6a,TH:0,truss:[[.17,.39,14],[.58,.77,14]],pier:40});
+    let k0=scene.children.length;const grab=k=>{const objs=scene.children.slice(k0),was=new Set(scene.children);bakeStatic(objs,new Set());BTL.br[k]=[...objs.filter(o=>o.parent===scene),...scene.children.filter(o=>!was.has(o))].map(o=>[o,o.position.clone(),o.rotation.z]);k0=scene.children.length;};   // each bridge merged on its own, so the beetle can shake it
+    bridge(Z.b0,Z.b1,{col:0x8b9196,TH:80,open:1,sup:[.4,.55,.7,.85,1],truss:[[.004,.36,9.5]],pier:70});grab("bb");
+    bridge(Z.gg0,Z.gg1,{col:0xc0392b,cable:0xb8402e,TH:150,sup:[0,.18,.82,1],deco:1,leg:4.2,legD:5,cr:.9,rail:1,pier:90});grab("gg");
+    bridge(Z.rb0,Z.rb1,{col:0x8a7f6a,TH:0,truss:[[.17,.39,14],[.58,.77,14]],pier:40});grab("rb");
     // street lights for the freeways and the San Rafael bridge: tall poles with an arm and a cobra head, and under each a pool of light on the road at night
     // (a glow laid on the tarmac, not a real light, so hundreds cost almost nothing). noPost: only the pools, under lamps that are already there.
     const roadLamps=(a,b,step,base,{h=10,arm=2.4,noPost=false,headY=0}={})=>{const ids=[];for(let i=a;i<b;i+=step)ids.push(i);const n=ids.length*2;
@@ -1654,7 +1655,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
   {const ch=std({color:0x1c1a18,roughness:1});for(const f of[.12,.27,.45,.6,.83]){const i=Z.b0+Math.round((Z.b1-Z.b0)*f),sd=f*10%2<1?1:-1,g=new THREE.Group();g.add(new THREE.Mesh(carG,ch),new THREE.Mesh(whG,ch));off(i,sd*7.4,0,g.position);g.rotation.set(0,yaw(i)+rr(-.6,.6),sd*.12);scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:2.2});BURN.push({x:g.position.x,y:g.position.y+1,z:g.position.z,s:.8});}}
   // last of all, merge the static scenery by material and by area, so the whole bay draws in a few hundred calls instead of tens of thousands
   Terrain.occupy(scene.children.slice(A0));Terrain.start(scene,CULL,LANDM,grassTex);   // the real hills: level ground is kept under everything built above, and the rest is queued to be raised tile by tile
-  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...CROWS.map(c=>c.g),...MILLC.tw.map(t=>t.g),...BEARS.map(b=>b.g)]));
+  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...CROWS.map(c=>c.g),...MILLC.tw.map(t=>t.g),...BEARS.map(b=>b.g),...Object.values(BTL.br).flat().map(x=>x[0])]));
   for(const o of [...scene.children])if(o.isInstancedMesh&&o.frustumCulled&&o.count>60)splitInstanced(o);
 }
 
@@ -3793,7 +3794,7 @@ function beetleBuild(){const B=BTL,g=new THREE.Group(),UP=new THREE.Vector3(0,1,
 function beetleStart(k){const B=BTL,pe=ents.find(e=>e.player);if(!pe)return;if(!B.g)beetleBuild();B.on=1;B.armed[k]=0;B.k=k;B.t=0;B.lead=170;B.s=pe.s+170;B.n=Math.random()<.5?2:3;B.hj=-1;B.sj=-1;B.st=null;B.pa=0;B.roar=0;
   let sd=Math.random()<.5?-1:1;at(pe.s+150,sd*60,0,B.V);if(Terrain.landAt(B.V.x,B.V.z)>=.2)sd=-sd;B.sd=sd;B.rt=[0,1.6];sfxBigSplash();G.shake=Math.max(G.shake,.4);}
 function beetleOff(){const B=BTL;B.on=0;if(B.g){B.g.visible=false;for(const r of B.rings)r.visible=false;}}
-function beetleTick(rdt){const B=BTL;if(!DRIVE||!Z.rb1)return;const pe=ents.find(e=>e.player);if(!pe)return;const i=PL.idx,m_=x=>Math.round(x/SEG);
+function beetleTick(rdt){const B=BTL;if(!DRIVE||!Z.rb1)return;const pe=ents.find(e=>e.player);if(!pe)return;beetleShake(rdt);const i=PL.idx,m_=x=>Math.round(x/SEG);
   const BR=[['bb',Z.b0,Z.b1],['gg',Z.gg0,Z.gg1],['rb',Z.rb0,Z.rb1]];for(const[k,a,b]of BR)if(i<a-m_(400)||i>b)B.armed[k]=1;   // ready again for the next pass
   if(!B.on&&G.state==='race'&&!PL.crash&&zoneArr[i]===4&&!SAFEZ()){const br=BR.find(([k,a,b])=>B.armed[k]&&i>=a&&i<Math.min(b,a+m_(160)));if(br)beetleStart(br[0]);}
   if(!B.on)return;if(G.state!=='race'){beetleOff();return;}
@@ -3822,10 +3823,17 @@ function beetleTick(rdt){const B=BTL;if(!DRIVE||!Z.rb1)return;const pe=ents.find
   B.rings.forEach((m,k)=>{const u=(t-B.rt[k])/4.5;m.visible=u>=0&&u<1;if(m.visible){m.position.set(g.position.x,BTL.wat+.4,g.position.z);m.scale.setScalar(30+170*u);m.material.opacity=.65*(1-u);}});
   if(!B.roar&&t>2.6){B.roar=1;sfxBeetleRoar(clamp(260/(cd+60),.35,1));say('THE BEETLE !','RISING FROM THE BAY',2.2);}
   if(B.st!=null&&t-B.st>5.3){beetleOff();B.rs=0;}}
+function beetleShake(rdt){const B=BTL;   // after a hit: the bridge shakes (a drop, then a decaying sway, the towers rocking), and the car weaves for a couple of seconds
+  if(B.bsA>0){B.bsT+=rdt;const t=B.bsT,a=B.bsA*Math.exp(-t*1.5),L=B.br[B.k]||[],n=B.bn;
+    if(a<.012||t>3){for(const[o,p,rz]of L){o.position.copy(p);o.rotation.z=rz;}B.bsA=0;}
+    else{const sx=a*1.6*Math.sin(t*13.8),sy=a*(1.0*Math.sin(t*19.5+1)-1.4*Math.exp(-t*9)),tz=a*.012*Math.sin(t*9.4);for(const[o,p,rz]of L){o.position.set(p.x+n.x*sx,p.y+sy,p.z+n.z*sx);if(o.isGroup)o.rotation.z=rz+tz;}G.shake=Math.max(G.shake,a*1.4);}}
+  if(B.wv>0){B.wt+=rdt;const t=B.wt;if(t>2.1||PL.crash||zoneArr[PL.idx]!==4){B.wv=0;return;}
+    const o=Math.sin(t*Math.PI*2*1.35)*Math.exp(-t*1.0)*B.wsd*B.wv,n=Nn[PL.idx];VS.r+=o*1.6*rdt;PL.vx+=n.x*o*9*rdt;PL.vz+=n.z*o*9*rdt;PL.safe=Math.max(PL.safe,1.2);}}
 function beetleHit(p){const d=camera.position.distanceTo(p),near=clamp(140/(d+40),.3,1);G.shake=Math.max(G.shake,1.6*near);PL.bump=Math.max(PL.bump||0,1.3*near);sfxBeetleHit(near);
   NOGY=1;for(let q=0;q<26;q++){const a=R(0,6.283),sp=R(2,9);puff(BTL.v3.set(p.x+R(-3,3),p.y+.5,p.z+R(-3,3)),Math.cos(a)*sp,R(3,12),Math.sin(a)*sp,R(1.5,3),R(6,11),R(1.2,2.2),.6,0x9a958e);}
   for(let q=0;q<24;q++)spark(BTL.v3.set(p.x,p.y+.4,p.z),R(-12,12),R(3,12),R(-12,12));NOGY=0;
-  if(zoneArr[PL.idx]===4&&!SAFEZ()&&!PL.crash&&near>.3){const n=Nn[PL.idx],k=-BTL.sd*R(3.5,5)*near;PL.vx+=n.x*k;PL.vz+=n.z*k;VS.r+=R(.16,.3)*(Math.random()<.5?-1:1)*near;PL.safe=Math.max(PL.safe,2.5);}   // knocked sideways: catch the swerve (the rail holds, never a crash)
+  if(zoneArr[PL.idx]===4&&!SAFEZ()&&!PL.crash&&near>.3){const n=Nn[PL.idx],k=-BTL.sd*R(2.5,3.5)*near;PL.vx+=n.x*k;PL.vz+=n.z*k;VS.r+=R(.12,.22)*(Math.random()<.5?-1:1)*near;PL.safe=Math.max(PL.safe,2.5);BTL.wv=near;BTL.wt=0;BTL.wsd=-BTL.sd;}   // knocked sideways, then the car snakes left and right: fight it (the rail holds, never a crash)
+  BTL.bsA=1;BTL.bsT=0;BTL.bn=Nn[PL.idx];G.shake=Math.max(G.shake,2.2*near);   // the whole bridge jolts down and sways: rails, underside, piers, trusses, towers and cables
   say('THE BEETLE STRIKES !','CATCH THE SWERVE',1.8);}
 function sfxBeetleRoar(k){if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),o2=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain();o.type='sawtooth';o2.type='square';
   o.frequency.setValueAtTime(60,t);o.frequency.linearRampToValueAtTime(88,t+.8);o.frequency.exponentialRampToValueAtTime(36,t+3.4);o2.frequency.setValueAtTime(30,t);o2.frequency.exponentialRampToValueAtTime(21,t+3.4);
