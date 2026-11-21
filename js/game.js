@@ -3822,18 +3822,23 @@ function beetleTick(rdt){const B=BTL;if(!DRIVE||!Z.rb1)return;const pe=ents.find
   if(B.st!=null&&!B.rs){B.rs=1;B.rt=[t,t+1.4];}
   B.rings.forEach((m,k)=>{const u=(t-B.rt[k])/4.5;m.visible=u>=0&&u<1;if(m.visible){m.position.set(g.position.x,BTL.wat+.4,g.position.z);m.scale.setScalar(30+170*u);m.material.opacity=.65*(1-u);}});
   if(!B.roar&&t>2.6){B.roar=1;sfxBeetleRoar(clamp(260/(cd+60),.35,1));say('THE BEETLE !','RISING FROM THE BAY',2.2);}
-  if(B.st!=null&&t-B.st>5.3){beetleOff();B.rs=0;}}
+  if(B.st!=null&&t-B.st>5.3){beetleOff();B.rs=0;if(B.k==="bb"&&!PL.crash)B.ub={n:Math.random()<.5?2:3,cd:R(2,3.5)};}}   // on the Bay Bridge he comes back unseen: his head bumps the underside of the deck
 function beetleShake(rdt){const B=BTL;   // after a hit: the bridge shakes (a drop, then a decaying sway, the towers rocking), and the car weaves for a couple of seconds
+  if(B.ub){const i=PL.idx;if(G.state!=="race"||PL.crash||B.on||i<Z.b0||i>Z.b1)B.ub=null;else if((B.ub.cd-=rdt)<=0){beetleUnder();B.ub.cd=R(3,4.5);if(--B.ub.n<=0)B.ub=null;}}
   if(B.bsA>0){B.bsT+=rdt;const t=B.bsT,a=B.bsA*Math.exp(-t*1.5),L=B.br[B.k]||[],n=B.bn;
     if(a<.012||t>3){for(const[o,p,rz]of L){o.position.copy(p);o.rotation.z=rz;}B.bsA=0;}
-    else{const sx=a*1.6*Math.sin(t*13.8),sy=a*(1.0*Math.sin(t*19.5+1)-1.4*Math.exp(-t*9)),tz=a*.012*Math.sin(t*9.4);for(const[o,p,rz]of L){o.position.set(p.x+n.x*sx,p.y+sy,p.z+n.z*sx);if(o.isGroup)o.rotation.z=rz+tz;}G.shake=Math.max(G.shake,a*1.4);}}
+    else{const sx=a*1.6*Math.sin(t*13.8),sy=a*(1.0*Math.sin(t*19.5+1)+(B.bup?1.8:-1.4)*Math.exp(-t*9)),tz=a*.012*Math.sin(t*9.4);for(const[o,p,rz]of L){o.position.set(p.x+n.x*sx,p.y+sy,p.z+n.z*sx);if(o.isGroup)o.rotation.z=rz+tz;}G.shake=Math.max(G.shake,a*1.4);}}
   if(B.wv>0){B.wt+=rdt;const t=B.wt;if(t>2.1||PL.crash||zoneArr[PL.idx]!==4){B.wv=0;return;}
     const o=Math.sin(t*Math.PI*2*1.35)*Math.exp(-t*1.0)*B.wsd*B.wv,n=Nn[PL.idx];VS.r+=o*1.6*rdt;PL.vx+=n.x*o*9*rdt;PL.vz+=n.z*o*9*rdt;PL.safe=Math.max(PL.safe,1.2);}}
+function beetleUnder(){const B=BTL,pe=ents.find(e=>e.player);if(!pe)return;   // a thud from below: the deck jolts up, shakes briefly, the car weaves a little; he stays out of sight, only the water swirls by a pier
+  B.bsA=.6;B.bsT=0;B.bup=1;B.bn=Nn[PL.idx];G.shake=Math.max(G.shake,1.3);B.wv=.45;B.wt=0;B.wsd=Math.random()<.5?-1:1;PL.safe=Math.max(PL.safe,2.5);sfxUnderThud();say("THUD !","SOMETHING UNDER THE BRIDGE",1.6);
+  const sd=Math.random()<.5?-1:1,v=new THREE.Vector3(),c=at(pe.s+R(15,35),sd*R(14,24),0).clone();NOGY=1;for(let q=0;q<26;q++){const a=R(0,6.283),r=R(1,7);puff(v.set(c.x+Math.cos(a)*r,B.wat+.3,c.z+Math.sin(a)*r),-Math.sin(a)*R(2,4),R(1,4),Math.cos(a)*R(2,4),R(1,2),R(3,6),R(1.5,2.8),.6,0xeef2f4);}NOGY=0;}
+function sfxUnderThud(){if(!AC)return;const t=AC.currentTime;tone("sine",42,t,1.1,1.3,master,{to:24,h:.15});hit(t,.9,1.1,110,"lowpass",master);hit(t+.05,.5,.4,60,"lowpass",master);}
 function beetleHit(p){const d=camera.position.distanceTo(p),near=clamp(140/(d+40),.3,1);G.shake=Math.max(G.shake,1.6*near);PL.bump=Math.max(PL.bump||0,1.3*near);sfxBeetleHit(near);
   NOGY=1;for(let q=0;q<26;q++){const a=R(0,6.283),sp=R(2,9);puff(BTL.v3.set(p.x+R(-3,3),p.y+.5,p.z+R(-3,3)),Math.cos(a)*sp,R(3,12),Math.sin(a)*sp,R(1.5,3),R(6,11),R(1.2,2.2),.6,0x9a958e);}
   for(let q=0;q<24;q++)spark(BTL.v3.set(p.x,p.y+.4,p.z),R(-12,12),R(3,12),R(-12,12));NOGY=0;
   if(zoneArr[PL.idx]===4&&!SAFEZ()&&!PL.crash&&near>.3){const n=Nn[PL.idx],k=-BTL.sd*R(2.5,3.5)*near;PL.vx+=n.x*k;PL.vz+=n.z*k;VS.r+=R(.12,.22)*(Math.random()<.5?-1:1)*near;PL.safe=Math.max(PL.safe,2.5);BTL.wv=near;BTL.wt=0;BTL.wsd=-BTL.sd;}   // knocked sideways, then the car snakes left and right: fight it (the rail holds, never a crash)
-  BTL.bsA=1;BTL.bsT=0;BTL.bn=Nn[PL.idx];G.shake=Math.max(G.shake,2.2*near);   // the whole bridge jolts down and sways: rails, underside, piers, trusses, towers and cables
+  BTL.bsA=1;BTL.bsT=0;BTL.bup=0;BTL.bn=Nn[PL.idx];G.shake=Math.max(G.shake,2.2*near);   // the whole bridge jolts down and sways: rails, underside, piers, trusses, towers and cables
   say('THE BEETLE STRIKES !','CATCH THE SWERVE',1.8);}
 function sfxBeetleRoar(k){if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),o2=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain();o.type='sawtooth';o2.type='square';
   o.frequency.setValueAtTime(60,t);o.frequency.linearRampToValueAtTime(88,t+.8);o.frequency.exponentialRampToValueAtTime(36,t+3.4);o2.frequency.setValueAtTime(30,t);o2.frequency.exponentialRampToValueAtTime(21,t+3.4);
