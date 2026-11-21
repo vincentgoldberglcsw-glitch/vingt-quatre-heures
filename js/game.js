@@ -1663,7 +1663,7 @@ const MODELS={
   b507:{cls:1,name:'BMW 507',year:'1957',desc:'A V8 roadster with its hardtop on: a long low bonnet, a wide twin-kidney grille and round lamps in the wings. Smooth and balanced, a grand tourer rather than a racer.',CL:4.38,B:[.3,.5,.56,.58,.58,.57,.56,.55,.54,.5,.4],W:[.7,.83,.87,.88,.88,.87,.87,.88,.87,.84,.72],rb:.08,fb:.1,top:70,grip:.88,acc:.72,twitch:0,cy:1.4,cw:.86,cz:-.55,cs:1.0,lamp:'none',plain:1,wh:'cap',road:.62,tlx:.72,int:{dash:0xb89a72,panel:0x2a2a2c,rim:0xe8e0c8,spoke:0xc9cbc8,hub:0xc9cbc8}},
   ac:{cls:1,name:'Concept Coupe',year:'2025',desc:'A low, wide, matte mid-engined concept: a black grille face with light-strip lamps, louvres over the engine and dark wheels. Fast, grippy and a little stiff.',CL:4.42,B:[.46,.5,.51,.5,.46,.41,.36,.31,.26,.2,.09],W:[.94,.97,.98,.98,.97,.96,.96,.97,.96,.91,.78],rb:.1,fb:.08,top:88,grip:1.0,acc:.92,twitch:0,cy:.98,cw:1.04,cz:.12,lamp:'none',road:.85,int:{dash:0x1a1a1a,panel:0x262626,rim:0x101010,spoke:0x2a2a2a,hub:0x141414}}};
 buildTables();for(const k in MODELS)MODELS[k].dyn=makeDyn(k,MODELS[k]);   // tyre and engine tables, and each car's weights, gearing and aerodynamics (js/sim/vehicle.js)
-const RACERS=['o','k','lh','lhs','f512','gt40'],CLASSICS=['m1','p904','ghibli','bb','lp400','f400','bz','b507','van','sherp'],ZF=2.2,WZ=[1.25,-1.3];let MKEYS=RACERS;
+const RACERS=['o','k','lh','lhs','f512','gt40'],CLASSICS=['m1','p904','ghibli','bb','lp400','f400','bz','b507','van'].concat(DRIVE?['sherp']:[]),ZF=2.2,WZ=[1.25,-1.3];let MKEYS=RACERS;
 function arch(z){for(const zw of WZ){const d=z-zw;if(Math.abs(d)<.41)return .33+Math.sqrt(.41*.41-d*d);}return 0;}
 for(const k in MODELS){const m=MODELS[k];m.Bf=spl(m.B);m.Wf=spl(m.W);m.zR=ZF-m.CL;
   m.topY=(u,v,z)=>{const a=Math.abs(u),e=Math.exp(-(((a-.78)/.24)**2));return .14+m.Bf(v)*Math.sqrt(1-a**8)+e*((m.fb||.25)*Math.exp(-(((z-1.25)/.44)**2))+m.rb*Math.exp(-(((z+1.3)/.75)**2)));};
@@ -4544,6 +4544,7 @@ function showHome(){$('title').classList.toggle('home',HOME);$('trk1').classList
 function pickTrack(drive,from=''){if(drive===DRIVE){if(drive)JUMP=from;HOME=false;showHome();return;}const q=new URLSearchParams();if(drive){q.set('mode','drive');if(from)q.set('from',from);}q.set('go','1');q.set('model',G.model);q.set('liv',G.liv);if(!drive)q.set('wx',G.weather);location.search=q.toString();}
 $('trk1').onclick=()=>pickTrack(false);$('trk2').onclick=()=>pickTrack(true);for(const b of document.querySelectorAll('#jmp button,#bonus button'))b.onclick=()=>pickTrack(true,b.dataset.j);showHome();
 const JKEY={Digit3:'bb',Numpad3:'bb',Digit4:'sf',Numpad4:'sf',Digit5:'gg',Numpad5:'gg',Digit6:'i80',Numpad6:'i80',Digit7:'i880',Numpad7:'i880',Digit8:'marin',Numpad8:'marin',KeyH:''};
+if(!DRIVE&&G.model==='sherp')G.model='k';   // the Sherp is for the Bay drive only: Le Mans keeps to the cars of the film's era
 if(MODELS[G.model]&&MODELS[G.model].cls)MKEYS=CLASSICS;
 function setSens(d){G.sens=clamp(Math.round((G.sens+d)*10)/10,.1,1);try{localStorage.setItem('vqh-sens',G.sens);}catch(e){}$('oSens').textContent=Math.round(G.sens*100)+'%';say('STEERING '+Math.round(G.sens*100)+'%','[ LESS SENSITIVE · MORE SENSITIVE ]',1.4);}
 addEventListener('keydown',e=>{const c=codeOf(e);keys[c]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(c))e.preventDefault();if(e.repeat)return;
