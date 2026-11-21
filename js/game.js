@@ -3290,6 +3290,9 @@ function trafficTick(dt,pe){bubbleTick(dt);wheelsTick(dt);if(TRAF.pol){const f=(
     if(!TRAF.ggDone&&!gt.act&&!gt.fall&&i0>=Z.gg0&&i0<Z.gg0+40&&G.state==="race"){TRAF.ggDone=1;const s=wrapS(pe.s+170),i=wrapI(Math.floor(s/SEG)),w=RW+XW[i],ln=[-.75,-.25,.25,.75].map(k=>k*w).reduce((a,b)=>Math.abs(b-pe.lat)<Math.abs(a-pe.lat)?b:a);
       Object.assign(gt,{act:true,s,lt:ln,lat:ln,vb:9,v:9,dead:0,stop:0,sk:0,lw:0,qf:true,hit:0});gt.g.visible=true;gt.g.rotation.z=0;for(const wh of gt.g.wh)wh.visible=true;}}}
   for(const t of TRAF){
+    if(t.cr){const C=t.cr;C.t+=dt;const k=sst(C.t,0,.22);t.g.scale.set(1+.32*k,1-.74*k,1+.1*k);t.g.position.y=C.y-.15*k;t.ob.x=1e9;   // crushed by the beetle: flattened, it stays as a wreck, smoking, then is cleared away
+      if(C.t<2.5&&Math.random()<dt*5)puff(V.set(t.g.position.x,t.g.position.y+.4,t.g.position.z),R(-.5,.5),R(1.5,3),R(-.5,.5),R(1,2),R(3,5),R(1.2,2),.5,0x2a2826);
+      if(C.t>7||wdiff(t.s-pe.s)<-160){t.cr=null;t.act=false;t.qf=false;t.g.visible=false;t.g.scale.set(1,1,1);t.dead=0;t.stop=0;for(const wh of t.g.wh)wh.visible=true;}continue;}
     if(t.fall){const F=t.fall;F.vy-=20*dt;if(F.boom>0){F.boom-=dt;if(F.boom<=0)fireball(t.g.position,t);}
       t.g.position.x+=F.vx*dt;t.g.position.z+=F.vz*dt;t.g.position.y+=F.vy*dt;t.g.rotation.x+=F.w*dt;t.g.rotation.z+=F.w*.3*dt;t.ob.x=1e9;
       if(t.g.position.y<-44&&!F.sp){F.sp=1;sfxSplash();NOGY=1;for(let k=0;k<26;k++){const a=R(0,6.283),sp=R(2,8);puff(V.set(t.g.position.x,-44.6,t.g.position.z),Math.cos(a)*sp,R(5,16),Math.sin(a)*sp,R(.8,1.6),R(4,7),R(1.2,2.4),.8,0xeef2f4);}NOGY=0;}
@@ -3865,7 +3868,13 @@ function beetleHit(p){const d=camera.position.distanceTo(p),near=clamp(140/(d+40
   for(let q=0;q<24;q++)spark(BTL.v3.set(p.x,p.y+.4,p.z),R(-12,12),R(3,12),R(-12,12));NOGY=0;
   if(zoneArr[PL.idx]===4&&!SAFEZ()&&!PL.crash&&near>.3){const n=Nn[PL.idx],k=-BTL.sd*R(2.5,3.5)*near;PL.vx+=n.x*k;PL.vz+=n.z*k;VS.r+=R(.12,.22)*(Math.random()<.5?-1:1)*near;PL.safe=Math.max(PL.safe,2.5);BTL.wv=near;BTL.wt=0;BTL.wsd=-BTL.sd;}   // knocked sideways, then the car snakes left and right: fight it (the rail holds, never a crash)
   BTL.bsA=1;BTL.bsT=0;BTL.bup=0;BTL.bn=Nn[PL.idx];G.shake=Math.max(G.shake,2.2*near);   // the whole bridge jolts down and sways: rails, underside, piers, trusses, towers and cables
-  say('THE BEETLE STRIKES !','CATCH THE SWERVE',1.8);}
+  const cr=beetleCrush(p);say('THE BEETLE STRIKES !',cr?'HE CRUSHES THE TRAFFIC':'CATCH THE SWERVE',1.8);}
+function beetleCrush(p){let n=0;   // any traffic under the claw is flattened into a crumpled wreck (a tanker goes up); never the player's car
+  for(const t of TRAF){if(!t.act||t.fall||t.cr||!t.g.visible)continue;const dx=t.g.position.x-p.x,dz=t.g.position.z-p.z;if(dx*dx+dz*dz>20*20)continue;n++;
+    if(t.kind==='tanker'){tankerBoom(t);continue;}
+    t.cr={t:0,y:t.g.position.y};t.v=0;t.dead=t.stop=1;t.sk=0;t.kv=0;t.wob=0;t.ob.x=1e9;t.g.rotation.z+=R(-.18,.18);t.g.rotation.x+=R(-.1,.1);for(const wh of t.g.wh)wh.visible=Math.random()<.5;
+    const q=t.g.position;NOGY=1;for(let k=0;k<18;k++)spark(V.set(q.x,q.y+.8,q.z),R(-9,9),R(2,10),R(-9,9));for(let k=0;k<10;k++){const a=R(0,6.283),sp=R(2,7);puff(V.set(q.x,q.y+.6,q.z),Math.cos(a)*sp,R(3,9),Math.sin(a)*sp,R(.3,.7),R(1.5,3),R(.8,1.6),.9,k%2?0x2a2a2c:0x6a6a6e);}NOGY=0;}
+  if(n){sfxCrunch(1.3);setTimeout(()=>sfxCrunch(.8),120);sfxScrape(.7);}return n;}
 // past San Quentin, on the way to the Richmond bridge: out on the water to the LEFT, a second beetle rises beside an oil tanker, raises both arms and brings his
 // claw down mid-ship: a boom, a fireball and black smoke; the hull breaks in two, bow and stern tilt up into a V and slide under with smoke, bubbles and a
 // spreading slick; then he sinks. Far off: it never touches the car. Once per pass.
@@ -4350,7 +4359,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
