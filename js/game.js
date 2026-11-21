@@ -39,7 +39,7 @@ const VANS=[];   // the ice-cream truck and the taco truck, driving up and down 
 const BEARS=[],BUFF=[];let DRUMG=null,DRUMM=null;
 const MILLC={tw:[],i:-1,t:0,x:0,z:0,ry:0,y:0,w:null};   // the steel mill: its track index, and a timer for the falling pieces during the quake
 const SHOP={ic:0,F:0,list:null,t:0};   // the supermarket shoppers (see shopTick)
-const DOME={x:0,z:0,i:-1,hit:0},SAFEZ=()=>DRIVE&&((PL.idx<Z.tu0||zoneArr[PL.idx]===1)&&!DOME.hit||(PL.idx>=Z.wt1&&PL.idx<Z.wt0));   // (and the Webster Tube: no crashing in it)   // the green eyed dome in the road before the Posey Tube
+const DOME={x:0,z:0,i:-1,hit:0},SAFEZ=()=>DRIVE&&((PL.idx<Z.tu0||zoneArr[PL.idx]===1)&&!DOME.hit||(PL.idx>=Z.wt1&&PL.idx<Z.wt0)||(Z.rb1>0&&PL.idx>=Z.rb1&&PL.idx<Z.i80));   /* (and Richmond, off the San Rafael bridge to I-80: hits only bounce) */   // (and the Webster Tube: no crashing in it)   // the green eyed dome in the road before the Posey Tube
 const DETR={a:-1};   // the detour ramp: starts at index a, 240 segments long, drops to the ground by 60% of the way
 // hyperspace jump into the portal: streaking stars stretch out from the centre (w 0..1 building), then on arrival they shrink away again (w 0..-1)
 const WARP={c:null,s:null};
@@ -2458,7 +2458,7 @@ function sim(dt){const pe=ents.find(e=>e.player);
   if(wx.wet>.5&&!PL.crash&&pe.v>20&&Math.random()<dt*26)puff(V.set(PL.x-Math.sin(PL.h)*2.6,.5,PL.z-Math.cos(PL.h)*2.6),R(-1.5,1.5),R(1,3),R(-1.5,1.5),1.2,5.5,R(.7,1.2),.34,0xd0d6da);
   if(PL.crash&&PL.crash.dive)diveTick(dt,pe);
   else if(PL.crash){const w=hero.wreck,still=!w||(Math.hypot(w.vx,w.vz)<1&&w.y<=0&&!w.wr);tubeFire(dt);const tb=PL.crash.tf>2.3;
-    if(tb||PL.crash.t>8||(PL.crash.t>5&&still)){const i=PL.idx=wrapI(tb?Z.tu1+30:(w?w.idx:PL.idx)+35);if(w)endWreck(w);if(TUF.st){TUF.on=0;for(const o of TUF.st)o.visible=false;}pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;sndRestore();PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();
+    if(tb||PL.crash.t>4||(PL.crash.t>2.5&&still)){const i=PL.idx=wrapI(tb?Z.tu1+30:(w?w.idx:PL.idx)+35);if(w)endWreck(w);if(TUF.st){TUF.on=0;for(const o of TUF.st)o.visible=false;}pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;sndRestore();PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();
       hero.position.set(PL.x,H[i],PL.z);hero.rotation.set(0,PL.h,0);GY=PL.gy=PL.cy=H[i];PL.air=0;PL.vy=0;say(DRIVE?'BACK ON THE ROAD':'BACK IN THE RACE','',1.5);}}
   if(G.state==='race'){G.doomT-=dt;if(G.doomT<=0){G.doomT=R(38,70);const c=ents.filter(e=>!e.player&&e.out<=0&&!e.doom&&wdiff(e.s-pe.s)>45&&wdiff(e.s-pe.s)<230&&e.v>35);if(c.length){const e=c[Math.random()*c.length|0];e.doom=Math.random()<.5?-1:1;}else G.doomT=6;}
     if(!DRIVE&&pe.dist>=LAPS*LEN){G.state='finish';G.finT=0;G.slow=.3;G.slowT=3.2;first=true;sfxCheer();say('DRAPEAU À DAMIER','P'+(standings().indexOf(pe)+1)+' · '+LAPS+' LAPS',4);announce("Le drapeau à damier ! Les vingt-quatre heures sont terminées !");}}
@@ -2986,7 +2986,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);bigIguTick(rdt);tubeIguTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);eyeMonTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);bigIguTick(rdt);tubeIguTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);eyeMonTick(rdt);seaMonTick(rdt);sfBldTick(rdt);hydMosqTick(rdt);hydIguTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -3724,7 +3724,7 @@ function toxTick(rdt){const K=TOX;if(!DRIVE||!K.l.length||!hero)return;const pe=
 function sfxSquelch(){if(!AC)return;const t=AC.currentTime;tone('sine',190,t,.28,.45,master,{to:55});hit(t,.35,.5,700,'lowpass',master);hit(t+.08,.25,.25,1800,'bandpass',master);}
 // a giant mosquito, as big as a car: as you leave the Marin redwoods it swoops out of the trees, dives low across the road just ahead of the car with a whining drone,
 // circles the car once and flies off over the bay. Harmless (nothing to hit), once per pass.
-function mosqBuild(){const M=MOSQ,g=new THREE.Group(),dk=std({color:0x1d1b19,roughness:.55,metalness:.15}),eye=std({color:0x2a0c08,roughness:.25,metalness:.3}),V1=new THREE.Vector3(),V2=new THREE.Vector3(),UP=new THREE.Vector3(0,1,0);
+function mosqBuild(M=MOSQ){const g=new THREE.Group(),dk=std({color:0x1d1b19,roughness:.55,metalness:.15}),eye=std({color:0x2a0c08,roughness:.25,metalness:.3}),V1=new THREE.Vector3(),V2=new THREE.Vector3(),UP=new THREE.Vector3(0,1,0);
   const seg=(a,b,r,mm)=>{const L=a.distanceTo(b),c=new THREE.Mesh(cyl(r,r*.8,L,6),mm);c.position.copy(a).add(b).multiplyScalar(.5);c.quaternion.setFromUnitVectors(UP,V1.copy(b).sub(a).normalize());g.add(c);return c;};
   const S=(r,sx,sy,sz,x,y,z,mm)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),mm);o.scale.set(sx,sy,sz);o.position.set(x,y,z);g.add(o);return o;};
   const ab=canvas(256,128,(c,w,h)=>{c.fillStyle='#c4161c';c.fillRect(0,0,w,h);c.fillStyle='#fbf8f2';for(let y=8;y<h;y+=16)for(let x=(y/16&1)*9+4;x<w;x+=18){c.beginPath();c.arc(x,y,3.2,0,7);c.fill();}}),hd=canvas(128,64,(c,w,h)=>{c.fillStyle='#3f9a2c';c.fillRect(0,0,w,h);c.fillStyle='#0b0b0a';for(let k=0;k<260;k++){c.beginPath();c.arc(Math.random()*w,Math.random()*h,R(.6,1.4),0,7);c.fill();}});   // owner: a red abdomen with white dots, a green head with tiny black dots
@@ -3883,7 +3883,7 @@ function beetleCrush(p){let n=0;   // any traffic under the claw is flattened in
 // a bumpy rim, long arms hanging down to clawed hands, short thick legs on clawed feet. Every heavy step thuds, shakes the ground and throws up dust; the big eye
 // looks around and follows your car as you go by. He never touches the road. Once you are past him he turns up again further ahead (EYEM, eyeMonTick; __test.eyeMon()).
 const EYEM={g:null,on:0,s:0,lat:330,h:0,ph:0,t:0,n:-1,said:0};
-function eyeMonBuild(){const M=EYEM,g=new THREE.Group(),UP=new THREE.Vector3(0,1,0),V1=new THREE.Vector3(),v3=(x,y,z)=>new THREE.Vector3(x,y,z);
+function eyeMonBuild(M=EYEM){const g=new THREE.Group(),UP=new THREE.Vector3(0,1,0),V1=new THREE.Vector3(),v3=(x,y,z)=>new THREE.Vector3(x,y,z);
   const skin=std({color:0x3e362e,roughness:.85,flatShading:true}),dk=std({color:0x28221c,roughness:.9,flatShading:true}),lt=std({color:0x5e5244,roughness:.8,flatShading:true}),
     wht=std({color:0xf4f2ea,roughness:.2,emissive:0x3a3a36}),blk=std({color:0x0b0a09,roughness:.3}),cl=std({color:0x1a1612,roughness:.5});
   const sph=(p,r,sx,sy,sz,x,y,z,m,ws=12,hs=9)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,ws,hs),m);o.scale.set(sx,sy,sz);o.position.set(x,y,z);p.add(o);return o;};
@@ -3940,6 +3940,89 @@ function eyeMonTick(rdt){const M=EYEM;if(!DRIVE||!Z.toll)return;const pe=ents.fi
   const st=Math.floor((M.ph-Math.PI/2)/Math.PI);if(st!==M.n){const first=M.n<0;M.n=st;if(!first){const L=M.L[((st%2)+2)%2],F=L.ft.getWorldPosition(M.F),k=clamp(260/(cd+60),.12,1);
       sfxEyeStomp(k);G.shake=Math.max(G.shake,.55*k);
       if(cd<1000){NOGY=1;for(let q=0;q<16;q++){const a=R(0,6.283),sp=R(5,12);puff(V.set(F.x+Math.cos(a)*R(2,8),F.y+.5,F.z+Math.sin(a)*R(2,8)),Math.cos(a)*sp,R(2,7),Math.sin(a)*sp,R(4,7),R(14,26),R(1.6,2.8),.6,0x9a8c74);}NOGY=0;}}}}
+// Marina Blvd, heading for the Golden Gate: far out on the water on the right, the one-eyed monster slowly rises out of the water, hung with seaweed, water pouring off him,
+// with a deep wet bellow. Once per pass; he never comes near the road (BAYM, seaMonTick; __test.seaMon()).
+const BAYM={g:null,on:0,armed:1,t:0};
+function sfxSeaBellow(k){if(!AC)return;const t=AC.currentTime;
+  hit(t,6,.9*k,420,'lowpass',master);hit(t+.4,5,.35*k,1900,'bandpass',master);   // the water rushing off him
+  const o=AC.createOscillator(),o2=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain(),l=AC.createOscillator(),lg=AC.createGain(),t0=t+1.2,t1=t0+5.5;
+  o.type='sawtooth';o2.type='triangle';o.frequency.setValueAtTime(64,t0);o.frequency.exponentialRampToValueAtTime(36,t1);o2.frequency.setValueAtTime(97,t0);o2.frequency.exponentialRampToValueAtTime(52,t1);
+  f.type='lowpass';f.frequency.value=240;f.Q.value=8;l.frequency.value=6.5;lg.gain.value=150;l.connect(lg);lg.connect(f.frequency);   // a gurgling, throaty filter wobble: a wet groan, not a roar
+  g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(1.2*k,t0+1.3);g.gain.setValueAtTime(1.2*k,t1-1.6);g.gain.linearRampToValueAtTime(0,t1);
+  o.connect(f);o2.connect(f);f.connect(g);g.connect(master);for(const x of[o,o2,l]){x.start(t0);x.stop(t1+.1);}
+  for(let i=0;i<16;i++){const tt=t+R(.6,6),fr=R(80,200);tone('sine',fr,tt,.14,.35*k,master,{to:fr*2.6,a:.01,h:.3});}}   // big bubbles bursting through it
+function seaMonStart(){const M=BAYM,pe=ents.find(e=>e.player);if(!pe)return;
+  if(!M.g){eyeMonBuild(M);const wm=[0x1f3a1c,0x2e4a1e,0x3b3a1a].map(c=>std({color:c,roughness:.6,side:THREE.DoubleSide}));M.weed=[];
+    const strand=(par,x,y,z,L)=>{const p=new THREE.Group();p.position.set(x,y,z);const o=new THREE.Mesh(new THREE.BoxGeometry(R(.05,.12),L,.02).translate(0,-L/2,0),wm[Math.random()*3|0]);p.add(o);par.add(p);M.weed.push({p,ph:R(0,6.3),a:R(.08,.2)});};
+    for(let k=0;k<44;k++){const a=k/44*Math.PI*2+R(-.05,.05);strand(M.U,Math.cos(a)*1.9,.95,Math.sin(a)*1.25,R(.5,1.7));}   // hanging off the rim of the head
+    for(let k=0;k<12;k++){const a=R(0,6.3),r=R(.3,1.3);strand(M.U,Math.cos(a)*r,1.7-r*.1,Math.sin(a)*r*.7,R(.3,.9));}   // draped over the crown
+    for(const A of M.A)for(let k=0;k<6;k++)strand(A,R(-.3,.3),R(-2.6,-.2),R(-.1,.3),R(.4,1.1));}
+  const m_=x=>Math.round(x/SEG),s=Math.min(pe.s+420,(MAR.b-m_(120))*SEG),j=wrapI(Math.floor(s/SEG));   /* out in the grey swell beyond the sea wall (it runs some 220 m out from the road) */
+  M.s=s;M.lat=-(edgeAt[j]+175);M.on=1;M.armed=0;M.t=0;M.said=0;M.snd=0;M.g.visible=true;}
+function seaMonTick(rdt){const M=BAYM;if(!DRIVE||!MAR.a)return;const i=PL.idx;
+  if(i<Z.hyde)M.armed=1;   // ready again for the next pass
+  if(!M.on){if(M.armed&&G.state==='race'&&i>=MAR.a-5&&i<MAR.a+40)seaMonStart();return;}
+  if(G.state!=='race'||i>Z.gg0+40||i<Z.hyde){M.on=0;M.g.visible=false;return;}
+  M.t+=rdt;const t=M.t,g=M.g,sc=M.sc,WY=.7,rise=sst(t,0,11),V=M.V;at(M.s,M.lat,0,V);
+  g.position.set(V.x,WY-sc*7.2+rise*sc*5.2+Math.sin(t*.7)*.6,V.z);   // from right under the water up to the waist
+  const cam=camera.position;g.rotation.set(0,Math.atan2(cam.x-V.x,cam.z-V.z),Math.sin(t*.5)*.04);g.updateMatrixWorld(true);
+  M.U.rotation.y=Math.sin(t*.4)*.25;M.E.rotation.x=.25+Math.sin(t*1.1)*.08;M.E.rotation.y=Math.sin(t*.6)*.25;
+  M.A.forEach((A,k)=>{A.rotation.x=-rise*(.9+.3*Math.sin(t*.8+k));A.rotation.z=(k?1:-1)*(.12+rise*.35);});   // the arms come up dripping
+  for(const w of M.weed)w.p.rotation.set(Math.sin(t*1.3+w.ph)*w.a,0,Math.sin(t*1.7+w.ph)*w.a*.7);
+  if(!M.snd&&t>.1){M.snd=1;const d=cam.distanceTo(V);sfxSeaBellow(clamp(700/(d+200),.35,1));G.shake=Math.max(G.shake,.25);}
+  if(!M.said&&t>2){M.said=1;say('OUT OF THE BAY !','THE EYE RISES FROM THE WATER',2.4);}
+  const pour=t<16?1:Math.max(0,1-(t-16)/6);if(pour>0){NOGY=1;const n=Math.round(rdt*60*pour*3);for(let q=0;q<n;q++){const a=R(0,6.283),P_=M.F.set(Math.cos(a)*1.9,.9,Math.sin(a)*1.25);M.U.localToWorld(P_);
+      if(P_.y>WY+2)puff(V.set(P_.x,P_.y,P_.z),R(-1,1),-R(6,14),R(-1,1),R(2,4),R(5,9),R(1.4,2.4),.5,0xd4e2ea);}   // sheets of water pouring off the rim
+    if(Math.random()<rdt*14*pour)puff(V.set(g.position.x+R(-25,25),WY+.5,g.position.z+R(-25,25)),R(-4,4),R(3,9),R(-4,4),R(4,8),R(14,24),R(1.5,2.8),.55,0xeef3f6);NOGY=0;}}   // and the sea churning round him
+// San Francisco: a row of tall buildings on the LEFT as you come off the Bay Bridge. When the city quake hits they tilt, sag and crumble down in clouds of dust,
+// always falling back away from the street (visual only: nothing reaches the road) (SFB, sfBldTick).
+const SFB={l:null};
+function sfBldTick(rdt){if(!DRIVE)return;const m_=x=>Math.round(x/SEG);
+  if(!SFB.l){SFB.l=[];let n=0;for(let i=Z.b1+m_(45);i<Z.downtown-m_(25);i+=m_(R(34,46))){if(SFX.some(c=>Math.abs(i-c)<m_(16)))continue;
+      const w=R(13,19),d=R(12,16),h=R(26,58),g=new THREE.Group(),b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),cityMats[n++%4]);b.position.set(0,h/2,-d/2);b.castShadow=true;g.add(b);
+      const cap=new THREE.Mesh(new THREE.BoxGeometry(w+.6,.8,d+.6),std({color:0x8a8478,roughness:.9}));cap.position.set(0,h+.4,-d/2);g.add(cap);
+      off(i,XW[i]+15.5+R(0,4),0,g.position);g.rotation.order='YXZ';g.rotation.y=Math.atan2(-Nn[i].x,-Nn[i].z);scene.add(g);   // local +z faces the street; it pivots on its front foot and falls backwards
+      SFB.l.push({g,i,h,d,st:0,t:0,dl:0,y0:g.position.y,ta:R(.35,.75),sk:R(.35,.6),rz:R(-.12,.12)});}}
+  const pe=ents.find(e=>e.player);if(!pe)return;
+  if(CQ.st===0){for(const o of SFB.l)if(o.st){o.st=0;o.g.rotation.x=o.g.rotation.z=0;o.g.scale.y=1;o.g.position.y=o.y0;}return;}   // put back up for the next pass
+  for(const o of SFB.l){const ds=o.i*SEG-pe.s;
+    if(!o.st){if(ds<320&&ds>-200){o.st=1;o.t=0;o.dl=R(0,2.5);}continue;}
+    if(o.st===2)continue;o.t+=rdt;const t=o.t-o.dl;if(t<0)continue;const k=sst(t,0,4.5);
+    o.g.rotation.x=-o.ta*k*k;o.g.rotation.z=o.rz*k;o.g.scale.y=1-o.sk*k;o.g.position.y=o.y0-o.h*.12*k;   // tilts back, sags and sinks into its own rubble
+    if(t<4.5){if(!o.snd&&Math.abs(ds)<400){o.snd=1;sfxCrunch(.9);setTimeout(()=>sfxCrunch(.6),350);G.shake=Math.max(G.shake,.3);}
+      if(Math.random()<rdt*12){NOGY=1;const p=o.g.localToWorld(V.set(R(-8,8),R(0,o.h*(1-o.sk*k)),-o.d*R(.2,.8)));puff(p,R(-3,3),R(-2,2),R(-3,3),R(3,6),R(10,18),R(2,3.5),.6,0x9a948a);
+        puff(o.g.localToWorld(V.set(R(-10,10),1,-o.d*R(0,1.2))),R(-6,6),R(2,6),R(-6,0),R(6,10),R(16,26),R(2.5,4),.65,0xa8a094);NOGY=0;}}   // dust pouring off it and rolling out at the base
+    else{o.st=2;o.snd=0;}}}
+// Hyde St, on the way up: the giant mosquito flies across in front of the car and over the street (HMQ, hydMosqTick; visual only).
+const HMQ={g:null,on:0,armed:1,t:0};
+function hydMosqTick(rdt){const M=HMQ;if(!DRIVE)return;const i=PL.idx,m_=x=>Math.round(x/SEG),pe=ents.find(e=>e.player);if(!pe)return;
+  if(i<Z.hyde||i>Z.marina)M.armed=1;
+  if(!M.on){if(M.armed&&G.state==='race'&&i>=Z.hyde+m_(110)&&i<Z.hyde+m_(200)){if(!M.g)mosqBuild(M);M.on=1;M.armed=0;M.t=0;M.sd=Math.random()<.5?-1:1;M.g.scale.setScalar(2.4);
+      say('BZZZZZZZ!','',1.4);if(AC){const t=AC.currentTime;tone('sawtooth',460,t,4.5,.12,master,{to:610,a:.6,h:.6,lp:2200});tone('sawtooth',467,t,4.5,.1,master,{to:600,a:.6,h:.6,lp:2200});}}return;}
+  M.t+=rdt;const t=M.t,k=t/5;if(k>=1||G.state!=='race'){M.on=0;M.g.visible=false;return;}
+  M.q.copy(M.g.position);at(pe.s+75-8*t,M.sd*(45-90*k),12+6*Math.sin(k*Math.PI)+Math.sin(t*3)*.8,M.p);M.g.position.copy(M.p);
+  if(t>.05&&M.q.distanceToSquared(M.p)>1e-4){M.V.copy(M.p).multiplyScalar(2).sub(M.q);M.g.lookAt(M.V);M.g.rotateZ(Math.sin(t*1.7)*.25);}
+  M.g.visible=true;for(const[pv,sg]of M.w)pv.rotation.z=sg*(.25+.55*Math.sin(t*48));}
+// Hyde St, on the way down: a giant iguana comes out of a building on the right, scuttles down the hill beside the road and on into the bay (HYI, hydIguTick; visual only).
+const HYI={k:null,on:0,armed:1,V:new THREE.Vector3(),D:new THREE.Vector3()};
+function hydIguTick(rdt){const H_=HYI;if(!DRIVE)return;const i=PL.idx,m_=x=>Math.round(x/SEG),pe=ents.find(e=>e.player);if(!pe)return;
+  if(i<Z.hyde+m_(300)||i>Z.gg0)H_.armed=1;
+  if(!H_.on){if(H_.armed&&G.state==='race'&&i>=Z.hyde+m_(490)&&i<Z.marina-m_(60)){if(!H_.k){H_.k=bigIguMk();H_.k.g.scale.setScalar(4.5);}const k=H_.k,s=Math.min(pe.s+70,(Z.marina-m_(50))*SEG),j=wrapI(Math.floor(s/SEG));
+      Object.assign(H_,{on:1,armed:0,t:0,st:0,s,lat:-(10.2+XW[j]+4),ph:0,y:null,sp:0});k.b.rotation.set(0,0,0);k.g.visible=true;NOGY=1;off(j,-(10.2+XW[j]+1),1,V);for(let q=0;q<10;q++)puff(V,R(-2,2),R(1,3),R(-2,2),2,6,R(1.2,2),.5,0x8a7e70);NOGY=0;sfxCrunch(.5);}return;}
+  const k=H_.k,V_=H_.V;H_.t+=rdt;let v=0;
+  if(G.state!=='race'||H_.t>40||i>Z.gg0){H_.on=0;k.g.visible=false;return;}
+  if(H_.st===0){const j=wrapI(Math.floor(H_.s/SEG)),to=-(edgeAt[j]-1.3);H_.lat+=2.6*rdt;v=2.6;at(H_.s,H_.lat,0,V_);k.g.position.copy(V_);k.g.rotation.y=yaw(j)-Math.PI/2;   // out of the doorway towards the kerb
+    if(H_.lat>=to){H_.st=1;H_.lat=to;}}
+  else if(H_.st===1){v=9;H_.s+=v*rdt;const j=wrapI(Math.floor(H_.s/SEG));H_.lat=-(edgeAt[j]-1.3);at(H_.s,H_.lat,0,V_);k.g.position.copy(V_);k.g.rotation.y=yaw(j);   // scuttling down the hill along the kerb
+    if(j>=Z.marina-m_(8)){H_.st=2;const ja=wrapI(MAR.a+m_(25));off(ja,-(edgeAt[ja]+40),0,H_.D);H_.y0=k.g.position.y;H_.p0=k.g.position.clone();H_.L=Math.max(1,H_.p0.distanceTo(H_.D));H_.u=0;}}
+  else{v=9;const p=k.g.position;   // across the bottom of the hill, over the sea wall and into the grey swell along the Marina
+    if(H_.u<1){H_.u=Math.min(1,H_.u+v*rdt/H_.L);p.lerpVectors(H_.p0,H_.D,H_.u);p.y=lerp(H_.y0,H_.D.y+.6,H_.u);}
+    else{H_.vy=(H_.vy||0)-3*rdt;p.y+=H_.vy*rdt;k.b.rotation.x=.4;
+      if(!H_.sp){H_.sp=1;if(Math.abs(p.x-PL.x)+Math.abs(p.z-PL.z)<500)sfxSplash();NOGY=1;for(let q=0;q<24;q++){const a=R(0,6.283),sp=R(2,7);puff(V.set(p.x,H_.D.y+.8,p.z),Math.cos(a)*sp,R(4,12),Math.sin(a)*sp,1,R(3,6),R(1.2,2.2),.7,0xeef2f4);}NOGY=0;}
+      if(p.y<H_.D.y-8){H_.on=0;k.g.visible=false;return;}}
+    k.g.rotation.y=Math.atan2(H_.D.x-H_.p0.x,H_.D.z-H_.p0.z);}
+  H_.ph+=rdt*v*1.3;const ph=H_.ph,K=3.2;for(const sg of k.segs){const z=sg.z,A=.04+.1*Math.max(0,.6-z)/1.9;sg.g.position.x=A*Math.sin(ph-K*z);sg.g.rotation.y=Math.atan(-A*K*Math.cos(ph-K*z));}
+  for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f;L.g.rotation.y=q*.55;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.25;}}
 // past San Quentin, on the way to the Richmond bridge: out on the water to the LEFT, a second beetle rises beside an oil tanker, raises both arms and brings his
 // claw down mid-ship: a boom, a fireball and black smoke; the hull breaks in two, bow and stern tilt up into a V and slide under with smoke, bubbles and a
 // spreading slick; then he sinks. Far off: it never touches the car. Once per pass.
@@ -4451,7 +4534,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={BIGI,TUBI,mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={BIGI,TUBI,mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),BAYM,seaMon:()=>seaMonStart(),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
