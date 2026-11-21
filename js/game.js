@@ -2861,13 +2861,15 @@ function pennyTick(rdt){const P_=PENNY,pe=ents.find(e=>e.player);if(!pe||!DRIVE)
     else if(k.bt<=0&&k.v>5.5)k.v=Math.max(R(3.5,5.5),k.v-rdt*3);}}
 // Iguanas: grey-green, spiny crest, round scale patch on the cheek. They scurry along the road edge, now and then dart across, and one the car hits is flung up in an arc, lands and scurries off. Never a crash, no slowdown.
 const IGU={l:[],cd:3,V:new THREE.Vector3()};
+function iguMk(){const[bm,dm,cm]=IGU.M||(IGU.M=[std({color:0x7d8a68,roughness:.85}),std({color:0x56633f,roughness:.9}),std({color:0xb9c29a,roughness:.7})]),g=new THREE.Group(),b=new THREE.Group();g.add(b);const bx=(sx,sy,sz,mm,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mm);o.position.set(x,y,z);b.add(o);return o;};
+  bx(.16,.1,.4,bm,0,.1,0);bx(.11,.09,.15,bm,0,.12,.27);bx(.04,.04,.03,cm,.058,.12,.3).scale.set(1,1.4,1);   // body, head, round scale patch on the cheek
+  bx(.07,.06,.4,dm,0,.08,-.4);bx(.04,.04,.35,dm,0,.07,-.72);
+  for(let q=0;q<7;q++){const sp=bx(.025,.07,.04,dm,0,.19,.3-q*.1);sp.rotation.x=-.4;}   // spiny crest down the back
+  for(const s of[-1,1])for(const z of[-.12,.14]){const l=bx(.04,.1,.05,dm,s*.11,.05,z);l.rotation.z=s*.5;}
+  return{g,b};}
 function iguanaTick(rdt){const I_=IGU,pe=ents.find(e=>e.player);if(!pe||!DRIVE)return;
-  if(!I_.l.length){const bm=std({color:0x7d8a68,roughness:.85}),dm=std({color:0x56633f,roughness:.9}),cm=std({color:0xb9c29a,roughness:.7});
-    for(let n=0;n<6;n++){const g=new THREE.Group(),b=new THREE.Group();g.add(b);const bx=(sx,sy,sz,mm,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mm);o.position.set(x,y,z);b.add(o);return o;};
-      bx(.16,.1,.4,bm,0,.1,0);bx(.11,.09,.15,bm,0,.12,.27);bx(.04,.04,.03,cm,.058,.12,.3).scale.set(1,1.4,1);   // body, head, round scale patch on the cheek
-      bx(.07,.06,.4,dm,0,.08,-.4);bx(.04,.04,.35,dm,0,.07,-.72);
-      for(let q=0;q<7;q++){const sp=bx(.025,.07,.04,dm,0,.19,.3-q*.1);sp.rotation.x=-.4;}   // spiny crest down the back
-      for(const s of[-1,1])for(const z of[-.12,.14]){const l=bx(.04,.1,.05,dm,s*.11,.05,z);l.rotation.z=s*.5;}
+  if(!I_.l.length){
+    for(let n=0;n<6;n++){const{g,b}=iguMk();
       g.visible=false;scene.add(g);const tr=new THREE.Mesh(new THREE.CylinderGeometry(.55,.7,34,8),std({color:0x6a3a26,roughness:1}));tr.visible=false;scene.add(tr);I_.l.push({g,b,tr,st:0,s:0,lat:0,tl:0,v:0,vl:0,y:0,vy:0,t:0,x:0,z:0,vx:0,vz:0,sp:0});}}
   const i=PL.idx,zn=zoneArr[i],on=G.state==='race'&&(zn===1||zn===7||zn===8);
   if(on){I_.cd-=rdt;if(I_.cd<=0){I_.cd=R(3,8);const k=I_.l.find(o=>!o.st);
@@ -2886,6 +2888,47 @@ function iguanaTick(rdt){const I_=IGU,pe=ents.find(e=>e.player);if(!pe||!DRIVE)r
     at(k.s,k.lat,0,I_.V);k.g.position.copy(I_.V);k.g.rotation.y=Math.abs(dl)>.1?yaw(j)+Math.sign(dl)*Math.PI/2:yaw(j)+(k.v<0?Math.PI:0);
     k.b.position.y=Math.abs(Math.sin(k.t*18))*.02;k.b.rotation.z=Math.sin(k.t*18)*.1;
     const dx=I_.V.x-PL.x,dz=I_.V.z-PL.z;if(dx*dx+dz*dz<4&&Math.abs(pe.v)>2&&!PL.crash){k.st=2;k.t=0;k.x=I_.V.x;k.z=I_.V.z;k.y=I_.V.y+.2;k.vx=PL.vx*.6+R(-2,2);k.vz=PL.vz*.6+R(-2,2);k.vy=R(7,10);k.sp=R(-8,8);sfxSqueak();}}}   // hit: flung up in an arc
+// The giant iguana of San Antonio Ave: about 2.3 m long, green and turquoise, a spiny crest and a dewlap. Now and then one walks slowly out of the open field on the right
+// just past 1611, its body swinging side to side (spine, tail and legs all moving), crosses the street and goes on into the gardens opposite. One the car hits is flung up, lands and walks on. Never a crash, no slowdown.
+const BIGI={l:[],gaps:null,V:new THREE.Vector3()};
+function bigIguMk(){const M=c=>std({color:c,roughness:.7}),gr=M(0x3f9a52),tq=M(0x2bb3a3),dk=M(0x2a6a44),be=M(0xa9dba2),cr=M(0x6fd6c0),ey=std({color:0x15110a,roughness:.3}),g=new THREE.Group(),b=new THREE.Group();g.add(b);
+  const bx=(par,sx,sy,sz,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),m);o.position.set(x,y,z);o.castShadow=true;par.add(o);return o;};
+  const D=[[.98,.28,.19,.16,gr],[.74,.22,.23,.2,tq],[.46,.36,.34,.26,gr],[.12,.34,.36,.25,gr],[-.2,.3,.24,.19,dk],[-.46,.26,.18,.15,tq],[-.69,.24,.14,.12,dk],[-.9,.22,.11,.1,tq],[-1.08,.2,.08,.08,dk],[-1.24,.18,.05,.06,tq]],segs=[];   // the spine, head to tail tip: z, length, width, height, colour
+  D.forEach(([z,l,w,h,m],n)=>{const sg=new THREE.Group();sg.position.set(0,0,z);b.add(sg);const y=.13+h/2*(n<4?1:.7);bx(sg,w,h,l+.04,m,0,y,0);if(n===2||n===3)bx(sg,w*.8,.04,l,be,0,y-h/2-.01,0);   // pale belly
+    const ns=n===0?1:n<4?3:n<7?2:0;for(let q=0;q<ns;q++){const sp=bx(sg,.025,(n<4?.13:.08)*(n===0?.6:1),.05,cr,0,y+h/2+.05,l/2-(q+.5)*l/ns);sp.rotation.x=-.35;}   // spiny crest
+    segs.push({g:sg,z});});
+  const hd=segs[0].g;bx(hd,.13,.1,.12,gr,0,.17,.17);for(const s of[-1,1]){bx(hd,.035,.045,.045,ey,s*.095,.24,.06);bx(hd,.02,.07,.07,cr,s*.097,.17,-.03);}   // snout, eyes, round cheek scales
+  bx(segs[1].g,.03,.14,.18,tq,0,.05,.04);   // dewlap
+  const legs=[];for(const[si,zz]of[[2,.08],[3,-.06]])for(const s of[-1,1]){const lg=new THREE.Group();lg.position.set(s*D[si][2]/2,.2,zz);segs[si].g.add(lg);
+    bx(lg,.2,.07,.08,gr,s*.1,0,0);bx(lg,.06,.18,.07,dk,s*.2,-.08,0);bx(lg,.1,.03,.14,dk,s*.22,-.17,.04);legs.push({g:lg,s,f:si===2?1:-1});}
+  g.visible=false;scene.add(g);return{g,b,segs,legs};}
+function bigIguTick(rdt){const B_=BIGI,pe=ents.find(e=>e.player);if(!pe||!DRIVE)return;
+  if(!B_.gaps){B_.gaps=[];for(let i=Math.ceil((Z.start+3)/9)*9;i<Z.start+Math.round(200/SEG)&&B_.gaps.length<2;i+=9)if((i/9|0)%3===1&&zoneArr[i]===1)B_.gaps.push(i);   // the open spaces between the houses on the right
+    for(const i of B_.gaps)B_.l.push(Object.assign(bigIguMk(),{i,st:0,cd:B_.l.length*4,s:0,lat:0,y:0,vy:0,vs:0,vl:0,v:1,t:0,ph:0,sp:0,pz:0}));}
+  for(const k of B_.l){
+    if(!k.st){k.cd-=rdt;const d0=wdiff(k.i*SEG-pe.s);if(k.cd<=0&&d0>12&&d0<260){const w=RW+XW[k.i];k.st=1;k.s=k.i*SEG+R(-4,4);k.lat=-(w+R(1.5,7));k.v=R(.8,1.1);k.t=0;k.y=0;k.pz=0;k.b.rotation.set(0,0,0);k.g.visible=true;}continue;}
+    const ds=wdiff(k.s-pe.s),j=wrapI(Math.floor(k.s/SEG)),w=RW+XW[j];k.t+=rdt;
+    if(ds<-60||ds>420||k.lat>w+26){k.st=0;k.g.visible=false;k.cd=R(6,16);continue;}
+    if(k.st===2){k.vy-=14*rdt;k.y+=k.vy*rdt;k.s=wrapS(k.s+k.vs*rdt);k.lat+=k.vl*rdt;k.b.rotation.x+=k.sp*rdt;k.b.rotation.z+=k.sp*.4*rdt;if(k.y<=0&&k.vy<0){k.y=0;k.st=1;k.b.rotation.set(0,0,0);}}   // flung up; lands and walks on
+    else if(k.pz>0)k.pz-=rdt;   // stops a moment and bobs its head
+    else{k.lat+=k.v*rdt;k.ph+=rdt*k.v*4.2;if(Math.random()<rdt*.12)k.pz=R(.8,2);}
+    at(k.s,k.lat,0,B_.V);B_.V.y+=k.y;k.g.position.copy(B_.V);k.g.rotation.y=yaw(j)+Math.PI/2;
+    const ph=k.ph,K=3.2;for(const sg of k.segs){const z=sg.z,A=.04+.1*Math.max(0,.6-z)/1.9;sg.g.position.x=A*Math.sin(ph-K*z);sg.g.rotation.y=Math.atan(-A*K*Math.cos(ph-K*z));}   // the side-to-side wave down the body and tail
+    k.segs[0].g.rotation.x=k.pz>0?-Math.max(0,Math.sin(k.t*6))*.3:0;
+    for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f;L.g.rotation.y=q*.55;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.25;}   // diagonal pairs swing together, the forward one lifted
+    if(k.st===1){const dx=B_.V.x-PL.x,dz=B_.V.z-PL.z;if(dx*dx+dz*dz<2.1*2.1&&Math.abs(pe.v)>2&&!PL.crash){k.st=2;k.vy=R(6,8);k.vs=clamp(pe.v*.5,-12,12)+R(-1,1);k.vl=R(-1.5,1.5);k.sp=R(-6,6);sfxBoing(.9);}}}}
+// Iguanas on top of the Posey Tube's portal: a little group on the flat roof between the two towers, darting about, stopping, bobbing their heads. Visual only.
+const TUBI={g:null,l:[]};
+function tubeIguTick(rdt){const T_=TUBI;if(!DRIVE)return;
+  if(!T_.g){T_.g=new THREE.Group();T_.g.position.copy(P[Z.tu0]);T_.g.position.y+=16*1.3;T_.g.rotation.y=yaw(Z.tu0);scene.add(T_.g);
+    for(let n=0;n<7;n++){const{g,b}=iguMk();g.scale.setScalar(1.3);T_.g.add(g);const k={g,b,x:R(-4.6,4.6),z:R(.8,8.2),tx:0,tz:0,st:0,w:R(0,2),t:R(0,5),v:0};g.position.set(k.x,0,k.z);g.rotation.y=R(0,6.28);T_.l.push(k);}}
+  const near=PL.idx>Z.tu0-Math.round(500/SEG)&&PL.idx<Z.tu0+5;T_.g.visible=near;if(!near)return;
+  for(const k of T_.l){k.t+=rdt;
+    if(k.st===0){k.w-=rdt;const bob=Math.max(0,Math.sin(k.t*7))*(Math.sin(k.t*.9+k.x)>0?1:0);k.b.rotation.set(-bob*.2,0,0);k.b.position.y=bob*.03;
+      if(k.w<=0){k.st=1;k.tx=clamp(k.x+R(-3,3),-4.6,4.6);k.tz=clamp(k.z+R(-3,3),.8,8.2);k.v=R(2.5,4.5);k.g.rotation.y=Math.atan2(k.tx-k.x,k.tz-k.z);}}
+    else{const dx=k.tx-k.x,dz=k.tz-k.z,d=Math.hypot(dx,dz),st=k.v*rdt;if(d<=st){k.x=k.tx;k.z=k.tz;k.st=0;k.w=R(.6,3);}else{k.x+=dx/d*st;k.z+=dz/d*st;}
+      k.b.position.y=Math.abs(Math.sin(k.t*22))*.02;k.b.rotation.set(0,0,Math.sin(k.t*22)*.12);}
+    k.g.position.set(k.x,0,k.z);}}
 // Shooting stars: at night (clear sky only) an occasional bright streak crosses the sky. One pooled line, child of the sky dome, vertices rewritten in place.
 const SHOOT={t:0,dur:1,len:600,cd:6,l:null,p:null,o:new THREE.Vector3(),d:new THREE.Vector3(),h:new THREE.Vector3(),q:new THREE.Vector3()};
 function shootTick(rdt){const S_=SHOOT,u=skyMat.uniforms;if(!S_.l){const g=new THREE.BufferGeometry();S_.p=new Float32Array(6);g.setAttribute('position',new THREE.BufferAttribute(S_.p,3));
@@ -2943,7 +2986,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);bigIguTick(rdt);tubeIguTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -4346,7 +4389,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={BIGI,TUBI,mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
