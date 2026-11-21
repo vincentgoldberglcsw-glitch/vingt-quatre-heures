@@ -457,7 +457,7 @@ await BOOT.step('ROADSIDE',.20);
 // A quiet island town street, the tube under the estuary with its portal buildings, a freeway past the port, then a long suspension bridge.
 // The whole route is level: the bay is simply 45 m below the road, so the bridge is high without the engine needing hills.
 const MILL=[],CRN=[],REFS=[],AIR={g:null,st:0,t:0,cd:6};let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
-const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null,SEAM=null,SEAW=null;const BURN=[],OILX=[],OILB={t:6,q:[]},TOX={l:[],slime:0,hit:0,mm:null,car:null},SQX={},MOSQ={g:null,on:0,t:0,armed:1,lift:null};   /* TOX: leaking toxic barrels and their ooze; SQX: the San Quentin yard fence, its hole, the watchtower searchlight */   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
+const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null,SEAM=null,SEAW=null;const BURN=[],OILX=[],OILB={t:6,q:[]},TOX={l:[],slime:0,hit:0,mm:null,car:null},SQX={},MOSQ={g:null,on:0,t:0,armed:1,lift:null},BTL={g:null,on:0,t:0,wat:-44.6,rs:0,armed:{bb:1,gg:1,rb:1}};   /* TOX: leaking toxic barrels and their ooze; SQX: the San Quentin yard fence, its hole, the watchtower searchlight */   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
 if(!DRIVE){ // roadside advertising boards, as on the old circuit: cigarettes, wine and bread, by turns
   const ad=(kind,name,sub)=>canvas(1024,460,(g,w,h)=>{const bg={cig:'#1d4f8a',wine:'#efe6cc',bread:'#f0c23a'}[kind],ink={cig:'#f4f1e8',wine:'#7a1626',bread:'#3a2412'}[kind];g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=ink;g.lineWidth=10;g.strokeRect(14,14,w-28,h-28);
     if(kind==='cig'){g.save();g.translate(190,250);g.rotate(-.1);g.fillStyle='#f4f1e8';g.fillRect(-90,-110,180,250);g.fillStyle='#c8302a';g.fillRect(-90,-30,180,90);g.fillStyle='#f4f1e8';g.beginPath();g.ellipse(0,15,62,30,0,0,7);g.fill();g.fillStyle='#c8302a';g.font='900 30px Georgia';g.textAlign='center';g.fillText('M',0,26);
@@ -2956,7 +2956,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -3741,6 +3741,98 @@ function mosqCarry(dt,pe){const L=MOSQ.lift;L.t+=dt;PL.safe=Math.max(PL.safe,1.2
 function mosqSnd(on){const M=MOSQ;if(!AC)return;if(!on){if(M.snd){const ct=AC.currentTime;M.snd.g.gain.setTargetAtTime(0,ct,.1);const s=M.snd;setTimeout(()=>{try{s.o1.stop();s.o2.stop();s.l.stop();}catch(e){}},600);M.snd=null;}return;}if(M.snd)return;
   const o1=AC.createOscillator(),o2=AC.createOscillator(),l=AC.createOscillator(),lg=AC.createGain(),bp=AC.createBiquadFilter(),g=AC.createGain();o1.type=o2.type='sawtooth';o1.frequency.value=520;o2.frequency.value=527;l.frequency.value=31;lg.gain.value=26;l.connect(lg);lg.connect(o1.frequency);lg.connect(o2.frequency);   // two detuned saws, warbled at wingbeat rate
   bp.type='bandpass';bp.frequency.value=1100;bp.Q.value=1.4;g.gain.value=0;o1.connect(bp);o2.connect(bp);bp.connect(g);g.connect(master);o1.start();o2.start();l.start();M.snd={o1,o2,l,g};M.pd=undefined;}
+// THE BEETLE: a giant beetle-horned monster, some 100 m tall (the bridge decks stand 67-70 m over the water). As you drive onto each of the three bridges he rises slowly out of the bay beside it, streaming water,
+// in a ring of waves, with a deep roar; swings his great hooked claw down onto the deck two or three times (the deck jumps, the car is knocked sideways and must
+// be caught, never a crash), then sinks back under. Once per bridge per pass. Grey helmet hood with a curved horn, white bulb eyes on stalks, a silver mouth,
+// a yellow-green ribbed chest, grey plated scaly limbs, red-brown claw tips.
+function beetleBuild(){const B=BTL,g=new THREE.Group(),UP=new THREE.Vector3(0,1,0),V1=new THREE.Vector3(),M4=new THREE.Matrix4(),Q=new THREE.Quaternion(),S1=new THREE.Vector3(),v3=(x,y,z)=>new THREE.Vector3(x,y,z);
+  const gry=std({color:0x80858a,roughness:.72,flatShading:true}),gdk=std({color:0x5b5f64,roughness:.8,flatShading:true}),hoodM=std({color:0x878b90,roughness:.6,side:THREE.DoubleSide}),grn=std({color:0xb4b238,roughness:.5}),rib=std({color:0x77781c,roughness:.6}),
+    red=std({color:0x6e2a20,roughness:.45}),wht=std({color:0xf6f4ec,roughness:.25,emissive:0x2a2a28}),sil=std({color:0x8e9399,metalness:.85,roughness:.3}),blk=std({color:0x1c1d20,roughness:.6});
+  const sph=(p,r,sx,sy,sz,x,y,z,m,ws=12,hs=9)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,ws,hs),m);o.scale.set(sx,sy,sz);o.position.set(x,y,z);p.add(o);return o;};
+  const seg=(p,a,b,r0,r1,m,n=8)=>{const c=new THREE.Mesh(cyl(r1,r0,a.distanceTo(b),n),m);c.position.copy(a).add(b).multiplyScalar(.5);c.quaternion.setFromUnitVectors(UP,V1.copy(b).sub(a).normalize());p.add(c);return c;};
+  const scG=new THREE.ConeGeometry(.24,.55,4);   // one overlapping scale: a little four-sided spike lying on the limb, its tip hanging down towards the hand or foot
+  const scales=(p,L)=>{const im=new THREE.InstancedMesh(scG,gry,L.length);L.forEach(([pos,dir],k)=>{Q.setFromUnitVectors(UP,dir);S1.set(1,1,1);M4.compose(pos,Q,S1);im.setMatrixAt(k,M4);});p.add(im);};
+  const limb=(L,a,b,r,rings,per)=>{const ax=b.clone().sub(a).normalize(),t1=new THREE.Vector3().crossVectors(ax,Math.abs(ax.y)<.9?UP:v3(1,0,0)).normalize(),t2=new THREE.Vector3().crossVectors(ax,t1);
+    for(let k=0;k<rings;k++){const u=(k+.5)/rings;for(let j=0;j<per;j++){const th=(j+(k%2)*.5)/per*Math.PI*2,n=t1.clone().multiplyScalar(Math.cos(th)).addScaledVector(t2,Math.sin(th));L.push([a.clone().lerp(b,u).addScaledVector(n,r),ax.clone().addScaledVector(n,.55).normalize()]);}}};
+  // legs, planted wide and bent: scaly thighs and shins, knee plates, clawed feet with red-brown toes
+  const LG=[];for(const sx of[-1,1]){const hip=v3(sx*.62,3,0),kn=v3(sx*.8,1.65,.32),an=v3(sx*.72,.42,0);
+    seg(g,hip,kn,.6,.5,gdk);seg(g,kn,an,.5,.4,gdk);sph(g,.5,1,.9,1,kn.x,kn.y,kn.z+.08,gry,8,6);limb(LG,hip,kn,.56,3,7);limb(LG,kn,an,.47,3,6);
+    sph(g,.46,1.05,.5,1.5,an.x,.25,.22,gdk,10,6);for(const tx of[-.26,0,.26])seg(g,v3(an.x+tx,.22,.78),v3(an.x+tx*1.35,.04,1.2),.14,.02,red,5);}
+  scales(g,LG);sph(g,.95,1.15,.62,.85,0,3.1,0,gdk,10,7);   // the hips
+  // the hunched trunk: a plated grey back, the ribbed yellow-green chest and belly in front
+  const T=new THREE.Group();T.position.set(0,3.15,0);T.rotation.x=.38;g.add(T);B.T=T;
+  sph(T,1.25,1.12,1.45,.85,0,1.55,-.22,gry,12,9);sph(T,1.2,.98,1.38,.72,0,1.5,.12,grn,16,12);
+  for(let k=0;k<6;k++){const y=.5+k*.36,rx=1.16*Math.sqrt(Math.max(.05,1-((y-1.5)/1.66)**2)),tr=new THREE.Mesh(new THREE.TorusGeometry(rx,.05,4,16,Math.PI*.8),rib);tr.position.set(0,y,.12);tr.rotation.set(Math.PI/2,0,Math.PI*.1);tr.scale.set(1,.74,1);T.add(tr);}
+  {const gv=new THREE.Mesh(new THREE.BoxGeometry(.07,2.1,.1),rib);gv.position.set(0,1.45,.98);gv.rotation.x=.05;T.add(gv);}   // the groove down the middle
+  const SH=[];for(const sx of[-1,1]){sph(T,.62,1.1,.85,1,sx*1.3,2.58,-.05,gry,10,7);limb(SH,v3(sx*1.05,3.05,-.05),v3(sx*1.55,2.2,-.05),.5,2,7);}scales(T,SH);   // plated shoulders
+  // the head: a helmet hood with its rim jutting out over the face, a curved horn, bulb eyes on stalks, a dark silver mouth
+  const H=new THREE.Group();H.position.set(0,3.05,.55);H.rotation.x=-.32;T.add(H);B.H=H;
+  const hood=new THREE.Mesh(new THREE.SphereGeometry(1.2,16,10,0,Math.PI*2,0,Math.PI*.56),hoodM);hood.scale.set(1.12,.85,1.3);hood.rotation.x=.38;H.add(hood);
+  sph(H,.58,1.15,.8,.9,0,-.38,.55,sil,12,8);sph(H,.42,1,.55,.6,0,-.62,.78,blk,10,6);
+  for(let k=0;k<5;k++){const tt=new THREE.Mesh(new THREE.ConeGeometry(.06,.2,4),wht);tt.position.set((k-2)*.15,-.42,1.08-Math.abs(k-2)*.05);tt.rotation.x=Math.PI;H.add(tt);}
+  for(let k=0;k<3;k++){const bx=new THREE.Mesh(new THREE.BoxGeometry(.75-k*.12,.04,.06),blk);bx.position.set(0,-.2-k*.13,1.02-k*.03);H.add(bx);}   // the grille of the mouth
+  for(const sx of[-1,1]){const a=v3(sx*.42,0,1.1),b=v3(sx*.6,.42,1.32);seg(H,a,b,.07,.05,gdk,5);sph(H,.17,1,1,1,b.x,b.y,b.z,wht,10,7);}
+  {const hn=new THREE.Mesh(new THREE.TorusGeometry(.78,.17,6,12,Math.PI*.5),gry);hn.position.set(0,.95,.48);hn.rotation.set(0,-Math.PI/2,Math.PI/2);H.add(hn);
+    const tip=new THREE.Mesh(new THREE.ConeGeometry(.17,.5,6),gry);tip.position.set(0,1.73,.64);tip.rotation.x=Math.PI/2*.85;H.add(tip);}
+  // the claw arm: scaly upper arm and a heavy forearm ending in a great hooked pincer; it pivots at the shoulder, hanging along -y
+  const A=new THREE.Group();A.position.set(-1.38,2.55,.05);T.add(A);B.A=A;const e1=v3(0,-1.8,0),e2=v3(0,-3.2,0),AL=[];
+  seg(A,v3(0,0,0),e1,.38,.34,gdk);sph(A,.42,1,1,1,0,-1.8,0,gry,8,6);seg(A,e1,e2,.36,.5,gdk);limb(AL,v3(0,-.4,0),e1,.37,3,6);limb(AL,e1,e2,.45,3,7);scales(A,AL);
+  sph(A,.55,1,.8,.9,0,-3.35,0,gry,10,7);
+  {const big=new THREE.Mesh(new THREE.TorusGeometry(.78,.3,7,14,Math.PI*1.4),gry);big.position.set(0,-4.1,0);big.rotation.z=Math.PI/2;A.add(big);   // the hook: down and curling back up
+    const tp=new THREE.Mesh(new THREE.ConeGeometry(.3,.6,7),gry);tp.position.set(.72,-3.55,0);tp.rotation.z=-.5;A.add(tp);
+    const sm=new THREE.Mesh(new THREE.TorusGeometry(.45,.19,6,10,Math.PI*.8),gdk);sm.position.set(.35,-4.15,0);sm.rotation.z=-Math.PI*.9;A.add(sm);}   // and the lower jaw of the pincer
+  B.armL=5;   // shoulder to the bottom of the hook, in model units
+  // the other arm: hanging forward, bent, a clawed hand with red-brown fingertips
+  const A2=new THREE.Group();A2.position.set(1.38,2.55,.05);A2.rotation.set(-.55,0,.32);T.add(A2);B.A2=A2;const f1=v3(0,-1.7,0),f2=v3(0,-2.6,.95),A2L=[];
+  seg(A2,v3(0,0,0),f1,.36,.32,gdk);sph(A2,.38,1,1,1,f1.x,f1.y,f1.z,gry,8,6);seg(A2,f1,f2,.33,.28,gdk);limb(A2L,v3(0,-.4,0),f1,.35,3,6);limb(A2L,f1,f2,.32,2,6);scales(A2,A2L);
+  sph(A2,.34,1,.8,1.1,f2.x,f2.y-.1,f2.z+.15,gdk,8,6);
+  for(let k=0;k<4;k++){const a=v3(-.24+k*.16,f2.y-.15,f2.z+.35),m=v3(-.32+k*.21,f2.y-.5,f2.z+.7),tp=v3(-.33+k*.22,f2.y-.95,f2.z+.72);seg(A2,a,m,.08,.07,gdk,5);seg(A2,m,tp,.07,.015,red,5);}
+  B.sc=13.5;g.scale.setScalar(B.sc);g.visible=false;scene.add(g);B.g=g;B.V=new THREE.Vector3();B.W=new THREE.Vector3();B.tg=new THREE.Vector3();B.Q=new THREE.Quaternion();B.v1=new THREE.Vector3();B.v3=new THREE.Vector3();
+  B.qr=new THREE.Quaternion().setFromUnitVectors(v3(0,-1,0),v3(-.75,.55,.38).normalize());B.qw=new THREE.Quaternion().setFromUnitVectors(v3(0,-1,0),v3(-.35,.88,-.32).normalize());B.qs=new THREE.Quaternion();A.quaternion.copy(B.qr);
+  B.rings=[0,1].map(()=>{const m=new THREE.Mesh(new THREE.RingGeometry(.86,1,48).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xeef4f6,transparent:true,opacity:0,depthWrite:false}));m.visible=false;scene.add(m);return m;});}
+function beetleStart(k){const B=BTL,pe=ents.find(e=>e.player);if(!pe)return;if(!B.g)beetleBuild();B.on=1;B.armed[k]=0;B.k=k;B.t=0;B.lead=170;B.s=pe.s+170;B.n=Math.random()<.5?2:3;B.hj=-1;B.sj=-1;B.st=null;B.pa=0;B.roar=0;
+  let sd=Math.random()<.5?-1:1;at(pe.s+150,sd*60,0,B.V);if(Terrain.landAt(B.V.x,B.V.z)>=.2)sd=-sd;B.sd=sd;B.rt=[0,1.6];sfxBigSplash();G.shake=Math.max(G.shake,.4);}
+function beetleOff(){const B=BTL;B.on=0;if(B.g){B.g.visible=false;for(const r of B.rings)r.visible=false;}}
+function beetleTick(rdt){const B=BTL;if(!DRIVE||!Z.rb1)return;const pe=ents.find(e=>e.player);if(!pe)return;const i=PL.idx,m_=x=>Math.round(x/SEG);
+  const BR=[['bb',Z.b0,Z.b1],['gg',Z.gg0,Z.gg1],['rb',Z.rb0,Z.rb1]];for(const[k,a,b]of BR)if(i<a-m_(400)||i>b)B.armed[k]=1;   // ready again for the next pass
+  if(!B.on&&G.state==='race'&&!PL.crash&&zoneArr[i]===4&&!SAFEZ()){const br=BR.find(([k,a,b])=>B.armed[k]&&i>=a&&i<Math.min(b,a+m_(160)));if(br)beetleStart(br[0]);}
+  if(!B.on)return;if(G.state!=='race'){beetleOff();return;}
+  B.t+=rdt;const t=B.t,V=B.V,g=B.g;
+  if(B.st==null&&(zoneArr[i]!==4||PL.crash))B.st=t;   // off the bridge (or wrecked): he goes back under
+  if(B.st==null){B.lead=lerp(B.lead,90,clamp(rdt*.4,0,1));B.s=lerp(B.s,pe.s+B.lead,clamp(rdt*1.5,0,1));}   // he wades along beside you, a little ahead
+  const rise=B.st==null?sst(t,0,6.5):1-sst(t-B.st,0,5),bob=Math.sin(t*1.6)*.8;
+  at(B.s,B.sd*60,0,V);const n=Nn[wrapI(Math.floor(B.s/SEG))];g.position.set(V.x,BTL.wat-112+109*rise+bob,V.z);g.rotation.set(0,Math.atan2(-B.sd*n.x,-B.sd*n.z),Math.sin(t*.8)*.04);
+  B.T.rotation.x=.38+Math.sin(t*1.3)*.03;B.H.rotation.y=Math.sin(t*.6)*.12;B.A2.rotation.x=-.55+Math.sin(t*1.1)*.12;g.visible=true;g.updateMatrixWorld(true);
+  // the claw: wind up high, then slam down onto the deck
+  let striking=false;if(B.st==null&&t>=7){const u0=t-7,j=Math.floor(u0/2.6);
+    if(j>=B.n)B.st=t;else{const u=u0-j*2.6,A=B.A;striking=true;
+      if(u<1.1)A.quaternion.slerpQuaternions(B.qr,B.qw,sst(u,0,1.1));
+      else{if(B.sj!==j){B.sj=j;at(pe.s+Math.max(22,pe.v*.9+12),B.sd*6.5,.3,B.tg);}if(u<1.9){B.T.getWorldQuaternion(B.Q).invert();A.getWorldPosition(B.W);const d=B.W.distanceTo(B.tg);B.W.subVectors(B.tg,B.W).normalize().applyQuaternion(B.Q);B.qs.setFromUnitVectors(B.v1.set(0,-1,0),B.W);B.ak=clamp(d/(B.armL*B.sc),.75,1.5);}
+        const k=u<1.45?((u-1.1)/.35)**2:u<1.9?1:1-sst(u,1.9,2.6);
+        if(u<1.45)A.quaternion.slerpQuaternions(B.qw,B.qs,k);else if(u<1.9)A.quaternion.copy(B.qs);else A.quaternion.slerpQuaternions(B.qr,B.qs,k);
+        A.scale.setScalar(lerp(1,B.ak,u<1.45?k:u<1.9?1:k));
+        if(u>=1.45&&B.hj!==j){B.hj=j;beetleHit(B.tg);}}}}
+  if(!striking){B.A.quaternion.slerp(B.qr,clamp(rdt*2,0,1));B.A.scale.setScalar(lerp(B.A.scale.x,1,clamp(rdt*3,0,1)));}
+  // water: spray at the waterline and white water streaming off him while he rises and sinks; a ring of waves
+  const top=g.position.y+7.5*B.sc,cd=camera.position.distanceTo(g.position),wet=B.st==null?t<8.5:t-B.st<5.5;
+  if(wet&&cd<1100){B.pa+=rdt*34;NOGY=1;while(B.pa>=1){B.pa--;const a=R(0,6.283),r=R(12,30);
+      puff(V.set(g.position.x+Math.cos(a)*r,BTL.wat+.5,g.position.z+Math.sin(a)*r),Math.cos(a)*R(2,6),R(6,18),Math.sin(a)*R(2,6),R(4,8),R(12,22),R(1.5,2.6),.7,0xeef2f4);
+      if(top>BTL.wat+8&&Math.random()<.6)puff(V.set(g.position.x+R(-13,13),R(BTL.wat+4,top-8),g.position.z+R(-10,10)),R(-1,1),R(-16,-7),R(-1,1),R(2,4),R(5,9),R(1,1.8),.55,0xdfe8ee);}NOGY=0;}
+  if(B.st!=null&&!B.rs){B.rs=1;B.rt=[t,t+1.4];}
+  B.rings.forEach((m,k)=>{const u=(t-B.rt[k])/4.5;m.visible=u>=0&&u<1;if(m.visible){m.position.set(g.position.x,BTL.wat+.4,g.position.z);m.scale.setScalar(30+170*u);m.material.opacity=.65*(1-u);}});
+  if(!B.roar&&t>2.6){B.roar=1;sfxBeetleRoar(clamp(260/(cd+60),.35,1));say('THE BEETLE !','RISING FROM THE BAY',2.2);}
+  if(B.st!=null&&t-B.st>5.3){beetleOff();B.rs=0;}}
+function beetleHit(p){const d=camera.position.distanceTo(p),near=clamp(140/(d+40),.3,1);G.shake=Math.max(G.shake,1.6*near);PL.bump=Math.max(PL.bump||0,1.3*near);sfxBeetleHit(near);
+  NOGY=1;for(let q=0;q<26;q++){const a=R(0,6.283),sp=R(2,9);puff(BTL.v3.set(p.x+R(-3,3),p.y+.5,p.z+R(-3,3)),Math.cos(a)*sp,R(3,12),Math.sin(a)*sp,R(1.5,3),R(6,11),R(1.2,2.2),.6,0x9a958e);}
+  for(let q=0;q<24;q++)spark(BTL.v3.set(p.x,p.y+.4,p.z),R(-12,12),R(3,12),R(-12,12));NOGY=0;
+  if(zoneArr[PL.idx]===4&&!SAFEZ()&&!PL.crash&&near>.3){const n=Nn[PL.idx],k=-BTL.sd*R(3.5,5)*near;PL.vx+=n.x*k;PL.vz+=n.z*k;VS.r+=R(.16,.3)*(Math.random()<.5?-1:1)*near;PL.safe=Math.max(PL.safe,2.5);}   // knocked sideways: catch the swerve (the rail holds, never a crash)
+  say('THE BEETLE STRIKES !','CATCH THE SWERVE',1.8);}
+function sfxBeetleRoar(k){if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),o2=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain();o.type='sawtooth';o2.type='square';
+  o.frequency.setValueAtTime(60,t);o.frequency.linearRampToValueAtTime(88,t+.8);o.frequency.exponentialRampToValueAtTime(36,t+3.4);o2.frequency.setValueAtTime(30,t);o2.frequency.exponentialRampToValueAtTime(21,t+3.4);
+  f.type='lowpass';f.frequency.setValueAtTime(260,t);f.frequency.linearRampToValueAtTime(900,t+.7);f.frequency.exponentialRampToValueAtTime(150,t+3.4);f.Q.value=4;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.8*k,t+.5);g.gain.setValueAtTime(.8*k,t+2.2);g.gain.exponentialRampToValueAtTime(.001,t+3.6);
+  o.connect(f);o2.connect(f);f.connect(g);g.connect(master);o.start(t);o2.start(t);o.stop(t+3.7);o2.stop(t+3.7);hit(t,3.2,.6*k,380,'lowpass',master);}
+function sfxBeetleHit(k){if(!AC)return;const t=AC.currentTime;tone('sine',55,t,1.4,1.4*k,master,{to:22,h:.2});hit(t,1.2,1.4*k,180,'lowpass',master);hit(t,.3,.6*k,2400,'bandpass',master);sfxCrunch(k);}
 // sign art: an invented federal corrections seal (navy and gold, a shield with a star and a key) and a running-prisoner pictogram (striped, with ball and chain)
 function prisonSeal(c,x,y,r){c.save();c.translate(x,y);c.fillStyle='#1c2f5a';c.beginPath();c.arc(0,0,r,0,7);c.fill();c.strokeStyle='#d8b84a';c.lineWidth=Math.max(2,r*.06);c.beginPath();c.arc(0,0,r*.93,0,7);c.stroke();c.beginPath();c.arc(0,0,r*.64,0,7);c.stroke();
   c.fillStyle='#d8b84a';c.font='900 '+Math.max(7,r*.16|0)+'px Arial';c.textAlign='center';c.textBaseline='middle';const tx='FEDERAL BUREAU OF CORRECTIONAL CUSTODY ★ ';for(let k=0;k<tx.length;k++){c.save();c.rotate(k/tx.length*Math.PI*2);c.fillText(tx[k],0,-r*.79);c.restore();}
@@ -4167,7 +4259,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
