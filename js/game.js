@@ -3717,15 +3717,15 @@ function sfxSquelch(){if(!AC)return;const t=AC.currentTime;tone('sine',190,t,.28
 function mosqBuild(){const M=MOSQ,g=new THREE.Group(),dk=std({color:0x1d1b19,roughness:.55,metalness:.15}),eye=std({color:0x2a0c08,roughness:.25,metalness:.3}),V1=new THREE.Vector3(),V2=new THREE.Vector3(),UP=new THREE.Vector3(0,1,0);
   const seg=(a,b,r,mm)=>{const L=a.distanceTo(b),c=new THREE.Mesh(cyl(r,r*.8,L,6),mm);c.position.copy(a).add(b).multiplyScalar(.5);c.quaternion.setFromUnitVectors(UP,V1.copy(b).sub(a).normalize());g.add(c);return c;};
   const S=(r,sx,sy,sz,x,y,z,mm)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),mm);o.scale.set(sx,sy,sz);o.position.set(x,y,z);g.add(o);return o;};
-  const ab=canvas(64,256,(c,w,h)=>{c.fillStyle='#1d1b19';c.fillRect(0,0,w,h);for(let y=0;y<h;y+=32){c.fillStyle='rgba(150,140,120,.55)';c.fillRect(0,y,w,5);}});
-  S(.9,1,.9,1.1,0,0,0,dk);S(.45,1,1,1,0,-.1,1.15,dk);S(.3,1,1,1,-.26,0,1.3,eye);S(.3,1,1,1,.26,0,1.3,eye);
-  const abd=S(1,.55,.5,2.3,0,-.25,-2.6,std({map:ab,roughness:.6}));abd.rotation.x=-.12;
+  const ab=canvas(256,128,(c,w,h)=>{c.fillStyle='#c4161c';c.fillRect(0,0,w,h);c.fillStyle='#fbf8f2';for(let y=8;y<h;y+=16)for(let x=(y/16&1)*9+4;x<w;x+=18){c.beginPath();c.arc(x,y,3.2,0,7);c.fill();}}),hd=canvas(128,64,(c,w,h)=>{c.fillStyle='#3f9a2c';c.fillRect(0,0,w,h);c.fillStyle='#0b0b0a';for(let k=0;k<260;k++){c.beginPath();c.arc(Math.random()*w,Math.random()*h,R(.6,1.4),0,7);c.fill();}});   // owner: a red abdomen with white dots, a green head with tiny black dots
+  S(.9,1,.9,1.1,0,0,0,dk);S(.45,1,1,1,0,-.1,1.15,std({map:hd,roughness:.5}));S(.3,1,1,1,-.26,0,1.3,eye);S(.3,1,1,1,.26,0,1.3,eye);
+  const abd=S(1,.55,.5,2.3,0,-.25,-2.6,std({map:ab,roughness:.5}));abd.rotation.x=-.12;
   seg(V1.set(0,-.2,1.5).clone(),V2.set(0,-.9,4.1).clone(),.05,dk);   // the long proboscis
   for(const s of[-1,1]){const a0=new THREE.Vector3(s*.15,.15,1.5),a1=new THREE.Vector3(s*.55,.75,2.5);seg(a0,a1,.03,dk);for(let k=1;k<9;k++){const p=a0.clone().lerp(a1,k/9);for(const d of[-1,1])seg(p,p.clone().add(V2.set(d*.22,.12,-.05)),.008,dk);}}   // feathery antennae
   for(let k=0;k<3;k++)for(const s of[-1,1]){const z=.5-k*.5,hip=new THREE.Vector3(s*.4,-.45,z),knee=new THREE.Vector3(s*1.7,.5,z+(k-1)*.9),ft=new THREE.Vector3(s*2.3,-2.8,z+(k-1)*1.6-.8);seg(hip,knee,.06,dk);seg(knee,ft,.035,dk);}   // six long thin legs
-  const wt=canvas(256,96,(c,w,h)=>{c.clearRect(0,0,w,h);c.fillStyle='rgba(200,206,214,.32)';c.beginPath();c.moveTo(0,h*.5);c.quadraticCurveTo(w*.5,-h*.15,w,h*.45);c.quadraticCurveTo(w*.5,h*1.05,0,h*.5);c.fill();
+  const wt=canvas(256,96,(c,w,h)=>{c.clearRect(0,0,w,h);c.fillStyle='rgba(225,232,240,.16)';c.beginPath();c.moveTo(0,h*.5);c.quadraticCurveTo(w*.5,-h*.15,w,h*.45);c.quadraticCurveTo(w*.5,h*1.05,0,h*.5);c.fill();c.strokeStyle='rgba(20,18,16,.95)';c.lineWidth=3;c.stroke();c.clip();   /* veins stay inside the outline */
     c.strokeStyle='rgba(30,28,26,.85)';c.lineWidth=2;for(let k=0;k<7;k++){c.beginPath();c.moveTo(0,h*.5);c.quadraticCurveTo(w*.5,h*(.18+k*.1),w*(.7+k*.04),h*(.2+k*.09));c.stroke();}c.lineWidth=1;for(let k=0;k<14;k++){const x=w*(.15+k*.06);c.beginPath();c.moveTo(x,h*.25);c.lineTo(x+8,h*.75);c.stroke();}
-    c.strokeStyle='rgba(60,56,50,.6)';for(let x=0;x<w;x+=3){c.beginPath();c.moveTo(x,h*.5+Math.sin(x/w*Math.PI)*h*.42);c.lineTo(x+2,h*.5+Math.sin(x/w*Math.PI)*h*.42+5);c.stroke();}});   // veined, translucent, fringed
+    });   // a clear membrane: only the dark outline and the veins show
   const wm=new THREE.MeshBasicMaterial({map:wt,transparent:true,side:THREE.DoubleSide,depthWrite:false});M.w=[];
   for(const s of[-1,1]){const pv=new THREE.Group();pv.position.set(s*.3,.65,.1);pv.rotation.y=s*.4;const wg=new THREE.Mesh(new THREE.PlaneGeometry(4,1.4).translate(2,0,0).rotateX(-Math.PI/2),wm);wg.scale.x=s;pv.add(wg);g.add(pv);M.w.push([pv,s]);}
   g.scale.setScalar(1.1);g.visible=false;scene.add(g);M.g=g;M.p=new THREE.Vector3();M.q=new THREE.Vector3();M.V=new THREE.Vector3();}
