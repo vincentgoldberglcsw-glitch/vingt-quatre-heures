@@ -4162,7 +4162,8 @@ function sfPyrTick(rdt){if(!DRIVE||!SFP.length)return;const pe=ents.find(e=>e.pl
         puff(V.set(o.p0.x+ox*q,o.p0.y+2,o.p0.z+oz*q),ox*R(4,9),R(1,5),oz*R(4,9),R(8,12),R(22,36),R(3,5),.7,0xa8a094);NOGY=0;}}   // dust pouring off it and rolling out at the base, away from the street
     else o.st=2;}}
 // San Francisco, off the Bay Bridge: a giant terracotta figure (an ancient west-Mexican clay horn player, some 75 m tall) stands among the buildings on the right,
-// well back from the road, blowing his long horn. He just stands; in the city quake dust and a few chips fall off him (CLAY, clayTick; visual only).
+// well back from the road, blowing his long horn. In the city quake he shudders and cracks, his horn and an arm snap off, and he leans away from the road and
+// slumps into a heap of broken terracotta in clouds of dust (CLAY, clayTick; visual only, nothing reaches the road). Stood back up for the next pass.
 const CLAY={g:null,ch:[],nc:0};
 function clayBuild(){const C=CLAY,m_=x=>Math.round(x/SEG),i=Z.b1+m_(560),g=new THREE.Group(),S=.7;C.i=i;
   const tc=canvas(256,256,(c,w,h)=>{c.fillStyle='#a8643f';c.fillRect(0,0,w,h);for(let k=0;k<1100;k++){const r=Math.random();c.fillStyle=r<.45?'rgba(220,204,186,.2)':r<.75?'rgba(124,66,40,.35)':'rgba(70,40,28,.22)';c.beginPath();c.arc(Math.random()*w,Math.random()*h,1+Math.random()*9,0,6.283);c.fill();}});
@@ -4182,19 +4183,35 @@ function clayBuild(){const C=CLAY,m_=x=>Math.round(x/SEG),i=Z.b1+m_(560),g=new T
   P_(new THREE.TorusGeometry(1,.13,10,30,Math.PI),clay,0,72,11,12,12,12,-.45,0,Math.PI);P_(SPH,clay,0,63.5,16.4,2.6,6,2);   // the U-shaped collar and its pendant
   P_(SPH,clay,0,78,2,9,6,9);P_(SPH,clay,0,88,3,11,11.5,10.5);P_(SPH,clay,0,86.5,13.6,1.8,2.6,2);   // neck, round head and nose
   P_(new THREE.CylinderGeometry(1,1,1,44),[clay,crest,clay],0,90,-3,18,2.5,18,Math.PI/2);P_(new THREE.ConeGeometry(1,1,10),clay,4,109,-3,3.5,9,3.5,0,0,-.3);   // the sun-ray crest and the pointed knob on top
-  const M0=[0,83.5,13],E=[36,90,19],lp=(f)=>M0.map((v,j)=>v+(E[j]-v)*f);limb(M0,E,1.7,2.6);   // the long horn, from his mouth out to his left (away from the road)
+  const M0=[0,83.5,13],E=[36,90,19],lp=(f)=>M0.map((v,j)=>v+(E[j]-v)*f),horn=[limb(M0,E,1.7,2.6)];   // the long horn, from his mouth out to his left (away from the road)
   {const d=new THREE.Vector3(E[0]-M0[0],E[1]-M0[1],E[2]-M0[2]).normalize(),b=new THREE.Mesh(new THREE.CylinderGeometry(7*S,2.6*S,7*S,20,1,true),clayD);b.position.set(...E).multiplyScalar(S).addScaledVector(d,3.5*S);b.quaternion.setFromUnitVectors(UP,d);g.add(b);
-    const rim=new THREE.Mesh(new THREE.TorusGeometry(7*S,.7*S,8,24),clay);rim.position.set(...E).multiplyScalar(S).addScaledVector(d,7*S);rim.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),d);g.add(rim);}   // its flared bell
-  const H1=lp(.62),H2=[-6,82.5,15.5];limb([22,72,0],[31,75,11],6.5,5.6);limb([31,75,11],H1,5.6,4.6);P_(SPH,clay,...H1,5,4.6,5);   // both arms raised holding the horn
+    const rim=new THREE.Mesh(new THREE.TorusGeometry(7*S,.7*S,8,24),clay);rim.position.set(...E).multiplyScalar(S).addScaledVector(d,7*S);rim.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),d);g.add(rim);horn.push(b,rim);}   // its flared bell
+  const H1=lp(.62),H2=[-6,82.5,15.5],arm=[limb([22,72,0],[31,75,11],6.5,5.6),limb([31,75,11],H1,5.6,4.6),P_(SPH,clay,...H1,5,4.6,5)];   // both arms raised holding the horn
+  const part=(ms,pv,fl)=>{const sg=new THREE.Group();sg.position.set(...pv).multiplyScalar(S);for(const o of ms){o.position.sub(sg.position);sg.add(o);}g.add(sg);return{g:sg,p0:sg.position.clone(),fl:fl*S};};
+  C.parts=[part(horn,M0,4),part(arm,[22,72,0],7)];   // the horn and his left arm can snap off in the quake
   limb([-22,72,0],[-27,75,13],6.5,5.6);limb([-27,75,13],H2,5.6,4.6);P_(SPH,clay,...H2,5,4.6,5);
   const p=off(i,-(RW+XW[i]+72),0);p.y=groundAt(p.x,p.z)-1;g.position.copy(p);const tg=off(i-m_(260),0,0);tg.y=p.y;g.lookAt(tg);scene.add(g);C.g=g;C.y0=p.y+1;   // facing the traffic coming off the bridge
-  for(let k=0;k<6;k++){const c=new THREE.Mesh(new THREE.DodecahedronGeometry(1),clay);c.scale.setScalar(R(1,2));c.visible=false;c.castShadow=true;scene.add(c);C.ch.push({m:c});}}
+  for(let k=0;k<12;k++){const c=new THREE.Mesh(new THREE.DodecahedronGeometry(1),clay);c.scale.setScalar(R(1.2,2.6));c.visible=false;c.castShadow=true;scene.add(c);C.ch.push({m:c});}
+  const c0=off(i,0,0),dx=p.x-c0.x,dz=p.z-c0.z,l=Math.hypot(dx,dz)||1;C.out=[dx/l,dz/l];C.ax=new THREE.Vector3(dz/l,0,-dx/l);C.q0=g.quaternion.clone();C.p0=g.position.clone();   // which way is away from the road
+  C.rub=[];for(let k=0;k<11;k++){const a=R(-1.3,1.3),q=R(0,30),m=new THREE.Mesh(new THREE.DodecahedronGeometry(1),clay);m.position.set(p.x+(C.out[0]*Math.cos(a)-C.out[1]*Math.sin(a))*q,C.y0,p.z+(C.out[0]*Math.sin(a)+C.out[1]*Math.cos(a))*q);
+    m.rotation.set(R(0,3),R(0,3),R(0,3));m.visible=false;m.castShadow=true;scene.add(m);C.rub.push({m,s:R(5,11),d:R(0,1.5)});}}   // the heap of broken terracotta he crumbles into
+const CLQ=new THREE.Quaternion();
+function clayCrack(v){if(!AC)return;const t=AC.currentTime;for(let k=0;k<5;k++)hit(t+k*R(.03,.09),.06,.45*v,R(3500,6000),'bandpass',master);hit(t,.25,.6*v,1400,'bandpass',master);}   // brittle pottery cracking
 function clayTick(rdt){if(!DRIVE)return;const C=CLAY;if(!C.g)clayBuild();const pe=ents.find(e=>e.player);if(!pe)return;
-  if(CQ.st===0){if(C.q){C.q=0;C.nc=0;for(const c of C.ch)c.m.visible=false;}return;}
-  if(!C.q){const ds=C.i*SEG-pe.s;if(ds<700&&ds>-300){C.q=1;C.t=0;}else return;}
-  C.t+=rdt;const t=C.t,sp=()=>C.g.localToWorld(V.set(R(-24,24),R(30,100),R(5,14)).multiplyScalar(.7));
-  if(t<9&&Math.random()<rdt*(t<4?9:3)){NOGY=1;puff(sp(),R(-2,2),R(-4,-1),R(-2,2),R(2,4),R(7,12),R(2,3),.5,0xb9a28a);NOGY=0;}   // dust shaken off him
-  if(t<8&&C.nc<C.ch.length&&Math.random()<rdt*1.1){const c=C.ch[C.nc++];c.m.position.copy(sp());c.vx=R(-3,3);c.vz=R(-3,3);c.vy=R(0,2);c.down=0;c.m.visible=true;}   // and a chip or two breaks off
+  if(CQ.st===0){if(C.q){C.q=0;C.nc=0;C.snd=0;for(const c of C.ch)c.m.visible=false;for(const r of C.rub)r.m.visible=false;C.g.quaternion.copy(C.q0);C.g.position.copy(C.p0);C.g.scale.set(1,1,1);
+      for(const o of C.parts){if(o.off)C.g.add(o.g);o.g.position.copy(o.p0);o.g.rotation.set(0,0,0);o.g.scale.set(1,1,1);o.off=0;}}return;}   // stood back up for the next pass
+  const ds=C.i*SEG-pe.s;if(!C.q){if(ds<700&&ds>-300){C.q=1;C.t=0;}else return;}
+  C.t+=rdt;const t=C.t,k=sst(t,2,8.5),sh=t<2.5?.5*(1-t/2.5):0,near=Math.abs(ds)<800,sp=()=>C.g.localToWorld(V.set(R(-24,24),R(20,100),R(-6,14)).multiplyScalar(.7));
+  CLQ.setFromAxisAngle(C.ax,.55*k*k);C.g.quaternion.copy(CLQ).multiply(C.q0);C.g.scale.set(1+.25*k,1-.6*k,1+.25*k);C.g.position.set(C.p0.x+R(-sh,sh),C.p0.y-4*k,C.p0.z+R(-sh,sh));   // shudders, then leans away from the road and slumps
+  for(const[n,o]of C.parts.entries()){if(t<1.3+n)continue;if(!o.off){o.off=1;scene.attach(o.g);const sp_=R(4,7);o.vy=R(1,3);o.vx=C.out[0]*sp_;o.vz=C.out[1]*sp_;if(near)clayCrack(1);}   // the horn snaps off, then his arm, and they drop away from the road
+    const fl=C.y0+o.fl;if(o.g.position.y>fl){o.vy-=20*rdt;o.g.position.x+=o.vx*rdt;o.g.position.y+=o.vy*rdt;o.g.position.z+=o.vz*rdt;o.g.rotateOnWorldAxis(C.ax,rdt*1.3);
+      if(o.g.position.y<=fl){o.g.position.y=fl;if(near){sfxCrunch(.7);clayCrack(.8);}NOGY=1;const w=o.g.getWorldPosition(V);for(let q=0;q<10;q++)puff(w,R(-5,5),R(1,4),R(-5,5),3,R(10,16),R(2,3),.6,0xa8907a);NOGY=0;}}}
+  for(const r of C.rub){const s=r.s*sst(t,3+r.d,9+r.d);r.m.visible=s>.05;r.m.scale.set(s,s*.6,s);}   // the rubble heaps up at his feet
+  if(near&&!C.snd&&t>.4){C.snd=1;clayCrack(1);if(AC){const a=AC.currentTime+1.8;hit(a,4,1,85,'lowpass',master);tone('sine',34,a,4,.6,master,{to:22,a:.2,h:.6});}
+    setTimeout(()=>{sfxCrunch(1);clayCrack(1);},2600);setTimeout(()=>{sfxCrunch(.8);clayCrack(.7);},3800);setTimeout(()=>sfxCrunch(.6),5200);G.shake=Math.max(G.shake,.3);}
+  if(t<10&&Math.random()<rdt*(t<8?16:4)){NOGY=1;puff(sp(),R(-3,3),R(-4,-1),R(-3,3),R(3,6),R(10,18),R(2.5,3.5),.55,0xb9a28a);
+    const a=R(-1.2,1.2),ox=C.out[0]*Math.cos(a)-C.out[1]*Math.sin(a),oz=C.out[0]*Math.sin(a)+C.out[1]*Math.cos(a),q=R(0,20);if(t>2)puff(V.set(C.p0.x+ox*q,C.y0+2,C.p0.z+oz*q),ox*R(4,9),R(1,5),oz*R(4,9),R(8,12),R(22,34),R(3,5),.65,0xb0987e);NOGY=0;}   // dust pouring off him and rolling out at the base
+  if(t<9&&C.nc<C.ch.length&&Math.random()<rdt*2.2){const c=C.ch[C.nc++];c.m.position.copy(sp());c.vx=R(-3,3);c.vz=R(-3,3);c.vy=R(0,2);c.down=0;c.m.visible=true;}   // and a chip or two breaks off
   for(const c of C.ch){if(!c.m.visible||c.down)continue;c.vy-=20*rdt;c.m.position.x+=c.vx*rdt;c.m.position.y+=c.vy*rdt;c.m.position.z+=c.vz*rdt;c.m.rotation.x+=rdt*3;c.m.rotation.z+=rdt*2;
     if(c.m.position.y<=C.y0+.8){c.m.position.y=C.y0+.8;c.down=1;NOGY=1;for(let q=0;q<5;q++)puff(c.m.position,R(-3,3),R(1,3),R(-3,3),2,R(6,10),R(1.5,2.5),.55,0xa8907a);NOGY=0;}}}
 // Hyde St, on the way up: the giant mosquito flies across in front of the car and over the street. At the top of the hill he is back: he swoops at the car,
