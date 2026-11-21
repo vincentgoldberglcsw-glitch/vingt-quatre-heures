@@ -457,7 +457,7 @@ await BOOT.step('ROADSIDE',.20);
 // A quiet island town street, the tube under the estuary with its portal buildings, a freeway past the port, then a long suspension bridge.
 // The whole route is level: the bay is simply 45 m below the road, so the bridge is high without the engine needing hills.
 const MILL=[],CRN=[],REFS=[],AIR={g:null,st:0,t:0,cd:6};let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
-const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null,SEAM=null,SEAW=null;const BURN=[],OILX=[],OILB={t:6,q:[]},TOX={l:[],slime:0,hit:0,mm:null,car:null},SQX={},MOSQ={g:null,on:0,t:0,armed:1,lift:null},BTL={g:null,on:0,t:0,wat:-44.6,rs:0,armed:{bb:1,gg:1,rb:1},br:{},bsA:0,bsT:0,wv:0,wt:0},TNK={on:0,t:0,armed:1,wat:-44.6};   /* TOX: leaking toxic barrels and their ooze; SQX: the San Quentin yard fence, its hole, the watchtower searchlight */   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
+const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null,SEAM=null,SEAW=null;const BURN=[],OILX=[],OILB={t:6,q:[]},TOX={l:[],slime:0,hit:0,mm:null,car:null},SQX={},MOSQ={g:null,on:0,t:0,armed:1,lift:null},BTL={g:null,on:0,t:0,wat:-44.6,rs:0,armed:{bb:1,gg:1,rb:1},br:{},bsA:0,bsT:0,wv:0,wt:0},TNK={on:0,t:0,armed:1,wat:-44.6}; let BAYV=null;const BAYB={b:[],c:[],cd:2},cGLD=[new THREE.Color(0xf4a44e),new THREE.Color(0x4e5a8e),new THREE.Color(0xd99a62),new THREE.Color(0xffb062)];  /* TOX: leaking toxic barrels and their ooze; SQX: the San Quentin yard fence, its hole, the watchtower searchlight */   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
 if(!DRIVE){ // roadside advertising boards, as on the old circuit: cigarettes, wine and bread, by turns
   const ad=(kind,name,sub)=>canvas(1024,460,(g,w,h)=>{const bg={cig:'#1d4f8a',wine:'#efe6cc',bread:'#f0c23a'}[kind],ink={cig:'#f4f1e8',wine:'#7a1626',bread:'#3a2412'}[kind];g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=ink;g.lineWidth=10;g.strokeRect(14,14,w-28,h-28);
     if(kind==='cig'){g.save();g.translate(190,250);g.rotate(-.1);g.fillStyle='#f4f1e8';g.fillRect(-90,-110,180,250);g.fillStyle='#c8302a';g.fillRect(-90,-30,180,90);g.fillStyle='#f4f1e8';g.beginPath();g.ellipse(0,15,62,30,0,0,7);g.fill();g.fillStyle='#c8302a';g.font='900 30px Georgia';g.textAlign='center';g.fillText('M',0,26);
@@ -1390,6 +1390,36 @@ await BOOT.step('SAN FRANCISCO',.55);
       for(let k=0;k<16;k++){const i=a+m(60+k*(b-a>0?(b-a)*SEG/17:150)),lat=-(RW+XW[i]+rr(70,330)),tk=k%5===0,g=new THREE.Group();   // a tanker every fifth ship, otherwise a trawler or a small boat
         if(tk){B(8,5,46,k%2?hull:red,0,1.6,0,0,g);B(7,6,8,wht,0,6,-17,0,g);B(2,3,2,red,0,10,-17,0,g);}else{const sc=k%3===0?.6:1;B(3.2*sc,1.6*sc,10*sc,k%2?blu:red,0,.5,0,0,g);B(2.4*sc,2.2*sc,3*sc,wht,0,2,-1.5*sc,0,g);const mast=new THREE.Mesh(cyl(.08,.1,7*sc,5),hull);mast.position.set(0,4.5*sc,2.5*sc);g.add(mast);B(.12,.12,3*sc,hull,0,6*sc,2.5*sc,0,g).rotation.z=Math.PI/2;}
         off(i,lat,0,V);g.position.set(V.x,.1,V.z);g.rotation.y=yaw(i)+rr(-.6,.6);g.traverse(o=>{if(o.isMesh)o.castShadow=true;});scene.add(g);STORM.ships.push({g,ph:rr(0,6.3),sp:rr(.8,1.4),am:tk?.02:.07,smoke:!tk&&k%2===0});if(tk)OILX.push({g,y:4.5,L:40,s:.55});}}
+    { // far across the bay, seen from I-80 only: San Francisco's skyline, the Bay Bridge running out to it, the Golden Gate beyond, the freeway maze stacked up ahead on the left,
+      // and shafts of sun through the storm. Low-detail, fog-free silhouettes tinted by the haze every frame; the layer drifts slowly with the car (bayTick), so it always stays far off
+      const g=new THREE.Group(),mats=[],mk=(tint,k)=>{const mm=new THREE.MeshBasicMaterial({color:tint,fog:false});mm.userData={tint:new THREE.Color(tint),k};mats.push(mm);return mm;};
+      const bld=mk(0x283038,.55),bld2=mk(0x3e4650,.42),red=mk(0xa83a24,.6),brg=mk(0x4a5058,.5),hwy=mk(0x8c8a84,.4),hwy2=mk(0x5a5c60,.45);
+      const bx=(w,h,d,mm,x,y,z,ry=0)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mm);o.position.set(x,y,z);o.rotation.y=ry;g.add(o);return o;};
+      for(let k=0;k<48;k++){const x=rr(-1900,-1420),z=rr(2120,2480),c=1-Math.min(1,Math.hypot(x+1650,z-2300)/300),h=rr(20,50)+c*rr(30,150),w=rr(18,40);bx(w,h,rr(18,40),k%3?bld:bld2,x,h/2,z);}   // the city: a spread of towers, tallest in the middle
+      bx(36,260,36,bld,-1630,130,2290);{const py=new THREE.Mesh(new THREE.ConeGeometry(24,210,4),bld2);py.position.set(-1700,105,2250);g.add(py);}
+      const span=(ax,az,bx_,bz,y,mm,th)=>{const L=Math.hypot(bx_-ax,bz-az);bx(th,th*.8,L,mm,(ax+bx_)/2,y,(az+bz)/2,Math.atan2(bx_-ax,bz-az));};
+      const cable=(pts,mm,r)=>{const o=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p))),40,r,4),mm);g.add(o);};
+      // the Bay Bridge: a long deck from the Oakland shore out to the city, its western half hung from two tall towers
+      {const A=[-760,1250],Bq=[-1420,2260],L=(u,y)=>[lerp(A[0],Bq[0],u),y,lerp(A[1],Bq[1],u)];span(A[0],A[1],Bq[0],Bq[1],38,brg,9);
+        for(let u=.04;u<.5;u+=.06){const p=L(u,0);bx(5,38,5,brg,p[0],19,p[2]);}   // the eastern viaduct on piers
+        const tw=[.62,.86];for(const u of tw){const p=L(u,0);bx(7,150,7,brg,p[0],75,p[2]);}
+        const cp=[];for(let k=0;k<=24;k++){const u=.5+k/24*.5,a=(u-.62)/.24,y=u<.62?lerp(42,150,(u-.5)/.12)**1:u<.86?150-90*4*a*(1-a):lerp(150,42,(u-.86)/.14);cp.push(L(u,y));}cable(cp,brg,1.6);}
+      // the Golden Gate, red, far off to the right: two towers, the deck and the sweep of the main cables
+      {const A=[-2080,1950],Bq=[-2180,2420],L=(u,y)=>[lerp(A[0],Bq[0],u),y,lerp(A[1],Bq[1],u)];span(A[0],A[1],Bq[0],Bq[1],60,red,8);
+        for(const u of[.25,.75]){const p=L(u,0),ry=Math.atan2(Bq[0]-A[0],Bq[1]-A[1]);for(const sd of[-1,1])bx(5,190,5,red,p[0]+Math.cos(ry)*sd*6,95,p[2]-Math.sin(ry)*sd*6,ry);bx(16,6,5,red,p[0],170,p[2],ry+Math.PI/2);}
+        const cp=[];for(let k=0;k<=30;k++){const u=k/30;let y;if(u<.25)y=lerp(62,185,u/.25);else if(u<.75){const a=(u-.25)/.5;y=185-118*4*a*(1-a);}else y=lerp(185,62,(u-.75)/.25);cp.push(L(u,y));}cable(cp,red,2);
+        const hl=new THREE.Mesh(new THREE.SphereGeometry(1,16,8),bld2);hl.scale.set(260,90,320);hl.position.set(-2250,-20,1720);g.add(hl);}   // the Marin headlands behind its north end
+      // the maze: curving freeway ramps stacked three high, on tall piers
+      {const cx=280,cz=1700;[[14,380,.3,1.9,hwy],[25,300,2.4,2.0,hwy2],[36,420,4.1,1.5,hwy],[18,240,5.0,1.6,hwy2]].forEach(([y,r,t0,tl,mm])=>{
+          const d=new THREE.Mesh(new THREE.RingGeometry(r-9,r,40,1,t0,tl).rotateX(-Math.PI/2),mm);d.material.side=THREE.DoubleSide;d.position.set(cx,y,cz);g.add(d);
+          const f=new THREE.Mesh(new THREE.CylinderGeometry(r,r,2.2,40,1,true,t0+Math.PI/2,tl),mm);f.material.side=THREE.DoubleSide;f.position.set(cx,y-1,cz);f.scale.x=-1;g.add(f);
+          for(let k=0;k<=6;k++){const a=t0+tl*k/6,x=cx+Math.cos(a)*(r-4.5),z=cz-Math.sin(a)*(r-4.5);bx(3,y,3,mm,x,y/2,z);}});
+        span(cx-380,cz-250,cx+120,cz+420,30,hwy,9);span(cx-420,cz+120,cx+420,cz-60,20,hwy2,9);}
+      // shafts of sun breaking through the storm, out over the water ahead on the right
+      const rt=canvas(64,256,(c,w,h)=>{const gr=c.createLinearGradient(0,0,w,0);gr.addColorStop(0,'rgba(255,240,200,0)');gr.addColorStop(.5,'rgba(255,240,200,1)');gr.addColorStop(1,'rgba(255,240,200,0)');c.fillStyle=gr;c.fillRect(0,0,w,h);c.globalCompositeOperation='destination-in';const gv=c.createLinearGradient(0,0,0,h);gv.addColorStop(0,'rgba(0,0,0,0)');gv.addColorStop(.25,'rgba(0,0,0,.7)');gv.addColorStop(1,'rgba(0,0,0,1)');c.fillStyle=gv;c.fillRect(0,0,w,h);}),rays=[];
+      for(let k=0;k<4;k++){const m2=new THREE.MeshBasicMaterial({map:rt,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,color:0xffe6b8}),o=new THREE.Mesh(new THREE.PlaneGeometry(rr(120,220),900).translate(0,450,0),m2);
+        o.position.set(rr(-1450,-900),0,rr(1300,2000));o.rotation.order='YXZ';o.rotation.z=rr(-.18,.08);g.add(o);rays.push({m:o,o:rr(.25,.45),ph:rr(0,6)});}
+      g.visible=false;scene.add(g);BAYV={g,mats,rays};}
     {// badlands past San Quentin: banded mud hills in yellow, rust, purple and blue-grey with ridged fans (vertex colours, one mesh per side)
     {// plain desert between San Quentin and the badlands: sand, cacti, tombstones, skeletons (three instanced meshes)
       const d0=Z.sq+m(40),d1=Z.sq+m(340),sand=std({color:0xc9aa72,roughness:1,side:D2});for(const sd of[-1,1])ribbon(i=>sd*(9.6+XW[i]),sd*120,-.03,-.05,sand,12,d0,d1);
@@ -1681,7 +1711,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
   {const ch=std({color:0x1c1a18,roughness:1});for(const f of[.12,.27,.45,.6,.83]){const i=Z.b0+Math.round((Z.b1-Z.b0)*f),sd=f*10%2<1?1:-1,g=new THREE.Group();g.add(new THREE.Mesh(carG,ch),new THREE.Mesh(whG,ch));off(i,sd*7.4,0,g.position);g.rotation.set(0,yaw(i)+rr(-.6,.6),sd*.12);scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:2.2});BURN.push({x:g.position.x,y:g.position.y+1,z:g.position.z,s:.8});}}
   // last of all, merge the static scenery by material and by area, so the whole bay draws in a few hundred calls instead of tens of thousands
   Terrain.occupy(scene.children.slice(A0));Terrain.start(scene,CULL,LANDM,grassTex);   // the real hills: level ground is kept under everything built above, and the rest is queued to be raised tile by tile
-  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...CROWS.map(c=>c.g),...MILLC.tw.map(t=>t.g),...BEARS.map(b=>b.g),...Object.values(BTL.br).flat().map(x=>x[0])]));
+  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...(BAYV?[BAYV.g]:[]),...CROWS.map(c=>c.g),...MILLC.tw.map(t=>t.g),...BEARS.map(b=>b.g),...Object.values(BTL.br).flat().map(x=>x[0])]));
   for(const o of [...scene.children])if(o.isInstancedMesh&&o.frustumCulled&&o.count>60)splitInstanced(o);
 }
 
@@ -2533,6 +2563,7 @@ function setTime(h,tm){
   else{sun.color.copy(cMoon);sun.intensity=.32*sst(-el,0,.12)*(1-wx.cov*.6);V.copy(moonDir);}
   sun.target.position.copy(hero.position);sun.position.copy(hero.position).addScaledVector(V,200);
   hemi.intensity=lerp(.34,1.1,d)*lerp(1,.82,wx.cov);hemi.color.copy(cHemiN).lerp(cHemiD,d);
+  if(DRIVE&&G.gold>.01){const k=G.gold*d;u.hz.value.lerp(cGLD[0],k*.75);u.zn.value.lerp(cGLD[1],k*.45);scene.fog.color.lerp(cGLD[2],k*.6);hemi.color.lerp(cGLD[2],k*.35);if(el>.02){sun.color.lerp(cGLD[3],k);sun.intensity*=1+.3*k;}}   // the golden glow over the bay
   if(LT.flash>.01){hemi.intensity+=LT.flash*1.5;scene.fog.color.lerp(cT.setRGB(.8,.85,1),LT.flash*.3);}u.fl.value=LT.flash;
   if(DRIVE){const b=G.brg,tn=G.tun;   // the bridge sits in thick bay fog whatever the weather; the tube is lit only by its own lamps
     scene.fog.near=lerp(scene.fog.near,10,b);scene.fog.far=lerp(scene.fog.far,200,b);u.cov.value=lerp(wx.cov,1,b);scene.fog.color.lerp(cT.setRGB(.6,.63,.66).multiplyScalar(lerp(.1,1,d)),b*.85);sun.intensity*=(1-b*.65)*(1-tn);
@@ -2557,6 +2588,10 @@ function updateWeather(rdt){const t=WX[G.weather],k=clamp(rdt*.9,0,1);for(const 
   if(DRIVE&&G.weather==='overcast'){const s=Math.sin(G.t*.021)+.6*Math.sin(G.t*.0137+1.7),dark=sst(s,.75,1.35),s2=Math.sin(G.t*.0127+4.1)+.55*Math.sin(G.t*.029+.4),sunny=sst(s2,.65,1.25)*(1-dark);wx.cov=lerp(wx.cov,t.cov+.36*dark-.42*sunny,k);wx.sunK=lerp(wx.sunK,t.sunK*(1+.3*sunny),k);}   /* and, on a slower cycle of its own, the cloud thins and the sun breaks through */
   if(DRIVE){const i=PL.idx,on=i>=Z.gg1+Math.round(150/SEG)&&i<Z.rb0+Math.round(500/SEG);G.sqs=lerp(G.sqs||0,on?1:0,clamp(rdt*.35,0,1));const q=G.sqs;   // the road to San Quentin is always under a dark grey sky
     if(q>.01){wx.cov=lerp(wx.cov,Math.max(wx.cov,1.15),q);wx.sunK=lerp(wx.sunK,Math.min(wx.sunK,.3),q);wx.fn=lerp(wx.fn,Math.min(wx.fn,70),q*.7);wx.ff=lerp(wx.ff,Math.min(wx.ff,1300),q*.7);}}
+  if(DRIVE){const i=PL.idx,on=i>=Z.i80-Math.round(250/SEG)&&i<Z.wt1-Math.round(120/SEG);G.i8=lerp(G.i8||0,on?1:0,clamp(rdt*.35,0,1));const q=G.i8;   // over the bay on I-80 the sky keeps changing: dark storm clouds with the sun breaking through, then a golden evening glow, and back
+    const c=Math.sin(G.t*.07+.6)+.35*Math.sin(G.t*.023),st=sst(c,-.15,.45),gd=(1-sst(c,-.55,-.1))*(1-sst(wx.wet+wx.snow,.2,.6));G.i8s=q*st;G.gold=q*gd;
+    if(q>.01){wx.cov=lerp(wx.cov,Math.max(wx.cov,1.12),q*st);wx.sunK=lerp(wx.sunK,Math.min(wx.sunK,.45),q*st);wx.ff=lerp(wx.ff,Math.min(wx.ff,1500),q*st*.6);
+      wx.cov=lerp(wx.cov,Math.min(wx.cov,.42),q*gd);wx.sunK=lerp(wx.sunK,Math.max(wx.sunK,1.25),q*gd);wx.ff=lerp(wx.ff,Math.max(wx.ff,2300),q*gd);}}
   if(G.qd>0){G.qd=Math.max(0,G.qd-rdt/45);const q=Math.min(1,G.qd*2.5);wx.cov=Math.max(wx.cov,lerp(wx.cov,1.25,q));wx.fn=lerp(wx.fn,40,q);wx.ff=lerp(wx.ff,900,q);}}   // an earthquake turns the sky black almost at once, and it clears over the next minute or so
 
 await BOOT.step('LOADING THE FILM',.92);
@@ -2983,7 +3018,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -3299,11 +3334,11 @@ function trafficTick(dt,pe){bubbleTick(dt);wheelsTick(dt);if(TRAF.pol){const f=(
       if(t.g.position.y<-60){t.hit=0;t.fall=null;t.act=false;t.qf=false;t.g.visible=false;}continue;}
     const want=on&&t.n<(bay?11:rsr?4:i880?5:9);
     if(t.act){const ds=wdiff(t.s-pe.s),i=wrapI(Math.floor(t.s/SEG));if(!t.qf&&(ds<-160||ds>1000||(!want&&ds>-40)||!road(i))){t.act=false;t.g.visible=false;t.ob.x=1e9;}}
-    if(!t.act){if(want&&Math.random()<dt*1.5){const s=wrapS(pe.s+R(300,850)),i=wrapI(Math.floor(s/SEG));if(road(i)&&!(QK.st&&i>QK.a-200&&i<QK.b+10)&&!FQ.list.some(q=>q.F&&Math.abs(wdiff(q.F.s-s))<160)){const w=RW+XW[i],ln=[-.75,-.25,.25,.75][Math.random()*4|0]*w;
+    if(!t.act){if(want&&Math.random()<dt*1.5){const s=wrapS(pe.s+R(300,850)),i=wrapI(Math.floor(s/SEG));if(road(i)&&!(QK.st&&i>QK.a-200&&i<QK.b+10)&&!FQ.list.some(q=>(q.Fs||[]).some(F=>Math.abs(wdiff(F.s-s))<160))){const w=RW+XW[i],ln=[-.75,-.25,.25,.75][Math.random()*4|0]*w;
         if(TRAF.every(o=>!o.act||Math.abs(wdiff(o.s-s))>gap||Math.abs(o.lt-ln)>1.5)){t.act=true;t.s=s;t.lt=t.lat=ln;t.v=t.vb*spd;t.g.visible=true;t.dead=0;t.stop=0;t.sk=0;t.g.rotation.z=0;for(const wh of t.g.wh)wh.visible=true;t.lw=t.kind!=='moto'&&t.kind!=='bike'&&t.kind!=='buggy'&&!t.g.legs&&!t.extra&&Math.random()<.12?R(3,9):0;}}}continue;}
     let v=t.kind==='buggy'||t.kind==='ox'?t.vb:t.vb*spd;for(const o of TRAF){if(o===t||!o.act||o.fall||Math.abs(o.lt-t.lt)>1.5)continue;const d=wdiff(o.s-t.s);if(d>0&&d<(t.len+o.len)/2+14)v=Math.min(v,o.v*.9);}
     if(DUCK.st===1){const dd=wdiff(DUCK.s-t.s);if(dd>0&&dd<55)v=Math.min(v,Math.max(0,(dd-t.len/2-7)*.5));}   // everyone stops for the ducks
-    t.sw=0;for(const q of FQ.list){const F=q.F;if(!F||F.kL<.05)continue;const dd=wdiff(F.s-t.s);if(dd>-6&&dd<170&&t.lat>F.lo-1.6&&t.lat<F.hi+1.6){t.lt=F.free;t.sw=1;if(Math.abs(t.lat-F.free)>1.2)v=Math.min(v,Math.sqrt(12*Math.max(0,dd-t.len/2-5)));}}   // and for a fissure: brake hard, and squeeze past in the open lane
+    t.sw=0;for(const q of FQ.list)for(const F of q.Fs||[]){if(F.kL<.05)continue;const dd=wdiff(F.s-t.s);if(dd>-6&&dd<170&&t.lat>F.lo-1.6&&t.lat<F.hi+1.6){t.lt=F.free;t.sw=1;if(Math.abs(t.lat-F.free)>1.2)v=Math.min(v,Math.sqrt(12*Math.max(0,dd-t.len/2-5)));}}   // and for a fissure: brake hard, and squeeze past in the open lane
     if(t.dead)v=0;   // no wheels: grinds to a halt
     const dp=wdiff(pe.s-t.s);if(dp>0&&dp<(t.len/2+16)&&Math.abs(pe.lat-t.lat)<2.6)v=Math.min(v,Math.max(0,pe.v-2));   // don't run into the player from behind
     const i=wrapI(Math.floor(t.s/SEG));
@@ -3994,14 +4029,14 @@ function fqCrack(q,s,lat){crackRoad(s,lat);q.cr.push(CRACKS[CRACKS.length-1]);}
 function fqDeb(q,s,lat,h,delay,sc,vy){spawnDeb(s,lat,h,'chunk',delay,false,0,sc);const d=DEB[DEB.length-1];d.vy=vy;q.deb.push(d);}
 function fqClear(q){for(const m of q.cr){const k=CRACKS.indexOf(m);if(k>=0)CRACKS.splice(k,1);scene.remove(m);m.geometry.dispose();}q.cr.length=0;
   for(const d of q.deb){const k=DEB.indexOf(d);if(k>=0)DEB.splice(k,1);scene.remove(d.m);d.m.geometry.dispose();if(d.ob){const j=OBST.indexOf(d.ob);if(j>=0)OBST.splice(j,1);}}q.deb.length=0;
-  if(q.F&&FQ.cm)for(const c of FQ.cm)if(c.F===q.F){c.t=0;c.o.visible=false;}
-  if(q.F){for(const o of q.F.parts){scene.remove(o);if(o.geometry!==FQ.slabG)o.geometry.dispose();}q.F=null;}}
+  const Fs=q.Fs||(q.F?[q.F]:[]);if(FQ.cm)for(const c of FQ.cm)if(Fs.includes(c.F)){c.t=0;c.o.visible=false;}
+  for(const F of Fs)for(const o of F.parts){scene.remove(o);if(o.geometry!==FQ.slabG)o.geometry.dispose();}q.F=null;q.Fs=null;q.fe=0;}
 function fqArm(){const m_=x=>Math.round(x/SEG);for(const q of FQ.list){fqClear(q);const lo=q.a+m_(250),hi=Math.max(lo,q.b-m_(900));q.ti=Math.round(lo+Math.random()*(hi-lo));q.st=0;q.t=0;}}   // a new drive: a new place for each quake
 function fqAfterReset(){for(const q of FQ.list)if(q.st===1&&q.t>5){fqClear(q);q.st=2;}}
 // the fissure: N points across the road from beyond the far edge to just short of the open lane, each with a jag (c, metres along the road) and a width;
 // a black core inside a dark brown rim, and plates of broken asphalt tipped up along both lips
-function fqFissure(q,s,sd){const i=wrapI(Math.floor(s/SEG)),w=RW+XW[i],edge=-sd*(w+.8),tip=sd*(w*.5-.35),N=18,pts=[];let c=0;
-  for(let j=0;j<N;j++){const u=j/(N-1);c=clamp((j%2?1:-1)*R(.8,2.2)+c*.3,-3,3);pts.push({lat:lerp(edge,tip,u),c,u,hw:R(1.5,2.3)*Math.min(1,(1-u)*N/2.5+.06),h:0});}
+function fqFissure(q,s,sd,hole=0){const i=wrapI(Math.floor(s/SEG)),w=RW+XW[i],edge=-sd*(w+.8),tip=sd*(w*.5-.35),N=18,pts=[];let c=0;
+  for(let j=0;j<N;j++){const u=j/(N-1);c=clamp((j%2?1:-1)*R(.8,2.2)+c*.3,-3,3);pts.push({lat:lerp(edge,tip,u),c,u,hw:R(1.5,2.3)*(hole?1.7:1)*Math.min(1,(1-u)*N/2.5+.06),h:0});}
   const strip=(col,po)=>{const g=new THREE.BufferGeometry(),idx=[];g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(N*6),3));for(let j=0;j<N-1;j++){const a=j*2;idx.push(a,a+2,a+1,a+1,a+2,a+3);}g.setIndex(idx);
     const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:col,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:po}));m.frustumCulled=false;scene.add(m);return m;};
   const rim=strip(0x2c2620,-5),core=strip(0x060505,-9),parts=[rim,core],slabs=[];
@@ -4022,9 +4057,9 @@ function fqCrumbleTick(rdt){if(!FQ.cm)return;for(const c of FQ.cm){if(c.t<=0)con
     if(c.d>c.p.h*.7){c.d+=c.vd*rdt;c.rx+=c.w*.5*rdt;c.y=.1;}else{c.vy-=12*rdt;c.y+=c.vy*rdt;c.d=Math.max(0,c.d+c.vd*.4*rdt);c.rx+=c.w*rdt;}   // tipping and sliding over the lip, then falling
     at(F.s+c.p.c+c.side*c.d,c.p.lat+c.dl,c.y,c.o.position);c.o.rotation.set(-c.side*c.rx,yaw(wrapI(Math.floor(F.s/SEG))),c.dl*.4,"YXZ");if(c.t<=0||c.y<-4){c.t=0;c.o.visible=false;}}}
 // each step of the split: a jolt, a deep rumble, a burst of dust and chunks of road thrown up
-function fqStep(q,F){G.shake=q.nm==='MARIN'?.45:1;sfxCrunch(1);if(AC){const t=AC.currentTime;tone('sine',32,t,1.6,.9,master,{to:24,a:.04,h:.4});hit(t,1.3,1.1,90,'lowpass',master);}
+function fqStep(q,F){G.shake=q.nm==='MARIN'?.45:1;const hole=q.nm==='I-80';sfxCrunch(1);if(AC){const t=AC.currentTime;tone('sine',32,t,1.6,.9,master,{to:24,a:.04,h:.4});hit(t,1.3,1.1,90,'lowpass',master);}
   fqCrumble(F,7);NOGY=1;for(let k=0;k<16;k++){const p=F.pts[Math.random()*F.pts.length|0];puff(at(F.s+p.c,p.lat,.3,V),R(-3,3),R(3,8),R(-3,3),1.2,R(4,8),R(1.6,3.2),.65,0x9a9080);}NOGY=0;
-  for(let k=0;k<4;k++){const p=F.pts[Math.random()*F.pts.length*.8|0];fqDeb(q,F.s+p.c+R(-1.5,1.5),p.lat,R(.3,.9),0,R(.2,.4),R(5,11));}}
+  if(!hole)for(let k=0;k<4;k++){const p=F.pts[Math.random()*F.pts.length*.8|0];fqDeb(q,F.s+p.c+R(-1.5,1.5),p.lat,R(.3,.9),0,R(.2,.4),R(5,11));}}
 // The Golden Gate, once a drive: a rolling earthquake runs along the bridge. The bridge itself is baked into the static scenery, so the travelling wave is
 // carried by the car (pushed side to side) and the view (rolling and heaving), with a deep rumble and the sky going dark.
 const GGQ={st:0,t:0,sw:0};
@@ -4089,6 +4124,31 @@ function rtkTick(rdt){if(!DRIVE||!TK.length)return;const a=Z.richmond-Math.round
     for(const o of RTK.g){at(a*SEG+o.x0,o.l0,0,o.m.position);o.m.rotation.set(0,yaw(a)+Math.PI,0);o.m.scale.setScalar(1.25);o.m.visible=true;const w=o.m.children;w[w.length-1].rotation.z=0;w[w.length-2].rotation.z=0;}RTK.st=1;RTK.t=0;}
   if(RTK.st===1){at(a*SEG,0,0,V);if((V.x-PL.x)**2+(V.z-PL.z)**2<45*45){RTK.st=2;RTK.t=0;for(const o of RTK.g){o.vy=R(7,12);o.vx=R(-5,5);o.vz=R(-5,5);}}}
   else if(RTK.st===2){RTK.t+=rdt;for(const o of RTK.g){if(!o.m.visible)continue;o.m.position.x+=o.vx*rdt;o.m.position.y+=o.vy*rdt;o.m.position.z+=o.vz*rdt;o.vy+=1.5*rdt;const w=o.m.children,fl=Math.sin(RTK.t*34+o.x0)*1.1;w[w.length-1].rotation.z=fl;w[w.length-2].rotation.z=-fl;if(RTK.t>5){o.m.visible=false;}else if(RTK.t>3.5)o.m.scale.setScalar(1.25*(1-(RTK.t-3.5)/1.5));}}}
+// I-80: the far scenery across the bay follows the car slowly, tinted by the haze; shafts of sun when the storm breaks; and flocks of gulls and pelicans wheeling over the water,
+// one every few seconds folding its wings and diving in with a splash, then bobbing up and flying back to the flock
+function bayTick(rdt){const V0=BAYV;if(!V0||!DRIVE)return;const m_=x=>Math.round(x/SEG),i=PL.idx,on=i>Z.i80-m_(150)&&i<Z.wt1-m_(150),B=BAYB;V0.g.visible=on;
+  if(!B.im){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array([0,0,.13, 0,0,-.12, -.38,.16,-.06, 0,0,.13, .38,.16,-.06, 0,0,-.12]),3));
+    B.im=new THREE.InstancedMesh(g,new THREE.MeshBasicMaterial({color:0xf0efe8,side:THREE.DoubleSide}),30);B.pm=new THREE.InstancedMesh(g,new THREE.MeshLambertMaterial({color:0x6e655a,side:THREE.DoubleSide}),10);
+    for(const o of[B.im,B.pm]){o.frustumCulled=false;o.count=0;scene.add(o);}B.M=new THREE.Matrix4();B.Q=new THREE.Quaternion();B.E=new THREE.Euler(0,0,0,'YXZ');B.S=new THREE.Vector3();B.P=new THREE.Vector3();
+    for(let k=0;k<3;k++)B.c.push({i:-1e9,lat:0,y:30});for(let k=0;k<40;k++){const pel=k>=30;B.b.push({pel,k:pel?k-30:k,f:pel?2:k%2,r:pel?R(30,60):R(10,40),ph:R(0,6.3),w:(pel?R(.12,.2):R(.25,.5))*(k%3?1:-1),h:R(-4,6),st:0,t:0,x:0,y:0,z:0,x0:0,y0:0,z0:0,vx:0,vz:0,hd:0});}}
+  if(!on){B.im.count=B.pm.count=0;return;}
+  V0.g.position.set(0,0,PL.z*.9-550);const fc=scene.fog.color;for(const mm of V0.mats)mm.color.copy(fc).lerp(mm.userData.tint,mm.userData.k);
+  const tm=tmNow(),br=(G.i8s||0)*sst(Math.sin(tm*.13),.05,.7)*dayK;for(const r of V0.rays){r.m.material.opacity=br*r.o*(.75+.25*Math.sin(tm*.7+r.ph));r.m.visible=r.m.material.opacity>.005;r.m.getWorldPosition(V);r.m.rotation.y=Math.atan2(camera.position.x-V.x,camera.position.z-V.z);}
+  const pe=ents.find(e=>e.player);if(!pe)return;
+  for(const c of B.c)if(wdiff(c.i*SEG-pe.s)<-60||wdiff(c.i*SEG-pe.s)>900){c.i=wrapI(i+m_(R(220,520)));c.lat=-(RW+XW[c.i]+R(70,280));c.y=R(24,46);}   // each flock waits out over the water ahead
+  const sea=c=>c.i>STORM.a&&c.i<STORM.b,ctr=(c,o)=>o.set(P[c.i].x+Nn[c.i].x*c.lat,c.y,P[c.i].z+Nn[c.i].z*c.lat);
+  B.cd-=rdt;if(B.cd<=0){B.cd=R(1.4,3.4);const cand=B.b.filter(b=>b.st===0&&sea(B.c[b.f]));const b=cand[Math.random()*cand.length|0];if(b){b.st=1;b.t=0;b.x0=b.x;b.y0=b.y;b.z0=b.z;b.T=b.pel?1.4:1.05;}}   // one of them dives
+  let ni=0,np=0;
+  for(const b of B.b){const c=B.c[b.f],a=tm*b.w+b.ph;ctr(c,V);let pitch=0,roll=0,fold=0;
+    const cx=V.x+Math.cos(a)*b.r*(b.pel?2:1.4),cz=V.z+Math.sin(a)*b.r,cy=V.y+b.h+Math.sin(a*2)*1.5,hd=Math.atan2(-Math.sin(a)*b.w*(b.pel?2:1.4),Math.cos(a)*b.w);
+    if(b.st===0){b.x=cx;b.y=cy;b.z=cz;b.hd=hd;roll=-Math.sign(b.w)*.35;}
+    else if(b.st===1){b.t+=rdt/b.T;const u=Math.min(1,b.t);b.x=b.x0+Math.sin(b.hd)*u*30;b.z=b.z0+Math.cos(b.hd)*u*30;b.y=lerp(b.y0,.1,u*u);pitch=lerp(.3,1.35,u);fold=1;
+      if(u>=1){b.st=2;b.t=0;const d2=(b.x-PL.x)**2+(b.z-PL.z)**2;if(d2<900*900){NOGY=1;for(let q=0;q<(b.pel?9:5);q++)puff(V.set(b.x+R(-1,1),.3,b.z+R(-1,1)),R(-2,2),R(3,b.pel?9:6),R(-2,2),.6,R(2,b.pel?5:3),R(.9,1.6),.75,0xeef2f4);NOGY=0;if(d2<160*160)sfxSplash();}}}   // in it goes, with a splash
+    else if(b.st===2){b.t+=rdt;b.y=-2;if(b.t>1.5){b.st=3;b.t=0;b.x0=b.x;b.z0=b.z;}}   // under, then bobbing back up
+    else{b.t+=rdt/2.6;const u=Math.min(1,b.t),e=u*u*(3-2*u);b.x=lerp(b.x0,cx,e);b.y=lerp(.2,cy,e);b.z=lerp(b.z0,cz,e);b.hd=Math.atan2(cx-b.x0,cz-b.z0);pitch=-.35*(1-u);if(u>=1)b.st=0;}   // and away, back up to the flock
+    if(b.y<-1)continue;const fl=fold?.25:Math.sin(tm*(b.pel?4.5:8)+b.ph)*(b.pel?.5:1),sc=b.pel?4.2:2.2;
+    B.E.set(pitch,b.hd,roll);B.Q.setFromEuler(B.E);B.S.set(sc*(fold?.45:1),fl*sc,sc*(fold?1.4:1));B.M.compose(B.P.set(b.x,b.y,b.z),B.Q,B.S);(b.pel?B.pm:B.im).setMatrixAt(b.pel?np++:ni++,B.M);}
+  B.im.count=ni;B.pm.count=np;B.im.instanceMatrix.needsUpdate=B.pm.instanceMatrix.needsUpdate=true;}
 function stormTick(rdt){if(!STORM.ships.length||PL.idx<STORM.a-Math.round(300/SEG)||PL.idx>STORM.b+Math.round(300/SEG))return;const t=tmNow();STORM.tex.offset.set(t*.02,t*.03);
   if(STORM.wv){const W=STORM.wv;W.l.forEach((w,k)=>{const p=(t*w.sp+w.ph)%1,lat=-(RW+XW[w.i]+28+(1-p)*460),h=(.6+1.6*Math.sin(p*Math.PI))*(.8+.4*Math.sin(t*1.7+k)),y=.1-h*.35;off(w.i,lat,0,V);V.y=y;Q.setFromEuler(E.set(0,yaw(w.i)+Math.sin(k)*.25,0));   // each swell rolls in, rears up and flattens out near the shore
     M4.compose(V,Q,S.set(2.2,h,w.L));W.bd.setMatrixAt(k,M4);V.y=y+h*.95;M4.compose(V,Q,S.set(1.2,.35,w.L*.9));W.cr.setMatrixAt(k,M4);});W.bd.instanceMatrix.needsUpdate=W.cr.instanceMatrix.needsUpdate=true;}
@@ -4148,19 +4208,21 @@ function fqTick(rdt){if(!FQ.list.length)return;const pe=ents.find(e=>e.player);i
     if(t<8)G.shake=Math.max(G.shake,(q.nm==='MARIN'?.3:1)*(.06+.72*sst(t,0,5)));G.qd=Math.max(G.qd||0,.45*sst(t,1,4.5));   // the shaking grows and the sky goes dark
     if(t>2.4&&t<5.6){q.n-=rdt;if(q.n<=0){q.n=.12;const u=(t-2.4)/3.2;fqCrack(q,lerp(pe.s+40,q.fs+20,u)+R(-14,14),R(-w,w));}}   // cracks run across the road ahead, out towards where it will split
     if(t>3.9&&t<5.4){q.m=(q.m||0)-rdt;if(q.m<=0){q.m=.07;const u=(t-3.9)/1.5,wf=RW+XW[wrapI(Math.floor(q.fs/SEG))];fqCrack(q,q.fs+R(-3,3),lerp(-q.sd*(wf+.5),q.sd*wf*.5,u)+R(-1,1));if(Math.random()<.4){NOGY=1;puff(at(q.fs,lerp(-q.sd*wf,q.sd*wf*.5,u),.2,V),R(-1,1),R(.5,2),R(-1,1),1,R(2,4),R(1,2),.4,0x9a9080);NOGY=0;}}}   // then a line of cracks races across the lanes where it will open, puffing dust
-    if(t>=5.4&&!q.F){q.F=fqFissure(q,q.fs,q.sd);sfxQuake();sfxCrunch(1);G.shake=1;say('THE ROAD IS SPLITTING !','KEEP TO THE '+(q.sd>0?'LEFT':'RIGHT')+' LANE',4);}
-    const F=q.F;
-    if(F){const u=t-F.t0;F.kL=sst(u,0,1.4);{let kw=0;for(let n=0;n<4;n++)kw+=.25*sst(u,.15+n*1.1,.4+n*1.1);F.kW=kw;const ns=Math.min(4,Math.floor((u-.15)/1.1)+1);if(ns>(F.stp||0)){F.stp=ns;fqStep(q,F);}}   /* it opens in four violent steps */F.wid+=((q.af?1.25:1)-F.wid)*Math.min(1,rdt*1.5);fqShape(F);
+    if(t>=5.4&&!q.F){sfxQuake();sfxCrunch(1);G.shake=1;
+      if(q.nm==='I-80'){q.Fs=[];let s=q.fs,sd=q.sd;for(let n=0;n<4;n++){const F=fqFissure(q,s,sd,1);F.t0+=n*.45;q.Fs.push(F);q.fe=s;s+=R(60,90);sd=-sd;}q.F=q.Fs[0];say('THE ROAD IS OPENING UP !','HOLES AHEAD - STEER ROUND THEM',4);}   // I-80: no boulders - the road opens into a string of holes, each across most of the lanes, on alternate sides
+      else{q.F=fqFissure(q,q.fs,q.sd);q.Fs=[q.F];say('THE ROAD IS SPLITTING !','KEEP TO THE '+(q.sd>0?'LEFT':'RIGHT')+' LANE',4);}}
+    for(const F of q.Fs||[]){const u=t-F.t0;F.kL=sst(u,0,1.4);{let kw=0;for(let n=0;n<4;n++)kw+=.25*sst(u,.15+n*1.1,.4+n*1.1);F.kW=kw;const ns=Math.min(4,Math.floor((u-.15)/1.1)+1);if(ns>(F.stp||0)){F.stp=ns;fqStep(q,F);}}   /* it opens in four violent steps */F.wid+=((q.af?1.25:1)-F.wid)*Math.min(1,rdt*1.5);fqShape(F);
       if(u<5&&Math.random()<rdt*40){const p=F.pts[Math.random()*F.pts.length|0];if(p.h>.05){NOGY=1;puff(at(F.s+p.c,p.lat,.3,V),R(-2,2),R(1.5,5),R(-2,2),1,R(3,6),R(1.4,3),.55,0x9a9080);NOGY=0;}}   // dust out of the split
       if(u<8&&Math.random()<rdt*(u<4.6?12:3))fqCrumble(F,1);   // the edges keep breaking away and falling in
-      if(u>.3&&!F.ch){F.ch=1;for(let k=0;k<8;k++){const p=F.pts[Math.random()*F.pts.length*.7|0];fqDeb(q,F.s+p.c+R(-1.5,1.5),p.lat,R(.4,1.2),R(0,1.4),R(.22,.4),R(4,9));}}   // chunks of road thrown up
+      if(u>.3&&!F.ch&&q.nm!=='I-80'){F.ch=1;for(let k=0;k<8;k++){const p=F.pts[Math.random()*F.pts.length*.7|0];fqDeb(q,F.s+p.c+R(-1.5,1.5),p.lat,R(.4,1.2),R(0,1.4),R(.22,.4),R(4,9));}}   // chunks of road thrown up
       if(!PL.crash&&PL.safe<=0&&G.state==='race'){const f=(pe.lat-F.edge)/(F.tip-F.edge),p=f>=0&&f<=1?F.pts[Math.round(f*(F.pts.length-1))]:null,ds=p?wdiff(F.s+p.c-pe.s):null;
-        if(p&&F.prev!=null&&F.prev>0&&ds<=0&&p.h>.15){const v=pe.v;G.shake=1;sfxCrunch(1);NOGY=1;for(let k=0;k<12;k++)puff(V.set(PL.x+R(-1,1),P[PL.idx].y+.3,PL.z+R(-1,1)),R(-3,3),R(1,4),R(-3,3),1,R(3,6),R(1.2,2.4),.55,0x8a8070);NOGY=0;
+        if(p&&F.prev!=null&&F.prev>0&&ds<=0&&p.h>.15&&q.nm==='I-80'){if(p.h>.5){F.prev=null;startDive(-F.sd,1.2,PL.idx,{room:p.h*2});break;}}   /* into a hole: down through the road */
+        else if(p&&F.prev!=null&&F.prev>0&&ds<=0&&p.h>.15){const v=pe.v;G.shake=1;sfxCrunch(1);NOGY=1;for(let k=0;k<12;k++)puff(V.set(PL.x+R(-1,1),P[PL.idx].y+.3,PL.z+R(-1,1)),R(-3,3),R(1,4),R(-3,3),1,R(3,6),R(1.2,2.4),.55,0x8a8070);NOGY=0;
           if(q.nm==='MARIN'){PL.air=1;PL.vy=Math.max(PL.vy||0,10);PL.vx*=.92;PL.vz*=.92;G.shake=1;sfxCrunch(1);say('BOING !','OVER THE CRACK',1.5);}else if(v>26)crashPlayer(v*.4,false);else{PL.vx*=.45;PL.vz*=.45;sfxScrape(1);}}   // over the fissure: a hard jolt, and at speed a crash
         F.prev=ds;}else F.prev=null;}
     if(t>12.5&&!q.af){q.af=1;sfxQuake();G.shake=Math.max(G.shake,.75);say('AFTERSHOCK !','',2);for(let k=0;k<4;k++)fqCrack(q,q.fs+R(-40,40),R(-w,w));}
     if(q.af&&t<14.5)G.shake=Math.max(G.shake,.4*(1-(t-12.5)/2));
-    const past=wdiff(pe.s-q.fs);if(!PL.crash&&t>14.5&&(past>220||past<-1500)){fqClear(q);q.st=2;}}}   // gone once you are well past it
+    const past=wdiff(pe.s-(q.fe||q.fs));if(!PL.crash&&t>14.5&&(past>220||past<-1500)){fqClear(q);q.st=2;}}}   // gone once you are well past it
 // hole: the road has opened under the car (the earthquake), {room: metres of gap left ahead}. The car then drops straight through, keeping only as much speed as keeps it inside the gap, instead of being thrown out over the side rail
 function startDive(sd,vn,bi,hole){ohNo();{const e=ents.find(e=>e.player);if(e)e.v=0;}const n=Nn[bi],out=hole?vn:Math.max(vn,9),fs=Math.hypot(PL.vx,PL.vz)||1,kf=hole?Math.min(.75,Math.max(1,hole.room)/2.4/fs):.75;
   PL.crash={t:0,dive:1,ph:0,tt:0,sd,x:PL.x,z:PL.z,y:H[bi],vx:PL.vx*kf+n.x*sd*out,vz:PL.vz*kf+n.z*sd*out,vy:hole?0:5.5,idx:bi,dir:PL.x<2350?-1:1,hole:!!hole,rep:(startDive.n=(startDive.n||0)+1)>1};PL.vx=PL.vz=0;   // rep: a second or later fall this game plays only up to the octopus, then the car is back on the road where it went off
