@@ -976,6 +976,28 @@ if(DRIVE){ // ---- Alameda scenery: the hill and driveway to the burger, eucalyp
     B(18,.4,9,wal,5,5.2,4,0,g);for(const x of[-2,12])for(const z of[1,7])B(.4,5,.4,stl,x,2.5,z,0,g);for(const x of[2,8]){B(.7,1.5,.6,std({color:0xc8241c,roughness:.5}),x,.75,4,0,g);}
     const pm=new THREE.Mesh(new THREE.PlaneGeometry(2.4,3.6),lit(128,192,(c,w,h)=>{c.fillStyle='#1c1c1e';c.fillRect(0,0,w,h);c.fillStyle='#f2c230';c.font='900 26px Arial Black,Arial';c.textAlign='center';c.fillText('QUIK',w/2,34);c.fillStyle='#fff';c.font='900 34px Arial';for(let k=0;k<3;k++)c.fillText(['3.89','4.19','4.49'][k],w/2,84+k*40);}));pm.position.set(-14,8.5,10);g.add(pm);B(.3,7,.3,stl,-14,3.5,10,0,g);
     g.traverse(o=>{if(o.isMesh)o.castShadow=o.receiveShadow=true;});scene.add(g);}
+  {// the owner's photo billboards (the newest pictures, so the biggest boards, set close to the road and turned towards the oncoming driver): steel legs, a frame, a catwalk and lamps; lit at night
+    const TL=new THREE.TextureLoader(),fr=std({color:0x2b2f33,roughness:.5,metalness:.6});
+    // a picture cropped to [x,y,w,h] (pixels) on a canvas, small patches painted over with a nearby colour (phone badges)
+    const pic=(f,cx,cy,cw,ch,patch=[])=>{const c=document.createElement('canvas');c.width=cw;c.height=ch;const g=c.getContext('2d');g.fillStyle='#222';g.fillRect(0,0,cw,ch);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=ANISO;
+      TL.load('assets/billboards/'+f,src=>{g.drawImage(src.image,cx,cy,cw,ch,0,0,cw,ch);for(const[x,y,w,h,sx,sy]of patch){const d=g.getImageData(sx-cx,sy-cy,1,1).data;g.fillStyle=`rgb(${d[0]},${d[1]},${d[2]})`;g.fillRect(x-cx,y-cy,w,h);}t.needsUpdate=true;});return t;};
+    const pboard=(i,sd,panels,H=16)=>{const g=new THREE.Group(),gap=1,W=panels.reduce((a,[t,ar])=>a+H*ar,0)+gap*(panels.length-1),y0=4.5;let x=-W/2;
+      for(const[t,ar]of panels){const w=H*ar,mm=std({map:t,emissiveMap:t,emissive:0xffffff,emissiveIntensity:.55,roughness:.6});B(w,H,.3,[fr,fr,fr,fr,mm,fr],x+w/2,y0+H/2,0,0,g);x+=w+gap;}
+      B(W+1.2,.6,.5,fr,0,y0-.3,0,0,g);B(W+1.2,.6,.5,fr,0,y0+H+.3,0,0,g);B(.6,H+1.2,.5,fr,-W/2-.3,y0+H/2,0,0,g);B(.6,H+1.2,.5,fr,W/2+.3,y0+H/2,0,0,g);   // the frame
+      B(W+1.2,.15,1.6,steelM,0,y0-.65,.7,0,g);   // catwalk
+      const nl=Math.max(2,Math.round(W/5));for(let k=0;k<nl;k++){const lx=-W/2+W*(k+.5)/nl;B(.12,.12,1.8,steelM,lx,y0-.5,1.4,0,g);B(.9,.3,.5,lampMat,lx,y0-.4,2.3,0,g);}   // lamps shining up at the face
+      const nleg=W>14?3:2;for(let k=0;k<nleg;k++)B(.9,y0+H*.6,.9,steelM,nleg===2?(k?1:-1)*W*.3:(k-1)*W*.38,(y0+H*.6)/2,-.6,0,g);
+      const t=T[i],n=Nn[i],tl=Math.hypot(t.x,t.z)||1;off(i,sd*(RW+XW[i]+8+W*.15),0,g.position);g.rotation.y=Math.atan2(-t.x/tl-sd*.45*n.x,-t.z/tl-sd*.45*n.z);g.traverse(o=>{o.castShadow=true;});scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:2});return g;};
+    const sol=pic('red-poster-soldiers.jpg',0,26,512,614,[[425,26,87,36,506,140],[0,26,34,16,4,140]]),
+      gp=pic('good-and-plenty.jpg',22,44,476,596),
+      cafe=pic('cafe-con-pan.jpg',30,88,300,468),
+      sun=pic('red-sun-poster.jpg',0,68,728,758),
+      clown=pic('clown-mask.jpg',0,28,512,612);
+    pboard(Z.tu1+m(450),1,[[sol,512/614]]);   // I-880, out of the Posey Tube
+    pboard(Z.i80+m(220),-1,[[gp,476/596]],15);   // I-80 south, off the Richmond bridge
+    pboard(Z.oakland+m(600),-1,[[cafe,300/468]],18);   // the last freeway, through Oakland to the Webster Tube: the two biggest
+    pboard(Z.oakland+m(1500),1,[[sun,728/758]],18);
+    pboard(Z.wt0+m(260),-1,[[clown,512/612]],13);}   // out of the Webster Tube into Alameda
   {// "OLIVER IS... THE SILVOR SORFER": a few billboards, an art-deco film poster (redrawn: a teal city at night behind a big bald head) on Wilma Chan Way, I-880 and I-80
     const ol=(bg,hl,sk)=>canvas(1024,512,(c,w,h)=>{const gr=c.createLinearGradient(0,0,0,h);gr.addColorStop(0,bg[0]);gr.addColorStop(1,bg[1]);c.fillStyle=gr;c.fillRect(0,0,w,h);
       c.fillStyle='rgba(255,255,230,.12)';for(const x of[560,660,760]){c.beginPath();c.moveTo(x,0);c.lineTo(x-70,h);c.lineTo(x+70,h);c.fill();}   // searchlights
