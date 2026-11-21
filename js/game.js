@@ -4315,7 +4315,7 @@ function rtkTick(rdt){if(!DRIVE||!TK.length)return;const a=Z.richmond-Math.round
 // one every few seconds folding its wings and diving in with a splash, then bobbing up and flying back to the flock
 function bayTick(rdt){const V0=BAYV;if(!V0||!DRIVE)return;const m_=x=>Math.round(x/SEG),i=PL.idx,on=i>Z.i80-m_(150)&&i<Z.wt1-m_(150),B=BAYB;V0.g.visible=on;
   if(!B.im){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array([0,0,.13, 0,0,-.12, -.38,.16,-.06, 0,0,.13, .38,.16,-.06, 0,0,-.12]),3));
-    B.im=new THREE.InstancedMesh(g,new THREE.MeshBasicMaterial({color:0xf0efe8,side:THREE.DoubleSide}),30);B.pm=new THREE.InstancedMesh(g,new THREE.MeshLambertMaterial({color:0x6e655a,side:THREE.DoubleSide}),10);
+    B.im=new THREE.InstancedMesh(g,new THREE.MeshBasicMaterial({color:0xf0efe8,side:THREE.DoubleSide}),30);B.pm=new THREE.InstancedMesh(g,new THREE.MeshBasicMaterial({color:0x6e655a,side:THREE.DoubleSide}),10);   // unlit like the gulls: a lit (Lambert) instanced mesh here blacked out most of the screen on I-80
     for(const o of[B.im,B.pm]){o.frustumCulled=false;o.count=0;scene.add(o);}B.M=new THREE.Matrix4();B.Q=new THREE.Quaternion();B.E=new THREE.Euler(0,0,0,'YXZ');B.S=new THREE.Vector3();B.P=new THREE.Vector3();
     for(let k=0;k<3;k++)B.c.push({i:-1e9,lat:0,y:30});for(let k=0;k<40;k++){const pel=k>=30;B.b.push({pel,k:pel?k-30:k,f:pel?2:k%2,r:pel?R(30,60):R(10,40),ph:R(0,6.3),w:(pel?R(.12,.2):R(.25,.5))*(k%3?1:-1),h:R(-4,6),st:0,t:0,x:0,y:0,z:0,x0:0,y0:0,z0:0,vx:0,vz:0,hd:0});}}
   if(!on){B.im.count=B.pm.count=0;return;}
