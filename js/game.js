@@ -1658,11 +1658,12 @@ const MODELS={
   lp400:{cls:1,name:'Lamborghini Countach LP400',year:'1974',desc:'Periscopio. A flat, sharp wedge with a periscope in the roof. The fastest of the classics, and twitchy with it.',CL:4.14,B:[.42,.46,.46,.43,.39,.35,.32,.28,.23,.17,.1],W:[.95,.98,.99,.99,.98,.96,.95,.95,.93,.88,.76],rb:.12,fb:.06,top:84,grip:.9,acc:.9,twitch:1,cy:1.12,cw:1.04,cz:.2,lamp:'rect',wh:'dial',road:.85,int:{dash:0x121212,panel:0x1a1a1a,rim:0x101010,spoke:0x2a2a2a,hub:0x141414}},
   f400:{cls:1,name:'Ferrari 400 Superamerica',year:'1962',desc:'Coupé aerodinamico: a long nose with covered lamps and a fastback tail. Smooth, stable and quick.',CL:4.7,B:[.2,.46,.56,.60,.60,.58,.57,.56,.54,.48,.30],W:[.66,.84,.91,.93,.93,.92,.92,.92,.91,.86,.64],rb:.07,fb:.12,top:77,grip:.88,acc:.78,twitch:0,cy:1.45,cw:.9,cz:-.55,cs:1.3,wh:'wire',road:.62,int:{dash:0x2a1a12,panel:0x3a3a3c,rim:0x8a5a2a,spoke:0xc9cbc8,hub:0x141414}},
   van:{cls:1,name:'Ford Econoline window van',year:'1962',desc:'A flat-fronted box on wheels with windows all round. Slow, soft and leans in the corners: take it easy.',CL:4.3,B:[1.7,1.75,1.76,1.76,1.76,1.76,1.76,1.76,1.75,1.73,1.68],W:[.9,.93,.94,.94,.94,.94,.94,.94,.94,.93,.91],rb:.001,fb:.001,top:40,grip:.74,acc:.46,twitch:0,cy:1,lamp:'none',plain:1,roll:1,hs:.8,camY:2.25,road:.9,int:{dash:0x8f8f8a,panel:0x2a2a2a,rim:0xe8e4d6,spoke:0xc9cbc8,hub:0x141414}},
+  sherp:{cls:1,name:'Sherp N 1200',year:'2015',desc:'A box cab on four huge low-pressure balloon tyres, steered by braking one side like a tank. Slow, but it grips and goes where it is pointed.',CL:3.4,B:[1.7,1.75,1.76,1.76,1.76,1.76,1.76,1.76,1.75,1.73,1.68],W:[.9,.93,.94,.94,.94,.94,.94,.94,.94,.93,.91],rb:.001,fb:.001,top:36,grip:1.08,acc:.55,twitch:0,cy:1,lamp:'none',plain:1,hs:.8,camY:2.6,road:.9,int:{dash:0x2a2a2a,panel:0x1a1a1a,rim:0x141414,spoke:0x2a2a2a,hub:0x141414}},   // sherp: everything visible is built in makeCar's sherp branch; the body profile above is hidden
   bz:{cls:1,name:'Bizzarrini 5300 Strada',year:'1965',desc:'A Corvette V8 under a very low, very long nose, and a short fastback cut off square. Fast and lively.',CL:4.37,B:[.48,.52,.53,.52,.48,.42,.36,.3,.24,.17,.09],W:[.84,.89,.91,.91,.9,.88,.88,.89,.88,.82,.66],rb:.1,fb:.1,top:82,grip:.9,acc:.87,twitch:0,cy:1.25,cw:.92,cz:-.45,cs:1.02,lamp:'none',road:.75,int:{dash:0x1c1c1e,panel:0x2a2a2c,rim:0x8a5a2a,spoke:0xc9cbc8,hub:0x141414}},
   b507:{cls:1,name:'BMW 507',year:'1957',desc:'A V8 roadster with its hardtop on: a long low bonnet, a wide twin-kidney grille and round lamps in the wings. Smooth and balanced, a grand tourer rather than a racer.',CL:4.38,B:[.3,.5,.56,.58,.58,.57,.56,.55,.54,.5,.4],W:[.7,.83,.87,.88,.88,.87,.87,.88,.87,.84,.72],rb:.08,fb:.1,top:70,grip:.88,acc:.72,twitch:0,cy:1.4,cw:.86,cz:-.55,cs:1.0,lamp:'none',plain:1,wh:'cap',road:.62,tlx:.72,int:{dash:0xb89a72,panel:0x2a2a2c,rim:0xe8e0c8,spoke:0xc9cbc8,hub:0xc9cbc8}},
   ac:{cls:1,name:'Concept Coupe',year:'2025',desc:'A low, wide, matte mid-engined concept: a black grille face with light-strip lamps, louvres over the engine and dark wheels. Fast, grippy and a little stiff.',CL:4.42,B:[.46,.5,.51,.5,.46,.41,.36,.31,.26,.2,.09],W:[.94,.97,.98,.98,.97,.96,.96,.97,.96,.91,.78],rb:.1,fb:.08,top:88,grip:1.0,acc:.92,twitch:0,cy:.98,cw:1.04,cz:.12,lamp:'none',road:.85,int:{dash:0x1a1a1a,panel:0x262626,rim:0x101010,spoke:0x2a2a2a,hub:0x141414}}};
 buildTables();for(const k in MODELS)MODELS[k].dyn=makeDyn(k,MODELS[k]);   // tyre and engine tables, and each car's weights, gearing and aerodynamics (js/sim/vehicle.js)
-const RACERS=['o','k','lh','lhs','f512','gt40'],CLASSICS=['m1','p904','ghibli','bb','lp400','f400','bz','b507','van'],ZF=2.2,WZ=[1.25,-1.3];let MKEYS=RACERS;
+const RACERS=['o','k','lh','lhs','f512','gt40'],CLASSICS=['m1','p904','ghibli','bb','lp400','f400','bz','b507','van','sherp'],ZF=2.2,WZ=[1.25,-1.3];let MKEYS=RACERS;
 function arch(z){for(const zw of WZ){const d=z-zw;if(Math.abs(d)<.41)return .33+Math.sqrt(.41*.41-d*d);}return 0;}
 for(const k in MODELS){const m=MODELS[k];m.Bf=spl(m.B);m.Wf=spl(m.W);m.zR=ZF-m.CL;
   m.topY=(u,v,z)=>{const a=Math.abs(u),e=Math.exp(-(((a-.78)/.24)**2));return .14+m.Bf(v)*Math.sqrt(1-a**8)+e*((m.fb||.25)*Math.exp(-(((z-1.25)/.44)**2))+m.rb*Math.exp(-(((z+1.3)/.75)**2)));};
@@ -1827,6 +1828,24 @@ function makeCar(o){
     bx(1.86,.98,.04,lo,0,.62,ZF+.01);bx(1.86,.22,.04,up,0,1.79,ZF+.01);bx(1.86,.1,.04,up,0,1.13,ZF+.01);bx(.05,.56,.04,up,0,1.41,ZF+.012);bx(1.6,.56,.02,scr,0,1.41,ZF);
     for(const y of[.5,.57,.64])bx(.92,.025,.03,chrome,0,y,ZF+.04);for(const x of[-.3,-.1,.1,.3])bx(.02,.18,.03,chrome,x,.57,ZF+.045);
     bx(1.96,.12,.1,chrome,0,.32,ZF+.06);bx(1.96,.12,.1,chrome,0,.32,zR-.06);bx(1.86,.98,.04,lo,0,.62,zR-.01);bx(1.86,.82,.04,up,0,1.5,zR-.01);}
+  if(o.model==='sherp'){   // Sherp: a narrow hull between four huge balloon tyres, a wider box cab on top with a big sloping windscreen. Built here; the generic car parts are hidden at the end of makeCar
+    const sh=(m)=>{m.userData.sh=1;return m;},Y=paintOf(o.base),glass=std({color:0x10161a,roughness:.08,metalness:.4}),blk=std({color:0x161616,roughness:.8}),lampM=std({color:0xf4f0dc,emissive:0xffe6b0,emissiveIntensity:.8,roughness:.2});
+    const prof=(pts,w,m)=>{const s=new THREE.Shape();s.moveTo(pts[0][0],pts[0][1]);for(const p of pts.slice(1))s.lineTo(p[0],p[1]);s.closePath();const me=sh(add(new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:w,bevelEnabled:false}),m),w/2,0,0));me.rotation.y=-Math.PI/2;return me;};   // side profile (z,y) pushed out across the width
+    prof([[-1.62,.48],[1.5,.48],[1.68,.75],[1.68,1.72],[-1.66,1.72],[-1.66,.7]],1.56,Y);                        // hull between the tyres
+    prof([[-1.66,1.72],[1.7,1.72],[1.7,1.86],[1.24,2.64],[-1.58,2.64],[-1.66,2.52]],1.96,Y);                    // cab, overhanging the tyres
+    const sb=(sx,sy,sz,m,x,y,z)=>sh(bx(sx,sy,sz,m,x,y,z));
+    {const ws=sb(1.7,.02,.9,glass,0,2.25,1.49);ws.rotation.x=Math.PI/2-Math.atan2(.46,.78);}   // the big windscreen
+    for(const sd of[-1,1]){sb(.02,.5,.95,glass,sd*.985,2.2,.55);sb(.02,.46,.5,glass,sd*.985,2.2,-.35);sb(.02,.36,.3,blk,sd*.79,1.12,0);   // side windows; dark hull panel between the tyres
+      for(let k=0;k<4;k++)sb(.015,.025,.9-k*.12,blk,sd*.99,1.86+k*.07,-1.1+k*.06);                                // black stripes on the rear flanks
+      sb(.035,.035,2.9,chrome,sd*.9,2.67,-.15);sb(.18,.12,.05,lampM,sd*.7,1.8,1.71);}   // roof rails, headlamps
+    sb(.5,.6,.02,glass,-.3,2.1,-1.675);sb(1.6,.14,.12,blk,0,.6,1.62);sb(1.5,.12,.1,blk,0,.6,-1.64);                 // rear window, front and back step bars
+    car.sherpTyres=[];
+    for(const z of[1.02,-1.02])for(const sd of[-1,1]){const kn=sh(new THREE.Group()),holder=new THREE.Group(),R=.85;kn.position.set(sd*1.13,R,z);holder.rotation.z=-sd*Math.PI/2;
+      const t=new THREE.Mesh(cyl(R,R,.62,32),blk);t.castShadow=true;
+      for(let k=0;k<16;k++){const a=k/16*Math.PI*2,l=new THREE.Mesh(new THREE.BoxGeometry(.07,.5,.2),blk);l.position.set(Math.cos(a)*(R+.025),0,Math.sin(a)*(R+.025));l.rotation.y=-a;t.add(l);}   // tread lugs
+      const hub=new THREE.Mesh(cyl(.36,.36,.64,24),std({color:0x2a2a2a,roughness:.5,metalness:.3}));t.add(hub);const ring=new THREE.Mesh(new THREE.TorusGeometry(.3,.03,6,24),std({color:0x9a9c9e,roughness:.35,metalness:.8}));ring.rotation.x=Math.PI/2;ring.position.y=.33;t.add(ring);
+      for(let k=0;k<6;k++){const a=k/6*Math.PI*2,b=new THREE.Mesh(cyl(.035,.035,.04,8),chrome);b.position.set(Math.cos(a)*.16,.33,Math.sin(a)*.16);t.add(b);}   // wheel nuts
+      t.userData.dir=sd*.33/(R*M.hs);holder.add(t);kn.add(holder);car.add(kn);car.sherpTyres.push([t,kn]);}}   // dir: spun at the speed a .33 m wheel would turn, scaled to this tyre's size
   if(o.model==='bz'){   // Bizzarrini 5300: round lamps sunk in the long nose, gills behind the front wheels, a cut-off Kamm tail in body colour with round lamps
     add(new THREE.Mesh(M.cap,paint),0,0,-.004,false);const lampM=std({color:0xf4f0dc,emissive:0xffe6b0,emissiveIntensity:.6,roughness:.2}),tlM=std({color:0x5a0d08,emissive:0xff2a12,emissiveIntensity:1.8});
     for(const sd of[-1,1]){const z=ZF-.3,y=M.topY(.68,(z-zR)/M.CL,z);const rc=add(new THREE.Mesh(cyl(.1,.1,.08,18),dark),sd*.58,y-.03,z,false);rc.rotation.x=Math.PI/2-.45;
@@ -1891,6 +1910,10 @@ function makeCar(o){
   car.wheels=[];car.knuckles=[];car.corners=[];car.tail=tailM;
   WZ.forEach((z,k)=>{for(const sd of[-1,1]){const wd=k?.42:.32,kn=new THREE.Group(),holder=new THREE.Group();kn.position.set(sd*(.965-wd/2),.33,z);holder.rotation.z=-sd*Math.PI/2;
     const w=wheel(k,M.wh==='cap'?paintOf(o.base):o.rim==='gold'?rimGold:o.rim==='black'?rimDark:rimSilver,M.wh);if(M.road){w.children.pop();w.scale.y=M.road;}holder.add(w);kn.add(holder);car.add(kn);w.userData.dir=sd;car.wheels.push(w);car.corners.push(kn);if(!k)car.knuckles.push(kn);}});
+  if(car.sherpTyres){   // Sherp: hide the generic body, cockpit, mirrors and wheels; its own tyres turn instead (no steered wheels: it skid-steers)
+    for(const c of car.children)if(!c.userData.sh&&!c.isSprite&&c!==pool)c.visible=false;
+    for(const sd of[-1,1])add(new THREE.Mesh(new THREE.BoxGeometry(.16,.1,.04),tailM),sd*.72,1.82,-1.68,false);
+    car.wheels=car.sherpTyres.map(a=>a[0]);car.corners=car.sherpTyres.map(a=>a[1]);car.knuckles=[];}
   car.bodyMat=bodyMat;car.canopy=can;car.M=M;car.o=o;scene.add(car);return car;
 }
 // the colours the player can choose for their own car
@@ -1912,6 +1935,7 @@ const LIVS={   // each car has its own set of colours
   bz:[{name:'ROSSO, AS FOUND',d:'Barn find: faded red, rust spots and dust.',base:'#b8402e',patina:1,num:'91',helmet:'#e6e1d0'},{name:'ROSSO RESTAURATO',d:'Restored: deep gloss red.',base:'#b3201a',num:'92',helmet:'#e6e1d0'},{name:'ARGENTO',d:'Silver.',base:'#b8bcbe',num:'93',helmet:'#b3201a'},{name:'BLU',d:'Mid blue.',base:'#2a4a8a',num:'94',helmet:'#e6e1d0'}],
   b507:[{name:'GRAPHITE',d:'Dark metallic grey, chrome and painted wheels.',base:'#3b3f44',num:'57',helmet:'#e6e1d0'},{name:'SILBER',d:'Silver.',base:'#b8bcbe',num:'58',helmet:'#2a3a5a'},{name:'WEISS',d:'White.',base:'#e8e6dc',num:'59',helmet:'#b3201a'},{name:'ROT',d:'Red.',base:'#a81f1c',num:'60',helmet:'#e6e1d0'}],
   ac:[{name:'GREIGE MATTE',d:'Warm matte grey-beige, black wheels.',base:'#a9a393',num:'101',helmet:'#e6e1d0',rim:'black'},{name:'NERO',d:'Satin black.',base:'#1a1b1d',num:'102',helmet:'#c9cbc8',rim:'black'},{name:'ROSSO',d:'Deep red.',base:'#a5201c',num:'103',helmet:'#e6e1d0',rim:'black'},{name:'BLEU',d:'Dark blue.',base:'#1f2f55',num:'104',helmet:'#e6e1d0',rim:'black'}],
+  sherp:[{name:'YELLOW',d:'Expedition yellow with black stripes.',base:'#e8b52a',num:'1',helmet:'#e6e1d0'},{name:'OLIVE',d:'Military olive drab.',base:'#5e6438',num:'2',helmet:'#e6e1d0'},{name:'ORANGE',d:'Rescue orange.',base:'#e0602a',num:'3',helmet:'#e6e1d0'}],
   van:[{name:'GREY AND MAROON',d:'Silver-grey below, maroon roof and stripe.',base:'#8f8f8a',upper:'#7a1e22',num:'1',helmet:'#e6e1d0'},{name:'CREAM AND TURQUOISE',d:'Turquoise below, a cream roof.',base:'#4aa8a0',upper:'#ece6d2',num:'2',helmet:'#e6e1d0'},{name:'BEIGE AND BROWN',d:'Beige below, brown above.',base:'#cfc2a0',upper:'#5a3a26',num:'3',helmet:'#e6e1d0'}]};
 const LIV=()=>{const a=LIVS[G.model];return a[G.liv%a.length];};
 const RIV=[
