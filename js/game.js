@@ -3610,7 +3610,6 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=4471;return()=>(s=(s*1680
   for(let k=0;k<30;k++){const kind=k%5<3?'weed':'squid',g=mk(kind);MAR.deb.push({g,bd:g.children[0],kind,o:null,on:false,age:0,life:60,flop:0,ph:0,gy:0,fly:false,vx:0,vy:0,vz:0,sp:0});}   // a bigger pool for the extra squid and seaweed
   for(let k=0;k<60;k++){const kind=['bottle','trash','octo','weed','squid','bottle','trash','weed'][k%8],g=mk(kind);MAR.deb.push({g,bd:g.children[0],kind,o:null,on:false,age:0,life:60,flop:0,ph:0,gy:0,fly:false,vx:0,vy:0,vz:0,sp:0});}   // bottles, rubbish and octopus
   for(let k=0;k<44;k++){const g=mk('skel');MAR.deb.push({g,bd:g.children[0],kind:'skel',o:null,on:false,age:0,life:60,flop:0,ph:0,gy:0,fly:false,vx:0,vy:0,vz:0,sp:0});}   // fish skeletons
-  G1.visible=false;}
   // a whale skeleton, some 15 m long, that one wave a pass washes up onto the road (MAR.wh): local z runs along the body, skull at +z; plain meshes, all with normals
   {const bn=std({color:0xe2dcc4,roughness:.8}),g=new THREE.Group(),bd=new THREE.Group();g.add(bd);const UP=new THREE.Vector3(0,1,0),V1=new THREE.Vector3(),vG=new THREE.BoxGeometry(1,1,1),V3=(x,y,z)=>new THREE.Vector3(x,y,z);
    const bone=(a,b,r,mm,sh)=>{const o=new THREE.Mesh(cyl(r,r*.85,a.distanceTo(b),7),mm);o.position.copy(a).add(b).multiplyScalar(.5);o.quaternion.setFromUnitVectors(UP,V1.copy(b).sub(a).normalize());o.castShadow=!!sh;bd.add(o);return o;};
@@ -3629,6 +3628,7 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=4471;return()=>(s=(s*1680
    for(let k=0;k<12;k++){const z=R(-6,7),s=Math.random()<.5?-1:1,o=new THREE.Mesh(ball,kelpMs[k%3]);o.position.set(s*R(.6,2.6),.1,z);o.scale.set(R(.7,1.4),R(.18,.32),R(.7,1.6));bd.add(o);}   // clumps of weed tangled round the bones
    g.visible=false;G1.add(g);const os=[[-5.6,1],[-2.8,1.7],[0,2.3],[2.6,2.3],[5,1.5],[7,1]].map(([z,r])=>{const o={x:1e9,z:1e9,r,soft:1,lz:z};OBST.push(o);return o;});
    MAR.wh={g,os,st:0,t:0,armed:1,cd:0};}
+  G1.visible=false;}
 const MARK=['fish','weed','squid','bottle','weed','trash','squid','octo','fish','weed','bottle','trash','skel','skel','skel'];
 function marSpawn(big,s,lat,kind){let d=null;for(const q of MAR.deb)if((q.kind==='big')===big&&(!kind||q.kind===kind)&&!q.on){d=q;break;}
   if(!d){for(const q of MAR.deb)if((q.kind==='big')===big&&(!kind||q.kind===kind)&&(!d||q.age-q.life>d.age-d.life))d=q;}if(!d)return;
@@ -3674,8 +3674,8 @@ function marinaTick(rdt){if(!DRIVE||!MAR.g)return;const LW=40;   /* the length o
     if(d.kind!=='big'&&!d.fly&&Math.abs(pe.v)>4){const dx=p.x-PL.x,dz=p.z-PL.z;if(dx*dx+dz*dz<1.7*1.7){d.fly=true;d.vy=R(3,6)+Math.abs(pe.v)*.04;d.vx=PL.vx*.55+R(-2,2);d.vz=PL.vz*.55+R(-2,2);d.sp=R(-12,12);if((d.kind==='weed'||d.kind==='squid'||d.kind==='octo')&&!MAR.stk&&Math.random()<.25)marStick(d);}}
     if(!d.fly&&d.i!=null&&d.kind!=='big'){const n=Nn[d.i],tg=T[d.i],tv=2.1*Math.sin(t*.42+d.ph*.15)+.5*Math.sin(t*1.1+d.ph),al=.7*Math.sin(t*.3+1),e=edgeAt[d.i]-.4;p.x+=(n.x*tv+tg.x*al)*rdt;p.z+=(n.z*tv+tg.z*al)*rdt;d.bd.rotation.y+=tv*.25*rdt;const l=(p.x-P[d.i].x)*n.x+(p.z-P[d.i].z)*n.z;if(Math.abs(l)>e){const c=(l>0?e:-e)-l;p.x+=n.x*c;p.z+=n.z*c;}}   /* the water ebbs and flows, dragging the fish and skeletons about the road */
     if(d.age>d.life){const s=Math.max(0,1-(d.age-d.life)/3);d.g.scale.setScalar(s);if(s<=0){d.on=false;d.g.visible=false;if(d.o)d.o.x=1e9;}}}
-  // the cows: heads down grazing, now and then a look up (at a passing car, often) or a slow step or two
   if(MAR.wh&&MAR.wh.st)marWhaleTick(rdt,pe);
+  // the cows: heads down grazing, now and then a look up (at a passing car, often) or a slow step or two
   for(const c of MAR.cows){c.tm-=rdt;
     if(c.tm<=0){if(c.st==='graze'){const r=Math.random();if(r<.45){c.st='step';c.tm=R(1.4,2.8);const dh=Math.hypot(c.x-c.x0,c.z-c.z0)>5?Math.atan2(c.x0-c.x,c.z0-c.z):c.h+R(-.8,.8);c.dh=Math.atan2(Math.sin(dh-c.h),Math.cos(dh-c.h))/c.tm;}
         else if(r<.75){c.st='look';c.tm=R(2,4.5);c.yw=R(-.6,.6);if(AC&&Math.random()<.35){const dx=c.x-PL.x,dz=c.z-PL.z;if(dx*dx+dz*dz<70*70){const t0=AC.currentTime;tone('sawtooth',R(120,150),t0,1.3,.05,master,{to:R(90,105)});}}}else c.tm=R(3,8);}
@@ -3685,7 +3685,6 @@ function marinaTick(rdt){if(!DRIVE||!MAR.g)return;const LW=40;   /* the length o
     let lg=0;if(c.st==='step'){c.h+=c.dh*rdt;c.x+=Math.sin(c.h)*.5*rdt;c.z+=Math.cos(c.h)*.5*rdt;lg=Math.sin(t*5.5+c.ph)*.32;}
     c.legs[0].rotation.x=c.legs[3].rotation.x=lg;c.legs[1].rotation.x=c.legs[2].rotation.x=-lg;
     c.tl.rotation.z=Math.sin(t*1.7+c.ph)*.3+(Math.sin(t*.37+c.ph)>.75?Math.sin(t*9)*.45:0);c.g.position.set(c.x,c.y,c.z);c.g.rotation.y=c.h;}}
-// something off the Marina stuck on the windscreen (seaweed, a squid, an octopus): it flaps there until the car is out on the Golden Gate, then the wind tears it off
 // the whale skeleton: it rides in on the wave, slides across onto the road (leaving the other lane clear) and settles with a thump; a minute or two later it is gone.
 // Solid but soft: drive into it and the car bounces off the bones, never a crash
 function marWhale(w,pe,dd){const W=MAR.wh,i=wrapI(Math.floor(w.s0/SEG)),ed=w.ed,sd=dd<90?(pe.lat>0?-1:1):(Math.random()<.5?-1:1);
@@ -3699,6 +3698,7 @@ function marWhaleTick(rdt,pe){const W=MAR.wh,g=W.g,V=W.V||(W.V=new THREE.Vector3
   g.updateMatrixWorld();for(const o of W.os){g.localToWorld(V.set(0,0,o.lz));o.x=W.st===3&&t>1.5?1e9:V.x;o.z=V.z;}
   if(W.st<3&&W.cd<=0&&Math.hypot(PL.vx,PL.vz)>3)for(const o of W.os){const dx=PL.x-o.x,dz=PL.z-o.z,d=Math.hypot(dx,dz);if(d<o.r+.9&&d>.01){const nx=dx/d,nz=dz/d,vn=PL.vx*nx+PL.vz*nz;   // a bounce off the bones
       if(vn<0){PL.vx-=1.5*vn*nx;PL.vz-=1.5*vn*nz;PL.vx*=.9;PL.vz*=.9;W.cd=.7;sfxThump(.8);G.shake=Math.max(G.shake,.3);for(let k=0;k<6;k++)puff(V.set(PL.x+R(-1,1),.6,PL.z+R(-1,1)),R(-2,2),R(1,3),R(-2,2),.5,R(2,3),R(.6,1),.5,0xd8d2bc);}break;}}}
+// something off the Marina stuck on the windscreen (seaweed, a squid, an octopus): it flaps there until the car is out on the Golden Gate, then the wind tears it off
 function marStick(d){d.fly=false;d.stk=1;d.on=true;d.age=0;MAR.stk=d;hero.add(d.g);d.g.position.set(R(-.25,.25),.92,.6);d.g.rotation.set(-.7,R(-.6,.6),0);d.g.scale.setScalar(1.2);d.g.visible=true;MAR.go=Z.gg0+Math.round(R(-60,140)/SEG);}
 function marStuck(d,rdt,pe){const p=d.g.position;
   if(d.stk===1){d.bd.rotation.z=Math.sin(MAR.t*23+d.ph)*.14*Math.min(1,Math.abs(pe.v)/25);
@@ -4386,9 +4386,9 @@ function hydMosqTick(rdt){const M=HMQ;if(!DRIVE)return;const i=PL.idx,m_=x=>Math
       let kid=null,best=1e9;for(const k of HYD.kids){if(k.up||!k.g.visible)continue;const d=k.s0+k.d-pe.s;if(d>15&&d<130&&Math.abs(d-35)<best){best=Math.abs(d-35);kid=k;}}
       if(kid){if(!M.g)mosqBuild(M);M.g.scale.setScalar(2.4);M.on=2;M.armed2=0;M.t=0;M.st=0;M.kid=kid;M.sd=Math.random()<.5?-1:1;at(pe.s+70,M.sd*30,22,M.g.position);M.T=M.T||new THREE.Vector3();
         say('BZZZZZZZ!','THE MOSQUITO IS BACK',1.6);hmqBuzz(9);}}
-    return;}
     else if(M.armed3&&HYI.on&&HYI.st===2&&HYI.mq&&G.state==='race'){if(!M.g)mosqBuild(M);M.on=3;M.armed3=0;M.t=0;M.st=0;M.g.scale.setScalar(3.4);M.T=M.T||new THREE.Vector3();HYI.wt=-60;at(pe.s+90,40,35,M.g.position);   // the bottom of the hill: the third pass, for the iguana
       say('BZZZZZZZ!','THE MOSQUITO WANTS THE IGUANA',1.8);hmqBuzz(10);}
+    return;}
   if(M.on===2){hydMosq2(rdt,pe);return;}if(M.on===3){hydMosq3(rdt,pe);return;}
   M.t+=rdt;const t=M.t,k=t/5;if(k>=1||G.state!=='race'){M.on=0;M.g.visible=false;return;}
   M.q.copy(M.g.position);at(pe.s+75-8*t,M.sd*(45-90*k),12+6*Math.sin(k*Math.PI)+Math.sin(t*3)*.8,M.p);M.g.position.copy(M.p);
@@ -4407,7 +4407,6 @@ function hydMosq2(rdt,pe){const M=HMQ,k=M.kid,kp=k.g.position,T_=M.T;M.t+=rdt;co
   M.q.copy(M.g.position);if(M.st===2)M.g.position.copy(T_);else M.g.position.lerp(T_,clamp(rdt*sp,0,1));
   if(M.q.distanceToSquared(M.g.position)>1e-4){M.V.copy(M.g.position).multiplyScalar(2).sub(M.q);M.g.lookAt(M.V);M.g.rotateZ(Math.sin(t*1.7)*.2);}
   M.g.visible=true;for(const[pv,sg]of M.w)pv.rotation.z=sg*(.25+.55*Math.sin(t*48));}
-// Hyde St: at the start of the street a giant iguana (twice the Alameda one) bursts out of a building on the right and runs on up the street ahead of the car, keeping
 // the third pass, at the bottom of the hill: he swoops down on the giant iguana as it crosses toward the water, grabs it, hauls it up some 20 m (straining, buzzing loud),
 // carries it out over the bay and lets go; it falls and splashes in (HYI st 3 held, st 4 falling). Visual only
 function hydMosq3(rdt,pe){const M=HMQ,H_=HYI,k=H_.k,ip=k.g.position,T_=M.T,HG=11.5;M.t+=rdt;const t=M.t;let sp=2;
@@ -4423,6 +4422,7 @@ function hydMosq3(rdt,pe){const M=HMQ,H_=HYI,k=H_.k,ip=k.g.position,T_=M.T,HG=11
   else{T_.set(M.c1.x+M.dx*80,M.c1.y+45,M.c1.z+M.dz*80);M.g.position.lerp(T_,clamp(rdt*.8,0,1));if(t-M.tr>4){end();return;}}   // and flies off
   if(M.q.distanceToSquared(M.g.position)>1e-4){M.V.copy(M.g.position).multiplyScalar(2).sub(M.q);M.g.lookAt(M.V);M.g.rotateZ(Math.sin(t*1.7)*.2);}
   M.g.visible=true;for(const[pv,sg]of M.w)pv.rotation.z=sg*(.25+.55*Math.sin(t*(M.st===1?60:48)));}
+// Hyde St: at the start of the street a giant iguana (twice the Alameda one) bursts out of a building on the right and runs on up the street ahead of the car, keeping
 // in clear view, feet on the road all the way over the hill and down; at the bottom it crosses the Marina and dives into the bay (HYI, hydIguTick; visual only, never touches the car).
 const HYI={k:null,on:0,armed:1,V:new THREE.Vector3(),D:new THREE.Vector3()};
 function hydIguTick(rdt){const H_=HYI;if(!DRIVE)return;const i=PL.idx,m_=x=>Math.round(x/SEG),pe=ents.find(e=>e.player);if(!pe)return;
