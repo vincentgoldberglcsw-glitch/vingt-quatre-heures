@@ -31,7 +31,7 @@ const camera=new THREE.PerspectiveCamera(16,innerWidth/innerHeight,0.12,5000);
 function canvas(w,h,fn,srgb=true){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);
   const t=new THREE.CanvasTexture(c);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=ANISO;return t;}
 const std=o=>new THREE.MeshStandardMaterial(o);
-const STORM={ships:[],tex:null,a:0,b:0};   // the stormy sea on the right of I-80 South, out to Berkeley (see stormTick)
+const STORM={ships:[],tex:null,a:0,b:0},TSEA={ships:[],tex:null,wv:null,a:0,b:0};   // TSEA: the rough sea on the left of the approach to the toll plaza (tollSeaTick)   // the stormy sea on the right of I-80 South, out to Berkeley (see stormTick)
 const LIT={p:null,t:3};   // litter thrown from passing cars (see litterTick)
 const SFSM=[];   // smoke sources on the decayed San Francisco towers
 const SFP=[];    // the San Francisco pyramid towers, left unbaked so they can fall in the city quake (sfPyrTick)
@@ -1164,7 +1164,7 @@ gant(Z.oakland-m(300),'WEBSTER TUBE','ALAMEDA  ↓');
         B(1.8,.7,4.4,mm,0,.6,0,0,c);B(1.6,.55,2.2,rust2,0,1.2,-.2,0,c);if(nc%3===0)B(.1,.5,1.4,tyre,.9,1.2,-.2,0,c);for(const[wx,wz]of[[-.9,1.5],[.9,1.5],[-.9,-1.5],[.9,-1.5]])if(Math.random()<.5){const wh=new THREE.Mesh(cyl(.33,.33,.25,8),tyre);wh.rotation.z=Math.PI/2;wh.position.set(wx,.33,wz);c.add(wh);}
         c.position.set(x,0,z);c.rotation.set(0,rr(0,6.28),nc%4===0?.35:rr(-.05,.05));scene.add(c);}}}
 
-  { // ---- toll plaza: booths under a lit canopy, a gantry of lane signs, palms; then the flats before the bridge - burnt-out buildings, still smouldering
+  { // ---- toll plaza: booths under a lit canopy, a gantry of lane signs, palms; on the approach, trees on the right and a rough sea with ships on the left
     const wh=std({color:0xdcdfdb,roughness:.6,metalness:.3}),i=Z.toll+m(190),g=new THREE.Group();
     B(27,.5,7.5,wh,0,5.7,0,0,g);const und=new THREE.Mesh(new THREE.BoxGeometry(26.4,.08,6.9),lampMat);und.position.y=5.42;g.add(und);
     const fas=new THREE.Mesh(new THREE.BoxGeometry(27,1.1,.12),std({roughness:.6,map:sign(1024,64,'BAY BRIDGE  ·  TOLL PLAZA  ·  STOP AHEAD','#1f5a3a','#f4f1e8','900 40px Arial')}));fas.position.set(0,6.1,-3.8);g.add(fas);
@@ -1178,8 +1178,24 @@ gant(Z.oakland-m(300),'WEBSTER TUBE','ALAMEDA  ↓');
     tr.count=k;fr.count=f;tr.castShadow=fr.castShadow=true;scene.add(tr,fr);
     const ruinM=std({roughness:.95,map:canvas(256,256,(gg,w,h)=>{gg.fillStyle='#5a5048';gg.fillRect(0,0,w,h);speck(gg,w,h,3000,['rgba(20,16,14,.5)','rgba(120,100,80,.3)'],8);for(let x=10;x<w;x+=40)for(let y=12;y<h;y+=46){gg.fillStyle='#0c0b0a';gg.fillRect(x,y,24,30);gg.fillStyle='rgba(0,0,0,.6)';gg.fillRect(x-4,y-14,32,14);}})});
     for(let q=Z.detour+m(260);q<Z.b0+m(30);q+=m(55))for(const sd of[-1,1]){if(rnd()<.25)continue;gpos(q,sd*rr(40,110),V);if(V.y>.5||!farFromRoad(V.x,V.z,32))continue;const w=rr(14,34),d=rr(12,26),h=rr(7,22),ry=yaw(q)+rr(-.3,.3);
-      const b=B(w,h,d,ruinM,V.x,h/2,V.z,ry);if(rnd()<.6){const sl=B(w*.8,.8,d*.9,mat('ruinroof',{color:0x2a2622,roughness:1}),V.x,h*.7,V.z,ry);sl.rotation.z=rr(.25,.5)*(rnd()<.5?-1:1);}
-      if(rnd()<.55)BURN.push({x:V.x+rr(-w*.3,w*.3),y:h*rr(.3,1),z:V.z+rr(-d*.3,d*.3),s:rr(.7,1.4)});}}
+      if(rnd()<.6)rr(.25,.5)*(rnd()<.5?-1:1);if(rnd()<.55){rr(-w*.3,w*.3);rr(.3,1);rr(-d*.3,d*.3);rr(.7,1.4);}}   /* the burnt-out buildings are gone: the random draws are kept so the seeded scenery after this is unchanged */
+    // the approach to the toll plaza (no more burnt-out buildings): a belt of trees on the right; on the left a rough grey sea out to the horizon, swells rolling in, tankers and boats pitching (TSEA, tollSeaTick).
+    // Own random sequence (hq), so the seeded scenery after this is unchanged.
+    {let hs=7919;const hq=()=>(hs=hs*16807%2147483647)/2147483647,hr=(a,b)=>a+hq()*(b-a),a=Z.detour+m(200),b=Z.b0-m(60);
+      const wt=canvas(256,256,(c,w,h)=>{c.fillStyle='#2f3437';c.fillRect(0,0,w,h);for(let k=0;k<140;k++){c.strokeStyle=k%3?'rgba(110,120,124,.35)':'rgba(238,242,242,.6)';c.lineWidth=1+hq()*2.5;const x=hq()*w,y=hq()*h;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+20,y-9,x+46,y);c.stroke();}});
+      wt.wrapS=wt.wrapT=THREE.RepeatWrapping;TSEA.tex=wt;TSEA.a=a;TSEA.b=b;ribbon(i=>RW+XW[i]+30,i=>RW+XW[i]+750,i=>-H[i]+.25,i=>-H[i]+.25,new THREE.MeshStandardMaterial({map:wt,color:0x8f979c,roughness:.45,metalness:.25,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2}),30,a,b);
+      {const N=60,cr=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),std({color:0xe2e6e6,roughness:.7}),N),bd=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),std({color:0x2a2f32,roughness:.6}),N);cr.frustumCulled=bd.frustumCulled=false;
+        TSEA.wv={cr,bd,l:Array.from({length:N},()=>({i:a+Math.floor(hq()*(b-a)),ph:hq(),L:hr(18,46),sp:hr(.06,.1)}))};scene.add(cr,bd);}   // big swells with white crests rolling in towards the freeway
+      const hull=std({color:0x2a2c30,roughness:.8}),red=std({color:0x8a2a22,roughness:.8}),wht=std({color:0xe4e4e0,roughness:.7}),blu=std({color:0x2a4a6a,roughness:.8});
+      for(let k=0;k<7;k++){const i=a+Math.round((k+.5)/7*(b-a)),lat=RW+XW[i]+hr(110,520),tk=k%2===0,g=new THREE.Group();   // tankers and trawlers
+        if(tk){B(9,5.5,52,k%4?hull:red,0,1.6,0,0,g);B(8,6,9,wht,0,6.2,-19,0,g);B(2.2,3.2,2.2,red,0,10.4,-19,0,g);for(let q=0;q<3;q++)B(.5,.5,30,std({color:0x6a5a3a,roughness:.8}),q*2-2,4.4,4,0,g);}
+        else{B(3.6,1.8,11,k%3?blu:red,0,.5,0,0,g);B(2.6,2.4,3.4,wht,0,2.1,-1.6,0,g);const mast=new THREE.Mesh(cyl(.08,.1,7,5),hull);mast.position.set(0,4.6,2.6);g.add(mast);}
+        off(i,lat,0,V);g.position.set(V.x,.25,V.z);g.rotation.y=yaw(i)+hr(-.7,.7);g.traverse(o=>{if(o.isMesh)o.castShadow=true;});scene.add(g);TSEA.ships.push({g,ph:hr(0,6.3),sp:hr(.8,1.3),am:tk?.035:.1});}
+      const tk=new THREE.InstancedMesh(cyl(.35,.55,1,6).translate(0,.5,0),std({color:0x5a4634,roughness:.95}),160),cw=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),std({color:0xffffff,roughness:1,flatShading:true}),160),tq=new THREE.Quaternion(),ts=new THREE.Vector3(),tm=new THREE.Matrix4(),tc=new THREE.Color();let n=0;
+      for(let i=Z.detour+m(480);i<Z.toll-m(30)&&n<160;i+=m(9))for(let q=0;q<2&&n<160;q++){gpos(i+Math.round(hr(-2,2)),-(RW+XW[i]+hr(15,75)),V);if(!farFromRoad(V.x,V.z,13))continue;const h=hr(7,14);   // the trees on the right: oaks and pines, thick near the road
+        tm.compose(V,tq.identity(),ts.set(hr(.8,1.3),h*.55,hr(.8,1.3)));tk.setMatrixAt(n,tm);tm.compose(ts.set(V.x,V.y+h*.62,V.z),tq.setFromAxisAngle(YAX,hr(0,6.3)),new THREE.Vector3(hr(2.6,4.2),h*hr(.3,.45),hr(2.6,4.2)));cw.setMatrixAt(n,tm);cw.setColorAt(n++,tc.setHex([0x3d5a2a,0x4a6a30,0x35502a,0x2f4a2a][hq()*4|0]));}
+      tk.count=cw.count=n;tk.castShadow=cw.castShadow=true;scene.add(tk,cw);}
+  }
 
 await BOOT.step('SPANNING THE BAY · THREE BRIDGES',.49);
   // ---- the three bridges. The Bay Bridge: a riveted truss for the eastern half, then a suspension span on tall towers. The Golden Gate in international orange. The Richmond bridge: long, low, with two humped truss spans.
@@ -3320,7 +3336,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);bigIguTick(rdt);woodIguTick(rdt);wcIguTick(rdt);catTick(rdt);fwIguTick(rdt);tubeIguTick(rdt);rigiTick(rdt);nudgeTick(rdt);iguMoreTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);lakeRailTick(rdt);beetleTick(rdt);eyeMonTick(rdt);dadBeetleTick(rdt);bigfootTick(rdt);seaMonTick(rdt);sfBldTick(rdt);sfPyrTick(rdt);clayTick(rdt);hydMosqTick(rdt);hydIguTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);centTick(rdt);wqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);tollSeaTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);bigIguTick(rdt);woodIguTick(rdt);wcIguTick(rdt);catTick(rdt);fwIguTick(rdt);tubeIguTick(rdt);rigiTick(rdt);nudgeTick(rdt);iguMoreTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);lakeRailTick(rdt);beetleTick(rdt);eyeMonTick(rdt);dadBeetleTick(rdt);bigfootTick(rdt);seaMonTick(rdt);sfBldTick(rdt);sfPyrTick(rdt);clayTick(rdt);hydMosqTick(rdt);hydIguTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);centTick(rdt);wqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -4854,19 +4870,21 @@ function tnkBuild(){const K=TNK,hullM=std({color:0x2a2c30,roughness:.7}),redM=st
     g.visible=false;scene.add(g);return g;};
   K.bow=half(1);K.stern=half(-1);K.b={};beetleBuild(K.b);K.C=new THREE.Vector3();K.u=new THREE.Vector3();K.v=new THREE.Vector3();
   K.slick=new THREE.Mesh(new THREE.RingGeometry(.55,1,48).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x0c0b0a,transparent:true,opacity:0,depthWrite:false}));K.slick.visible=false;scene.add(K.slick);}
-function tnkStart(){const K=TNK,pe=ents.find(e=>e.player);if(!pe)return;if(!K.bow)tnkBuild();K.on=1;K.armed=0;K.t=0;K.hit=0;K.pa=0;K.roar=0;
-  const s0=pe.s+900;let ok=null;for(const[ds,la]of[[0,330],[0,280],[80,400],[-80,300],[150,460],[0,250]]){at(s0+ds,la,0,K.v);if(Terrain.landAt(K.v.x,K.v.z)<.2&&Terrain.landAt(K.v.x+60,K.v.z)<.2&&Terrain.landAt(K.v.x-60,K.v.z)<.2&&Terrain.landAt(K.v.x,K.v.z+60)<.2&&Terrain.landAt(K.v.x,K.v.z-60)<.2){ok=[ds,la];break;}}
+function tnkStart(small){const K=TNK,pe=ents.find(e=>e.player);if(!pe)return;if(!K.bow)tnkBuild();K.on=1;K.armed=0;K.t=0;K.hit=0;K.pa=0;K.roar=0;K.small=small?1:0;K.W=small?.25:null;   // small: the toll-plaza version, out on the rough sea there (its water is at road level)
+  const s0=pe.s+(small?700:900);let ok=null;for(const[ds,la]of[[0,330],[0,280],[80,400],[-80,300],[150,460],[0,250]]){at(s0+ds,la,0,K.v);if(Terrain.landAt(K.v.x,K.v.z)<.2&&Terrain.landAt(K.v.x+60,K.v.z)<.2&&Terrain.landAt(K.v.x-60,K.v.z)<.2&&Terrain.landAt(K.v.x,K.v.z+60)<.2&&Terrain.landAt(K.v.x,K.v.z-60)<.2){ok=[ds,la];break;}}
   if(!ok)ok=[0,330];at(s0+ok[0],ok[1],0,K.C);const i=wrapI(Math.round((s0+ok[0])/SEG));K.ry=yaw(i)+.45;K.u.set(Math.sin(K.ry),0,Math.cos(K.ry));
   // the beetle stands on the far side of the ship from the road, facing it
   const px=Math.cos(K.ry),pz=-Math.sin(K.ry),rx=P[i].x-K.C.x,rz=P[i].z-K.C.z,far=(px*rx+pz*rz)>0?-1:1;K.bp=[K.C.x+px*far*48,K.C.z+pz*far*48];K.byaw=Math.atan2(K.C.x-K.bp[0],K.C.z-K.bp[1]);
-  for(const h of[K.bow,K.stern]){h.position.set(K.C.x,TNK.wat,K.C.z);h.rotation.set(0,K.ry,0);h.visible=true;}const b=K.b;b.A.quaternion.copy(b.qr);b.A.scale.setScalar(1);b.rt=[0,1.6];}
+  for(const h of[K.bow,K.stern]){h.position.set(K.C.x,K.W??TNK.wat,K.C.z);h.rotation.set(0,K.ry,0);h.visible=true;}const b=K.b;b.A.quaternion.copy(b.qr);b.A.scale.setScalar(1);b.rt=[0,1.6];}
 function tnkTick(rdt){const K=TNK;if(!DRIVE||!Z.rb0)return;const i=PL.idx,m_=x=>Math.round(x/SEG);
   sqFxTick(rdt);
   if(i<Z.sq||i>Z.rb1)K.armed=1;   // ready again for the next pass
+  if(i<Z.tu1)K.armT=1;if(!K.on&&K.armT&&G.state==='race'&&i>=Z.detour+m_(150)&&i<Z.detour+m_(230)){K.armT=0;tnkStart(1);}   // and once a pass on the approach to the toll plaza
+  if(K.sp&&K.sp.visible){K.sp.material.opacity=Math.min(.82,K.sp.material.opacity+rdt*.1);K.sp.scale.setScalar(Math.min(260,K.sp.scale.x+rdt*9));if(i<Z.tu1||i>Z.b0+m_(300)||G.state!=='race')K.sp.visible=false;}   // the oil spill keeps spreading over the swell
   if(!K.on&&K.armed&&G.state==='race'&&i>=Z.sq+m_(150)&&i<Z.sq+m_(230))tnkStart();
   if(K.mc&&K.mc.on){if(G.state!=='race')tnkCloudOff();else tnkCloud(rdt);}   // the mushroom cloud outlives the ship
   if(!K.on)return;if(G.state!=='race'){tnkOff();return;}
-  K.t+=rdt;const t=K.t,b=K.b,g=b.g,W=TNK.wat,V=K.v;
+  K.t+=rdt;const t=K.t,b=K.b,g=b.g,W=K.W??TNK.wat,V=K.v;
   // him: rise 0-6 s, both arms up 5-7.6, the claw slams at 8.1, then down again from 10.5
   const rise=sst(t,0,6)*(1-sst(t,10.5,16));g.position.set(K.bp[0],W-112+109*rise+Math.sin(t*1.6)*.8,K.bp[1]);g.rotation.set(0,K.byaw,Math.sin(t*.8)*.04);g.visible=rise>0;
   b.T.rotation.x=.38+Math.sin(t*1.3)*.03-.25*sst(t,5,7.4)*(1-sst(t,7.6,8.1));b.H.rotation.y=Math.sin(t*.6)*.1;b.A2.rotation.x=-.55-2.2*sst(t,5,7.4)*(1-sst(t,9,10.5));g.updateMatrixWorld(true);
@@ -4888,8 +4906,13 @@ function tnkTick(rdt){const K=TNK;if(!DRIVE||!Z.rb0)return;const i=PL.idx,m_=x=>
   const su=clamp((t-8.1)/10,0,1);K.slick.visible=t>8.1;if(K.slick.visible){K.slick.position.set(K.C.x,W+.25,K.C.z);K.slick.scale.setScalar(12+150*su);K.slick.material.opacity=.55*(1-sst(t,16,20));}
   b.rings.forEach((m,k)=>{const u=(t-b.rt[k])/4.5;m.visible=u>=0&&u<1;if(m.visible){m.position.set(g.position.x,W+.4,g.position.z);m.scale.setScalar(30+170*u);m.material.opacity=.6*(1-u);}});
   if(t>=10.5&&b.rt[0]<10){b.rt=[10.5,12];}
+  if(K.small&&t>8.6&&!K.sp?.visible){if(!K.sp){K.sp=new THREE.Mesh(new THREE.CircleGeometry(1,40).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x0b0a09,transparent:true,opacity:0,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-6}));scene.add(K.sp);}K.sp.position.set(K.C.x,W+.3,K.C.z);K.sp.scale.setScalar(8);K.sp.material.opacity=.2;K.sp.visible=true;}   // a black oil spill spreading from the wreck
   if(t>20)tnkOff();}
-function tnkBoom(cd){const K=TNK,V=K.v,x=K.C.x,y=TNK.wat+11,z=K.C.z;NOGY=1;   // as tankerBoom, at sea and bigger
+function tnkBoom(cd){const K=TNK,V=K.v,x=K.C.x,y=(K.W??TNK.wat)+11,z=K.C.z;
+  if(K.small){NOGY=1;for(let k=0;k<18;k++){const a=R(0,6.283),sp=R(3,10);puff(V.set(x+R(-4,4),y,z+R(-4,4)),Math.cos(a)*sp,R(5,14),Math.sin(a)*sp,R(3,6),R(10,18),R(1,1.8),.95,k%3?0xff7a1c:0xffd060);}   // the toll-plaza one: a small explosion, then black smoke and the oil spill
+    for(let k=0;k<12;k++){const a=R(0,6.283),sp=R(1,5);puff(V.set(x,y+4,z),Math.cos(a)*sp,R(6,14),Math.sin(a)*sp,R(5,9),R(18,30),R(2.5,4),.75,0x151311);}for(let k=0;k<10;k++){const a=R(0,6.283),sp=R(4,12);flame(V.set(x,y+1,z),Math.cos(a)*sp,R(5,12),Math.sin(a)*sp,R(1.2,2.4),R(3,5),R(.8,1.4),0xff8a2a);}NOGY=0;
+    const near=clamp(500/(cd+100),.25,1);sfxBoom();sfxThump(near);G.shake=Math.max(G.shake,.5*near);say('THE BEETLE !','HE BREAKS A TANKER - OIL ON THE WATER',2.6);return;}
+  NOGY=1;   // as tankerBoom, at sea and bigger
   for(let k=0;k<50;k++){const a=R(0,6.283),sp=R(4,20);puff(V.set(x+R(-6,6),y+2,z+R(-6,6)),Math.cos(a)*sp,R(8,30),Math.sin(a)*sp,R(5,9),R(18,34),R(1.2,2.4),.95,k%3?0xff7a1c:0xffd060);}
   for(let k=0;k<26;k++){const a=R(0,6.283),sp=R(1,8);puff(V.set(x,y+8,z),Math.cos(a)*sp,R(14,30),Math.sin(a)*sp,R(8,12),R(30,50),R(3,5.5),.8,0x151311);}
   for(let k=0;k<22;k++){const a=R(0,6.283),sp=R(8,22);flame(V.set(x,y+2,z),Math.cos(a)*sp,R(8,20),Math.sin(a)*sp,R(1.5,3),R(4,7),R(1,1.8),0xff8a2a);}NOGY=0;
@@ -5145,6 +5168,10 @@ function stormTick(rdt){if(!STORM.ships.length||PL.idx<STORM.a-Math.round(300/SE
     M4.compose(V,Q,S.set(2.2,h,w.L));W.bd.setMatrixAt(k,M4);V.y=y+h*.95;M4.compose(V,Q,S.set(1.2,.35,w.L*.9));W.cr.setMatrixAt(k,M4);});W.bd.instanceMatrix.needsUpdate=W.cr.instanceMatrix.needsUpdate=true;}
   for(const s of STORM.ships){const g=s.g;g.rotation.x=Math.sin(t*s.sp+s.ph)*s.am;g.rotation.z=Math.sin(t*s.sp*1.3+s.ph*2)*s.am*1.4;g.position.y=.1+Math.sin(t*s.sp*1.1+s.ph)*.5*(s.am*10);
     if(s.smoke&&Math.random()<rdt*3&&(g.position.x-PL.x)**2+(g.position.z-PL.z)**2<700*700){NOGY=1;puff(V.set(g.position.x,g.position.y+5,g.position.z),R(-.3,.3)+1,R(1.5,3),R(-.3,.3),.5,R(4,7),R(3,5),.5,0x3a3836);NOGY=0;}}}
+function tollSeaTick(rdt){const S_=TSEA;if(!S_.ships.length||PL.idx<S_.a-Math.round(500/SEG)||PL.idx>S_.b+Math.round(300/SEG))return;const t=tmNow();S_.tex.offset.set(-t*.025,t*.035);
+  {const W=S_.wv;W.l.forEach((w,k)=>{const p=(t*w.sp+w.ph)%1,lat=RW+XW[w.i]+32+(1-p)*560,h=(.8+2*Math.sin(p*Math.PI))*(.8+.4*Math.sin(t*1.7+k)),y=.25-h*.35;off(w.i,lat,0,V);V.y=y;Q.setFromEuler(E.set(0,yaw(w.i)+Math.sin(k)*.25,0));   // each swell rolls in, rears up and flattens near the shore
+    M4.compose(V,Q,S.set(2.4,h,w.L));W.bd.setMatrixAt(k,M4);V.y=y+h*.95;M4.compose(V,Q,S.set(1.3,.4,w.L*.9));W.cr.setMatrixAt(k,M4);});W.bd.instanceMatrix.needsUpdate=W.cr.instanceMatrix.needsUpdate=true;}
+  for(const s of S_.ships){const g=s.g;g.rotation.x=Math.sin(t*s.sp+s.ph)*s.am;g.rotation.z=Math.sin(t*s.sp*1.3+s.ph*2)*s.am*1.5;g.position.y=.25+Math.sin(t*s.sp*1.1+s.ph)*.6*(s.am*10);}}   // pitching and rolling in the swell
 function sfSmokeTick(rdt){if(!SFSM.length||Math.abs(PL.idx-Z.b1-Math.round(600/SEG))>Math.round(1100/SEG))return;for(const s of SFSM){s.t-=rdt;if(s.t>0)continue;s.t=R(.7,1.4);NOGY=1;puff(V.set(s.x,s.y,s.z),R(-.5,.5)+1.5,R(3,6),R(-.5,.5),4,R(14,24),R(5,8),.45,0x2a2622);NOGY=0;}}
 function bbQuakeTick(rdt){if(!BBQ.length)return;const fq=FQ.list[0],on=!!(fq&&fq.st===1&&fq.t>2.5&&fq.t<14);
   if(fq&&fq.st===0){for(const b of BBQ){if(b.t>=0){b.t=-1;b.ang=0;b.w=0;b.g.rotation.z=0;b.g.position.y=0;}}return;}
