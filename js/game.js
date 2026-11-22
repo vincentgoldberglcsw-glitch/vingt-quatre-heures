@@ -463,7 +463,7 @@ await BOOT.step('ROADSIDE',.20);
 // A quiet island town street, the tube under the estuary with its portal buildings, a freeway past the port, then a long suspension bridge.
 // The whole route is level: the bay is simply 45 m below the road, so the bridge is high without the engine needing hills.
 const MILL=[],CRN=[],REFS=[],AIR={g:null,st:0,t:0,cd:6};let tunLampB=null;const TFL={cd:1,t:9,T:0,kind:0};
-const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null,SEAM=null,SEAW=null;const BURN=[],OILX=[],OILB={t:6,q:[]},TOX={l:[],slime:0,hit:0,mm:null,car:null},SQX={},MOSQ={g:null,on:0,t:0,armed:1,lift:null},BTL={g:null,on:0,t:0,wat:-44.6,rs:0,armed:{bb:1,gg:1,rb:1},br:{},bsA:0,bsT:0,wv:0,wt:0},TNK={on:0,t:0,armed:1,wat:-44.6}; let BAYV=null;const BAYB={b:[],c:[],cd:2},cGLD=[new THREE.Color(0xf4a44e),new THREE.Color(0x4e5a8e),new THREE.Color(0xd99a62),new THREE.Color(0xffb062)];  /* TOX: leaking toxic barrels and their ooze; SQX: the San Quentin yard fence, its hole, the watchtower searchlight */   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
+const SFX=[],cityMats=[],OBST=TOWNT.map(([x,z])=>({x,z,r:1.2})),CROWS=[],FLARES=[];let tunL=null,SHIP=null,manatee=null,pelicans=null,exotics=null,SWOOP=null,EYES=null,SEAM=null,SEAW=null;const BURN=[],OILX=[],OILB={t:6,q:[]},TOX={l:[],dr:[],dg:null,slime:0,hit:0,mm:null,car:null},SQX={},MOSQ={g:null,on:0,t:0,armed:1,lift:null},BTL={g:null,on:0,t:0,wat:-44.6,rs:0,armed:{bb:1,gg:1,rb:1},br:{},bsA:0,bsT:0,wv:0,wt:0},TNK={on:0,t:0,armed:1,wat:-44.6}; let BAYV=null;const BAYB={b:[],c:[],cd:2},cGLD=[new THREE.Color(0xf4a44e),new THREE.Color(0x4e5a8e),new THREE.Color(0xd99a62),new THREE.Color(0xffb062)];  /* TOX: leaking toxic barrels and their ooze; SQX: the San Quentin yard fence, its hole, the watchtower searchlight */   // BURN: fires that always burn (ruins, wrecks, the refinery flare)
 if(!DRIVE){ // roadside advertising boards, as on the old circuit: cigarettes, wine and bread, by turns
   const ad=(kind,name,sub)=>canvas(1024,460,(g,w,h)=>{const bg={cig:'#1d4f8a',wine:'#efe6cc',bread:'#f0c23a'}[kind],ink={cig:'#f4f1e8',wine:'#7a1626',bread:'#3a2412'}[kind];g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=ink;g.lineWidth=10;g.strokeRect(14,14,w-28,h-28);
     if(kind==='cig'){g.save();g.translate(190,250);g.rotate(-.1);g.fillStyle='#f4f1e8';g.fillRect(-90,-110,180,250);g.fillStyle='#c8302a';g.fillRect(-90,-30,180,90);g.fillStyle='#f4f1e8';g.beginPath();g.ellipse(0,15,62,30,0,0,7);g.fill();g.fillStyle='#c8302a';g.font='900 30px Georgia';g.textAlign='center';g.fillText('M',0,26);
@@ -1623,7 +1623,8 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
         for(let k=0;k<16;k++){const an=k/16*6.283,r=(k%2?2.3:3)*(.85+Math.random()*.3),x=Math.cos(an)*r,y=Math.sin(an)*r*1.5;k?sh.lineTo(x,y):sh.moveTo(x,y);}
         const g=new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2);at(s,ol,.05,V);for(const[mm,sc,dy]of[[om,1,0],[gm,1.3,.02]]){const pd=new THREE.Mesh(g,mm);pd.position.copy(V);pd.position.y+=dy;pd.rotation.y=yaw(i);pd.scale.setScalar(sc);scene.add(pd);}
         for(let k=0;k<3;k++){const d=new THREE.Mesh(cyl(.3,.3,.9,12),k===1?bm2:bm);if(k===1){at(s,sd*(w-.35),.3,V);d.position.copy(V);d.rotation.set(0,yaw(i),Math.PI/2);}else{at(s+(k-1)*1.2,sd*(w+.25),.45,V);d.position.copy(V);}
-          const st=new THREE.Mesh(cyl(.31,.31,.16,12),om);st.position.y=k===1?0:.32;d.add(st);d.castShadow=true;scene.add(d);}   // a band of glowing slime round each drum
+          const st=new THREE.Mesh(cyl(.31,.31,.16,12),om);st.position.y=k===1?0:.32;d.add(st);d.castShadow=true;
+          if(!TOX.dg){TOX.dg=new THREE.Group();scene.add(TOX.dg);}TOX.dg.add(d);TOX.dr.push({m:d,p0:d.position.clone(),r0:d.rotation.clone(),s:k===1?s:s+(k-1)*1.2,gy:d.position.y-(k===1?.3:.45),st:0,vx:0,vy:0,vz:0,sp:0});}   // a band of glowing slime round each drum; the drums stay loose (unbaked) so the car can knock them flying
         TOX.l.push({s,lat:ol,rs:4.2,rl:2.7});}}
     // the Posey Tube: oil-drum fires along both walls, their smoke hanging under the roof
     {const drum=std({color:0x4a3a2c,roughness:.8,metalness:.4});for(let k=0;k<8;k++){const i=Z.tu0+m(40)+Math.round(k*(Z.tu1-Z.tu0-m(80))/7),sd=k%2?1:-1;off(i,sd*4.6,0,V);
@@ -1678,7 +1679,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
   {const ch=std({color:0x1c1a18,roughness:1});for(const f of[.12,.27,.45,.6,.83]){const i=Z.b0+Math.round((Z.b1-Z.b0)*f),sd=f*10%2<1?1:-1,g=new THREE.Group();g.add(new THREE.Mesh(carG,ch),new THREE.Mesh(whG,ch));off(i,sd*7.4,0,g.position);g.rotation.set(0,yaw(i)+rr(-.6,.6),sd*.12);scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:2.2});BURN.push({x:g.position.x,y:g.position.y+1,z:g.position.z,s:.8});}}
   // last of all, merge the static scenery by material and by area, so the whole bay draws in a few hundred calls instead of tens of thousands
   Terrain.occupy(scene.children.slice(A0));Terrain.start(scene,CULL,LANDM,grassTex);   // the real hills: level ground is kept under everything built above, and the rest is queued to be raised tile by tile
-  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...(BAYV?[BAYV.g]:[]),...CROWS.map(c=>c.g),...MILLC.tw.map(t=>t.g),...BEARS.map(b=>b.g),...SFP.map(o=>o.g),...DSTK.flatMap(o=>[o.g,...o.hs]),...Object.values(BTL.br).flat().map(x=>x[0])]));
+  bakeStatic(scene.children.slice(A0),new Set([...(TOX.dg?[TOX.dg]:[]),SHIP,pelicans,exotics,manatee,tunL,SWOOP,...(BAYV?[BAYV.g]:[]),...CROWS.map(c=>c.g),...MILLC.tw.map(t=>t.g),...BEARS.map(b=>b.g),...SFP.map(o=>o.g),...DSTK.flatMap(o=>[o.g,...o.hs]),...Object.values(BTL.br).flat().map(x=>x[0])]));
   for(const o of [...scene.children])if(o.isInstancedMesh&&o.frustumCulled&&o.count>60)splitInstanced(o);
 }
 
@@ -4361,12 +4362,21 @@ function searchTick(rdt,near){const S=SQX;if(!S.sp)return;const on=near&&G.state
   S.pool.position.copy(S.tg.position);S.pool.position.y+=.08;S.pool.scale.set(r,r,1);S.pool.material.opacity=.26+.35*(1-dayK);}
 // leaking toxic barrels: drive through the glowing ooze and the car is slimed green (fading off over ~10 s); it slithers a little while in the slick. No crash.
 function toxTick(rdt){const K=TOX;if(!DRIVE||!K.l.length||!hero)return;const pe=ents.find(e=>e.player);if(!pe)return;const t=tmNow();if(K.mm)K.mm[1].opacity=.24+.12*Math.sin(t*2.3);
-  if(!K.V){K.V=new THREE.Vector3();K.G=new THREE.Color(0x5cff2a);K.G2=new THREE.Color(0x2cff10);}
+  if(!K.V){K.V=new THREE.Vector3();K.G=new THREE.Color(0x5cff2a);K.G2=new THREE.Color(0x2cff10);}toxDrumsTick(rdt,pe);
   if(G.state==='race'&&!PL.crash)for(const o of K.l){if(Math.abs(wdiff(pe.s-o.s))<o.rs&&Math.abs(pe.lat-o.lat)<o.rl){if(K.slime<9.6){if(K.slime<=0)say('TOXIC OOZE!','Slimed green',2.2);sfxSquelch();}K.slime=10;
       const sp=Math.hypot(PL.vx,PL.vz);if(sp>3){PL.vx*=1-.5*rdt;PL.vz*=1-.5*rdt;PL.h+=Math.sin(t*9)*.22*rdt;if(Math.random()<rdt*25)puff(K.V.set(PL.x+R(-1,1),PL.gy+.2,PL.z+R(-1,1)),PL.vx*.2+R(-2,2),R(1,3),PL.vz*.2+R(-2,2),.8,R(2,4),R(.5,1),.75,0x7dff2e);}}}
   if(K.slime>0){if(K.car!==hero){K.car=hero;K.mats=[];hero.traverse(o=>{if(!o.isMesh||!o.material||Array.isArray(o.material)||!o.material.color||o.material.transparent)return;if(!o.userData.tox){o.material=o.material.clone();o.userData.tox=1;}K.mats.push([o.material,o.material.color.clone(),o.material.emissive?o.material.emissive.clone():null]);});}   // the car gets its own copies, so nothing else turns green
     K.slime-=rdt;const k=clamp(K.slime/4,0,1)*.8;for(const[m,c0,e0]of K.mats){m.color.copy(c0).lerp(K.G,k);if(e0)m.emissive.copy(e0).lerp(K.G2,k*.45);}
     if(K.slime<=0){for(const[m,c0,e0]of K.mats){m.color.copy(c0);if(e0)m.emissive.copy(e0);}K.car=null;}}}
+// the leaking drums by the road (TOX.dr): hit one and it flies, bounces and rolls away (a rubbery boing, never a crash, hardly any slowing), then lies on its side; all put back once you're well away
+function toxDrumsTick(rdt,pe){for(const d of TOX.dr){const m=d.m,p=m.position,far=Math.abs(wdiff(pe.s-d.s));
+  if(d.st&&far>300){d.st=0;p.copy(d.p0);m.rotation.copy(d.r0);d.cs=d.s;continue;}
+  if(far>60)continue;if(d.kc>0)d.kc-=rdt;if(d.cs==null)d.cs=d.s;const j0=wrapI(Math.floor(d.s/SEG)),fl=d.gy+H[wrapI(Math.floor(d.cs/SEG))]-H[j0]+.3;   // the floor follows the road as it climbs or falls
+  if(d.st===1){d.vy-=14*rdt;d.cs+=(d.vx*T[j0].x+d.vz*T[j0].z)*rdt;p.x+=d.vx*rdt;p.y+=d.vy*rdt;p.z+=d.vz*rdt;if(!d.lie){m.rotation.x+=d.sp*rdt;m.rotation.z+=d.sp*.6*rdt;}
+    if(p.y<=fl){p.y=fl;if(!d.lie){d.lie=1;m.rotation.set(0,Math.atan2(d.vx,d.vz)+Math.PI/2,Math.PI/2);}if(d.vy<-2.5){d.vy*=-.45;d.vx*=.75;d.vz*=.75;sfxThump(.3);}else{d.vy=0;d.vx*=1-clamp(rdt*2.5,0,1);d.vz*=1-clamp(rdt*2.5,0,1);if(Math.hypot(d.vx,d.vz)<.3)d.st=2;}}}
+  const dx=p.x-PL.x,dz=p.z-PL.z,sp=Math.hypot(PL.vx,PL.vz);
+  if(!(d.kc>0)&&!PL.crash&&G.state==='race'&&sp>3&&dx*dx+dz*dz<1.8*1.8&&Math.abs(PL.gy+.3-fl)<2){const dn=Math.hypot(dx,dz)||1;d.st=1;d.lie=0;d.kc=.6;d.vy=R(4,7)+sp*.05;d.vx=PL.vx*.4+dx/dn*R(3,6);d.vz=PL.vz*.4+dz/dn*R(3,6);d.sp=R(-9,9);
+    PL.vx*=.97;PL.vz*=.97;G.shake=Math.max(G.shake,.15);sfxBoing(.7);}}}
 function sfxSquelch(){if(!AC)return;const t=AC.currentTime;tone('sine',190,t,.28,.45,master,{to:55});hit(t,.35,.5,700,'lowpass',master);hit(t+.08,.25,.25,1800,'bandpass',master);}
 // a giant mosquito, as big as a car: as you leave the Marin redwoods it swoops out of the trees, dives low across the road just ahead of the car with a whining drone,
 // circles the car once and flies off over the bay. Harmless (nothing to hit), once per pass.
