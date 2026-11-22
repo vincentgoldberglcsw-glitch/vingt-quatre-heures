@@ -133,6 +133,7 @@ const Z=DRIVE?(()=>{const z={};for(const k in ROUTE.mk){const[x,zz]=DRIVE_PTS[RO
   for(const[a,b,w0]of[[z.tu0,z.tu1,5.8],[z.wt1,z.wt0,5.4]])for(let k=1;k<=50;k++){wallAt[a-k]=Math.min(wallAt[a-k],w0+k*.056);wallAt[b+k]=Math.min(wallAt[b+k],w0+k*.036);}
   z.BR=[[z.b0,z.b1],[z.gg0,z.gg1],[z.rb0,z.rb1]];return z;})():null;
 const CLF=Z?[Z.sq-Math.round(720/SEG),Z.sq-Math.round(380/SEG)]:null;   // Marin: the stretch where the road runs along a cliff above the bay, on the left
+const LKR={im:null,p:[],fly:[]},LAKE={g:null,wy:0,col:new THREE.Color(0x35401e)};   // the breakable timber rail along the Marin cliff, and the lake below it (lakeStart etc.)
 const BRH=[];   // the suspension spans (where the hanging cables are) and the height of the main cable along them, for the quakes' snapping cables
 // Free drive only: H is the height of the road at each point (Wilma Chan's overpass, the freeway viaducts, the climbs onto the bridges, Hyde Street, the Marin headlands, Shane Drive), XW is extra half-width (avenues, freeways, the toll plaza).
 const XW=new Float32Array(NS+1),H=new Float32Array(NS+1);
@@ -530,7 +531,10 @@ await BOOT.step('KERBS AND BARRIERS',.26);
   pavement(Z.b1+m(30),Z.gg0-m(320),false,[-1]);{let a=Z.b1+m(30);for(const c of SFX){pavement(a,c-8,false,[1]);a=c+8;}pavement(a,Z.gg0-m(320),false,[1]);}pavement(Z.rb1+m(30),Z.i80-m(20),false);
   const ivy=std({color:0x3e5a2c,roughness:1,side:D2});
   barrier(Z.wilma+m(82),Z.tu0-52,[-1,1],ivy);barrier(Z.tu1+52,Z.detour-m(30));barrier(Z.detour-m(30),Z.detour+m(220),[1]);barrier(Z.detour+m(220),Z.b0);barrier(Z.i80+m(20),Z.wt1-52);barrier(Z.gg0-m(320),Z.gg0);
-  {const wr=std({color:0x6a5240,roughness:.9,side:D2});for(const sd of[-1,1])ribbon(sd*9.2,sd*9.2,.45,.75,wr,3,Z.gg1,Z.rb0);}   // a timber guard rail through the woods
+  {const wr=std({color:0x6a5240,roughness:.9,side:D2}),a=CLF[0]+15,b=CLF[1];ribbon(-9.2,-9.2,.45,.75,wr,3,Z.gg1,Z.rb0);ribbon(9.2,9.2,.45,.75,wr,3,Z.gg1,a);ribbon(9.2,9.2,.45,.75,wr,3,b,Z.rb0);   // a timber guard rail through the woods
+    const N=Math.ceil((b-a)/2),pg=new THREE.BoxGeometry(.1,.3,2*SEG+.04),im=new THREE.InstancedMesh(pg,wr,N),po=new THREE.InstancedMesh(new THREE.BoxGeometry(.16,.85,.16),wr,N);   /* along the cliff above the lake it is planks on posts that a hard hit breaks (LKR, lakeRailBreak) */
+    for(let k=0;k<N;k++){const i=a+k*2;off(i+1,9.2,.6,V);Q.setFromAxisAngle(YAX,yaw(i));const m=new THREE.Matrix4().compose(V,Q,S.set(1,1,1));off(i,9.2,.42,V);const mp=new THREE.Matrix4().compose(V,Q,S.set(1,1,1));im.setMatrixAt(k,m);po.setMatrixAt(k,mp);LKR.p.push({i:i+1,m,mp,br:0});}
+    im.castShadow=po.castShadow=true;scene.add(im,po);Object.assign(LKR,{im,po,pg:new THREE.BoxGeometry(.1,.3,1.3),mat:wr,Z0:new THREE.Matrix4().makeScale(0,0,0)});}
   const loft=(a,b,prof,mm,vS=6)=>{const pos=[],uv=[],idx=[],n=prof.length;for(let i=a;i<=b;i++){const p=P[i],nn=Nn[i];prof.forEach(([o,y],j)=>{pos.push(p.x+nn.x*o,y+p.y,p.z+nn.z*o);uv.push(j/(n-1),i*2/vS);});
       if(i<b)for(let j=0;j<n-1;j++){const q=(i-a)*n+j;idx.push(q,q+n,q+1,q+1,q+n,q+n+1);}}
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const me=new THREE.Mesh(g,mm);me.castShadow=me.receiveShadow=true;scene.add(me);return me;};
@@ -1275,7 +1279,14 @@ await BOOT.step('SAN FRANCISCO',.55);
     bank(Z.hyde,Z.marina,cg,30,1.5);bank(Z.gg1-2,Z.sq,grass,40,2.4,[-1]);bank(Z.gg1-2,CLF[0]+1,grass,40,2.4,[1]);bank(CLF[1]-1,Z.sq+m(60),grass,40,2.4,[1]);
     {const vg=std({map:dirtTex,roughness:1,side:D2});for(const sd of[-1,1])ribbon(i=>sd*(RW+XW[i]-.05),i=>sd*(9.7+XW[i]),-.005,-.01,vg,6,Z.gg1-2,Z.sq+m(400));}   // Marin to San Quentin: a dirt verge between the road edge and the grass banks (it used to be an open gap down to the ground below)
     {const rk=std({color:0x5e554a,roughness:1,side:D2}),[c0,c1]=CLF,ft=i=>13+H[i]*.3;   // Marin: on the left a narrow rocky ledge, then a cliff straight down to the rocks and the bay
-      ribbon(i=>9.6+XW[i],13,-.03,-.03,rk,8,c0,c1);ribbon(13,ft,-.03,i=>-H[i],rk,6,c0,c1);ribbon(i=>ft(i)-2,i=>ft(i)+700,i=>.35-H[i],i=>.35-H[i],std({color:0x34596a,roughness:.3,metalness:.2}),20,c0-40,c1+40);
+      ribbon(i=>9.6+XW[i],13,-.03,-.03,rk,8,c0,c1);ribbon(13,ft,-.03,i=>-H[i],rk,6,c0,c1);ribbon(i=>ft(i)-2,i=>ft(i)+150,i=>.35-H[i],i=>.35-H[i],std({color:0x434630,roughness:.12,metalness:.3}),20,c0-40,c1+40);   /* the lake: murky green-brown water below the cliff (LAKE) */
+      {const gl=std({color:0x5f7239,roughness:1}),md=std({color:0x5e4e34,roughness:1});ribbon(i=>ft(i)+148,i=>ft(i)+160,i=>.3-H[i],i=>1.1-H[i],md,8,c0-40,c1+40);ribbon(i=>ft(i)+160,i=>ft(i)+700,i=>1.1-H[i],i=>2.5-H[i],gl,20,c0-40,c1+40);   // the far shore: a muddy bank, then meadow
+        ribbon(13,i=>ft(i)+700,i=>1.1-H[i],i=>1.1-H[i],gl,20,c0-60,c0+8);ribbon(13,i=>ft(i)+700,i=>1.1-H[i],i=>1.1-H[i],gl,20,c1+2,c1+60);   // and the two ends, closing it in
+        const rd=new THREE.InstancedMesh(new THREE.ConeGeometry(.07,1,4).translate(0,.5,0),std({color:0x6a7038,roughness:1}),900);let n=0;
+        for(let q=0;q<900;q++){const i=c0+8+Math.floor(Math.random()*(c1-c0-8)),far=q%3>0,lat=far?ft(i)+R(140,152):ft(i)+R(-1,6);off(i,lat,.3-H[i],V);M4.compose(V,Q.setFromAxisAngle(YAX,R(0,6)),S.set(R(.8,1.5),R(1.2,2.6),R(.8,1.5)));rd.setMatrixAt(n++,M4);}rd.count=n;scene.add(rd);   // reeds along both shores
+        const tk=new THREE.InstancedMesh(cyl(.3,.45,1,6).translate(0,.5,0),std({color:0x4a3b2e,roughness:1}),50),cr=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),std({color:0x3f5a2c,roughness:.9,flatShading:true}),50);
+        for(let q=0;q<50;q++){const i=c0+Math.floor(q/50*(c1-c0)),h=R(6,11);off(i,ft(i)+R(165,260),1.1-H[i],V);M4.compose(V,Q.identity(),S.set(1,h,1));tk.setMatrixAt(q,M4);V.y+=h+1;M4.compose(V,Q.identity(),S.setScalar(R(3,5)));cr.setMatrixAt(q,M4);}scene.add(tk,cr);}   // willows and oaks on the far side
+      
       const N=420,im=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),rk,N);let k=0;for(let i=c0;i<=c1&&k<N-1;i+=1)for(let q=0;q<2;q++){const y=Math.random()<.3?-H[i]*Math.random():-H[i];off(i,y>-H[i]?13+(y/-H[i])*(ft(i)-13):ft(i)+R(-1,6),y,V);M4.compose(V,Q.setFromEuler(new THREE.Euler(R(0,3),R(0,3),R(0,3))),S.set(R(1,3),R(.8,2.4),R(1,3)));im.setMatrixAt(k++,M4);}im.count=k;im.castShadow=true;scene.add(im);}bank(Z.richmond,Z.refinery,grass,40,2);}
     if(0){const bs=sign(1024,340,'WELCOME TO THE BADLANDS','#7a3f1e','#d9b48a','900 92px Arial','EST. LONG AGO · ENTER AT YOUR OWN RISK');board(Z.sq+m(350),-12,9,3,bs,0,.05);board(Z.sq+m(365),12,9,3,bs,0,.05);}
     if(0){const P=[['VISIT THE BADLANDS','#f2a63a','#2a1a3a',0],['SEE THE PAINTED ROCKS','#5ab8c8','#3a1a10',1],['BADLANDS: STOP, SNAP A PHOTO!','#e8604a','#fff6d8',2],['GREETINGS FROM THE BADLANDS','#9ac85a','#2a2a10',0]];   // retro tourist posters on the approach: sun, rocks, cactus; some sun-faded, some bullet-pocked
@@ -1386,7 +1397,7 @@ await BOOT.step('THE MARIN REDWOODS',.63);
     }
     {// the open field before the prison (the redwoods stop at the banked bend): tall grass, water buffalo grazing on the left, and more prison warnings
       const gs=std({color:0xffffff,roughness:1,side:D2}),gr=new THREE.InstancedMesh(new THREE.ConeGeometry(.28,1,4).translate(0,.5,0),gs,1500);let gk=0;const a0=Z.sq-m(590),a1=Z.sq-m(40),gc=[0x8a8a3a,0x9a9a48,0x7a8a3a,0xa8a050];
-      for(let q=0;q<1500;q++){const i=a0+Math.floor(Math.random()*(a1-a0)),sd=Math.random()<.6?1:-1;off(i,sd*R(11,sd>0?75:40),0,V);V.y=groundNear(V.x,V.z);M4.compose(V,Q.setFromAxisAngle(YAX,R(0,6.3)),S.set(R(.9,1.6),R(1.1,2.1),R(.9,1.6)));gr.setMatrixAt(gk,M4);gr.setColorAt(gk++,new THREE.Color(gc[q%4]));}gr.count=gk;scene.add(gr);
+      for(let q=0;q<1500;q++){const i=a0+Math.floor(Math.random()*(a1-a0)),sd=Math.random()<.6?1:-1;if(sd>0&&i<CLF[1]+45)continue;off(i,sd*R(11,sd>0?75:40),0,V);V.y=groundNear(V.x,V.z);M4.compose(V,Q.setFromAxisAngle(YAX,R(0,6.3)),S.set(R(.9,1.6),R(1.1,2.1),R(.9,1.6)));gr.setMatrixAt(gk,M4);gr.setColorAt(gk++,new THREE.Color(gc[q%4]));}gr.count=gk;scene.add(gr);
       const bm=std({color:0x2c2622,roughness:1}),hm=std({color:0xd8d0b8,roughness:.6}),bg=new THREE.SphereGeometry(1,10,8);
       for(let q=0;q<9;q++){const i=a0+m(30+q*52)+Math.floor(Math.random()*m(20));off(i,R(18,60),0,V);V.y=groundNear(V.x,V.z);const g=new THREE.Group(),B_=(geo,mt,x,y,z,sx,sy,sz,p=g)=>{const o=new THREE.Mesh(geo,mt);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;p.add(o);return o;};
         B_(bg,bm,0,1.15,0,.62,.62,1.05);B_(bg,bm,0,1.55,.45,.55,.45,.5);const hd=new THREE.Group();hd.position.set(0,1.1,1.05);g.add(hd);B_(bg,bm,0,0,.1,.3,.33,.4,hd);for(const s of[-1,1]){const h=B_(new THREE.ConeGeometry(.07,.8,6),hm,s*.36,.12,.05,1,1,1,hd);h.rotation.z=-s*1.15;}
@@ -2435,6 +2446,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*SPILL.g*(1-(PL.melt
   if(Math.abs(lat)>WLL){const sd=Math.sign(lat),vn=(PL.vx*Nn[bi].x+PL.vz*Nn[bi].z)*sd,spd=Math.hypot(PL.vx,PL.vz),RUB=DRIVE&&((bi>=Z.gg0-Math.round(320/SEG)&&bi<Z.gg0+Math.round(60/SEG))||(bi>=Z.toll-Math.round(60/SEG)&&bi<Z.toll+Math.round(330/SEG))||(bi>=Z.downtown-Math.round(60/SEG)&&bi<Z.hyde+Math.round(40/SEG))||(bi>=Z.marina-Math.round(30/SEG)&&bi<Z.marina+Math.round((MR*1.571+40)/SEG)));   /* the approach to the Golden Gate: rubbery rails, you bounce and never crash or fall */
     if(!RUB&&racing&&DRIVE&&zoneArr[bi]===4&&PL.safe<=0&&spd>44.7&&vn>3.5){startDive(sd,vn,bi);return;}   // on the bridge the rail holds the car up to 100 mph (44.7 m/s); a real hit above that takes you through
     if(!RUB&&racing&&DRIVE&&zoneArr[bi]===3&&H[bi]>6&&PL.safe<=0&&spd>(HRL(bi)?67:44.7)&&vn>(HRL(bi)?6:3.5)){pe.lat=lat;fallOff(sd,vn,bi);return;}   // and off the elevated freeway (I-880, and I-80 towards Berkeley: only at 150 mph)
+    if(!RUB&&racing&&DRIVE&&CLF&&sd>0&&bi>=CLF[0]+15&&bi<=CLF[1]&&PL.safe<=0&&spd>22&&vn>4.5){pe.lat=lat;lakeCrash(sd,vn,bi,pe);return;}   // Marin: a hard hit breaks the timber rail above the lake, and over the edge into it
     if(!RUB&&racing&&DRIVE&&CLF&&sd>0&&bi>=CLF[0]&&bi<=CLF[1]&&PL.safe<=0&&spd>22&&vn>4.5){pe.lat=lat;fallOff(sd,vn,bi);say('OFF THE CLIFF','No. '+LIV().num+' - McQUEEN',3);return;}   // Marin: through the rail and off the cliff into the rocks
     if(!RUB&&racing&&PL.safe<=0&&spd>(HRL(bi)?67:50)&&vn>7){pe.lat=lat;crashPlayer(vn,true);return;}                              // only a hit at real speed wrecks the car
     PL.x-=Nn[bi].x*sd*(Math.abs(lat)-WLL);PL.z-=Nn[bi].z*sd*(Math.abs(lat)-WLL);lat=WLL*sd;
@@ -3239,7 +3251,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);bigIguTick(rdt);woodIguTick(rdt);catTick(rdt);fwIguTick(rdt);tubeIguTick(rdt);rigiTick(rdt);nudgeTick(rdt);iguMoreTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);eyeMonTick(rdt);dadBeetleTick(rdt);bigfootTick(rdt);seaMonTick(rdt);sfBldTick(rdt);sfPyrTick(rdt);clayTick(rdt);hydMosqTick(rdt);hydIguTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);bigIguTick(rdt);woodIguTick(rdt);catTick(rdt);fwIguTick(rdt);tubeIguTick(rdt);rigiTick(rdt);nudgeTick(rdt);iguMoreTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);lakeRailTick(rdt);beetleTick(rdt);eyeMonTick(rdt);dadBeetleTick(rdt);bigfootTick(rdt);seaMonTick(rdt);sfBldTick(rdt);sfPyrTick(rdt);clayTick(rdt);hydMosqTick(rdt);hydIguTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -3299,7 +3311,7 @@ function seaTick(tm,D){const S_=SEA;S_.g.position.set(D.wx,-45,D.wz);
   {const a=tm*.18+2;S_.al.position.set(Math.cos(a)*13,-14+Math.sin(tm*.4)*.8,Math.sin(a)*13);S_.al.rotation.y=Math.atan2(-Math.sin(a),Math.cos(a));S_.al.tail.rotation.y=Math.sin(tm*2.2)*.4;S_.al.jaw.rotation.x=.14+Math.sin(tm*1.6)*.1;}
   S_.kelp.forEach((m,k)=>{m.rotation.z=Math.sin(tm*.9+k)*.06;m.rotation.x=Math.sin(tm*.7+k*1.7)*.05;});S_.rays.forEach((m,k)=>{m.rotation.z=Math.sin(tm*.3+k)*.12;});}
 // water closes over the camera: teal murk, a dome of deepening colour, and a soft light on the car
-function underwater(k){scene.fog.color.lerp(SEA.col,k);scene.fog.near=lerp(scene.fog.near,1,k);scene.fog.far=lerp(scene.fog.far,44,k);SEA.dome.visible=k>.4;SEA.dome.position.copy(camera.position);SEA.light.intensity=k*340;SEA.light.position.copy(hero.position);SEA.light.position.y+=7;}
+function underwater(k){scene.fog.color.lerp(G.uwCol||SEA.col,k);scene.fog.near=lerp(scene.fog.near,1,k);scene.fog.far=lerp(scene.fog.far,G.uwFar||44,k);SEA.dome.visible=k>.4;SEA.dome.position.copy(camera.position);SEA.light.intensity=k*(G.uwLt||340);SEA.light.position.copy(hero.position);SEA.light.position.y+=7;}
 function sfxBubble(){if(!AC)return;let t=AC.currentTime;for(let i=0;i<3+(Math.random()*4|0);i++){tone('sine',R(260,520),t,.1,.22,master,{to:R(800,1400),a:.01,h:.3});t+=R(.05,.14);}}
 function sfxCaw(){return;/* crow calls switched off at the owner's request */if(!AC)return;let t=AC.currentTime;const n=2+(Math.random()*3|0),v=R(.16,.3);for(let i=0;i<n;i++){const f=R(520,640);tone('sawtooth',f,t,.2,v,master,{to:f*.66,a:.01,h:.5,lp:1900,ft:'bandpass',q:2.5});hit(t,.17,v*.8,1500,'bandpass',master);t+=R(.28,.4);}}
 // wind howling through the viaduct and the bridge: resonant noise whose pitch keeps sliding
@@ -4088,18 +4100,19 @@ function mosqTick(rdt){const M=MOSQ;if(!DRIVE||!CLF)return;const pe=ents.find(e=
   if(M.snd){const d=M.p.distanceTo(camera.position),k=clamp(1-d/220,0,1),ct=AC.currentTime,L=hold?M.lift:null;M.snd.g.gain.setTargetAtTime(L?.95:.55*k*k+.02,ct,.05);const vr=M.pd!==undefined?(d-M.pd)/Math.max(rdt,.001):0;M.pd=d;const f=L?1.15+.1*(L.wr||0):clamp(1-vr/260,.75,1.3);M.snd.o1.frequency.setTargetAtTime(520*f,ct,.05);M.snd.o2.frequency.setTargetAtTime(527*f,ct,.05);}   // a loud straining buzz while he holds the car
   if(M.got&&!hold&&M.ta>7){M.on=0;M.g.visible=false;mosqSnd(0);}}
 // he grips the car and hauls it 30-38 m up over the road for about 2.6 s, holds it a moment, then lets go (tapping the throttle or steering twice makes him let go early). The car falls, hits the road with a thump and dust and bounces forward in shrinking hops, keeping its speed, then drives on; carried along the road and always landing on it, upright, pointing the same way; no crashing meanwhile or for a second after
-function mosqGrab(pe){let dh=PL.h-yaw(PL.idx);dh=Math.atan2(Math.sin(dh),Math.cos(dh));MOSQ.lift={t:0,v:clamp(pe.v,8,40),lat:pe.lat,dh:clamp(dh,-.35,.35),H:R(30,38),h:0,vh:0,b:0,wb:0,taps:0,pr:1,drop:0,wr:0};
+function mosqGrab(pe){let dh=PL.h-yaw(PL.idx);dh=Math.atan2(Math.sin(dh),Math.cos(dh));const lk=CLF&&PL.idx>=CLF[0]+15&&PL.idx<CLF[1]-30?1:0;MOSQ.lift={lake:lk,s0:pe.s,lat0:pe.lat,t:0,v:clamp(pe.v,8,40),lat:pe.lat,dh:clamp(dh,-.35,.35),H:R(30,38),h:0,vh:0,b:0,wb:0,taps:0,pr:1,drop:0,wr:0};if(lk)MOSQ.lift.v=Math.min(MOSQ.lift.v,12);
   PL.safe=Math.max(PL.safe,1.5);endSkid();G.shake=Math.max(G.shake,.6);sfxThump(.5);say('THE MOSQUITO HAS YOU !','tap the throttle or steer to make him let go',2.2);}
 function mosqCarry(dt,pe){const L=MOSQ.lift,M=MOSQ;L.t+=dt;PL.safe=Math.max(PL.safe,1.5);
   const[st,thr]=readInput(true),on=thr>.5||Math.abs(st)>.5;if(on&&!L.pr&&!L.drop){L.taps++;L.wr=1;G.shake=Math.max(G.shake,.5);}L.pr=on;L.wr=Math.max(0,L.wr-dt*3);
   if(!L.drop&&(L.taps>=2||L.t>3.9||L.force)){L.drop=L.t;L.vh=0;M.ta=0;M.s0=pe.s;M.la0=pe.lat;M.y0=L.h+3.4;say(L.taps>=2?'HE LETS GO !':'DROPPED !','',1.4);}
+  if(L.drop&&L.lake&&!L.force&&Math.abs(L.lat)>16){M.lift=null;lakeStart({src:"mosq",x:PL.x,y:PL.cy,z:PL.z,vx:PL.vx*.3,vz:PL.vz*.3,vy:0,rs:L.s0});return true;}   // out over the lake: he lets go and the car drops into it
   if(!L.drop)L.h=L.H*sst(L.t,0,2.6)+Math.sin(L.t*1.7)*.5*sst(L.t,.5,1.5);   // up high, swaying, then held there a moment
   else{L.vh-=14*dt;L.h+=L.vh*dt;   // falling free
     if(L.h<=0){L.h=0;const imp=-L.vh;sfxThump(clamp(imp/18,.5,1.3));G.shake=Math.max(G.shake,clamp(imp/22,.5,1.4));L.wb=clamp(imp/30,.2,1);
       for(let j=0;j<14;j++){at(pe.s,L.lat+R(-1.6,1.6),.3,V);puff(V,R(-4,4),R(.5,2.5),R(-4,4),R(.8,1.4),R(3,5.5),R(1,1.8),.5*clamp(imp/20,.4,1),0xb59a78);}
       if(L.b<3&&imp>4&&!L.force){L.b++;L.vh=imp*.42;L.v=Math.min(Math.max(L.v*1.06,16),45);}else L.land=1;}}   // bounce on forward, each hop smaller
   const k=L.drop?Math.max(0,1-(L.t-L.drop)/.6):clamp(L.t/.5,0,1);L.wb=Math.max(0,L.wb-dt*1.6);
-  if(!L.drop)L.v*=Math.exp(-.15*dt);pe.s=wrapS(pe.s+L.v*dt);pe.dist+=L.v*dt;const i=PL.idx=wrapI(Math.round(pe.s/SEG)),ed=Math.max(0,edgeAt[i]-1.3);L.lat=lerp(L.lat,clamp(L.lat,-ed,ed),clamp(dt*4,0,1));pe.lat=L.lat;
+  if(!L.drop)L.v*=Math.exp(-.15*dt);pe.s=wrapS(pe.s+L.v*dt);pe.dist+=L.v*dt;const i=PL.idx=wrapI(Math.round(pe.s/SEG)),ed=Math.max(0,edgeAt[i]-1.3);if(L.lake&&!L.drop){const i0=PL.idx;L.lat=lerp(L.lat0,13+H[i0]*.3+30,sst(L.t,.5,3.3));}else L.lat=lerp(L.lat,clamp(L.lat,-ed,ed),clamp(dt*4,0,1));pe.lat=L.lat;   /* over the Marin lake he carries the car out over the water */ 
   at(pe.s,L.lat,0,V);PL.x=V.x;PL.z=V.z;GY=PL.gy=V.y;PL.cy=PL.gy+L.h+Math.sin(L.t*7)*.12*k;PL.air=0;PL.vy=0;PL.slope=0;
   L.dh*=Math.exp(-1.5*dt);PL.h=yaw(i)+L.dh+Math.sin(L.t*2.3)*.05*k;PL.vx=Math.sin(PL.h)*L.v;PL.vz=Math.cos(PL.h)*L.v;pe.v=L.v;
   hero.position.set(PL.x,PL.cy,PL.z);hero.rotation.set(Math.sin(L.t*4.1)*.07*k+.22*clamp(L.h/30,0,1)+Math.sin(L.t*17)*.06*L.wb,PL.h,(Math.sin(L.t*5.7)*.1+Math.sin(L.t*31)*.1*L.wr)*k+Math.sin(L.t*13)*.04*L.wb);G.shake=Math.max(G.shake,.3*k);   // nose tipped down while high, so you look down at the road
@@ -5042,7 +5055,7 @@ function startDive(sd,vn,bi,hole){ohNo();{const e=ents.find(e=>e.player);if(e)e.
   V.set(PL.x,.8,PL.z);shed(V,PL.crash.vx,PL.crash.vz,8,0x7f868b);for(let i=0;i<40;i++)spark(V,PL.crash.vx*.5+R(-9,9),R(1,9),PL.crash.vz*.5+R(-9,9));sfxCrunch(1);if(AC&&master){master.gain.cancelScheduledValues(AC.currentTime);master.gain.setTargetAtTime(0,AC.currentTime+.35,.05);}G.shake=1;G.slow=.45;G.slowT=2.6;say(hole?'THE BRIDGE GAVE WAY':'OVER THE RAIL','',2.4);endSkid();
   if(hole)at(bi*SEG+Math.min(40,hole.room*.6),sd*2.5,16,PL.crash.cam=new THREE.Vector3());   // over the gap, looking back and down as the car drops through it
   else at(bi*SEG+24,-sd*4.5,3.2,PL.crash.cam=new THREE.Vector3());}
-function diveTick(dt,pe){const D=PL.crash;D.tt+=dt;
+function diveTick(dt,pe){const D=PL.crash;if(D.lake)return lakeTick(dt,pe);D.tt+=dt;
   if(D.rep){let h=document.getElementById("skiph");if(!h){h=document.createElement("div");h.id="skiph";h.textContent="SPACE to skip";h.style.cssText="position:fixed;bottom:9%;left:50%;transform:translateX(-50%);color:#fff;font:700 15px Arial;letter-spacing:.2em;background:rgba(0,0,0,.5);padding:8px 16px;border-radius:6px;z-index:9;pointer-events:none";document.body.appendChild(h);}h.style.display="block";   // a repeat fall: Space skips the scene, back on the road where the car went off
     if(!keys.Space)D.rel=1;else if(D.rel&&D.tt>.5){D.skip=1;if(D.ph===0){D.ph=1;D.t1=D.tt-99;D.wx=D.x;D.wz=D.z;}}}
   if(D.ph===0){D.x+=D.vx*dt;D.z+=D.vz*dt;D.vy-=11*dt;D.y+=D.vy*dt;hero.position.set(D.x,D.y,D.z);hero.rotation.x=Math.min(1.25,hero.rotation.x+.45*dt);hero.rotation.z+=D.sd*.4*dt;   /* a slower fall, seen from the driver's seat */
@@ -5075,7 +5088,7 @@ function uwIguanas(D,u,tm,S){if(!UWI.l.length){const bm=std({color:0x7d8a68,roug
       g.scale.setScalar(3.4);g.visible=false;scene.add(g);UWI.l.push({g,b,tl});}}
   const on=u>2&&u<S+4;UWI.l.forEach((k,n)=>{k.g.visible=on;if(!on)return;const a=tm*.22+n*2.1,r=9+n*3.5;k.g.position.set(D.wx+Math.cos(a)*r,-50-n*1.8+Math.sin(tm*.7+n)*1.2,D.wz+Math.sin(a)*r);k.g.rotation.y=Math.atan2(-Math.sin(a),Math.cos(a));k.b.rotation.y=Math.sin(tm*3+n)*.22;k.tl.rotation.y=Math.sin(tm*3+n)*.5;k.tl.position.x=Math.sin(tm*3+n)*.06;});}
 function sndRestore(){if(AC&&master){master.gain.cancelScheduledValues(AC.currentTime);master.gain.setTargetAtTime(.85,AC.currentTime,.02);}}
-function diveScene(tm){const D=PL.crash,S=9.2;if(D.ph<1){manatee.visible=false;SEA.g.visible=SEA.oc.visible=false;G.uw=0;for(const k of UWI.l)k.g.visible=false;return;}
+function diveScene(tm){const D=PL.crash,S=9.2;if(D.lake)return lakeScene(tm);if(D.ph<1){manatee.visible=false;SEA.g.visible=SEA.oc.visible=false;G.uw=0;for(const k of UWI.l)k.g.visible=false;return;}
   if(!D.F){const j=wrapI(D.idx),t=T[j],n=Nn[j],l=Math.hypot(t.x,t.z)||1;const so=Math.sign((D.wx-P[j].x)*n.x+(D.wz-P[j].z)*n.z)||D.sd;D.Tg=[-t.x/l,-t.z/l];D.N=[n.x*so,n.z*so];{const fx=D.Tg[0]*.8+D.N[0]*.6,fz=D.Tg[1]*.8+D.N[1]*.6,fl=Math.hypot(fx,fz)||1;D.F=[fx/fl,fz/fl];}D.ox=D.wx;D.oz=D.wz;}   // F: the way the manatee runs (out across the open water, slanting away from the bridge and its piers); N: out from the bridge, where the tanker comes from
   const u=D.tt-D.t1,bob=Math.sin(tm*1.6)*.07,F=D.F,th=Math.atan2(F[0],F[1]);
   G.uw=sst(u,.9,1.5)*(1-sst(u,S-.5,S));SEA.g.visible=u<S+.5;if(SEA.g.visible)seaTick(tm,D);uwIguanas(D,u,tm,S);
@@ -5091,6 +5104,82 @@ function diveScene(tm){const D=PL.crash,S=9.2;if(D.ph<1){manatee.visible=false;S
     tk.position.set(D.ox+N[0]*d-D.Tg[0]*16,-45,D.oz+N[1]*d-D.Tg[1]*16);tk.rotation.y=Math.atan2(N[1],-N[0]);
     if(Math.random()<.8){const bx=tk.position.x-N[0]*84,bz=tk.position.z-N[1]*84,px=-N[1],pz=N[0];for(const s of[-1,1])puff(V.set(bx+px*s*R(4,9),-44.6,bz+pz*s*R(4,9)),px*s*R(3,7),R(2,5),pz*s*R(3,7),1.2,R(4,7),R(1,1.8),.7,0xf2f6f8);}}}   // a bow wave curling off both sides
   if(u>.9&&u<S+.5){NOGY=1;const bb=(p,w)=>{V.set(p.x+R(-w,w),p.y+R(-.3,.9),p.z+R(-w,w));puff(V,R(-.25,.25),R(.5,1.3),R(-.25,.25),R(.04,.08),R(.08,.15),R(1.4,2.4),.6,0xcfeeff);};if(u<S-.5&&Math.random()<.4)bb(hero.position,1.9);if(u>6.3&&u<S+.3&&Math.random()<.3)bb(mcq.position,.5);NOGY=0;}}   // bubbles stream round the sinking car and rise with Steve (small, from the shared smoke pool)
+// ---- the Marin lake (LAKE), below the cliff on the left where the redwoods end. Two ways in: crash hard through the timber rail along the cliff (it breaks, planks fly: LKR), or
+// the giant mosquito carries the car out over the water and drops it. Splash, the driver's view under the murky green-brown water, then the camera pulls back: a giant fish with
+// glowing red eyes (one and a half cars long) comes slowly out of the murk, and two marine iguanas swim up to the car, look it over and drift off. Back in the driver's seat
+// the fish opens its mouth and swallows the car, everything goes dark, and you are back on the road (where the mosquito picked you up, or just before the broken rail, mended).
+function lakeBuild(){const L=LAKE,g=new THREE.Group(),D2=THREE.DoubleSide,A=(geo,m,x,y,z,p=g)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);p.add(o);return o;},sg=new THREE.SphereGeometry(1,18,12);
+  A(new THREE.CircleGeometry(80,32).rotateX(-Math.PI/2),std({color:0x3a3222,roughness:1}),0,-9,0);   // the muddy bottom
+  A(new THREE.PlaneGeometry(240,240).rotateX(Math.PI/2),new THREE.MeshBasicMaterial({color:0x8a9a52,transparent:true,opacity:.75}),0,-.05,0);   // the surface seen from below
+  const wm=[std({color:0x3e4a22,roughness:.9,side:D2}),std({color:0x55502a,roughness:.9,side:D2})],rk=std({color:0x3c3a30,roughness:1});L.weed=[];
+  for(let k=0;k<70;k++){const a=R(0,6.28),r=R(7,40),h=R(1.5,5),w=A(new THREE.BoxGeometry(.05,h,.25).translate(0,h/2,0),wm[k%2],Math.cos(a)*r,-9,Math.sin(a)*r);w.rotation.y=R(0,3);L.weed.push(w);}   // weed swaying up off the bottom
+  for(let k=0;k<26;k++){const a=R(0,6.28),r=R(3,45),o=A(new THREE.DodecahedronGeometry(R(.6,2),0),rk,Math.cos(a)*r,-9,Math.sin(a)*r);o.rotation.set(R(0,3),R(0,3),R(0,3));}
+  // the giant fish: about 6.5 m (a car and a half), dark olive-brown and mottled, pale belly, whiskers, glowing red eyes; its lower jaw drops open (F.jaw), the tail sweeps (F.tail)
+  const F=new THREE.Group(),fm=std({color:0x4a4628,roughness:.65}),fb=std({color:0x8c8458,roughness:.7}),ff=std({color:0x35321c,roughness:.8,side:D2}),sp=std({color:0x2c2a16,roughness:.7}),red=new THREE.MeshBasicMaterial({color:0xff2a10,fog:false}),blk=new THREE.MeshBasicMaterial({color:0x080604,side:THREE.BackSide,fog:false});
+  A(sg,fm,0,0,0,F).scale.set(1.05,1.2,3.1);A(sg,fb,0,-.45,.3,F).scale.set(.85,.7,2.6);for(let k=0;k<14;k++)A(sg,sp,R(-.6,.6),R(.3,.95),R(-2.4,2),F).scale.set(R(.15,.3),.06,R(.2,.4));   // body, belly, dark blotches
+  A(sg,fm,0,.05,2.35,F).scale.set(1,.85,1.15);A(sg,blk,0,-.5,3.05,F).scale.set(.8,.5,.75);   // head; the dark inside of the mouth
+  F.jaw=new THREE.Group();F.jaw.position.set(0,-.45,2.1);F.add(F.jaw);A(sg,fb,0,-.05,.85,F.jaw).scale.set(.95,.3,1.15);
+  for(const s of[-1,1]){A(sg,red,s*.78,.32,2.85,F).scale.setScalar(.2);const b=A(cyl(.02,.04,1.6,5),fm,s*.6,-.35,3.4,F);b.rotation.set(1.2,0,s*.5);const fn=A(new THREE.BoxGeometry(1,.05,.6),ff,s*1.2,-.45,1.2,F);fn.rotation.z=s*.3;(F.pf||(F.pf=[])).push([fn,s]);}   // red eyes, whiskers, side fins
+  A(new THREE.BoxGeometry(.07,.9,1.8),ff,0,1.25,.1,F).rotation.x=-.25;   // the fin on its back
+  F.tail=new THREE.Group();F.tail.position.set(0,0,-2.9);F.add(F.tail);A(sg,fm,0,0,-.5,F.tail).scale.set(.55,.7,1.1);A(new THREE.BoxGeometry(.08,2.4,1.3),ff,0,0,-1.7,F.tail);
+  F.traverse(o=>{if(o.isMesh)o.castShadow=false;});g.add(F);L.F=F;
+  L.ig=[0,1].map(n=>{const k=bigIguMk(1);scene.remove(k.g);k.g.scale.setScalar(.95);k.g.rotation.order='YXZ';k.g.visible=true;g.add(k.g);return Object.assign(k,{n,px:0,pz:0});});   // two marine iguanas, half a car each
+  g.visible=false;scene.add(g);L.g=g;}
+function lakeStart(o){const L=LAKE,pe=ents.find(e=>e.player);if(!L.g)lakeBuild();if(pe)pe.v=0;L.n=(L.n||0)+1;const i=PL.idx;
+  L.wy=P[i].y-H[i]+.35+bkY(i,11);   // the water line (the lake's surface follows the banking of the road above it)
+  PL.crash={t:0,dive:1,lake:1,ph:0,tt:0,sd:1,x:o.x,y:o.y,z:o.z,vx:o.vx,vz:o.vz,vy:o.vy,idx:i,rs:o.rs,src:o.src,h:PL.h,rep:L.n>1};PL.vx=PL.vz=0;endSkid();G.shake=Math.max(G.shake,.6);
+  if(o.src==='rail')say('THROUGH THE RAIL','AND OVER THE EDGE',2.2);}
+function lakeTick(dt,pe){const D=PL.crash,L=LAKE;D.tt+=dt;if(D.rep&&D.tt>.6&&keys.Space)D.skip=1;
+  if(D.ph===0){D.x+=D.vx*dt;D.z+=D.vz*dt;D.vy-=13*dt;D.y+=D.vy*dt;hero.position.set(D.x,D.y,D.z);hero.rotation.set(Math.min(1.05,hero.rotation.x+.5*dt),D.h,hero.rotation.z+.2*dt);   // falling, seen from the driver's seat
+    if(D.y<L.wy-.3||D.skip){D.ph=1;D.t1=D.tt;D.wx=D.x;D.wz=D.z;NOGY=1;for(let k=0;k<60;k++){const a=R(0,6.283),sp=R(2,10);puff(V.set(D.x,L.wy+.2,D.z),Math.cos(a)*sp,R(5,18),Math.sin(a)*sp,R(.8,1.6),R(4,7),R(1.2,2.4),.8,0xc8d0a8);}NOGY=0;
+      sfxBigSplash();sfxThump(1.2);G.shake=.8;say('INTO THE LAKE',D.rep?'SPACE to skip':'',2.2);}
+    return;}
+  const u=D.tt-D.t1;
+  if(u<9.4){hero.position.y=Math.max(L.wy-8.85,hero.position.y-(u<1?3.2:1.1)*dt);hero.rotation.x+=(.22-hero.rotation.x)*Math.min(1,dt*1.3);hero.rotation.z+=(.08-hero.rotation.z)*Math.min(1,dt*1.3);   // sinking slowly, settling level
+    if(u>1&&Math.random()<dt*1.4)sfxBubble();}
+  else hero.visible=false;
+  if(u>3.4&&!D.m1){D.m1=1;say('SOMETHING IN THE MURK','',2.2);sfxUnderThud();}
+  if(u>5.6&&!D.m2){D.m2=1;sfxUnderThud();}
+  if(u>8.75&&!D.m3){D.m3=1;sfxGulp();G.shake=.9;say('GULP !','',1.6);}
+  L.fd||lakeFade(0);L.fd.style.opacity=clamp((u-8.9)/.5,0,1);   // dark inside the fish
+  if(u>10.6||D.skip)lakeEnd(pe);}
+function lakeEnd(pe){const D=PL.crash,L=LAKE,i=backOnRoad(pe,wrapI(Math.floor(D.rs/SEG)),pe.s);   // back on the road: where the mosquito picked the car up, or just before the broken rail
+  PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;sndRestore();PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();first=true;G.uw=0;G.uwCol=null;G.uwFar=0;G.uwLt=0;
+  hero.visible=true;hero.position.set(PL.x,H[i],PL.z);hero.rotation.set(0,PL.h,0);GY=PL.gy=PL.cy=H[i];PL.air=0;PL.vy=0;L.g.visible=false;SEA.dome.visible=false;SEA.light.intensity=0;SEA.dome.material.color.setHex(0xffffff);
+  lakeRailMend();L.fo=.9;say('BACK ON THE ROAD','',2);}
+function lakeFade(){const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:8';document.body.appendChild(d);LAKE.fd=d;}
+function sfxGulp(){if(!AC)return;const t=AC.currentTime;tone('sine',120,t,.6,1.1,master,{to:38,h:.2});hit(t,.5,.9,260,'lowpass',master);tone('sine',70,t+.35,.5,.8,master,{to:30});hit(t+.4,.4,.5,180,'lowpass',master);}
+function lakeScene(tm){const D=PL.crash,L=LAKE;if(D.ph<1){L.g.visible=false;G.uw=0;return;}
+  const u=D.tt-D.t1,c=hero.position,h=D.h,fx=Math.sin(h),fz=Math.cos(h),sx=Math.cos(h),sz=-Math.sin(h),F=L.F;
+  L.g.visible=true;L.g.position.set(D.wx,L.wy,D.wz);G.uw=sst(u,.1,.6);G.uwCol=L.col;G.uwFar=19;G.uwLt=70;SEA.dome.material.color.setHex(0x7a8448);mcq.visible=false;
+  for(const w of L.weed)w.rotation.z=Math.sin(tm*.8+w.position.x)*.12;
+  // the fish: out of the murk ahead and to one side, slowly up to the car; then it hangs there, opens its mouth wide, and lunges
+  const a=sst(u,2.2,7.6),lun=sst(u,8.3,9.1),dd=lerp(lerp(34,7.5,a),3,lun),sd=lerp(12,0,a),wob=Math.sin(tm*.7)*1.2*(1-a);
+  F.position.set(c.x-D.wx+fx*dd+sx*(sd+wob),c.y-L.wy+lerp(2.5,.55,a)+lun*.75,c.z-D.wz+fz*dd+sz*(sd+wob));
+  F.rotation.set(0,Math.atan2(-(fx*dd+sx*sd)+sx*0,-(fz*dd+sz*sd)),0);
+  const sw=1.6+lun*3;F.tail.rotation.y=Math.sin(tm*sw)*.35;F.rotation.y+=Math.sin(tm*sw+1.2)*.05;F.jaw.rotation.x=1.05*sst(u,7.7,8.4);for(const[fn,s]of F.pf)fn.rotation.z=s*(.3+Math.sin(tm*2.4)*.25);
+  // two marine iguanas: they swim in close round the car, tails sculling, then drift away on their own
+  for(const k of L.ig){const n=k.n,an=tm*(.45+n*.1)+n*Math.PI,r=u<6?lerp(10,2.6+n*.8,sst(u,.8,4.2)):lerp(2.6+n*.8,32,sst(u,6,10.5)),y=c.y-L.wy+(n?1.4:.5)+Math.sin(tm*.9+n)*.35;
+    const x=c.x-D.wx+Math.cos(an)*r,z=c.z-D.wz+Math.sin(an)*r;k.g.position.set(x,y,z);const vx=x-k.px,vz=z-k.pz;if(vx*vx+vz*vz>1e-6)k.g.rotation.set(0,Math.atan2(vx,vz),0);k.px=x;k.pz=z;
+    const ph=tm*4.5+n,K=3.2;for(const sg of k.segs){const zz=sg.z,A_=.05+.22*Math.max(0,.6-zz)/1.9;sg.g.position.x=A_*Math.sin(ph-K*zz);sg.g.rotation.y=Math.atan(-A_*K*Math.cos(ph-K*zz));}   // the tail sweeps side to side
+    for(const lg of k.legs){lg.g.rotation.y=-lg.f*.2-.9*lg.s*(lg.f>0?.4:1);lg.g.rotation.z=lg.s*.3;}}   // legs tucked back along the body
+  if(u<9&&Math.random()<.35){NOGY=1;V.set(c.x+R(-1.8,1.8),c.y+R(0,1),c.z+R(-1.8,1.8));puff(V,R(-.2,.2),R(.5,1.3),R(-.2,.2),R(.04,.08),R(.08,.15),R(1.4,2.4),.6,0xd6e2b0);NOGY=0;}}
+function lakeCam(D,rdt,jx){const L=LAKE,u=D.ph<1?-1:D.tt-D.t1,c=hero.position;
+  if(u<2.2||u>=7.4){V.set(-.24,.86,.12);hero.localToWorld(V);camera.position.copy(V);camera.position.x+=jx;camera.fov=lerp(camera.fov,74,.2);hero.canopy.visible=false;interior.visible=true;D.cp=0;   // the driver's view: the fall, the splash, under the water; at the end the fish fills the windscreen
+    if(u>=7.4){V2.copy(L.F.position).add(L.g.position);V2.y+=.3;look.lerp(V2,.25);}else{look.set(-.24,.55,30);hero.localToWorld(look);}}
+  else{const h=D.h,fx=Math.sin(h),fz=Math.cos(h),sx=Math.cos(h),sz=-Math.sin(h);if(!D.cp){D.cp=1;camP.copy(camera.position);}   // pulled back and out to the side: the car on the bottom, the fish coming
+    V.set(c.x-sx*8-fx*3,c.y+2.2,c.z-sz*8-fz*3);camP.lerp(V,clamp(rdt*1.4,0,1));camera.position.copy(camP);camera.fov=lerp(camera.fov,58,.06);
+    V2.copy(L.F.position).add(L.g.position).multiplyScalar(.3).addScaledVector(c,.7);V2.y+=.6;look.lerp(V2,.08);}}
+function lakeCrash(sd,vn,bi,pe){lakeRailBreak(bi);const n=Nn[bi],out=Math.max(vn,8);   // through the timber rail and over the edge
+  lakeStart({src:'rail',x:PL.x+n.x*sd*1.5,y:(PL.cy||H[bi])+.3,z:PL.z+n.z*sd*1.5,vx:PL.vx*.5+n.x*sd*out,vz:PL.vz*.5+n.z*sd*out,vy:3,rs:(bi-Math.round(30/SEG))*SEG});sfxCrunch(1);}
+function lakeRailBreak(bi){const K=LKR;if(!K.im)return;const n=Nn[bi];for(let k=0;k<K.p.length;k++){const p=K.p[k];if(Math.abs(p.i-bi)>4||p.br)continue;p.br=1;K.im.setMatrixAt(k,K.Z0);K.po.setMatrixAt(k,K.Z0);   // the planks nearest the hit break off and fly
+    for(let q=0;q<3;q++){let o=K.fly.find(f=>f.t<=0);if(!o){o={m:new THREE.Mesh(K.pg,K.mat),t:0};scene.add(o.m);K.fly.push(o);}off(p.i,9.2,.6,V);o.m.position.copy(V);o.m.visible=true;o.m.rotation.set(R(0,3),R(0,3),R(0,3));
+      Object.assign(o,{t:5,vx:PL.vx*.4+n.x*R(5,11),vy:R(3,8),vz:PL.vz*.4+n.z*R(5,11),sp:R(-9,9)});}}
+  K.im.instanceMatrix.needsUpdate=K.po.instanceMatrix.needsUpdate=true;if(AC){const t=AC.currentTime;hit(t,.3,.9,1600,'bandpass',master);hit(t+.04,.2,.6,900,'bandpass',master);}}
+function lakeRailMend(){const K=LKR;if(!K.im)return;K.p.forEach((p,k)=>{if(!p.br)return;p.br=0;K.im.setMatrixAt(k,p.m);K.po.setMatrixAt(k,p.mp);});K.im.instanceMatrix.needsUpdate=K.po.instanceMatrix.needsUpdate=true;}
+function lakeRailTick(rdt){const K=LKR,L=LAKE;for(const o of K.fly)if(o.t>0){o.t-=rdt;o.vy-=12*rdt;const p=o.m.position;p.x+=o.vx*rdt;p.y+=o.vy*rdt;p.z+=o.vz*rdt;o.m.rotation.x+=o.sp*rdt;o.m.rotation.z+=o.sp*.5*rdt;
+    if(p.y<(L.wy||0)||o.t<=0){o.t=0;o.m.visible=false;}}
+  if(L.fo>0){L.fo-=rdt;if(L.fd)L.fd.style.opacity=Math.max(0,L.fo/.9);}}
 function sfxSplash(){if(!AC)return;const t=AC.currentTime;hit(t,1.4,1.2,900,'lowpass',master);hit(t,.6,.6,3500,'highpass',master);tone('sine',70,t,.5,.8,master,{to:30});}
 function sfxBigSplash(){if(!AC)return;const t=AC.currentTime;   // a car hitting the water from a height: a deep slam, a roar of thrown water, then it all rains back down
   tone('sine',55,t,.9,1.4,master,{to:22,h:.25});tone('triangle',110,t,.35,.7,master,{to:40});hit(t,.18,1.6,1800,'lowpass',master);hit(t,2.6,1.4,700,'lowpass',master);hit(t+.03,1.4,.8,2400,'bandpass',master);hit(t+.05,.9,.7,4500,'highpass',master);
@@ -5234,7 +5323,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={BIGI,WIGU,CATP,FWI,fwIgu:()=>{const pe=ents.find(e=>e.player);fwIguStart(pe.s+60);},TUBI,RIGI,NUDG,nudge:()=>nudgeStart(),IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={LAKE,LKR,lakeIn:()=>{const n=Nn[PL.idx];lakeRailBreak(PL.idx);lakeStart({src:"rail",x:PL.x,y:(PL.cy||H[PL.idx])+.3,z:PL.z,vx:n.x*10,vz:n.z*10,vy:3,rs:(PL.idx-15)*SEG});},BIGI,WIGU,CATP,FWI,fwIgu:()=>{const pe=ents.find(e=>e.player);fwIguStart(pe.s+60);},TUBI,RIGI,NUDG,nudge:()=>nudgeStart(),IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
@@ -5276,6 +5365,7 @@ function frame(manual){
   else if(gridShot){ // the 1970 start photograph: long lens, high behind the grid, looking down the pit straight
     at(S0-96+Math.sin(tm*.15)*2,8.6,6.2,camera.position);camera.fov=25;at(S0+30,1.5,.4,look);hero.canopy.visible=true;interior.visible=false;}
   else if(idle){const a=QS.has('a')?+QS.get('a'):G.state==='title'?-.85+Math.sin(tm*.12)*.55:-.85+tm*.2;camP.set(hero.position.x+Math.sin(hero.rotation.y+a)*8.8,1.15+Math.sin(tm*.2)*.2,hero.position.z+Math.cos(hero.rotation.y+a)*8.8);camera.position.copy(camP);camera.fov=27;look.copy(hero.position).setY(.75);V.set(G.state==='title'?-1.5:-.5,0,.6);look.add(V.applyAxisAngle(YAX,hero.rotation.y));}
+  else if(diving&&PL.crash.lake)lakeCam(PL.crash,rdt,jx);
   else if(diving){const D=PL.crash;   // watch the fall from the deck, then come down to the water for the rescue
     if(D.ph<1||D.tt-D.t1<1.2){V.set(-.24,.86,.12);hero.localToWorld(V);camera.position.copy(V);camera.position.x+=jx;camera.fov=lerp(camera.fov,78,.2);look.set(-.24,.55,30);hero.localToWorld(look);hero.canopy.visible=false;interior.visible=true;}   // the driver's view, falling to the water and under it
     else if(D.tt-D.t1>1.2&&D.tt-D.t1<9.2){const u=D.tt-D.t1,a=u*.22+1,ty=u>6.3?mcq.position.y+.9:hero.position.y+1;V.set(D.wx+Math.cos(a)*10.5,ty+1.7,D.wz+Math.sin(a)*10.5);camP.lerp(V,D.camU?clamp(rdt*3,0,1):1);D.camU=1;camera.position.copy(camP);camera.fov=lerp(camera.fov,46,.1);look.lerp(V2.set(D.wx,ty,D.wz),.15);}   // under water, circling the car
