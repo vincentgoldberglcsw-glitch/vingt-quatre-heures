@@ -829,7 +829,7 @@ if(DRIVE)await Promise.race([document.fonts.load('84px Chewy'),new Promise(r=>se
       const arm=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,1.6,5).translate(0,.8,0),gm);arm.position.set(1,-.2,0);hd.add(arm);ALM.cat={cs,arm};}
     off(i,0,0,bb.position);bb.rotation.y=yaw(i)+Math.PI;scene.add(bb);}
   { // ---- a huge billboard before the Bay Bridge: the owner's photo of a stern three-eyed man (assets/billboards/three-eyed-man.jpg, top 800 px of 509x874, upright board)
-    const bt=new THREE.TextureLoader().load('assets/billboards/three-eyed-man.jpg');bt.colorSpace=THREE.SRGBColorSpace;bt.anisotropy=ANISO;bt.repeat.set(1,800/874);bt.offset.set(0,1-800/874);
+    const bt=new THREE.TextureLoader().load('assets/billboards/three-eyed-man.jpg?v=2');bt.colorSpace=THREE.SRGBColorSpace;bt.anisotropy=ANISO;bt.repeat.set(1,800/874);bt.offset.set(0,1-800/874);
     const q=Z.b0-m(170),bb=new THREE.Group(),fm=new THREE.MeshStandardMaterial({map:bt,roughness:.75,emissiveMap:bt,emissive:0xffffff,emissiveIntensity:.3}),BH=33,BW=BH*509/800;
     const bd=new THREE.Mesh(new THREE.BoxGeometry(BW,BH,.6),[steelM,steelM,steelM,steelM,fm,steelM]);bd.position.y=12+BH/2;bb.add(bd);
     for(const x of[-BW*.3,BW*.3])B(1,13,1,steelM,x,6.5,-.5,0,bb);bb.traverse(o=>{o.castShadow=true;});
