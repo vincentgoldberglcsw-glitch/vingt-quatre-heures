@@ -2967,16 +2967,6 @@ function bigIguTick(rdt){const B_=BIGI,pe=ents.find(e=>e.player);if(!pe||!DRIVE)
     k.segs[0].g.rotation.x=k.pz>0?-Math.max(0,Math.sin(k.t*6))*.3:0;
     for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f;L.g.rotation.y=q*.55;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.25;}   // diagonal pairs swing together, the forward one lifted
     if(k.st===1){const dx=B_.V.x-PL.x,dz=B_.V.z-PL.z;if(dx*dx+dz*dz<2.1*2.1&&Math.abs(pe.v)>2&&!PL.crash){k.st=2;k.vy=R(6,8);k.vs=clamp(pe.v*.5,-12,12)+R(-1,1);k.vl=R(-1.5,1.5);k.sp=R(-6,6);sfxBoing(.9);}}}}
-// Iguanas on top of the Posey Tube's portal: a little group on the flat roof between the two towers, darting about, stopping, bobbing their heads. Visual only.
-const TUBI={g:null,l:[]};
-function tubeIguTick(rdt){const T_=TUBI;if(!DRIVE)return;
-  if(!T_.g){T_.g=new THREE.Group();T_.g.position.copy(P[Z.tu0]);T_.g.position.y+=16*1.3;T_.g.rotation.y=yaw(Z.tu0);scene.add(T_.g);
-    for(let n=0;n<7;n++){const{g,b}=iguMk();g.scale.setScalar(1.3);T_.g.add(g);const k={g,b,x:R(-4.6,4.6),z:R(.8,8.2),tx:0,tz:0,st:0,w:R(0,2),t:R(0,5),v:0};g.position.set(k.x,0,k.z);g.rotation.y=R(0,6.28);T_.l.push(k);}}
-  const near=PL.idx>Z.tu0-Math.round(500/SEG)&&PL.idx<Z.tu0+5;T_.g.visible=near;if(!near)return;
-  for(const k of T_.l){k.t+=rdt;
-    if(k.st===0){k.w-=rdt;const bob=Math.max(0,Math.sin(k.t*7))*(Math.sin(k.t*.9+k.x)>0?1:0);k.b.rotation.set(-bob*.2,0,0);k.b.position.y=bob*.03;
-      if(k.w<=0){k.st=1;k.tx=clamp(k.x+R(-3,3),-4.6,4.6);k.tz=clamp(k.z+R(-3,3),.8,8.2);k.v=R(2.5,4.5);k.g.rotation.y=Math.atan2(k.tx-k.x,k.tz-k.z);}}
-    else{const dx=k.tx-k.x,dz=k.tz-k.z,d=Math.hypot(dx,dz),st=k.v*rdt;if(d<=st){k.x=k.tx;k.z=k.tz;k.st=0;k.w=R(.6,3);}else{k.x+=dx/d*st;k.z+=dz/d*st;}
 // Richmond, past the end of Shane Drive on the way to the I-80 on-ramp: a few giant iguanas (3 to 5 times the big model) slithering slowly among the trees beside
 // the road, bodies and tails swinging, stopping now and then to bob their heads. They keep well off the road (visual only) (WIGU, woodIguTick).
 const WIGU={l:null,V:new THREE.Vector3()};
@@ -3004,6 +2994,16 @@ function woodIguTick(rdt){const W_=WIGU;if(!DRIVE||!(Z.rb1>0)||!Z.refinery)retur
     const ph=k.ph,K=3.2;for(const sg of k.segs){const z=sg.z,A=.04+.1*Math.max(0,.6-z)/1.9;sg.g.position.x=A*Math.sin(ph-K*z);sg.g.rotation.y=Math.atan(-A*K*Math.cos(ph-K*z));}   // the side-to-side wave down the body and tail
     k.segs[0].g.rotation.x=k.pz>0?-Math.max(0,Math.sin(k.t*5))*.3:0;
     for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f;L.g.rotation.y=q*.55;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.25;}}}
+// Iguanas on top of the Posey Tube's portal: a little group on the flat roof between the two towers, darting about, stopping, bobbing their heads. Visual only.
+const TUBI={g:null,l:[]};
+function tubeIguTick(rdt){const T_=TUBI;if(!DRIVE)return;
+  if(!T_.g){T_.g=new THREE.Group();T_.g.position.copy(P[Z.tu0]);T_.g.position.y+=16*1.3;T_.g.rotation.y=yaw(Z.tu0);scene.add(T_.g);
+    for(let n=0;n<7;n++){const{g,b}=iguMk();g.scale.setScalar(1.3);T_.g.add(g);const k={g,b,x:R(-4.6,4.6),z:R(.8,8.2),tx:0,tz:0,st:0,w:R(0,2),t:R(0,5),v:0};g.position.set(k.x,0,k.z);g.rotation.y=R(0,6.28);T_.l.push(k);}}
+  const near=PL.idx>Z.tu0-Math.round(500/SEG)&&PL.idx<Z.tu0+5;T_.g.visible=near;if(!near)return;
+  for(const k of T_.l){k.t+=rdt;
+    if(k.st===0){k.w-=rdt;const bob=Math.max(0,Math.sin(k.t*7))*(Math.sin(k.t*.9+k.x)>0?1:0);k.b.rotation.set(-bob*.2,0,0);k.b.position.y=bob*.03;
+      if(k.w<=0){k.st=1;k.tx=clamp(k.x+R(-3,3),-4.6,4.6);k.tz=clamp(k.z+R(-3,3),.8,8.2);k.v=R(2.5,4.5);k.g.rotation.y=Math.atan2(k.tx-k.x,k.tz-k.z);}}
+    else{const dx=k.tx-k.x,dz=k.tz-k.z,d=Math.hypot(dx,dz),st=k.v*rdt;if(d<=st){k.x=k.tx;k.z=k.tz;k.st=0;k.w=R(.6,3);}else{k.x+=dx/d*st;k.z+=dz/d*st;}
       k.b.position.y=Math.abs(Math.sin(k.t*22))*.02;k.b.rotation.set(0,0,Math.sin(k.t*22)*.12);}
     k.g.position.set(k.x,0,k.z);}}
 // Richmond's iguanas: big ones (the San Antonio model at twice-plus size) scurrying up and down both pavements from the San Rafael bridge through Shane Drive to I-80, stopping now and then
@@ -4408,6 +4408,15 @@ function seaMonTick(rdt){const M=BAYM;if(!DRIVE||!MAR.a)return;const i=PL.idx,m_
         for(let q=0;q<26;q++)puff(V.set(T.x+R(-5,5),T.y+.6,T.z+R(-5,5)),R(-9,9),R(2,10),R(-9,9),R(2,4),R(9,16),R(2,3.5),.6,0x8a7a62);   // a cloud of dust
         for(let q=0;q<20;q++)emit(smokeP,si++,V.set(T.x+R(-2,2),T.y+1,T.z+R(-2,2)),R(-8,8),R(8,17),R(-8,8),R(.5,1),R(.4,.8),R(1.2,2),.95,0x4a3e32,14,.2);NOGY=0;   // and rocks and clods flung up
         if(!PL.crash&&!MOSQ.lift&&Math.hypot(PL.x-T.x,PL.z-T.z)<110){PL.air=1;PL.vy=Math.max(PL.vy||0,7.5);PL.safe=Math.max(PL.safe,2.5);}}}}   // the jolt throws the car up a metre or so; it lands and drives on at the same speed
+  if(R3){const W=M.W,dT=wdiff(M.s-pe.s);if(M.tp==null&&dT<-45)M.tp=t;   // I-80: wades in facing the freeway, then leans over it and peers down at the road, following the car and turning to watch it go
+    at(M.s,0,0,W);const yR=Math.atan2(W.x-V.x,W.z-V.z),yC=Math.atan2(PL.x-V.x,PL.z-V.z),lk=sst(t,4.5,7.5)*rise,wd=sst(t,1.2,2.4)*(1-sst(t,7.2,8.4));
+    let dy=yC-yR;dy=Math.atan2(Math.sin(dy),Math.cos(dy));dy=clamp(dy,-1.4,1.4);const hy=yR+dy*lk*.75;M.wph+=rdt*2.3*wd;
+    g.rotation.set(lk*.36,hy,Math.sin(t*.5)*.04);
+    let ey=yC-hy;ey=Math.atan2(Math.sin(ey),Math.cos(ey));M.U.rotation.y=lerp(Math.sin(t*.4)*.25,clamp(ey,-.6,.6),lk);M.U.rotation.z=(Math.sin(t*.85)*.26+Math.sin(t*2.1)*.06)*lk;   // the head tilting from side to side, curious
+    M.E.rotation.x=.25+lk*.3+Math.sin(t*1.1)*.05;M.E.rotation.y=clamp(ey-M.U.rotation.y,-.35,.35);g.updateMatrixWorld(true);   // the big eye peering down, following the car
+    M.L.forEach((L,k)=>{L.rotation.x=Math.sin(M.wph+k*Math.PI)*.5*wd;});   // wading strides
+    M.A.forEach((A,k)=>{const sx=k?1:-1;A.rotation.x=-rise*.45+Math.sin(M.wph+k*Math.PI)*.4*wd-lk*(k?.5:.15);A.rotation.z=sx*(.12+rise*.2);});
+    const cd=Math.hypot(PL.x-V.x,PL.z-V.z);if(M.rum===0&&lk>.15){M.rum=1;sfxCurious(clamp(500/(cd+150),.4,1));}else if(M.rum===1&&cd<150&&lk>.5){M.rum=2;sfxCurious(.9);}}   // a low questioning rumble, and again as you go by
   for(const w of M.weed)w.p.rotation.set(Math.sin(t*1.3+w.ph)*w.a,0,Math.sin(t*1.7+w.ph)*w.a*.7);
   if(!M.snd&&t>.1){M.snd=1;const d=cam.distanceTo(V);sfxSeaBellow(clamp(700/(d+200),.35,1)*(bye===1?.6:1));G.shake=Math.max(G.shake,bye===1?.1:.25);}
   if(!M.said&&t>(bye?2.2:2)){M.said=1;if(R3)say('OUT OF THE STORM !','THE EYE WADES IN FOR A CLOSER LOOK',2.4);else if(R2)say('OUT OF THE BAY !','THE EYE RISES BY THE RICHMOND BRIDGE',2.4);else if(bye)say('BYE BYE !','THE EYE WAVES GOODBYE',2.4);else say('OUT OF THE BAY !','THE EYE RISES BESIDE THE GOLDEN GATE',2.4);}
@@ -4418,15 +4427,6 @@ function seaMonTick(rdt){const M=BAYM;if(!DRIVE||!MAR.a)return;const i=PL.idx,m_
 // always falling back away from the street (visual only: nothing reaches the road) (SFB, sfBldTick).
 const SFB={l:null};
 function sfBldTick(rdt){if(!DRIVE)return;const m_=x=>Math.round(x/SEG);
-  if(R3){const W=M.W,dT=wdiff(M.s-pe.s);if(M.tp==null&&dT<-45)M.tp=t;   // I-80: wades in facing the freeway, then leans over it and peers down at the road, following the car and turning to watch it go
-    at(M.s,0,0,W);const yR=Math.atan2(W.x-V.x,W.z-V.z),yC=Math.atan2(PL.x-V.x,PL.z-V.z),lk=sst(t,4.5,7.5)*rise,wd=sst(t,1.2,2.4)*(1-sst(t,7.2,8.4));
-    let dy=yC-yR;dy=Math.atan2(Math.sin(dy),Math.cos(dy));dy=clamp(dy,-1.4,1.4);const hy=yR+dy*lk*.75;M.wph+=rdt*2.3*wd;
-    g.rotation.set(lk*.36,hy,Math.sin(t*.5)*.04);
-    let ey=yC-hy;ey=Math.atan2(Math.sin(ey),Math.cos(ey));M.U.rotation.y=lerp(Math.sin(t*.4)*.25,clamp(ey,-.6,.6),lk);M.U.rotation.z=(Math.sin(t*.85)*.26+Math.sin(t*2.1)*.06)*lk;   // the head tilting from side to side, curious
-    M.E.rotation.x=.25+lk*.3+Math.sin(t*1.1)*.05;M.E.rotation.y=clamp(ey-M.U.rotation.y,-.35,.35);g.updateMatrixWorld(true);   // the big eye peering down, following the car
-    M.L.forEach((L,k)=>{L.rotation.x=Math.sin(M.wph+k*Math.PI)*.5*wd;});   // wading strides
-    M.A.forEach((A,k)=>{const sx=k?1:-1;A.rotation.x=-rise*.45+Math.sin(M.wph+k*Math.PI)*.4*wd-lk*(k?.5:.15);A.rotation.z=sx*(.12+rise*.2);});
-    const cd=Math.hypot(PL.x-V.x,PL.z-V.z);if(M.rum===0&&lk>.15){M.rum=1;sfxCurious(clamp(500/(cd+150),.4,1));}else if(M.rum===1&&cd<150&&lk>.5){M.rum=2;sfxCurious(.9);}}   // a low questioning rumble, and again as you go by
   if(!SFB.l){SFB.l=[];let n=0;for(let i=Z.b1+m_(45);i<Z.downtown-m_(25);i+=m_(R(34,46))){if(SFX.some(c=>Math.abs(i-c)<m_(16)))continue;
       const w=R(13,19),d=R(12,16),h=R(26,58),g=new THREE.Group(),b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),cityMats[n++%4]);b.position.set(0,h/2,-d/2);b.castShadow=true;g.add(b);
       const cap=new THREE.Mesh(new THREE.BoxGeometry(w+.6,.8,d+.6),std({color:0x8a8478,roughness:.9}));cap.position.set(0,h+.4,-d/2);g.add(cap);
