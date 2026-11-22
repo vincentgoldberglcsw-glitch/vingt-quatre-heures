@@ -321,7 +321,7 @@ function crowdTex(s0,density){let s=s0;const r=()=>{s=(s*16807)%2147483647;retur
     g.filter='blur(1.3px)';for(let x=0;x<H;x+=24+r()*16)if(Math.sin(x*.008+s0*2)+r()>density)fig(x,0,1);g.filter='none';});
   t.wrapT=THREE.RepeatWrapping;return t;}
 if(!DRIVE){const mk=(s0,d)=>std({map:crowdTex(s0,d),alphaTest:.3,side:THREE.DoubleSide,roughness:1});
- const a=mk(11,.35),b=mk(29,.6),c=mk(47,-3),d=mk(83,-3);
+ const a=mk(11,1.05),b=mk(29,1.3),c=mk(47,.35),d=mk(83,.35);   // owner 2026-11-22: thinner crowds
  for(const sd of[-1,1]){ribbon(sd*10.9,sd*10.9,0,2.2,a,16);ribbon(sd*12.3,sd*12.3,0,2.35,b,13.3);}
  [16,13.3,17.1,14.2,15.3,12.4].forEach((vs,k)=>ribbon(15.5+k*1.5,15.5+k*1.5,.7+k*.6,2.75+k*.6,k%2?c:d,vs,GS0,GS1));}
 
@@ -2603,7 +2603,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*SPILL.g*(1-(PL.melt
     if(!RUB&&racing&&DRIVE&&zoneArr[bi]===3&&H[bi]>6&&PL.safe<=0&&spd>(HRL(bi)?67:44.7)&&vn>(HRL(bi)?6:3.5)){pe.lat=lat;fallOff(sd,vn,bi);return;}   // and off the elevated freeway (I-880, and I-80 towards Berkeley: only at 150 mph)
     if(!RUB&&racing&&DRIVE&&CLF&&sd>0&&bi>=CLF[0]+15&&bi<=CLF[1]&&PL.safe<=0&&spd>22&&vn>4.5){pe.lat=lat;lakeCrash(sd,vn,bi,pe);return;}   // Marin: a hard hit breaks the timber rail above the lake, and over the edge into it
     if(!RUB&&racing&&DRIVE&&CLF&&sd>0&&bi>=CLF[0]&&bi<=CLF[1]&&PL.safe<=0&&spd>22&&vn>4.5){pe.lat=lat;fallOff(sd,vn,bi);say('OFF THE CLIFF','No. '+LIV().num+' - McQUEEN',3);return;}   // Marin: through the rail and off the cliff into the rocks
-    if(!RUB&&racing&&PL.safe<=0&&spd>(HRL(bi)?67:50)&&vn>(hero.M.tough?11:7)){pe.lat=lat;crashPlayer(vn,true);return;}                              // only a hit at real speed wrecks the car
+    if(!RUB&&racing&&PL.safe<=0&&spd>(!DRIVE?78.2:HRL(bi)?67:50)&&vn>(hero.M.tough?11:7)){pe.lat=lat;crashPlayer(vn,true);return;}                              // only a hit at real speed wrecks the car
     PL.x-=Nn[bi].x*sd*(Math.abs(lat)-WLL);PL.z-=Nn[bi].z*sd*(Math.abs(lat)-WLL);lat=WLL*sd;
     if(vn>0){if(RUB){PL.vx-=Nn[bi].x*sd*vn*.8;PL.vz-=Nn[bi].z*sd*vn*.8;}PL.vx-=Nn[bi].x*sd*vn*1.35;PL.vz-=Nn[bi].z*sd*vn*1.35;PL.vx*=.9;PL.vz*=.9;VS.r*=.4;let dh=((yaw(bi)-PL.h+Math.PI*3)%(Math.PI*2))-Math.PI;if(Math.abs(dh)<1.6)PL.h+=dh*.22;
       if(vn>1.5){sfxScrape(clamp(vn/8,.3,1));G.shake=Math.max(G.shake,.4);for(let i=0;i<10;i++)spark(V.set(PL.x+Nn[bi].x*sd,.5,PL.z+Nn[bi].z*sd),PL.vx*.6+R(-4,4),R(1,6),PL.vz*.6+R(-4,4));}}}
@@ -2612,7 +2612,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*SPILL.g*(1-(PL.melt
   for(const e of ents){if(e.player)continue;const isW=!!e.car.wreck;if(e.out>0&&!isW)continue;const ex=e.car.position.x-PL.x,ez=e.car.position.z-PL.z,dzf=ex*fx+ez*fz,dxs=ex*fz-ez*fx;
     if(Math.abs(dzf)<4.3&&Math.abs(dxs)<1.95){const ev=isW?0:e.v,close=dzf>0?f-ev:ev-f;
       if(racing&&close>30&&v>78.2&&PL.safe<=0){if(!isW)crashAI(e,close*.5);crashPlayer(close*.5,false);return;}   // only above 175 mph (78.2 m/s) is a hit a crash
-      if(close>2&&!isW&&!(e.bT>tmNow())){e.bT=tmNow()+.5;e.lat+=Math.sign(dxs||1)*(Nn[bi].x*fz-Nn[bi].z*fx>0?1:-1)*clamp(close*.08,.4,1.6);G.shake=Math.max(G.shake,.25);sfxBoing(clamp(close/20+.45,.45,1));}   // below that a rubbery bump: boing, and it is shoved aside
+      if(close>2&&!isW&&!(e.bT>tmNow())){e.bT=tmNow()+.5;e.lat+=Math.sign(dxs||1)*(Nn[bi].x*fz-Nn[bi].z*fx>0?1:-1)*clamp(close*.08,.4,1.6);G.shake=Math.max(G.shake,.25);(DRIVE?sfxBoing:sfxKnock)(clamp(close/20+.45,.45,1));}   // below that a rubbery bump: boing, and it is shoved aside
       const push=(1.95-Math.abs(dxs))*.5*Math.sign(dxs||1);PL.x-=fz*push;PL.z+=fx*push;if(!isW)e.lat+=push*(Nn[bi].x*fz-Nn[bi].z*fx>0?1:-1)*.5;
       if(close>0){if(dzf>0){const nf=Math.max(0,ev-1.5),k=f>1?nf/f:1;PL.vx*=k;PL.vz*=k;if(!isW)e.v+=1.2;}else if(!isW)e.v=Math.max(0,f-1.5);sfxScrape(.5);G.shake=Math.max(G.shake,.3);}}}
   for(const o of OBST){const ox=PL.x-o.x,oz=PL.z-o.z,d2=ox*ox+oz*oz,R0=o.r||2.5;if(o.deb&&d2<R0*R0&&v>3){const dd=o.deb,kk=OBST.indexOf(o);if(kk>=0)OBST.splice(kk,1);dd.ob=null;dd.done=false;dd.vy=R(7,13);dd.vx=PL.vx*1.1+R(-4,4);dd.vz=PL.vz*1.1+R(-4,4);dd.w=R(-7,7);if(hero.sherpTyres){PL.bump=Math.max(PL.bump||0,.45);sfxThump(.6);}else{PL.vx*=.94;PL.vz*=.94;sfxScrape(.8);}G.shake=Math.max(G.shake,.35);continue;}   /* the Sherp just bucks over it */if(d2<R0*R0&&d2>.01){const d=Math.sqrt(d2),k=(R0-d)/d;PL.x+=ox*k;PL.z+=oz*k;if(o.soft){PL.vx*=.995;PL.vz*=.995;}else if(v>3){PL.vx*=.7;PL.vz*=.7;sfxScrape(clamp(v/20,.3,1));G.shake=Math.max(G.shake,.3);}}}   // parked cars
@@ -2665,7 +2665,7 @@ function backOnRoad(pe,j0,s0=pe.s){let j=wrapI(j0),lat=-(RW+XW[j])/2;
   pe.dist+=wdiff(j*SEG-s0);pe.s=j*SEG;pe.lat=lat;at(pe.s,lat,0,V);PL.idx=j;PL.x=V.x;PL.z=V.z;PL.h=G.camH=yaw(j);return j;}
 function sim(dt){const pe=ents.find(e=>e.player);
   if(G.state==='race')G.raceT+=dt;
-  if(!DRIVE&&G.state==='race'){turkeysTick(dt);oldManTick(dt,pe);leadTick(dt,pe);}
+  if(!DRIVE&&G.state==='race'){oldManTick(dt,pe);leadTick(dt,pe);}
   if(G.state==='race')heatTick(dt,pe);
   if(G.state==='race'&&G.cam===1&&!PL.crash){PL.cough=(PL.cough??R(3,6))-dt;if(PL.cough<=0){PL.cough=R(6,13);sfxCough();}}   // the smoke gets to him
   if(PL.safe>0)PL.safe-=dt;
@@ -2837,7 +2837,7 @@ const TK=[];
     A(new THREE.SphereGeometry(.045,6,5),rm,0,1,.44).scale.y=1.8;A(new THREE.ConeGeometry(.025,.09,5),lm,0,1.1,.47).rotation.x=Math.PI/2;for(const s of[-1,1])A(cyl(.02,.02,.32,5),lm,s*.1,.16,0);
     g.w=[1,-1].map(s=>{const p=new THREE.Group();p.position.set(s*.2,.66,0);const w=new THREE.Mesh(new THREE.PlaneGeometry(.62,.42).rotateX(-Math.PI/2),fm);w.position.x=s*.31;p.add(w);g.add(p);return p;});g.scale.setScalar(1.25);scene.add(g);return g;};
   const tm_=x=>Math.round(x/SEG);   // free drive: a few flocks in Alameda, and Richmond is overrun with them
-  for(const ci of DRIVE?[Z.start+tm_(150),Z.central+tm_(120),Z.central+tm_(420),Z.bv+tm_(400),Z.rb1+tm_(120),Z.richmond+tm_(120),Z.shane-tm_(200),Z.shane-tm_(60),Z.shane+tm_(80),Z.shane+tm_(220),Z.shane+tm_(380),Z.refinery-tm_(400),Z.refinery-tm_(220)]:[Math.floor(NS*.27),Math.floor(NS*.52),Math.floor(NS*.78)])for(let k=0;k<4;k++)TK.push({m:mk(),ci,lat:R(-11,11),ds:R(-9,9),tl:R(-11,11),td:R(-9,9),tt:R(1,5),st:0,x:0,y:0,z:0,vx:0,vy:0,vz:0,h:R(0,6),sp:0});}
+  for(const ci of DRIVE?[Z.start+tm_(150),Z.central+tm_(120),Z.central+tm_(420),Z.bv+tm_(400),Z.rb1+tm_(120),Z.richmond+tm_(120),Z.shane-tm_(200),Z.shane-tm_(60),Z.shane+tm_(80),Z.shane+tm_(220),Z.shane+tm_(380),Z.refinery-tm_(400),Z.refinery-tm_(220)]:[])for(let k=0;k<4;k++)TK.push({m:mk(),ci,lat:R(-11,11),ds:R(-9,9),tl:R(-11,11),td:R(-9,9),tt:R(1,5),st:0,x:0,y:0,z:0,vx:0,vy:0,vz:0,h:R(0,6),sp:0});}
 // newspapers in the tubes: loose sheets that skitter along the floor in the draught, tumble in the air, and are flung up behind a passing car. A small pool, kept ahead of the player.
 let PAPERS=null;
 function papersTick(rdt){const inT=zoneArr[PL.idx]===2;if(!PAPERS){if(!inT)return;
@@ -3872,6 +3872,7 @@ function tankerBoom(t){const p=V2.copy(t.g.position),x=p.x,y=p.y,z=p.z;   // a t
   for(let k=0;k<20;k++){const a=R(0,6.283),sp=R(1,6);puff(V.set(x,y+6,z),Math.cos(a)*sp,R(12,24),Math.sin(a)*sp,R(5,8),R(18,30),R(2.5,4.5),.75,0x151311);}
   for(let k=0;k<18;k++){const a=R(0,6.283),sp=R(6,18);flame(V.set(x,y+2,z),Math.cos(a)*sp,R(6,16),Math.sin(a)*sp,R(.8,1.6),R(2,4),R(.8,1.6),0xff8a2a);}
   fireball(p,t);sfxThump(2.2);say("KABOOM !","THE TANKER GOES UP",1.6);}
+function sfxKnock(k){sfxCrunch(.55*k);sfxScrape(.7*k);}   // Le Mans: a real bodywork knock and scrape, not a cartoon boing
 function sfxBoing(k){if(!AC)return;const t=AC.currentTime;tone('sine',R(150,190),t,.32,.5*k,master,{to:R(330,420),a:.004,h:.15});tone('sine',R(90,110),t+.06,.28,.3*k,master,{to:60,h:.2});}
 // ---- San Quentin's beach (east of the prison, down to the bay): big surf crashing in and people flying kites. Hyde St: a few people on the pavements, and kids skateboarding down the middle of the road below the crest (solid: steer round them).
 // All made after bakeStatic, with their own seeded numbers so nothing else moves.
