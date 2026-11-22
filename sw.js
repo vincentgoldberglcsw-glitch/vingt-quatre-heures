@@ -1,5 +1,5 @@
 // Keeps the game on the device after the first visit, so it starts quickly and can be driven with no connection.
-const V = 'vqh-2026-11-15b';
+const V = 'vqh-2026-11-22a';
 const CORE = ['./', 'index.html', 'js/game.js', 'js/boot.js', 'js/sim/vehicle.js', 'js/world/terrain.js', 'assets/bay-dem.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

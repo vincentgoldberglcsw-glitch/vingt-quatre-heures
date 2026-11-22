@@ -917,7 +917,7 @@ if(DRIVE){ // ---- Alameda scenery: the hill and driveway to the burger, eucalyp
       
       const t=T[i],n=Nn[i],tl=Math.hypot(t.x,t.z)||1;off(i,sd*(RW+XW[i]+8+W*.15),0,g.position);{const gd=g.position.y-groundAt(g.position.x,g.position.z),hl=gd>2?gd:0,nleg=W>14?3:2;for(let k=0;k<nleg;k++)B(.9,y0+H*.6+hl,.9,steelM,nleg===2?(k?1:-1)*W*.3:(k-1)*W*.38,(y0+H*.6-hl)/2,-.6,0,g);}   /* the legs, down to the ground when it stands beside the raised freeway */g.rotation.y=Math.atan2(-t.x/tl-sd*.45*n.x,-t.z/tl-sd*.45*n.z);g.traverse(o=>{o.castShadow=true;});scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:2});return g;};
     PBOARD=pboard;const sol=pic('red-poster-soldiers.jpg',0,26,512,614,[[425,26,87,36,506,140],[0,26,34,16,4,140]]),
-      gp=pic('good-and-plenty.jpg',22,44,476,596),
+      swal=pic('swallow-matches.jpg',0,0,960,727),brillo=pic('brillo.jpg',0,0,795,800),pathf=pic('pathfinder-eye.jpg',0,0,565,900),   // the owner's vintage packaging: a Swedish matchbox label, a soap-pads box top, a red box with an engraved eye
       cafe=pic('cafe-con-pan.jpg',30,88,300,468),
       sun=pic('red-sun-poster.jpg',0,68,728,758),
       clown=pic('clown-mask.jpg',0,28,512,612);
@@ -926,7 +926,13 @@ if(DRIVE){ // ---- Alameda scenery: the hill and driveway to the burger, eucalyp
     pboard(Z.berkeley+m(900),-1,[[afr,328/556]],17);   // I-80, past Berkeley
     pboard(Z.emeryville+m(700),1,[[lead,484/596]],18);   // I-80, Emeryville into Oakland
     pboard(Z.tu1+m(450),1,[[sol,512/614]]);   // I-880, out of the Posey Tube
-    pboard(Z.i80+m(220),-1,[[gp,476/596]],15);   // I-80 south, off the Richmond bridge
+    // the packaging boards, in place of the candy and chemical-works boards that stood here (about 1.5 times their size), so no picture follows itself
+    pboard(Z.tu1+m(1520),-1,[[swal,960/727]],11.7);   // I-880 north (was TOXIC chemical storage)
+    pboard(Z.sq+m(220),-1,[[brillo,795/800]],13.5);   // past San Quentin (was Pacific Polymers)
+    pboard(Z.sq+m(600),-1,[[swal,960/727]],11.7);   // (was Baychem chlorine works)
+    pboard(Z.sq+m(780),1,[[pathf,565/900]],17);   // (was Tri-County Petrochemical)
+    pboard(Z.i80+m(220),-1,[[brillo,795/800]],20);   // I-80 south, off the Richmond bridge (was Good & Plenty)
+    pboard(Z.oakland-m(600),1,[[pathf,565/900]],17);   // into Oakland (was Jawbreaker Jim's candy)
     pboard(Z.oakland+m(600),-1,[[cafe,300/468]],18);   // the last freeway, through Oakland to the Webster Tube: the two biggest
     pboard(Z.oakland+m(1500),1,[[sun,728/758]],18);
     pboard(Z.wt0+m(260),1,[[clown,512/612]],13);}   // out of the Webster Tube into Alameda (on the right, so it no longer stands in Wilma Chan Way)
@@ -1552,7 +1558,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
     {// I-880 after the tube: chemicals, poison, a wonder drug, robot repair, and warnings about animals and insects (drawn symbols)
       const HZ=[['CHEMCO','Industrial Solvents · Acids · Bulk','chem','#1d3a5a','#ffd23a'],['RAT-B-GONE','Poison. Handle With Gloves.','skull','#2a1a2a','#9aff6a'],['MIRACULIN','The Wonder Drug! Ask Your Doctor','pill','#f0f4f8','#c0262c'],
         ['ROBO-FIX','Robot Repair · While U Wait','wrench','#243040','#7ad8ff'],['WARNING','Ducks Crossing · Slow Down','duck','#f2c230','#1a1a1a'],['DANGER','Killer Bees · Do Not Stop','bee','#f2c230','#1a1a1a'],['BEWARE','Skunks, Raccoons & Possums','skunk','#f2c230','#1a1a1a'],['TOXIC','Chemical Storage · Keep Out','chem','#2a2a2a','#ffd23a']];
-      HZ.forEach(([name,tag,pic,bg,fg],v)=>{const t=canvas(1024,460,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=fg;g.lineWidth=12;g.strokeRect(14,14,w-28,h-28);const cx=200,cy=230;g.fillStyle=fg;g.strokeStyle=fg;g.lineCap='round';
+      HZ.forEach(([name,tag,pic,bg,fg],v)=>{if(v===7)return;   /* TOXIC's spot now holds a packaging photo board */const t=canvas(1024,460,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle=fg;g.lineWidth=12;g.strokeRect(14,14,w-28,h-28);const cx=200,cy=230;g.fillStyle=fg;g.strokeStyle=fg;g.lineCap='round';
           if(pic==='chem'){g.beginPath();g.moveTo(cx-30,cy-120);g.lineTo(cx+30,cy-120);g.lineTo(cx+30,cy-30);g.lineTo(cx+90,cy+90);g.lineTo(cx-90,cy+90);g.lineTo(cx-30,cy-30);g.closePath();g.lineWidth=10;g.stroke();g.globalAlpha=.7;g.fillRect(cx-70,cy+30,140,56);g.globalAlpha=1;}
           else if(pic==='skull'){g.beginPath();g.arc(cx,cy-20,80,0,7);g.fill();g.fillRect(cx-45,cy+40,90,50);g.fillStyle=bg;for(const d of[-34,34]){g.beginPath();g.arc(cx+d,cy-20,22,0,7);g.fill();}g.fillRect(cx-6,cy+10,12,22);for(let q=-2;q<=2;q++)g.fillRect(cx+q*16-3,cy+60,6,30);g.strokeStyle=fg;g.lineWidth=16;g.beginPath();g.moveTo(cx-110,cy+100);g.lineTo(cx+110,cy+130);g.moveTo(cx+110,cy+100);g.lineTo(cx-110,cy+130);g.stroke();}
           else if(pic==='pill'){g.save();g.translate(cx,cy);g.rotate(-.6);g.beginPath();g.roundRect(-110,-48,110,96,48);g.fill();g.fillStyle='#2a5ec0';g.beginPath();g.roundRect(0,-48,110,96,48);g.fill();g.restore();g.fillStyle='#f2c230';for(let q=0;q<5;q++){const a=q*1.256;g.beginPath();g.arc(cx+Math.cos(a)*150,cy+Math.sin(a)*150,8,0,7);g.fill();}}
@@ -1580,7 +1586,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
       else{for(let k=0;k<6;k++){const x=110+(k%3)*85,y=170+(k/3|0)*110;g.fillStyle=['#e83a3a','#3a8ae8','#f0c020','#3ac06a','#e870c0','#f08a20'][k];g.beginPath();g.arc(x,y,40,0,7);g.fill();g.fillStyle='rgba(255,255,255,.5)';g.beginPath();g.arc(x-13,y-13,11,0,7);g.fill();}}
       g.fillStyle=col;g.textAlign='left';g.font='italic 900 '+(name.length>14?66:84)+'px Georgia,serif';g.fillText(name,380,220,600);g.fillStyle='#3a2a1a';g.font='700 34px Georgia,serif';g.fillText(tag,382,290,600);
       g.fillStyle=col;g.fillRect(382,316,260,5);g.font='italic 700 24px Georgia,serif';g.fillStyle='rgba(58,42,26,.75)';g.fillText(pic==='robo'?'ask for it by name · beep boop':'next exit · alameda & oakland',382,362);});
-    [[Z.i80+m(400),1],[Z.i80+m(1700),-1],[Z.berkeley+m(400),1],[Z.oakland-m(600),1]].forEach(([i,sd],v)=>{const t=rtex(RETRO[(v+4)%RETRO.length])   /* I-80 only: I-880 north has propaganda instead (below) */,g=new THREE.Group(),bd=new THREE.Mesh(new THREE.PlaneGeometry(13.5,6),new THREE.MeshStandardMaterial({map:t,emissiveMap:t,emissive:0xffffff,emissiveIntensity:.3,roughness:.75}));bd.position.y=8;g.add(bd);
+    [[Z.i80+m(400),1],[Z.i80+m(1700),-1],[Z.berkeley+m(400),1]].forEach(([i,sd],v)=>{const t=rtex(RETRO[(v+4)%RETRO.length])   /* I-80 only: I-880 north has propaganda instead (below) */,g=new THREE.Group(),bd=new THREE.Mesh(new THREE.PlaneGeometry(13.5,6),new THREE.MeshStandardMaterial({map:t,emissiveMap:t,emissive:0xffffff,emissiveIntensity:.3,roughness:.75}));bd.position.y=8;g.add(bd);
       B(13.9,6.4,.3,mat('woodBoard',{color:0x5a4a38,roughness:.9}),0,8,-.17,0,g);const leg=8+(H[i]>2?H[i]:0);for(const x of[-4.5,0,4.5])B(.35,leg,.35,mat('woodPost',{color:0x6a5440,roughness:.9}),x,8-3-leg/2,-.35,0,g);for(const x of[-4,4]){const lm=B(.6,.25,.6,lampMat,x,11.6,.6,0,g);lm.castShadow=false;}   // gooseneck lamps over the top
       g.traverse(o=>{o.castShadow=true;});off(i,sd*(wallAt[i]+8),0,g.position);g.rotation.y=yaw(i)+Math.PI-sd*.36;scene.add(g);});
     // past San Quentin: signs for the chemical works, and the first posters for the Leader; past the San Rafael bridge, Richmond is covered in WE LOVE THE LEADER boards
@@ -1588,13 +1594,9 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
       g.fillStyle=bg;g.beginPath();g.arc(cx,cy,150,0,7);g.fill();leaderAlien(g,cx,cy);   // the Leader in a sunburst
       g.fillStyle='rgba(0,0,0,.55)';g.fillRect(420,110,570,250);g.fillStyle='#f4ead2';g.textAlign='center';g.textBaseline='middle';
       g.font='900 '+(title.length>16?60:78)+'px Impact,"Arial Black",Arial';g.fillText(title,705,195,550);g.font='700 34px Georgia,serif';g.fillStyle=fg;g.fillText(sub,705,285,550);});
-    const chem=(name,sub,col)=>canvas(1024,460,(g,w,h)=>{g.fillStyle='#e8e6e0';g.fillRect(0,0,w,h);g.fillStyle=col;g.fillRect(0,0,w,90);g.fillRect(0,h-40,w,40);g.fillStyle='#f4f4f4';g.font='900 54px Arial';g.textAlign='left';g.fillText(name,40,62,940);
-      g.save();g.translate(190,270);g.rotate(Math.PI/4);g.fillStyle='#f0c020';g.fillRect(-95,-95,190,190);g.strokeStyle='#141414';g.lineWidth=8;g.strokeRect(-95,-95,190,190);g.restore();g.fillStyle='#141414';g.font='900 120px Arial';g.textAlign='center';g.fillText('!',190,312);
-      g.font='700 40px Arial';g.textAlign='left';g.fillText(sub,360,240,620);g.font='700 28px Arial';g.fillStyle='#5a5a5a';g.fillText('NEXT RIGHT · TRUCK ENTRANCE · NO VISITORS',360,300,620);});
     const tall=(i,sd,t)=>{const g=new THREE.Group(),bd=new THREE.Mesh(new THREE.PlaneGeometry(13.5,6),new THREE.MeshStandardMaterial({map:t,emissiveMap:t,emissive:0xffffff,emissiveIntensity:.45,roughness:.6}));bd.position.y=8;g.add(bd);
       B(13.8,6.3,.25,steelM,0,8,-.15,0,g);const leg=8+(H[i]>2?H[i]:0);for(const x of[-5,5])B(.4,leg,.4,steelM,x,8-3-leg/2,-.35,0,g);g.traverse(o=>{o.castShadow=true;});off(i,sd*(wallAt[i]+8),0,g.position);g.rotation.y=yaw(i)+Math.PI-sd*.36;scene.add(g);};
-    tall(Z.sq+m(220),-1,chem('PACIFIC POLYMERS INC.','INDUSTRIAL SOLVENTS & RESINS','#1f4f8a'));tall(Z.sq+m(420),1,ldr('THE LEADER KNOWS THE WAY','Follow. Believe. Belong.','#7a1414','#d8a83a'));
-    tall(Z.sq+m(600),-1,chem('BAYCHEM CHLORINE WORKS','CHLORINE · CAUSTIC SODA · ACIDS','#2f6b45'));tall(Z.sq+m(780),1,chem('TRI-COUNTY PETROCHEMICAL','BENZENE · TOLUENE · XYLENE','#8a3a1a'));
+    tall(Z.sq+m(420),1,ldr('THE LEADER KNOWS THE WAY','Follow. Believe. Belong.','#7a1414','#d8a83a'));   // (the chemical-works boards either side are now packaging photo boards)
     [['WE LOVE THE LEADER','Richmond is grateful.'],['WE ♥ THE LEADER','He watches over us.'],['THE LEADER PROVIDES','Thank him tonight.'],['WE LOVE THE LEADER','Obey with joy.'],['ONE CITY · ONE LEADER','Unity is strength.']].forEach(([a,b],k)=>
       tall(Z.rb1+m(60+k*130),k%2?-1:1,ldr(a,b,['#7a1414','#14284a','#3a1458'][k%3],'#d8a83a')));
     // I-880 north, out of the Posey Tube: no candy, but huge red propaganda posters (a worker with a raised fist against a red sunburst, factories, a slogan) and boards praising the Leader
