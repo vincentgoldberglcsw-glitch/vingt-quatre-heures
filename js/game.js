@@ -4368,6 +4368,7 @@ function tnkStart(){const K=TNK,pe=ents.find(e=>e.player);if(!pe)return;if(!K.bo
 function tnkTick(rdt){const K=TNK;if(!DRIVE||!Z.rb0)return;const i=PL.idx,m_=x=>Math.round(x/SEG);
   if(i<Z.sq||i>Z.rb1)K.armed=1;   // ready again for the next pass
   if(!K.on&&K.armed&&G.state==='race'&&i>=Z.sq+m_(150)&&i<Z.sq+m_(230))tnkStart();
+  if(K.mc&&K.mc.on){if(G.state!=='race')tnkCloudOff();else tnkCloud(rdt);}   // the mushroom cloud outlives the ship
   if(!K.on)return;if(G.state!=='race'){tnkOff();return;}
   K.t+=rdt;const t=K.t,b=K.b,g=b.g,W=TNK.wat,V=K.v;
   // him: rise 0-6 s, both arms up 5-7.6, the claw slams at 8.1, then down again from 10.5
@@ -4478,7 +4479,6 @@ function gullTick(){const B=GULL,on=PL.idx>CLF[0]-200&&PL.idx<Z.rb0;
   for(let k=0;k<36;k++){const b=B.b[k],c=B.c[b.f],a=tm*b.w+b.ph,fy=y=>y-H[c[0]]+c[2]+22;
     at(c[0]*SEG+Math.cos(a)*b.r*2,c[1]+Math.sin(a)*b.r,fy(b.h+Math.sin(a*2)*1.5),B.V);at(c[0]*SEG+Math.cos(a+.05*Math.sign(b.w))*b.r*2,c[1]+Math.sin(a+.05*Math.sign(b.w))*b.r,fy(b.h),B.W);
     B.E.set(0,Math.atan2(B.W.x-B.V.x,B.W.z-B.V.z),Math.sin(a)*.3);B.Q.setFromEuler(B.E);const fl=Math.sin(tm*8+b.ph);B.S.set(2.2,fl*2.2,2.2);B.M.compose(B.V,B.Q,B.S);B.im.setMatrixAt(k,B.M);}
-  if(K.mc&&K.mc.on){if(G.state!=='race')tnkCloudOff();else tnkCloud(rdt);}   // the mushroom cloud outlives the ship
   B.im.count=36;B.im.instanceMatrix.needsUpdate=true;}
 // ---- freeway earthquakes (free drive): one strong quake on each freeway stretch (I-880, I-80, the Marin freeway), once per drive, at a random point.
 // A rumble that builds, the sky going dark, cracks running across the lanes ahead, then the road splits open in a jagged fissure across all but one lane.
