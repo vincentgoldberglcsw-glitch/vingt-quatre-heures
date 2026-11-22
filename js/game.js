@@ -35,6 +35,7 @@ const STORM={ships:[],tex:null,a:0,b:0};   // the stormy sea on the right of I-8
 const LIT={p:null,t:3};   // litter thrown from passing cars (see litterTick)
 const SFSM=[];   // smoke sources on the decayed San Francisco towers
 const SFP=[];    // the San Francisco pyramid towers, left unbaked so they can fall in the city quake (sfPyrTick)
+const DSTK=[];   // two Richmond refinery stacks (and the houses beyond them), left unbaked so the daddy beetle's stomping can topple them (dadStackTick)
 const BBQ=[];   // the roadside billboards on I-880 that fall during the quake (see bbQuakeTick)
 const VANS=[];   // the ice-cream truck and the taco truck, driving up and down Paru (see vanTick)
 const BEARS=[],BUFF=[];let DRUMG=null,DRUMM=null;
@@ -1461,7 +1462,12 @@ await BOOT.step('RICHMOND · SHANE DRIVE',.68);
     board(Z.richmond-m(30),-12,8,3,sign(1024,384,'RICHMOND','#1f5a3a','#f4f1e8','900 130px Arial','CITY LIMIT · WATCH FOR TURKEYS'));
     const tankM=std({color:0xe8e6de,roughness:.6,metalness:.2});for(let k=0;k<26;k++){gpos(Z.refinery-m(320)+k*m(12),rr(60,240),V);const r=rr(10,22);if(!farFromRoad(V.x,V.z,r+14))continue;const t=new THREE.Mesh(cyl(r,r,rr(8,16),20),tankM);t.position.set(V.x,6,V.z);t.castShadow=true;scene.add(t);}
     gpos(Z.refinery-m(120),210,V);const fl=new THREE.Mesh(cyl(1.2,1.8,70,8),steelM);fl.position.set(V.x,35,V.z);scene.add(fl);BURN.push({x:V.x,y:72,z:V.z,s:1.2,flare:1});
-    for(let k=0;k<8;k++){gpos(Z.refinery-m(260)+k*m(20),rr(50,140),V);if(!farFromRoad(V.x,V.z,20))continue;const h=rr(30,55);const tw=new THREE.Mesh(cyl(2.4,2.4,h,10),steelM);tw.position.set(V.x,h/2,V.z);scene.add(tw);}
+    for(let k=0;k<8;k++){gpos(Z.refinery-m(260)+k*m(20),rr(50,140),V);if(!farFromRoad(V.x,V.z,20))continue;const h=rr(30,55);
+      if(DSTK.length<2&&k%3===0){const i0=Z.refinery-m(260)+k*m(20),c=off(i0,0,0,new THREE.Vector3()),g=new THREE.Group(),secs=[],hs=[];let dx=V.x-c.x,dz=V.z-c.z;const dl=Math.hypot(dx,dz)||1;dx/=dl;dz/=dl;   // one the daddy beetle can topple: in three sections, pivoting at its foot; two houses stand beyond it, away from the road
+        g.position.set(V.x,0,V.z);for(let q=0;q<3;q++){const s=new THREE.Mesh(cyl(2.4,2.4,h/3,10),steelM);s.position.y=h/6+q*h/3;g.add(s);secs.push(s);}scene.add(g);
+        for(const f of[.6,.92]){const j=rr(-3,3),x=V.x+dx*h*f-dz*j,z=V.z+dz*h*f+dx*j;ranch(x,groundAt(x,z),z,Math.atan2(-dx,-dz),RC[n++%RC.length],'');hs.push(scene.children[scene.children.length-1]);}
+        DSTK.push({g,secs,hs,h,i:i0,d:new THREE.Vector3(dx,0,dz),ax:new THREE.Vector3(dz,0,-dx),st:0,t:0,th:0,w:0,kick:0,br:secs.map(()=>({x:R(-1.5,1.5),y:0,rx:R(-.35,.35),rz:R(-.35,.35)}))});continue;}
+      const tw=new THREE.Mesh(cyl(2.4,2.4,h,10),steelM);tw.position.set(V.x,h/2,V.z);scene.add(tw);}
     // the big refinery at the Richmond end of the San Rafael bridge, seen across the water on the way in: tank farms, distillation columns with lit platforms,
     // pipe racks, and flare stacks burning off gas, their flames visible from the far end of the bridge. Oil tankers lie at anchor either side of the bridge.
     {let rs=5;const rq=()=>{rs=(rs*16807)%2147483647;return rs/2147483647;},onLand=(x,z)=>Terrain.landAt(x,z)>.2;
@@ -1638,7 +1644,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
   {const ch=std({color:0x1c1a18,roughness:1});for(const f of[.12,.27,.45,.6,.83]){const i=Z.b0+Math.round((Z.b1-Z.b0)*f),sd=f*10%2<1?1:-1,g=new THREE.Group();g.add(new THREE.Mesh(carG,ch),new THREE.Mesh(whG,ch));off(i,sd*7.4,0,g.position);g.rotation.set(0,yaw(i)+rr(-.6,.6),sd*.12);scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:2.2});BURN.push({x:g.position.x,y:g.position.y+1,z:g.position.z,s:.8});}}
   // last of all, merge the static scenery by material and by area, so the whole bay draws in a few hundred calls instead of tens of thousands
   Terrain.occupy(scene.children.slice(A0));Terrain.start(scene,CULL,LANDM,grassTex);   // the real hills: level ground is kept under everything built above, and the rest is queued to be raised tile by tile
-  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...(BAYV?[BAYV.g]:[]),...CROWS.map(c=>c.g),...MILLC.tw.map(t=>t.g),...BEARS.map(b=>b.g),...SFP.map(o=>o.g),...Object.values(BTL.br).flat().map(x=>x[0])]));
+  bakeStatic(scene.children.slice(A0),new Set([SHIP,pelicans,exotics,manatee,tunL,SWOOP,...(BAYV?[BAYV.g]:[]),...CROWS.map(c=>c.g),...MILLC.tw.map(t=>t.g),...BEARS.map(b=>b.g),...SFP.map(o=>o.g),...DSTK.flatMap(o=>[o.g,...o.hs]),...Object.values(BTL.br).flat().map(x=>x[0])]));
   for(const o of [...scene.children])if(o.isInstancedMesh&&o.frustumCulled&&o.count>60)splitInstanced(o);
 }
 
@@ -4136,7 +4142,8 @@ function dadBeetlePlace(ahead){const D=DADB,pe=ents.find(e=>e.player);if(!pe)ret
   D.dir=Math.random()<.6?Math.PI:0;D.h=D.dir;D.t=0;D.n=-1;D.rc=R(5,9);}
 function dadBeetleTick(rdt){const D=DADB;if(!DRIVE||!Z.shane)return;const pe=ents.find(e=>e.player);if(!pe)return;const i=PL.idx,m_=x=>Math.round(x/SEG);
   const zone=G.state==='race'&&i>Z.shane-m_(260)&&i<Z.refinery+m_(60);
-  if(!zone){if(D.on){D.on=0;D.g.visible=false;}if(i<Z.rb1||i>Z.i80)D.said=0;return;}
+  dadStackTick(rdt);
+  if(!zone){if(D.on){D.on=0;D.g.visible=false;}if(i<Z.rb1||i>Z.i80){D.said=0;dadStackReset();}return;}
   if(!D.on)dadBeetlePlace(R(560,640));
   else if(pe.s-D.s>150&&pe.s+500<Z.refinery*SEG)dadBeetlePlace(R(560,640));   // gone by: he turns up again further ahead
   D.t+=rdt;const t=D.t,g=D.g,sc=D.sc,sd=D.sd;
@@ -4157,9 +4164,25 @@ function dadBeetleTick(rdt){const D=DADB;if(!DRIVE||!Z.shane)return;const pe=ent
   if(!D.said&&cd<900){D.said=1;D.rc=R(1,2);say('THE DADDY BEETLE !','STOMPING ACROSS RICHMOND',2.4);}
   if((D.rc-=rdt)<=0){D.rc=R(9,16);sfxBeetleRoar(clamp(300/(cd+60),.25,.9));}   // now and then a deep roar
   // a footfall each time a foot comes down: a deep thud, the ground shakes, a big cloud of dust
-  const st=Math.floor((D.ph-Math.PI/2)/Math.PI);if(st!==D.n){const first=D.n<0;D.n=st;if(!first){const L=D.LG[((st%2)+2)%2],F=L.ft.getWorldPosition(D.F),k=clamp(300/(cd+60),.12,1),fy=gh(F.x,F.z);
-      sfxEyeStomp(k);G.shake=Math.max(G.shake,.6*k);
-      if(cd<1200){NOGY=1;for(let q=0;q<22;q++){const a=R(0,6.283),sp=R(6,15);puff(V.set(F.x+Math.cos(a)*R(3,12),fy+1,F.z+Math.sin(a)*R(3,12)),Math.cos(a)*sp,R(2,9),Math.sin(a)*sp,R(6,10),R(18,34),R(1.8,3),.6,0x9a8c74);}NOGY=0;}}}}
+  const st=Math.floor((D.ph-Math.PI/2)/Math.PI);if(st!==D.n){const first=D.n<0;D.n=st;if(!first){const L=D.LG[((st%2)+2)%2],F=L.ft.getWorldPosition(D.F),k=clamp(420/(cd+60),.15,1),fy=gh(F.x,F.z);
+      sfxEyeStomp(Math.min(1,k*1.2));G.shake=Math.max(G.shake,1.1*k);PL.bump=Math.max(PL.bump||0,.3*k);   // the ground shakes hard, the car jolts (never a crash)
+      if(cd<1400){NOGY=1;for(let q=0;q<34;q++){const a=R(0,6.283),sp=R(8,20);puff(V.set(F.x+Math.cos(a)*R(3,14),fy+1,F.z+Math.sin(a)*R(3,14)),Math.cos(a)*sp,R(3,12),Math.sin(a)*sp,R(10,16),R(40,70),R(2.5,4.5),.65,0x9a8c74);}
+        for(let q=0;q<12;q++)puff(V.set(F.x+R(-10,10),fy+R(4,20),F.z+R(-10,10)),R(-3,3),R(12,28),R(-3,3),R(12,20),R(50,90),R(3.5,5.5),.5,0xa89a80);NOGY=0;}   // and a tall column of dust boils up
+      for(const s of DSTK)if(!s.st&&i>s.i-m_(650)&&i<s.i+m_(100)){s.n=(s.n||0)+1;s.kick=Math.min(.06,s.kick+.02);}}}}   // each stomp rocks the refinery stacks a little more
+// the refinery stacks near the end of Shane Drive: rocked harder by each of the daddy beetle's stomps, then (one, a few stomps later the other) they topple away
+// from the road onto the houses beyond, breaking into sections as they hit, with a crash, dust and debris; the houses are crushed flat. Put back for the next pass.
+function dadStackTick(rdt){for(const[j,s]of DSTK.entries()){s.t+=rdt;
+    if(s.st===0){s.kick*=Math.exp(-.8*rdt);if((s.n||0)>=5+j*3){s.st=1;s.th=Math.max(.04,s.kick);s.w=.05;sfxCrunch(.7);}else{s.g.quaternion.setFromAxisAngle(s.ax,s.kick*Math.sin(s.t*2.4+j));continue;}}
+    if(s.st===1){s.w+=1.5*9.8/s.h*Math.sin(s.th)*rdt;s.th+=s.w*rdt;
+      if(!s.said){if(!DSTK.some(o=>o.said))say('THE STACKS ARE COMING DOWN !','',2.2);s.said=1;}
+      if(s.th>=Math.PI/2-.03){s.th=Math.PI/2-.03;s.st=2;s.t=0;dadStackHit(s);}s.g.quaternion.setFromAxisAngle(s.ax,s.th);continue;}
+    if(s.st===2){const k=sst(s.t,0,.5);s.secs.forEach((m,q)=>{const b=s.br[q];m.position.set(b.x*k,s.h/6+q*s.h/3+q*2.2*k,0);m.rotation.set(b.rx*k,0,b.rz*k);});   // the sections break apart and settle
+      s.hs.forEach((hh,q)=>{const u=sst(s.t,q*.12,.5+q*.12);hh.scale.y=1-.78*u;hh.rotation.z=(q?.06:-.05)*u;});}}}
+function dadStackHit(s){const p=s.g.position,cd=camera.position.distanceTo(p),k=clamp(260/(cd+60),.15,1);sfxCrunch(1.3);sfxEyeStomp(k);setTimeout(()=>sfxCrunch(.9),160);setTimeout(()=>sfxScrape(.8),300);G.shake=Math.max(G.shake,.9*k);
+  NOGY=1;for(let q=0;q<46;q++){const u=R(.1,1.05),x=p.x+s.d.x*s.h*u+R(-6,6),z=p.z+s.d.z*s.h*u+R(-6,6),y=groundAt(x,z);puff(V.set(x,y+R(2,14),z),R(-6,6),R(6,20),R(-6,6),R(10,16),R(40,70),R(3.5,6),.7,q%3?0x8a8070:0x4a4642);}
+  for(let q=0;q<30;q++){const u=R(.2,1),x=p.x+s.d.x*s.h*u,z=p.z+s.d.z*s.h*u;spark(V.set(x,groundAt(x,z)+2,z),R(-10,10),R(4,14),R(-10,10));}NOGY=0;}
+function dadStackReset(){for(const s of DSTK){if(!s.st&&!s.n)continue;s.st=0;s.n=0;s.t=0;s.th=0;s.w=0;s.kick=0;s.said=0;s.g.quaternion.identity();
+  s.secs.forEach((m,q)=>{m.position.set(0,s.h/6+q*s.h/3,0);m.rotation.set(0,0,0);});s.hs.forEach(hh=>{hh.scale.y=1;hh.rotation.z=0;});}}
 // Bigfoot in the Marin redwoods, from the owner's toy: about 13 m tall (three cars), shaggy warm reddish-brown fur, tan bearded face, long arms, big feet. Once per pass
 // he steps out from between the trees right to the edge of the road just ahead, on your side, raises both fists and bangs them down on the car as you go by (a thump,
 // a jolt of shake: no crash, no slowing), chases after you for a few seconds (thudding feet, a roar), then gives up: throws his arms up and beats his chest (BIGF, bigfootTick; __test.bigfoot()).
@@ -5023,7 +5046,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={BIGI,TUBI,RIGI,IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={BIGI,TUBI,RIGI,IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
