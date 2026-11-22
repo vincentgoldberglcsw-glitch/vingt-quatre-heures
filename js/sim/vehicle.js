@@ -56,6 +56,7 @@ const SPEC = {
   lp400:  { m: 1310, hp: 375, cla: 0.08, wf: 0.42, mu: 1.12, h: 0.45, aeroF: 0.62 },   // light, little rear downforce: quick to rotate
   f400:   { m: 1480, hp: 340, cla: 0.06, wf: 0.52, mu: 1.10, h: 0.50 },
   b507:   { m: 1330, hp: 210, cla: 0.04, wf: 0.51, mu: 1.08, h: 0.50 },   // 1950s V8 roadster with its hardtop: soft and even
+  lr:     { m: 1400, hp: 115, cla: 0.00, wf: 0.52, mu: 1.26, h: 0.5 },   // 1950s Land Rover pickup: heavy for its power, chunky tyres that grip, weight even, so it is steady and pushes gently wide rather than spinning
   p911:   { m: 1075, hp: 210, cla: 0.03, wf: 0.39, mu: 1.12, h: 0.46, aeroF: 0.66 },   // early-70s 911 Carrera: light, the engine hung out behind the rear axle (most of the weight at the back), little rear downforce: turns in eagerly and the tail swings out when you lift or turn in hard
   sherp:  { m: 1400, hp: 160, cla: 0.00, wf: 0.54, mu: 1.30, h: 0.42 },   // Sherp ATV: huge soft tyres with a big footprint (lots of grip), weight low and a touch forward, so it is sure-footed and pushes gently wide rather than spinning
 };
