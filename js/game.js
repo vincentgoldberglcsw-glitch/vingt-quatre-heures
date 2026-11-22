@@ -5110,29 +5110,36 @@ function prisonRunner(c,x,y,s,col='#111'){c.save();c.translate(x,y);c.scale(s,s)
   c.beginPath();c.moveTo(6,-38);c.lineTo(28,-22);c.lineTo(42,-34);c.moveTo(6,-38);c.lineTo(-14,-28);c.lineTo(-30,-42);c.stroke();
   c.strokeStyle='#f4f1e8';c.lineWidth=3;for(let k=0;k<3;k++){const u=.2+k*.27,px=9-13*u,py=-45+37*u;c.beginPath();c.moveTo(px-7,py+1);c.lineTo(px+7,py-1);c.stroke();}
   c.strokeStyle=col;c.lineWidth=3;c.beginPath();c.moveTo(8,42);c.lineTo(32,50);c.stroke();c.beginPath();c.arc(39,50,9,0,7);c.fill();c.restore();}
-// propaganda poster for the Leader (invented): the four-eyed Leader in a sunburst, bold lettering
+// propaganda poster for the Leader (invented): the horned, gas-masked Leader in a sunburst, bold lettering
 function leaderPoster(title,sub,bg,mask){return canvas(1024,460,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);const cx=250,cy=mask?215:250;g.save();g.translate(cx,cy);for(let k=0;k<20;k++){g.rotate(Math.PI/10);g.fillStyle=k%2?'#e0b23a':bg;g.globalAlpha=k%2?.55:1;g.beginPath();g.moveTo(0,0);g.lineTo(700,-110);g.lineTo(700,110);g.fill();}g.restore();g.globalAlpha=1;
   leaderAlien(g,cx,cy);leaderText(g,title,sub);});}
 function leaderText(g,title,sub){g.fillStyle='rgba(0,0,0,.6)';g.fillRect(470,70,520,320);g.strokeStyle='#e0b23a';g.lineWidth=8;g.strokeRect(470,70,520,320);g.textAlign='center';g.textBaseline='middle';
   g.font='900 '+(title.length>12?84:120)+'px Impact,"Arial Black",Arial';g.fillStyle='#000';g.fillText(title,736,186,480);g.fillStyle='#f4ead2';g.fillText(title,730,180,480);g.font='700 38px Georgia,serif';g.fillStyle='#e0b23a';g.fillText(sub,730,320,480);}
-// the Leader (from the owner's four-eyed alien toy): a wide, flat-topped tan head with big rounded ears out to the sides and two small horn-ears on top,
-// four shiny black bead eyes in a curved row, a small wrinkled nose and mouth, a thin neck, a dark brown ribbed robe with a V-neck and big tan hands
-function leaderAlien(g,cx,cy){const E=(x,y,rx,ry,c,r)=>{g.fillStyle=c;g.beginPath();g.ellipse(x,y,rx,ry,r||0,0,7);g.fill();},SK='#d9a07e',SD='#b07658',LN='rgba(105,58,38,.7)';
-  g.save();g.translate(cx,cy);g.lineCap='round';
-  g.fillStyle='#3b2419';g.beginPath();g.moveTo(-150,260);g.lineTo(-140,95);g.quadraticCurveTo(-130,52,-70,48);g.lineTo(70,48);g.quadraticCurveTo(130,52,140,95);g.lineTo(150,260);g.fill();   // the robe
-  g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=3;for(let x=-120;x<=120;x+=12){g.beginPath();g.moveTo(x,80);g.lineTo(x*1.05,260);g.stroke();}   // its ribbing
-  g.strokeStyle='rgba(0,0,0,.5)';g.lineWidth=4;for(const s of[-1,1]){g.beginPath();g.moveTo(s*100,70);g.quadraticCurveTo(s*96,150,s*112,200);g.stroke();}   // the sleeves against the body
-  for(const s of[-1,1]){E(s*128,212,34,40,SK,s*.2);g.fillStyle=SK;for(let k=0;k<4;k++){g.beginPath();g.ellipse(s*(108+k*12),246,7,16,0,0,7);g.fill();}g.strokeStyle=LN;g.lineWidth=2;for(let k=0;k<3;k++){g.beginPath();g.arc(s*128,205+k*10,16,.3,2.8);g.stroke();}}   // big tan hands
-  g.fillStyle=SK;g.beginPath();g.moveTo(-36,48);g.lineTo(36,48);g.lineTo(0,108);g.fill();g.fillRect(-17,0,34,52);   // thin neck and the V-neck
-  g.strokeStyle=LN;g.lineWidth=2;for(let k=0;k<3;k++){g.beginPath();g.moveTo(-14,22+k*9);g.quadraticCurveTo(0,28+k*9,14,22+k*9);g.stroke();}
-  for(const s of[-1,1]){E(s*118,-52,58,34,SK,-s*.28);E(s*122,-50,40,20,SD,-s*.28);g.fillStyle='#4a2a1e';for(let k=0;k<9;k++){const a=k*1.7;g.beginPath();g.arc(s*(150+Math.cos(a)*14),-62+Math.sin(a)*16,3.5,0,7);g.fill();}}   // big ears, dark speckles on the tips
-  for(const s of[-1,1]){E(s*50,-118,17,24,SK,s*.3);E(s*50,-114,9,14,SD,s*.3);}   // the little horn-ears on top
-  g.fillStyle=SK;g.beginPath();g.moveTo(-72,-112);g.lineTo(72,-112);g.quadraticCurveTo(98,-110,96,-60);g.quadraticCurveTo(92,-8,50,20);g.quadraticCurveTo(0,40,-50,20);g.quadraticCurveTo(-92,-8,-96,-60);g.quadraticCurveTo(-98,-110,-72,-112);g.fill();   // the wide, flat-topped head
-  g.fillStyle='rgba(150,90,60,.35)';g.beginPath();g.ellipse(0,0,46,24,0,0,7);g.fill();   // shading round the muzzle
-  g.strokeStyle=LN;g.lineWidth=2.5;for(const s of[-1,1]){g.beginPath();g.moveTo(s*30,-14);g.quadraticCurveTo(s*50,-4,s*48,14);g.stroke();g.beginPath();g.moveTo(s*62,-40);g.quadraticCurveTo(s*72,-30,s*70,-18);g.stroke();}g.beginPath();g.moveTo(-30,-96);g.quadraticCurveTo(0,-104,30,-96);g.stroke();   // wrinkles
-  for(const[x,y,r]of[[-66,-64,14],[-23,-74,15],[23,-74,15],[66,-64,14]]){E(x,y+2,r+4,r+3,SD);E(x,y,r,r,'#0d0907');E(x-r*.35,y-r*.38,r*.28,r*.24,'rgba(255,255,255,.85)');}   // four shiny bead eyes
-  E(0,-22,14,11,SD);E(-5,-19,3.5,3,'#3a1e14');E(5,-19,3.5,3,'#3a1e14');   // small nose
-  g.strokeStyle='#5a2c1c';g.lineWidth=4;g.beginPath();g.moveTo(-20,6);g.quadraticCurveTo(0,14,20,6);g.stroke();   // and mouth
+// the Leader (designed by the owner's son): two big curved grey-brown horns, a huge shaggy mop of straw-coloured yarn hair hanging past the shoulders,
+// a pale grey rubber gas mask peeking through (two round goggle eyes with dark rims, a ribbed brass filter below) and a navy-and-white striped T-shirt.
+// pose 0: portrait; 1: saluting, one arm raised; 2: close-up of the head. Drawn in code, no image.
+function leaderAlien(g,cx,cy,pose){if(pose==null)pose=(leaderAlien.n=(leaderAlien.n||0)+1)%3;let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,E=(x,y,rx,ry,c,r)=>{g.fillStyle=c;g.beginPath();g.ellipse(x,y,rx,ry,r||0,0,7);g.fill();};
+  g.save();g.translate(cx,cy);if(pose===2){g.translate(0,100);g.scale(1.3,1.3);}g.lineCap='round';g.lineJoin='round';
+  const NV='#1c2348',WH='#eeeae0',SK='#e2b48e';
+  const stripes=(path)=>{g.save();path();g.fillStyle=WH;g.fill();g.clip();g.fillStyle=NV;for(let y=-200;y<300;y+=18)g.fillRect(-300,y,600,9);g.restore();path();g.strokeStyle='rgba(0,0,0,.45)';g.lineWidth=3;g.stroke();};
+  stripes(()=>{g.beginPath();g.moveTo(-158,270);g.lineTo(-150,110);g.quadraticCurveTo(-140,62,-80,52);g.lineTo(80,52);g.quadraticCurveTo(140,62,150,110);g.lineTo(158,270);g.closePath();});   // the striped T-shirt
+  if(pose===1){stripes(()=>{g.beginPath();g.moveTo(-150,110);g.quadraticCurveTo(-150,64,-112,56);g.lineTo(-150,8);g.lineTo(-196,40);g.closePath();});   // raised sleeve
+    g.strokeStyle=SK;g.lineWidth=30;g.beginPath();g.moveTo(-172,30);g.lineTo(-196,-50);g.stroke();E(-198,-76,22,30,SK,-.2);g.fillStyle=SK;for(let k=0;k<4;k++){g.beginPath();g.ellipse(-212+k*10,-110,6,16,-.1,0,7);g.fill();}}   // the arm up in salute
+  const horn=s=>{g.beginPath();g.moveTo(s*58,-96);g.quadraticCurveTo(s*150,-110,s*196,-150);g.quadraticCurveTo(s*222,-178,s*218,-232);g.quadraticCurveTo(s*190,-160,s*146,-128);g.quadraticCurveTo(s*108,-104,s*62,-56);g.closePath();};
+  for(const s of[-1,1]){horn(s);const hg=g.createLinearGradient(0,-230,0,-60);hg.addColorStop(0,'#2a221c');hg.addColorStop(.6,'#5a4c40');hg.addColorStop(1,'#3a3029');g.fillStyle=hg;g.fill();g.strokeStyle='#17110d';g.lineWidth=4;g.stroke();
+    g.strokeStyle='rgba(255,240,220,.22)';g.lineWidth=5;g.beginPath();g.moveTo(s*70,-92);g.quadraticCurveTo(s*150,-110,s*194,-160);g.stroke();
+    g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=2;for(let k=0;k<5;k++){const x=s*(90+k*18),y=-92-k*9-k*k*1.5;g.beginPath();g.moveTo(x,y-14);g.quadraticCurveTo(x+s*6,y,x,y+18);g.stroke();}}   // the two big curved horns
+  const HC=['#cdb98c','#bba776','#dccb9e','#a8925f','#e6d8b0'];
+  g.fillStyle='#b29e6c';g.beginPath();g.moveTo(-60,-140);g.quadraticCurveTo(0,-170,60,-140);g.quadraticCurveTo(122,-110,118,-20);g.quadraticCurveTo(124,60,108,130);g.lineTo(-108,130);g.quadraticCurveTo(-124,60,-118,-20);g.quadraticCurveTo(-122,-110,-60,-140);g.fill();   // the mop of hair
+  g.fillStyle='#141210';g.beginPath();g.ellipse(0,0,70,62,0,0,7);g.fill();   // the dark gap in the hair round the mask
+  const strand=(x,y,len,ww,col)=>{g.strokeStyle=col;g.lineWidth=ww;g.beginPath();g.moveTo(x,y);let px=x,py=y;const n=6;for(let k=0;k<n;k++){const nx=px+(rnd()-.5)*22,ny=py+len/n;g.quadraticCurveTo(px+(rnd()-.5)*26,(py+ny)/2,nx,ny);px=nx;py=ny;}g.stroke();};
+  for(let k=0;k<150;k++){const a=rnd(),x=-118+a*236,top=-150+Math.pow(Math.abs(a-.5)*2,2)*60;if(Math.abs(x)<60&&rnd()<.75)continue;strand(x,top+rnd()*30,150+rnd()*130,2+rnd()*2.5,HC[k%5]);}   // strands hanging down past the shoulders
+  const mask=()=>{g.fillStyle='#c9c8bd';g.beginPath();g.moveTo(-52,-30);g.quadraticCurveTo(0,-48,52,-30);g.quadraticCurveTo(58,20,26,52);g.lineTo(-26,52);g.quadraticCurveTo(-58,20,-52,-30);g.fill();g.strokeStyle='rgba(0,0,0,.25)';g.lineWidth=2;g.beginPath();g.moveTo(-10,0);g.quadraticCurveTo(0,30,10,0);g.stroke();};
+  mask();for(const s of[-1,1]){E(s*28,-18,25,25,'#1a1a1a');const gg=g.createRadialGradient(s*24,-24,2,s*28,-18,20);gg.addColorStop(0,'#cfe0e4');gg.addColorStop(1,'#5f7880');E(s*28,-18,18,18,gg);E(s*22,-25,6,4,'rgba(255,255,255,.9)',-.5);}   // round goggle eyes with dark rims
+  g.fillStyle='#8a7440';g.beginPath();g.roundRect(-30,46,60,52,8);g.fill();g.fillStyle='#d2b260';for(let y=50;y<94;y+=9)g.fillRect(-30,y,60,4);g.strokeStyle='#3e331c';g.lineWidth=3;g.beginPath();g.roundRect(-30,46,60,52,8);g.stroke();E(0,98,22,5,'#5a4a28');   // the ribbed brass filter
+  for(let k=0;k<70;k++){const a=rnd(),x=-120+a*240;strand(x,-158+rnd()*40,(Math.abs(x)<55?70+rnd()*40:110+rnd()*120),2+rnd()*2,HC[(k+2)%5]);}   // a fringe over the top, hanging over the goggles
+  g.strokeStyle='#e6d8b0';g.lineWidth=2;for(let k=0;k<26;k++){const x=-110+rnd()*220,y=-160+rnd()*50;g.beginPath();g.arc(x,y,5+rnd()*8,rnd()*6,rnd()*6+4);g.stroke();}   // loose curls on top
+  for(const s of[-1,1]){g.save();g.beginPath();g.ellipse(s*28,-18,25,25,0,0,7);g.clip();for(let k=0;k<3;k++)strand(s*28+(rnd()-.5)*40,-50,40+rnd()*25,2.5,HC[k]);g.restore();g.strokeStyle='#0d0d0d';g.lineWidth=7;g.beginPath();g.arc(s*28,-18,22,0,7);g.stroke();}   // goggle rims, a few strands across the glass
   g.restore();}
 // gulls: a few loose flocks wheeling over the water below the cliff and off San Quentin
 const GULL={im:null,b:[],M:new THREE.Matrix4(),Q:new THREE.Quaternion(),S:new THREE.Vector3(),V:new THREE.Vector3(),W:new THREE.Vector3(),E:new THREE.Euler()};
