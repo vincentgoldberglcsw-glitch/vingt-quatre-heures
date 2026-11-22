@@ -2923,6 +2923,18 @@ function pennyTick(rdt){const P_=PENNY,pe=ents.find(e=>e.player);if(!pe||!DRIVE)
     else if(k.bt<=0&&k.v>5.5)k.v=Math.max(R(3.5,5.5),k.v-rdt*3);}}
 // Iguanas: grey-green, spiny crest, round scale patch on the cheek. They scurry along the road edge, now and then dart across, and one the car hits is flung up in an arc, lands and scurries off. Never a crash, no slowdown.
 const IGU={l:[],cd:3,V:new THREE.Vector3()};
+// the small land iguana (lizMk), about a third of a car long (1.45 m at scale 1): slim and smooth, a long thin tail, a low spiny crest; built as a chain of segments like
+// bigIguMk ({g,b,segs,legs}) so the same side-to-side body wave and leg swing drive it
+function lizMk(){const M=lizMk.M||(lizMk.M=[std({color:0x6f8a4a,roughness:.7}),std({color:0x4e6a36,roughness:.75}),std({color:0xc2cc9a,roughness:.7}),std({color:0x15110a,roughness:.3})]),sg=lizMk.sg||(lizMk.sg=new THREE.SphereGeometry(1,10,7)),
+  g=new THREE.Group(),b=new THREE.Group();g.add(b);const segs=[],sp=(p,m,sx,sy,sz,x,y,z)=>{const o=new THREE.Mesh(sg,m);o.scale.set(sx,sy,sz);o.position.set(x,y,z);o.castShadow=true;p.add(o);return o;};
+  const D=[[.6,.07,.045,.1],[.47,.06,.05,.09],[.33,.085,.065,.12],[.18,.09,.07,.12],[.03,.08,.06,.11],[-.11,.057,.046,.11],[-.25,.042,.036,.11],[-.39,.031,.028,.1],[-.53,.023,.021,.1],[-.66,.016,.015,.09],[-.78,.01,.01,.08]];   // z, half-width, half-height, half-length: head to tail tip
+  D.forEach(([z,w,h,l],n)=>{const s=new THREE.Group();s.position.z=z;b.add(s);sp(s,n%2&&n>4?M[1]:M[0],w,h,l,0,.11+(n<5?0:-.02*Math.min(1,(n-4)/3)),0);if(n>=1&&n<=6)sp(s,M[1],.008,.022,.012,0,.11+h+.012,0);if(n>=2&&n<=4)sp(s,M[2],w*.8,h*.4,l*.85,0,.11-h*.55,0);segs.push({g:s,z});});   // body, crest spines, pale belly
+  const hd=segs[0].g;sp(hd,M[0],.045,.035,.06,0,.1,.08);for(const s of[-1,1])sp(hd,M[3],.012,.012,.012,s*.05,.13,.03);   // snout and eyes
+  const legs=[];for(const[si,zz]of[[2,.04],[4,-.02]])for(const s of[-1,1]){const lg=new THREE.Group();lg.position.set(s*D[si][1]*.8,.1,zz);segs[si].g.add(lg);
+    const up=sp(lg,M[0],.07,.018,.02,s*.07,-.01,0);const ft=sp(lg,M[1],.018,.05,.018,s*.13,-.06,.01);ft.rotation.z=s*.4;legs.push({g:lg,s,f:si===2?1:-1});}   // thin legs splayed out to the sides
+  g.visible=false;scene.add(g);return{g,b,segs,legs};}
+function lizWig(k,sp,rdt){k.ph=(k.ph||0)+rdt*sp*6.5;const mv=sp>.05?1:0,ph=k.ph,K=3.2;for(const sg of k.segs){const z=sg.z,A=(.03+.1*Math.max(0,.6-z)/1.4)*(.35+.65*mv);sg.g.position.x=A*Math.sin(ph-K*z);sg.g.rotation.y=Math.atan(-A*K*Math.cos(ph-K*z));}   // the side-to-side wiggle down the body and tail
+  for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f;L.g.rotation.y=q*.6*mv;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.3*mv;}}
 function iguMk(){const[bm,dm,cm]=IGU.M||(IGU.M=[std({color:0x7d8a68,roughness:.85}),std({color:0x56633f,roughness:.9}),std({color:0xb9c29a,roughness:.7})]),g=new THREE.Group(),b=new THREE.Group();g.add(b);const bx=(sx,sy,sz,mm,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mm);o.position.set(x,y,z);b.add(o);return o;};
   bx(.16,.1,.4,bm,0,.1,0);bx(.11,.09,.15,bm,0,.12,.27);bx(.04,.04,.03,cm,.058,.12,.3).scale.set(1,1.4,1);   // body, head, round scale patch on the cheek
   bx(.07,.06,.4,dm,0,.08,-.4);bx(.04,.04,.35,dm,0,.07,-.72);
@@ -2931,8 +2943,8 @@ function iguMk(){const[bm,dm,cm]=IGU.M||(IGU.M=[std({color:0x7d8a68,roughness:.8
   return{g,b};}
 function iguanaTick(rdt){const I_=IGU,pe=ents.find(e=>e.player);if(!pe||!DRIVE)return;
   if(!I_.l.length){
-    for(let n=0;n<6;n++){const{g,b}=iguMk();
-      g.visible=false;scene.add(g);const tr=new THREE.Mesh(new THREE.CylinderGeometry(.55,.7,34,8),std({color:0x6a3a26,roughness:1}));tr.visible=false;scene.add(tr);I_.l.push({g,b,tr,st:0,s:0,lat:0,tl:0,v:0,vl:0,y:0,vy:0,t:0,x:0,z:0,vx:0,vz:0,sp:0});}}
+    for(let n=0;n<6;n++){const{g,b,segs,legs}=lizMk();
+      g.visible=false;scene.add(g);const tr=new THREE.Mesh(new THREE.CylinderGeometry(.55,.7,34,8),std({color:0x6a3a26,roughness:1}));tr.visible=false;scene.add(tr);I_.l.push({g,b,segs,legs,pz:0,ph:0,tr,st:0,s:0,lat:0,tl:0,v:0,vl:0,y:0,vy:0,t:0,x:0,z:0,vx:0,vz:0,sp:0});}}
   const i=PL.idx,zn=zoneArr[i],on=G.state==='race'&&(zn===1||zn===7||zn===8);
   if(on){I_.cd-=rdt;if(I_.cd<=0){I_.cd=R(3,8);const k=I_.l.find(o=>!o.st);
     if(k){const s=pe.s+Math.max(50,Math.abs(pe.v)*3)+R(0,60),j=wrapI(Math.floor(s/SEG)),w=RW+XW[j],sd=Math.random()<.5?-1:1;k.st=1;k.s=s;k.lat=sd*(w+R(1,3));k.tl=k.lat;k.v=R(1,3)*(Math.random()<.5?-1:1);k.vl=0;k.y=0;k.vy=0;k.t=R(0,5);k.climb=zn===7&&Math.random()<.6;k.b.rotation.set(0,0,0);k.g.visible=true;}}}
@@ -2943,12 +2955,12 @@ function iguanaTick(rdt){const I_=IGU,pe=ents.find(e=>e.player);if(!pe||!DRIVE)r
       k.g.position.set(k.x,k.y,k.z);continue;}
     if(k.st===3){k.y+=2.4*rdt;at(k.s,k.lat,0,I_.V);I_.V.y+=k.y;k.g.position.copy(I_.V);k.g.rotation.y=yaw(j)+Math.sign(k.lat)*Math.PI/2;k.b.rotation.set(-Math.PI/2,0,Math.sin(k.t*14)*.12);k.b.position.y=0;if(k.y>26){k.st=0;k.g.visible=false;k.tr.visible=false;}continue;}   // up the trunk, head first
     if(k.climb&&k.st===1&&ds>28&&ds<130&&Math.abs(k.lat)>=w&&Math.random()<rdt*.7){k.st=3;k.y=0;k.v=0;k.lat=Math.sign(k.lat)*(w+3.2);at(k.s,Math.sign(k.lat)*(w+3.9),0,I_.V);k.tr.position.set(I_.V.x,I_.V.y+16,I_.V.z);k.tr.visible=true;continue;}   // in the redwoods: scurry up a tree
-    k.s=wrapS(k.s+k.v*rdt);const dl=k.tl-k.lat;
+    if(k.pz>0)k.pz-=rdt;else k.s=wrapS(k.s+k.v*rdt);const dl=k.tl-k.lat;if(Math.abs(dl)<=.1&&k.pz<=0&&Math.random()<rdt*.35)k.pz=R(.4,1.3);   /* stops dead now and then */ 
     if(Math.abs(dl)>.1)k.lat+=Math.sign(dl)*Math.min(Math.abs(dl),k.vl*rdt);
     else if(Math.random()<rdt*.15&&ds>25){k.tl=-Math.sign(k.lat)*(w+R(1,3));k.vl=R(5,7);}   // dart across the road
     else if(Math.random()<rdt*.5)k.v=R(1,3)*(Math.random()<.5?-1:1);
     at(k.s,k.lat,0,I_.V);k.g.position.copy(I_.V);k.g.rotation.y=Math.abs(dl)>.1?yaw(j)+Math.sign(dl)*Math.PI/2:yaw(j)+(k.v<0?Math.PI:0);
-    k.b.position.y=Math.abs(Math.sin(k.t*18))*.02;k.b.rotation.z=Math.sin(k.t*18)*.1;
+    lizWig(k,Math.abs(dl)>.1?k.vl:k.pz>0?0:Math.abs(k.v),rdt);
     const dx=I_.V.x-PL.x,dz=I_.V.z-PL.z;if(dx*dx+dz*dz<4&&Math.abs(pe.v)>2&&!PL.crash){k.st=2;k.t=0;k.x=I_.V.x;k.z=I_.V.z;k.y=I_.V.y+.2;k.vx=PL.vx*.6+R(-2,2);k.vz=PL.vz*.6+R(-2,2);k.vy=R(7,10);k.sp=R(-8,8);sfxSqueak();}}}   // hit: flung up in an arc
 // The giant iguana of San Antonio Ave: about 2.3 m long, green and turquoise, a spiny crest and a dewlap. Now and then one walks slowly out of the open field on the right
 // just past 1611, its body swinging side to side (spine, tail and legs all moving), crosses the street and goes on into the gardens opposite. One the car hits is flung up, lands and walks on. Never a crash, no slowdown.
@@ -3079,20 +3091,20 @@ function fwIguTick(rdt){const Q=FWI,pe=ents.find(e=>e.player);if(!pe||!DRIVE||!(
 const TUBI={g:null,l:[]};
 function tubeIguTick(rdt){const T_=TUBI;if(!DRIVE)return;
   if(!T_.g){T_.g=new THREE.Group();T_.g.position.copy(P[Z.tu0]);T_.g.position.y+=16*1.3;T_.g.rotation.y=yaw(Z.tu0);scene.add(T_.g);
-    for(let n=0;n<7;n++){const{g,b}=iguMk();g.scale.setScalar(1.3);T_.g.add(g);const k={g,b,x:R(-4.6,4.6),z:R(.8,8.2),tx:0,tz:0,st:0,w:R(0,2),t:R(0,5),v:0};g.position.set(k.x,0,k.z);g.rotation.y=R(0,6.28);T_.l.push(k);}}
+    for(let n=0;n<7;n++){const{g,b,segs,legs}=lizMk();g.visible=true;g.scale.setScalar(.8);T_.g.add(g);const k={g,b,segs,legs,ph:0,x:R(-4.6,4.6),z:R(.8,8.2),tx:0,tz:0,st:0,w:R(0,2),t:R(0,5),v:0};g.position.set(k.x,0,k.z);g.rotation.y=R(0,6.28);T_.l.push(k);}}
   const near=PL.idx>Z.tu0-Math.round(500/SEG)&&PL.idx<Z.tu0+5;T_.g.visible=near;if(!near)return;
   for(const k of T_.l){k.t+=rdt;
     if(k.st===0){k.w-=rdt;const bob=Math.max(0,Math.sin(k.t*7))*(Math.sin(k.t*.9+k.x)>0?1:0);k.b.rotation.set(-bob*.2,0,0);k.b.position.y=bob*.03;
       if(k.w<=0){k.st=1;k.tx=clamp(k.x+R(-3,3),-4.6,4.6);k.tz=clamp(k.z+R(-3,3),.8,8.2);k.v=R(2.5,4.5);k.g.rotation.y=Math.atan2(k.tx-k.x,k.tz-k.z);}}
     else{const dx=k.tx-k.x,dz=k.tz-k.z,d=Math.hypot(dx,dz),st=k.v*rdt;if(d<=st){k.x=k.tx;k.z=k.tz;k.st=0;k.w=R(.6,3);}else{k.x+=dx/d*st;k.z+=dz/d*st;}
-      k.b.position.y=Math.abs(Math.sin(k.t*22))*.02;k.b.rotation.set(0,0,Math.sin(k.t*22)*.12);}
+      k.b.position.y=0;k.b.rotation.set(0,0,0);lizWig(k,k.v,rdt);}
     k.g.position.set(k.x,0,k.z);}}
 // Richmond's iguanas: big ones (the San Antonio model at twice-plus size) scurrying up and down both pavements from the San Rafael bridge through Shane Drive to I-80, stopping now and then
 // to bob their heads. Every so often one darts out across the road ahead of the car; one the car hits is flung up, lands and runs on to the kerb. Never a crash, no slowdown (RIGI, rigiTick).
-const RIGI={l:[],cd:4,V:new THREE.Vector3(),A:new THREE.Vector3(),B:new THREE.Vector3(),SC:2.3};
+const RIGI={l:[],cd:4,V:new THREE.Vector3(),A:new THREE.Vector3(),B:new THREE.Vector3(),SC:1};
 function rigiTick(rdt){const Q=RIGI,pe=ents.find(e=>e.player);if(!pe||!DRIVE||!(Z.rb1>0))return;const m_=x=>Math.round(x/SEG),a=Z.rb1+m_(30),b=Z.i80-m_(20),SC=Q.SC,pv=wrapI(Math.floor(pe.s/SEG));
   const inR=i=>i>=a&&i<b,pl=j=>6.6+XW[j]+1.5;   // the middle of the pavement
-  if(!Q.l.length)for(let n=0;n<7;n++){const k=Object.assign(bigIguMk(),{st:0,cd:0,s:0,lat:0,tl:0,dir:1,y:0,vy:0,vs:0,vl:0,v:4,t:0,ph:R(0,6),sp:0,pz:0,fr:1});k.g.scale.setScalar(SC);k.g.rotation.order='YXZ';Q.l.push(k);}
+  if(!Q.l.length)for(let n=0;n<7;n++){const k=Object.assign(lizMk(),{st:0,cd:0,s:0,lat:0,tl:0,dir:1,y:0,vy:0,vs:0,vl:0,v:4,t:0,ph:R(0,6),sp:0,pz:0,fr:1});k.g.scale.setScalar(SC);k.g.rotation.order='YXZ';Q.l.push(k);}
   const near=pv>=a-m_(400)&&pv<b+m_(60);
   if(!near){for(const k of Q.l)if(k.st){k.st=0;k.g.visible=false;k.fr=1;}return;}
   const spawn=(k,s,side)=>{const j=wrapI(Math.floor(s/SEG));k.st=1;k.s=s;k.lat=side*pl(j)+R(-.6,.6);k.dir=Math.random()<.5?1:-1;k.v=R(3.5,6.5);k.y=0;k.pz=0;k.t=0;k.b.rotation.set(0,0,0);k.g.visible=true;};
@@ -3115,7 +3127,7 @@ function rigiTick(rdt){const Q=RIGI,pe=ents.find(e=>e.player);if(!pe||!DRIVE||!(
     const ph=k.ph,K=3.2,mv=k.pz>0||k.st===2?0:1;for(const sg of k.segs){const z=sg.z,A=(.04+.1*Math.max(0,.6-z)/1.9)*(.4+.6*mv);sg.g.position.x=A*Math.sin(ph-K*z);sg.g.rotation.y=Math.atan(-A*K*Math.cos(ph-K*z));}   // body and tail swinging
     k.segs[0].g.rotation.x=k.pz>0?-Math.max(0,Math.sin(k.t*6))*.3:0;
     for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f;L.g.rotation.y=q*.55;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.25;}
-    if(k.st!==2){const dx=Q.V.x-PL.x,dz=Q.V.z-PL.z;if(dx*dx+dz*dz<3.2*3.2&&Math.abs(pe.v)>2&&!PL.crash){k.st=2;k.vy=R(7,9.5);k.vs=clamp(pe.v*.5,-12,12)+R(-1,1);k.vl=R(-2,2);k.sp=R(-6,6);k.pz=0;sfxBoing(.9);}}}}
+    if(k.st!==2){const dx=Q.V.x-PL.x,dz=Q.V.z-PL.z;if(dx*dx+dz*dz<1.9*1.9&&Math.abs(pe.v)>2&&!PL.crash){k.st=2;k.vy=R(7,9.5);k.vs=clamp(pe.v*.5,-12,12)+R(-1,1);k.vl=R(-2,2);k.sp=R(-6,6);k.pz=0;sfxBoing(.9);}}}}
 // Stuck on the Bay drive (off the road, or wedged and barely moving with the throttle down for a few seconds): a giant iguana scuttles in, puts its head to the car and shoves it
 // smoothly back onto the road, facing along it, in the lane by the edge; a bump and a grunt, then it bobs its head and scuttles off. Never a crash (NUDG: nudgeTick, nudgeCarry).
 const NUDG={k:null,on:0,stk:0,ph:0,t:0,SC:2.4,V:new THREE.Vector3(),A:new THREE.Vector3(),B:new THREE.Vector3()};
@@ -3160,9 +3172,9 @@ function igcTarget(k){const U=k.p.g.userData.ig;
   else{const y=U.top+U.rh;if(U.ax==='z'){k.tx=0;k.tz=R(-U.d/2+.5,U.d/2-.5);}else{k.tz=0;k.tx=R(-U.w/2+.8,U.w/2-.8);}k.ty=y;}}
 function iguMoreTick(rdt){const pe=ents.find(e=>e.player);if(!pe||!DRIVE)return;const m_=x=>Math.round(x/SEG),pv=wrapI(Math.floor(pe.s/SEG)),
     ala=i=>i<Z.tu0&&zoneArr[i]===1,ric=i=>Z.rb1>0&&i>=Z.rb1+m_(30)&&i<Z.i80-m_(20),inA=ala(pv),inR=ric(pv);
-  const F=IGF;if(!F.l.length)for(let n=0;n<5;n++){const k=Object.assign(bigIguMk(),{n,st:0,s:0,lat:0,tl:0,dir:1,y:0,vy:0,vs:0,vl:0,v:3,t:0,ph:R(0,6),sp:0,pz:0,wb:0,sc:1,fu:0,fl:1});k.g.rotation.order='YXZ';if(n)k.g.traverse(o=>{o.castShadow=false;});F.l.push(k);}
+  const F=IGF;if(!F.l.length)for(let n=0;n<5;n++){const k=Object.assign(lizMk(),{n,st:0,s:0,lat:0,tl:0,dir:1,y:0,vy:0,vs:0,vl:0,v:3,t:0,ph:R(0,6),sp:0,pz:0,wb:0,sc:1,fu:0,fl:1});k.g.rotation.order='YXZ';if(n)k.g.traverse(o=>{o.castShadow=false;});F.l.push(k);}
   if(!F.on){F.cd-=rdt;if(F.cd<=0&&(inA||inR)){F.cd=R(6,12);const lo=Math.max(35,Math.abs(pe.v)*1.8),s=wrapS(pe.s+R(lo,lo+45)),j=wrapI(Math.floor(s/SEG));   // a family sets off across the road ahead
-      if(inA?ala(j):ric(j)){const sd=Math.random()<.5?1:-1,w=(inR?6.6:RW)+XW[j],nb=2+(Math.random()*3|0),v=R(3,4.2),sa=inR?R(2,2.3):R(1.5,1.9);F.on=1;F.ric=inR;
+      if(inA?ala(j):ric(j)){const sd=Math.random()<.5?1:-1,w=(inR?6.6:RW)+XW[j],nb=2+(Math.random()*3|0),v=R(3,4.2),sa=R(1,1.1);F.on=1;F.ric=inR;
         F.l.forEach((k,n)=>{if(n>nb){k.st=0;k.g.visible=false;return;}k.sc=n?R(.45,.55):sa;k.g.scale.setScalar(k.sc);k.st=1;k.s=wrapS(s+(n?R(-.5,.5):0));
           k.lat=sd*(w+1.5+(n?sa*1.4+.4+(n-1)*1.1:0));k.dir=-sd;k.tl=-sd*(w+R(12,16));k.v=v;k.wb=R(0,6);k.y=0;k.pz=0;k.t=0;k.fu=0;k.fl=-sd;k.b.rotation.set(0,0,0);k.g.visible=true;});}}}
   else{const L0=F.l[0],hold=L0.st===1&&L0.pz>0;let live=0;
@@ -3179,13 +3191,13 @@ function iguMoreTick(rdt){const pe=ents.find(e=>e.player);if(!pe||!DRIVE)return;
   // the climbers
   const C=IGC;if(!C.P){C.P=[];const ok=g=>g.parent===scene||!g.children.length;   // still standing (baked into the merged scenery, its group keeps the transform), not taken away while building
     for(const p of IGCL.h)if(ok(p.g)&&p.g.userData.ig)C.P.push({g:p.g,i:p.i,k:'h',u:0});for(const p of IGCL.c)if(ok(p.g))C.P.push({g:p.g,i:p.i,k:'c',u:0});
-    for(let n=0;n<5;n++)C.l.push(Object.assign(bigIguMk(),{st:0,p:null,m:'',cd:n*.3,t:0,ph:R(0,6),pz:0,x:0,y:0,z:0,tx:0,ty:0,tz:0,v:1,sc:1,fr:1}));}
+    for(let n=0;n<5;n++)C.l.push(Object.assign(lizMk(),{st:0,p:null,m:'',cd:n*.3,t:0,ph:R(0,6),pz:0,x:0,y:0,z:0,tx:0,ty:0,tz:0,v:1,sc:1,fr:1}));}
   const reg=inA||inR;
   for(const k of C.l){
     if(k.st){const d=wdiff(k.p.i*SEG-pe.s);if(d<-30||d>360||!reg){k.st=0;k.p.u=0;k.g.visible=false;k.cd=R(.3,1.5);if(!reg)k.fr=1;}}
     if(!k.st){k.cd-=rdt;if(k.cd>0||!reg)continue;k.cd=R(.4,1.2);const lo=k.fr?10:80,c=[];for(const p of C.P){if(p.u)continue;const d=wdiff(p.i*SEG-pe.s);if(d>lo&&d<300&&(ala(p.i)||ric(p.i)))c.push(p);}
       if(!c.length)continue;const p=c[Math.random()*c.length|0];k.fr=0;p.u=1;k.p=p;k.st=1;k.g.visible=true;p.g.updateMatrixWorld();k.t=0;k.pz=R(0,1.5);
-      k.m=p.k==='c'?'c':Math.random()<.35?'r':'w';k.sc=k.m==='c'?R(.5,.6):k.m==='w'?R(.6,.8):R(.55,.7);k.g.scale.setScalar(k.sc);k.v=R(.7,1.3);
+      k.m=p.k==='c'?'c':Math.random()<.35?'r':'w';k.sc=k.m==='c'?R(.8,.9):R(.85,1);k.g.scale.setScalar(k.sc);k.v=R(.7,1.3);
       igcTarget(k);k.x=k.tx;k.y=k.ty;k.z=k.tz;igcTarget(k);k.d0=1;}
     k.t+=rdt;let mv=0;
     if(k.pz>0){k.pz-=rdt;if(k.pz<=0)igcTarget(k);}   // stops, bobs its head, then sets off somewhere else
