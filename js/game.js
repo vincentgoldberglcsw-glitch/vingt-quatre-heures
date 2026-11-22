@@ -3444,7 +3444,7 @@ function trafficTick(dt,pe){bubbleTick(dt);wheelsTick(dt);if(TRAF.pol){const f=(
     if(t.kv){t.lat+=t.kv*dt;t.kv*=Math.exp(-2.2*dt);if(Math.abs(t.kv)<.2)t.kv=0;t.lt=clamp(t.lat,-.75*w,.75*w);const wl=wallAt[i]-.5;   // knocked sideways by the player
       if(Math.abs(t.lat)>wl){if(zoneArr[i]===4){const n=Nn[i],tg=T[i],sd=Math.sign(t.lat),out=Math.max(3,Math.abs(t.kv));t.fall={vx:tg.x*t.v+n.x*sd*out,vz:tg.z*t.v+n.z*sd*out,vy:2.5,w:R(1,1.8)*sd};t.kv=0;sfxCrunch(.8);sfxScrape(1);G.shake=Math.max(G.shake,.4);placeVehicle(t);continue;}   // over the bridge rail and down into the bay, tipping as it goes
         t.lat=Math.sign(t.lat)*wl;t.kv=0;}}
-    placeVehicle(t);
+    placeVehicle(t);if(t.jp)beetleJump(t,dt);
     if(t.spr||t.spa){t.spa=(t.spa||0)+(t.spr||0)*dt;t.spr=(t.spr||0)*Math.exp(-1.1*dt);   // careening after a hit by the Sherp: spins round, tyre smoke, then straightens up and drives on
       if(Math.abs(t.spr)<.4){t.spr=0;t.spa=Math.atan2(Math.sin(t.spa),Math.cos(t.spa))*Math.exp(-2.5*dt);if(Math.abs(t.spa)<.02)t.spa=0;}
       t.g.rotation.y+=t.spa;t.g.rotation.z=Math.sin(t.spa*2)*.08*Math.min(1,Math.abs(t.spr)/4);
@@ -3961,7 +3961,7 @@ function beetleBuild(B=BTL){const g=new THREE.Group(),UP=new THREE.Vector3(0,1,0
   B.sc=13.5;g.scale.setScalar(B.sc);g.visible=false;scene.add(g);B.g=g;B.V=new THREE.Vector3();B.W=new THREE.Vector3();B.tg=new THREE.Vector3();B.Q=new THREE.Quaternion();B.v1=new THREE.Vector3();B.v3=new THREE.Vector3();
   B.qr=new THREE.Quaternion().setFromUnitVectors(v3(0,-1,0),v3(-.75,.55,.38).normalize());B.qw=new THREE.Quaternion().setFromUnitVectors(v3(0,-1,0),v3(-.35,.88,-.32).normalize());B.qs=new THREE.Quaternion();A.quaternion.copy(B.qr);
   B.rings=[0,1].map(()=>{const m=new THREE.Mesh(new THREE.RingGeometry(.86,1,48).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xeef4f6,transparent:true,opacity:0,depthWrite:false}));m.visible=false;scene.add(m);return m;});}
-function beetleStart(k){const B=BTL,pe=ents.find(e=>e.player);if(!pe)return;if(!B.g)beetleBuild();B.on=1;B.armed[k]=0;B.k=k;B.t=0;B.lead=170;B.s=pe.s+170;B.n=Math.random()<.5?2:3;B.hj=-1;B.sj=-1;B.st=null;B.pa=0;B.roar=0;
+function beetleStart(k,big){const B=BTL,pe=ents.find(e=>e.player);if(!pe)return;if(!B.g)beetleBuild();B.on=1;B.armed[k]=0;B.k=k;B.t=0;B.big=big?1:0;B.lead=big?120:170;B.s=pe.s+B.lead;B.n=big?1:Math.random()<.5?2:3;B.hj=-1;B.sj=-1;B.st=null;B.pa=0;B.roar=0;
   let sd=Math.random()<.5?-1:1;at(pe.s+150,sd*60,0,B.V);if(Terrain.landAt(B.V.x,B.V.z)>=.2)sd=-sd;B.sd=sd;B.rt=[0,1.6];sfxBigSplash();G.shake=Math.max(G.shake,.4);}
 function beetleOff(){const B=BTL;B.on=0;if(B.g){B.g.visible=false;for(const r of B.rings)r.visible=false;}}
 function beetleTick(rdt){const B=BTL;if(!DRIVE||!Z.rb1)return;const pe=ents.find(e=>e.player);if(!pe)return;beetleShake(rdt);const i=PL.idx,m_=x=>Math.round(x/SEG);
@@ -3970,33 +3970,35 @@ function beetleTick(rdt){const B=BTL;if(!DRIVE||!Z.rb1)return;const pe=ents.find
   if(!B.on)return;if(G.state!=='race'){beetleOff();return;}
   B.t+=rdt;const t=B.t,V=B.V,g=B.g;
   if(B.st==null&&(zoneArr[i]!==4||PL.crash))B.st=t;   // off the bridge (or wrecked): he goes back under
-  if(B.st==null){B.lead=lerp(B.lead,90,clamp(rdt*.4,0,1));B.s=lerp(B.s,pe.s+B.lead,clamp(rdt*1.5,0,1));}   // he wades along beside you, a little ahead
-  const rise=B.st==null?sst(t,0,6.5):1-sst(t-B.st,0,5),bob=Math.sin(t*1.6)*.8;
+  if(B.st==null){B.lead=lerp(B.lead,B.big?70:90,clamp(rdt*.4,0,1));B.s=lerp(B.s,pe.s+B.lead,clamp(rdt*1.5,0,1));}   // he wades along beside you, a little ahead
+  const t7=B.big?4.5:7,rise=B.st==null?sst(t,0,t7-.5):1-sst(t-B.st,0,5),bob=Math.sin(t*1.6)*.8;   // coming back for the big blow, he surges up faster
   at(B.s,B.sd*60,0,V);const n=Nn[wrapI(Math.floor(B.s/SEG))];g.position.set(V.x,BTL.wat-112+109*rise+bob,V.z);g.rotation.set(0,Math.atan2(-B.sd*n.x,-B.sd*n.z),Math.sin(t*.8)*.04);
   B.T.rotation.x=.38+Math.sin(t*1.3)*.03;B.H.rotation.y=Math.sin(t*.6)*.12;B.A2.rotation.x=-.55+Math.sin(t*1.1)*.12;g.visible=true;g.updateMatrixWorld(true);
   // the claw: wind up high, then slam down onto the deck
-  let striking=false;if(B.st==null&&t>=7){const u0=t-7,j=Math.floor(u0/2.6);
+  let striking=false;if(B.st==null&&t>=t7){const u0=t-t7,j=Math.floor(u0/2.6);
     if(j>=B.n)B.st=t;else{const u=u0-j*2.6,A=B.A;striking=true;
       if(u<1.1)A.quaternion.slerpQuaternions(B.qr,B.qw,sst(u,0,1.1));
-      else{if(B.sj!==j){B.sj=j;at(pe.s+Math.max(22,pe.v*.9+12),B.sd*6.5,.3,B.tg);}if(u<1.9){B.T.getWorldQuaternion(B.Q).invert();A.getWorldPosition(B.W);const d=B.W.distanceTo(B.tg);B.W.subVectors(B.tg,B.W).normalize().applyQuaternion(B.Q);B.qs.setFromUnitVectors(B.v1.set(0,-1,0),B.W);B.ak=clamp(d/(B.armL*B.sc),.75,1.5);}
+      else{if(B.sj!==j){B.sj=j;at(pe.s+(B.big?Math.max(34,pe.v*.9+24):Math.max(22,pe.v*.9+12)),B.sd*6.5,.3,B.tg);}if(u<1.9){B.T.getWorldQuaternion(B.Q).invert();A.getWorldPosition(B.W);const d=B.W.distanceTo(B.tg);B.W.subVectors(B.tg,B.W).normalize().applyQuaternion(B.Q);B.qs.setFromUnitVectors(B.v1.set(0,-1,0),B.W);B.ak=clamp(d/(B.armL*B.sc),.75,1.5);}
         const k=u<1.45?((u-1.1)/.35)**2:u<1.9?1:1-sst(u,1.9,2.6);
         if(u<1.45)A.quaternion.slerpQuaternions(B.qw,B.qs,k);else if(u<1.9)A.quaternion.copy(B.qs);else A.quaternion.slerpQuaternions(B.qr,B.qs,k);
         A.scale.setScalar(lerp(1,B.ak,u<1.45?k:u<1.9?1:k));
-        if(u>=1.45&&B.hj!==j){B.hj=j;beetleHit(B.tg);}}}}
+        if(u>=1.45&&B.hj!==j){B.hj=j;(B.big?beetleBigHit:beetleHit)(B.tg);}}}}
   if(!striking){B.A.quaternion.slerp(B.qr,clamp(rdt*2,0,1));B.A.scale.setScalar(lerp(B.A.scale.x,1,clamp(rdt*3,0,1)));}
   // water: spray at the waterline and white water streaming off him while he rises and sinks; a ring of waves
-  const top=g.position.y+7.5*B.sc,cd=camera.position.distanceTo(g.position),wet=B.st==null?t<8.5:t-B.st<5.5;
+  const top=g.position.y+7.5*B.sc,cd=camera.position.distanceTo(g.position),wet=B.st==null?t<t7+1.5:t-B.st<5.5;
   if(wet&&cd<1100){B.pa+=rdt*34;NOGY=1;while(B.pa>=1){B.pa--;const a=R(0,6.283),r=R(12,30);
       puff(V.set(g.position.x+Math.cos(a)*r,BTL.wat+.5,g.position.z+Math.sin(a)*r),Math.cos(a)*R(2,6),R(6,18),Math.sin(a)*R(2,6),R(4,8),R(12,22),R(1.5,2.6),.7,0xeef2f4);
       if(top>BTL.wat+8&&Math.random()<.6)puff(V.set(g.position.x+R(-13,13),R(BTL.wat+4,top-8),g.position.z+R(-10,10)),R(-1,1),R(-16,-7),R(-1,1),R(2,4),R(5,9),R(1,1.8),.55,0xdfe8ee);}NOGY=0;}
   if(B.st!=null&&!B.rs){B.rs=1;B.rt=[t,t+1.4];}
   B.rings.forEach((m,k)=>{const u=(t-B.rt[k])/4.5;m.visible=u>=0&&u<1;if(m.visible){m.position.set(g.position.x,BTL.wat+.4,g.position.z);m.scale.setScalar(30+170*u);m.material.opacity=.65*(1-u);}});
-  if(!B.roar&&t>2.6){B.roar=1;sfxBeetleRoar(clamp(260/(cd+60),.35,1));say('THE BEETLE !','RISING FROM THE BAY',2.2);}
-  if(B.st!=null&&t-B.st>5.3){beetleOff();B.rs=0;if(B.k==="bb"&&!PL.crash)B.ub={n:Math.random()<.5?2:3,cd:R(2,3.5)};}}   // on the Bay Bridge he comes back unseen: his head bumps the underside of the deck
+  if(!B.roar&&t>2.6){B.roar=1;sfxBeetleRoar(clamp(260/(cd+60),.35,1));say('THE BEETLE !',B.big?'HE COMES BACK ROUND':'RISING FROM THE BAY',2.2);}
+  if(B.st!=null&&t-B.st>5.3){beetleOff();B.rs=0;if(B.k==="bb"&&!PL.crash&&!B.big)B.ub={n:2,cd:R(2,3.5)};B.big=0;}}   // on the Bay Bridge he comes back unseen: his head bumps the underside of the deck
 function beetleShake(rdt){const B=BTL;   // after a hit: the bridge shakes (a drop, then a decaying sway, the towers rocking), and the car weaves for a couple of seconds
-  if(B.ub){const i=PL.idx;if(G.state!=="race"||PL.crash||B.on||i<Z.b0||i>Z.b1)B.ub=null;else if((B.ub.cd-=rdt)<=0){beetleUnder();B.ub.cd=R(3,4.5);if(--B.ub.n<=0)B.ub=null;}}
+  if(B.ub){const i=PL.idx;if(G.state!=="race"||PL.crash||B.on||i<Z.b0||i>Z.b1)B.ub=null;else if((B.ub.cd-=rdt)<=0){beetleUnder();B.ub.cd=R(3,4.5);if(--B.ub.n<=0){B.ub=null;B.bigCd=R(1.5,2.5);}}}
+  if(B.bigCd>0){const i=PL.idx;if(G.state!=="race"||PL.crash||B.on||i<Z.b0||i>Z.b1)B.bigCd=0;else if((B.bigCd-=rdt)<=0){B.bigCd=0;beetleStart("bb",1);}}   // after the second thud he comes back round for one huge blow
+  if(B.pb){B.pbT+=rdt;if(PL.crash||B.pbT>4)B.pb=0;else if(!PL.air&&B.pbT>.3){B.pb=0;PL.air=1;PL.vy=R(4.5,5.5);PL.safe=Math.max(PL.safe,2);}}   // the car bounces once more off the deck
   if(B.bsA>0){B.bsT+=rdt;const t=B.bsT,a=B.bsA*Math.exp(-t*1.5),L=B.br[B.k]||[],n=B.bn;
-    if(a<.012||t>3){for(const[o,p,rz]of L){o.position.copy(p);o.rotation.z=rz;}B.bsA=0;}
+    if(a<.012||t>(B.bsA>1.2?4.5:3)){for(const[o,p,rz]of L){o.position.copy(p);o.rotation.z=rz;}B.bsA=0;}
     else{const sx=a*1.6*Math.sin(t*13.8),sy=a*(1.0*Math.sin(t*19.5+1)+(B.bup?1.8:-1.4)*Math.exp(-t*9)),tz=a*.012*Math.sin(t*9.4);for(const[o,p,rz]of L){o.position.set(p.x+n.x*sx,p.y+sy,p.z+n.z*sx);if(o.isGroup)o.rotation.z=rz+tz;}G.shake=Math.max(G.shake,a*1.4);}}
   if(B.wv>0){B.wt+=rdt;const t=B.wt;if(t>2.1||PL.crash||zoneArr[PL.idx]!==4){B.wv=0;return;}
     const o=Math.sin(t*Math.PI*2*1.35)*Math.exp(-t*1.0)*B.wsd*B.wv,n=Nn[PL.idx];VS.r+=o*1.6*rdt;PL.vx+=n.x*o*9*rdt;PL.vz+=n.z*o*9*rdt;PL.safe=Math.max(PL.safe,1.2);}}
@@ -4010,6 +4012,18 @@ function beetleHit(p){const d=camera.position.distanceTo(p),near=clamp(140/(d+40
   if(zoneArr[PL.idx]===4&&!SAFEZ()&&!PL.crash&&near>.3){const n=Nn[PL.idx],k=-BTL.sd*R(2.5,3.5)*near;PL.vx+=n.x*k;PL.vz+=n.z*k;VS.r+=R(.12,.22)*(Math.random()<.5?-1:1)*near;PL.safe=Math.max(PL.safe,2.5);BTL.wv=near;BTL.wt=0;BTL.wsd=-BTL.sd;}   // knocked sideways, then the car snakes left and right: fight it (the rail holds, never a crash)
   BTL.bsA=1;BTL.bsT=0;BTL.bup=0;BTL.bn=Nn[PL.idx];G.shake=Math.max(G.shake,2.2*near);   // the whole bridge jolts down and sways: rails, underside, piers, trusses, towers and cables
   const cr=beetleCrush(p);say('THE BEETLE STRIKES !',cr?'HE CRUSHES THE TRAFFIC':'CATCH THE SWERVE',1.8);}
+function beetleBigHit(p){const B=BTL;G.shake=Math.max(G.shake,3.6);PL.bump=Math.max(PL.bump||0,2);LT.flash=1;sfxBeetleSlam();   // the one huge blow: a boom and crunch, a flash, the bridge heaves, and every vehicle nearby is thrown into the air
+  NOGY=1;for(let q=0;q<60;q++){const a=R(0,6.283),sp=R(3,16);puff(B.v3.set(p.x+R(-5,5),p.y+.5,p.z+R(-5,5)),Math.cos(a)*sp,R(4,20),Math.sin(a)*sp,R(2,4.5),R(9,18),R(1.4,2.8),.65,0x9a958e);}
+  for(let q=0;q<70;q++)spark(B.v3.set(p.x+R(-2,2),p.y+.4,p.z+R(-2,2)),R(-20,20),R(4,22),R(-20,20));NOGY=0;
+  B.bsA=1.6;B.bsT=0;B.bup=0;B.bn=Nn[PL.idx];
+  if(zoneArr[PL.idx]===4&&!PL.crash){const d=Math.hypot(PL.x-p.x,PL.z-p.z),k=clamp(1-d/120,.35,1);PL.air=1;PL.vy=Math.max(PL.vy||0,8+4*k);PL.safe=Math.max(PL.safe,4);B.pb=1;B.pbT=0;B.wv=.5;B.wt=0;B.wsd=-B.sd;}   // the player's car is flung up and bounces (the landing never wrecks it)
+  for(const t of TRAF){if(!t.act||t.fall||t.cr||!t.g.visible)continue;const d=Math.hypot(t.g.position.x-p.x,t.g.position.z-p.z);if(d>150)continue;const k=clamp(1-d/150,.3,1);
+    t.jp={y:0,vy:(5+7*k)*R(.85,1.1),b:Math.random()<.5?1:2,rx:R(-.18,.18)*k,rz:R(-.25,.25)*k,ry:R(-.3,.3)*k};}
+  say('CRASH !','THE WHOLE BRIDGE JUMPS',2.2);}
+function beetleJump(t,dt){const J=t.jp;J.vy-=24*dt;J.y+=J.vy*dt;   // a vehicle thrown up by the big blow: it flies, lands, bounces once or twice, then drives on
+  if(J.y<=0){J.y=0;if(J.b>0&&J.vy<-3){J.b--;J.vy*=-.38;J.rx*=-.5;J.rz*=-.5;J.ry*=.5;const q=t.g.position;NOGY=1;for(let k=0;k<6;k++)puff(V.set(q.x+R(-1.5,1.5),q.y+.2,q.z+R(-1.5,1.5)),R(-2,2),R(.5,2),R(-2,2),R(.6,1.2),R(2,4),R(.8,1.4),.5,0x9a958e);NOGY=0;if((q.x-PL.x)**2+(q.z-PL.z)**2<3600)sfxThump(.5);}else{t.jp=null;return;}}
+  const f=clamp(J.y/1.5,0,1);t.g.position.y+=J.y;t.g.rotation.x+=J.rx*f;t.g.rotation.z+=J.rz*f;t.g.rotation.y+=J.ry*f;}
+function sfxBeetleSlam(){if(!AC)return;const t=AC.currentTime;sfxBeetleHit(1);tone('sine',34,t,2.6,2,master,{to:14,h:.25});hit(t,2.2,1.8,140,'lowpass',master);hit(t+.04,.6,.9,1600,'bandpass',master);sfxCrunch(1.6);setTimeout(()=>{sfxCrunch(1.1);sfxScrape(.8);},140);setTimeout(()=>sfxCrunch(.7),330);}
 function beetleCrush(p){let n=0;   // any traffic under the claw is flattened into a crumpled wreck (a tanker goes up); never the player's car
   for(const t of TRAF){if(!t.act||t.fall||t.cr||!t.g.visible)continue;const dx=t.g.position.x-p.x,dz=t.g.position.z-p.z;if(dx*dx+dz*dz>20*20)continue;n++;
     if(t.kind==='tanker'){tankerBoom(t);continue;}
