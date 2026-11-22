@@ -35,6 +35,7 @@ const STORM={ships:[],tex:null,a:0,b:0};   // the stormy sea on the right of I-8
 const LIT={p:null,t:3};   // litter thrown from passing cars (see litterTick)
 const SFSM=[];   // smoke sources on the decayed San Francisco towers
 const SFP=[];    // the San Francisco pyramid towers, left unbaked so they can fall in the city quake (sfPyrTick)
+let PBOARD=null;   // the big photo-billboard builder (pboard), shared with the I-880 propaganda boards
 const DSTK=[];   // two Richmond refinery stacks (and the houses beyond them), left unbaked so the daddy beetle's stomping can topple them (dadStackTick)
 const BBQ=[];   // the roadside billboards on I-880 that fall during the quake (see bbQuakeTick)
 const VANS=[];   // the ice-cream truck and the taco truck, driving up and down Paru (see vanTick)
@@ -912,9 +913,9 @@ if(DRIVE){ // ---- Alameda scenery: the hill and driveway to the burger, eucalyp
       B(W+1.2,.6,.5,fr,0,y0-.3,0,0,g);B(W+1.2,.6,.5,fr,0,y0+H+.3,0,0,g);B(.6,H+1.2,.5,fr,-W/2-.3,y0+H/2,0,0,g);B(.6,H+1.2,.5,fr,W/2+.3,y0+H/2,0,0,g);   // the frame
       B(W+1.2,.15,1.6,steelM,0,y0-.65,.7,0,g);   // catwalk
       const nl=Math.max(2,Math.round(W/5));for(let k=0;k<nl;k++){const lx=-W/2+W*(k+.5)/nl;B(.12,.12,1.8,steelM,lx,y0-.5,1.4,0,g);B(.9,.3,.5,lampMat,lx,y0-.4,2.3,0,g);}   // lamps shining up at the face
-      const nleg=W>14?3:2;for(let k=0;k<nleg;k++)B(.9,y0+H*.6,.9,steelM,nleg===2?(k?1:-1)*W*.3:(k-1)*W*.38,(y0+H*.6)/2,-.6,0,g);
-      const t=T[i],n=Nn[i],tl=Math.hypot(t.x,t.z)||1;off(i,sd*(RW+XW[i]+8+W*.15),0,g.position);g.rotation.y=Math.atan2(-t.x/tl-sd*.45*n.x,-t.z/tl-sd*.45*n.z);g.traverse(o=>{o.castShadow=true;});scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:2});return g;};
-    const sol=pic('red-poster-soldiers.jpg',0,26,512,614,[[425,26,87,36,506,140],[0,26,34,16,4,140]]),
+      
+      const t=T[i],n=Nn[i],tl=Math.hypot(t.x,t.z)||1;off(i,sd*(RW+XW[i]+8+W*.15),0,g.position);{const gd=g.position.y-groundAt(g.position.x,g.position.z),hl=gd>2?gd:0,nleg=W>14?3:2;for(let k=0;k<nleg;k++)B(.9,y0+H*.6+hl,.9,steelM,nleg===2?(k?1:-1)*W*.3:(k-1)*W*.38,(y0+H*.6-hl)/2,-.6,0,g);}   /* the legs, down to the ground when it stands beside the raised freeway */g.rotation.y=Math.atan2(-t.x/tl-sd*.45*n.x,-t.z/tl-sd*.45*n.z);g.traverse(o=>{o.castShadow=true;});scene.add(g);OBST.push({x:g.position.x,z:g.position.z,r:2});return g;};
+    PBOARD=pboard;const sol=pic('red-poster-soldiers.jpg',0,26,512,614,[[425,26,87,36,506,140],[0,26,34,16,4,140]]),
       gp=pic('good-and-plenty.jpg',22,44,476,596),
       cafe=pic('cafe-con-pan.jpg',30,88,300,468),
       sun=pic('red-sun-poster.jpg',0,68,728,758),
@@ -1562,7 +1563,7 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
       else{for(let k=0;k<6;k++){const x=110+(k%3)*85,y=170+(k/3|0)*110;g.fillStyle=['#e83a3a','#3a8ae8','#f0c020','#3ac06a','#e870c0','#f08a20'][k];g.beginPath();g.arc(x,y,40,0,7);g.fill();g.fillStyle='rgba(255,255,255,.5)';g.beginPath();g.arc(x-13,y-13,11,0,7);g.fill();}}
       g.fillStyle=col;g.textAlign='left';g.font='italic 900 '+(name.length>14?66:84)+'px Georgia,serif';g.fillText(name,380,220,600);g.fillStyle='#3a2a1a';g.font='700 34px Georgia,serif';g.fillText(tag,382,290,600);
       g.fillStyle=col;g.fillRect(382,316,260,5);g.font='italic 700 24px Georgia,serif';g.fillStyle='rgba(58,42,26,.75)';g.fillText(pic==='robo'?'ask for it by name · beep boop':'next exit · alameda & oakland',382,362);});
-    [[Z.tu1+m(350),-1],[Z.tu1+m(1100),1],[Z.tu1+m(1500),-1],[Z.tu1+m(2450),1],[Z.i80+m(400),1],[Z.i80+m(1700),-1],[Z.berkeley+m(400),1],[Z.oakland-m(600),1]].forEach(([i,sd],v)=>{const t=rtex(RETRO[v%RETRO.length]),g=new THREE.Group(),bd=new THREE.Mesh(new THREE.PlaneGeometry(13.5,6),new THREE.MeshStandardMaterial({map:t,emissiveMap:t,emissive:0xffffff,emissiveIntensity:.3,roughness:.75}));bd.position.y=8;g.add(bd);
+    [[Z.i80+m(400),1],[Z.i80+m(1700),-1],[Z.berkeley+m(400),1],[Z.oakland-m(600),1]].forEach(([i,sd],v)=>{const t=rtex(RETRO[(v+4)%RETRO.length])   /* I-80 only: I-880 north has propaganda instead (below) */,g=new THREE.Group(),bd=new THREE.Mesh(new THREE.PlaneGeometry(13.5,6),new THREE.MeshStandardMaterial({map:t,emissiveMap:t,emissive:0xffffff,emissiveIntensity:.3,roughness:.75}));bd.position.y=8;g.add(bd);
       B(13.9,6.4,.3,mat('woodBoard',{color:0x5a4a38,roughness:.9}),0,8,-.17,0,g);const leg=8+(H[i]>2?H[i]:0);for(const x of[-4.5,0,4.5])B(.35,leg,.35,mat('woodPost',{color:0x6a5440,roughness:.9}),x,8-3-leg/2,-.35,0,g);for(const x of[-4,4]){const lm=B(.6,.25,.6,lampMat,x,11.6,.6,0,g);lm.castShadow=false;}   // gooseneck lamps over the top
       g.traverse(o=>{o.castShadow=true;});off(i,sd*(wallAt[i]+8),0,g.position);g.rotation.y=yaw(i)+Math.PI-sd*.36;scene.add(g);});
     // past San Quentin: signs for the chemical works, and the first posters for the Leader; past the San Rafael bridge, Richmond is covered in WE LOVE THE LEADER boards
@@ -1579,6 +1580,19 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
     tall(Z.sq+m(600),-1,chem('BAYCHEM CHLORINE WORKS','CHLORINE · CAUSTIC SODA · ACIDS','#2f6b45'));tall(Z.sq+m(780),1,chem('TRI-COUNTY PETROCHEMICAL','BENZENE · TOLUENE · XYLENE','#8a3a1a'));
     [['WE LOVE THE LEADER','Richmond is grateful.'],['WE ♥ THE LEADER','He watches over us.'],['THE LEADER PROVIDES','Thank him tonight.'],['WE LOVE THE LEADER','Obey with joy.'],['ONE CITY · ONE LEADER','Unity is strength.']].forEach(([a,b],k)=>
       tall(Z.rb1+m(60+k*130),k%2?-1:1,ldr(a,b,['#7a1414','#14284a','#3a1458'][k%3],'#d8a83a')));
+    // I-880 north, out of the Posey Tube: no candy, but huge red propaganda posters (a worker with a raised fist against a red sunburst, factories, a slogan) and boards praising the Leader
+    const prop=(title,sub,bg,fg,kind)=>canvas(1024,460,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);const cx=230,cy=h;g.save();g.translate(cx,cy);for(let k=0;k<18;k++){g.rotate(Math.PI/18);if(k%2){g.fillStyle=fg;g.globalAlpha=.35;g.beginPath();g.moveTo(0,0);g.lineTo(-700,-70);g.lineTo(-700,70);g.fill();}}g.restore();g.globalAlpha=1;
+      g.fillStyle='#141414';if(kind===1){for(const[x,hh]of[[40,170],[100,230],[150,140],[330,200],[380,260]]){g.fillRect(x,h-hh,46,hh);g.fillRect(x+12,h-hh-60,14,60);}}   // factories with chimneys
+      else for(let r=0;r<3;r++)for(let k=0;k<6;k++){const x=60+k*62+r*18,y=h-20-r*36;g.beginPath();g.arc(x,y-92,13,0,7);g.fill();g.fillRect(x-14,y-80,28,58);g.fillRect(x-12,y-22,10,22);g.fillRect(x+2,y-22,10,22);}   // marching ranks
+      g.save();g.translate(cx,h-40);g.beginPath();g.arc(0,-300,34,0,7);g.fill();g.beginPath();g.moveTo(-50,-262);g.lineTo(50,-262);g.lineTo(40,-110);g.lineTo(-40,-110);g.fill();g.fillRect(-40,-110,30,110);g.fillRect(10,-110,30,110);   // the worker
+      g.lineWidth=24;g.lineCap='round';g.strokeStyle='#141414';g.beginPath();g.moveTo(40,-250);g.lineTo(95,-330);g.lineTo(105,-400);g.stroke();g.beginPath();g.arc(108,-412,22,0,7);g.fill();g.beginPath();g.moveTo(-40,-250);g.lineTo(-90,-180);g.stroke();g.restore();   // raised fist
+      g.fillStyle='#141414';g.fillRect(450,70,540,300);g.fillStyle=fg;g.fillRect(450,70,540,12);g.fillRect(450,358,540,12);g.textAlign='center';g.textBaseline='middle';
+      g.font='900 '+(title.length>14?64:84)+'px Impact,"Arial Black",Arial';g.fillStyle='#f4ead2';g.fillText(title,720,185,510);g.font='900 36px Arial Black,Arial';g.fillStyle=fg;g.fillText(sub,720,290,510);});
+    [[300,-1,prop('FORWARD, TOGETHER!','THE BAY BELONGS TO US','#b3141c','#f2c230',0)],[650,-1,ldr('GLORY TO THE LEADER','His road. His city. His people.','#7a1414','#d8a83a')],
+     [950,1,prop('BUILD THE NEW BAY','MORE STEEL · MORE SHIPS · MORE WORK','#9a1a14','#e8d8a8',1)],[1250,-1,ldr('THE LEADER LOVES YOU','Love him back.','#14284a','#d8a83a')],
+     [1550,1,prop('OBEY · WORK · PROSPER','EVERY HAND FOR THE PORT','#c0281c','#141414',0)],[1850,-1,ldr('THE LEADER IS ALWAYS RIGHT','Thank him for this road.','#3a1458','#d8a83a')],
+     [2100,1,prop('THE PORT IS YOUR FATHER','LOAD · LIFT · SHIP · REPEAT','#a8161a','#f2c230',1)],[2450,1,ldr('THE LEADER SEES ALL','Smile. He is watching.','#7a1414','#d8a83a')],
+     [2700,-1,prop('ONE BAY · ONE WILL','MARCH WITH US','#b8201a','#f4ead2',0)]].forEach(([d,sd,tx])=>{if(PBOARD)PBOARD(Z.tu1+m(d),sd,[[tx,1024/460]],14);else tall(Z.tu1+m(d),sd,tx);});   /* as big as the apes board: steel frame, catwalk, lamps */
     // Hyde Street: WE LOVE THE LEADER boards on the way down, and a big propaganda board at the bottom
     [[Z.hyde+m(365),-1,'WE LOVE THE LEADER','He keeps the city safe.','#8a1010'],[Z.hyde+m(430),1,'WE LOVE THE LEADER','Gratitude is duty.','#14284a'],[Z.marina-m(150),1,'WE ♥ THE LEADER','His eyes are on Hyde Street.','#3a1458']].forEach(([i,sd,a,b,bg])=>tall(i,sd,leaderPoster(a,b,bg)));
     {const n0=scene.children.length;tall(Z.marina-m(35),-1,leaderPoster('THE LEADER','KNOWS · SEES · PROVIDES','#8a1010',1));   /* the big one */const g=scene.children[n0];if(g)g.scale.setScalar(1.35);}
