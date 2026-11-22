@@ -4283,21 +4283,34 @@ function seaMonStart(bye){const M=BAYM,pe=ents.find(e=>e.player);if(!pe)return;b
     for(const A of M.A)for(let k=0;k<6;k++)strand(A,R(-.3,.3),R(-2.6,-.2),R(-.1,.3),R(.4,1.1));}
   const m_=x=>Math.round(x/SEG),s=(bye?Z.gg1-m_(60):Z.gg0+m_(100))*SEG,j=wrapI(Math.floor(s/SEG));   /* out in the water on the right of the bridge, beside it, ahead of the car */
   M.s=s;M.lat=bye?-(edgeAt[j]+95):edgeAt[j]+45;M.bye=bye;M.sc2=bye?20:12;M.wy=bye?-44.6:.5;
-  if(bye===2){M.s=(Z.rb1-m_(220))*SEG;M.lat=edgeAt[wrapI(Z.rb1-m_(220))]+80;M.sc2=16;}   /* coming off the Richmond-San Rafael bridge: in the bay on the left, beside the last 220 m of the bridge, just off the shore (the water is 45 m down there too) */
+  if(bye===2){const sc=16,Ts=(Z.rb1+m_(10))*SEG,j2=wrapI(Z.rb1+m_(10)),T=M.T=at(Ts,edgeAt[j2]+5,0,new THREE.Vector3()),gy=M.wy-.2*sc;M.s=Ts;M.sc2=sc;M.ts=M.tp=null;M.hit=0;   /* coming off the Richmond-San Rafael bridge: he stands in the bay on the left, just short of the bridge end (the water is 45 m down there too), placed so one fist comes down on the ground beside the road where the bridge ends (T) */
+    let a=-1.2,be=1e9;for(let q=-2;q<=-.3;q+=.005){const e=Math.abs(-3.2*Math.cos(q)-.3*Math.sin(q)-((T.y-gy)/sc-3.85));if(e<be){be=e;a=q;}}M.aHit=a;   // arm angle that puts the fist on the ground
+    const zf=(-3.2*Math.sin(a)+.3*Math.cos(a))*sc,sd=1.82*sc,O=at(Ts,0,0,new THREE.Vector3()),Fw=at(Ts+4,0,0,new THREE.Vector3()).sub(O).normalize(),Lf=at(Ts,4,0,new THREE.Vector3()).sub(O).normalize();
+    const f=Lf.clone().negate().setY(0).normalize(),xh=new THREE.Vector3(f.z,0,-f.x);let C=null;   // facing the road, about 60 m out, with the slamming arm on the side towards the end of the bridge (so he stands in the water short of it)
+    for(const sx of[-1,1]){const c=T.clone().addScaledVector(f,-zf).addScaledVector(xh,-sx*sd);if(!C||c.clone().sub(T).dot(Fw)<C.clone().sub(T).dot(Fw)){C=c;M.sx=sx;}}M.C=C;M.ha=Math.atan2(f.x,f.z);}
   M.g.scale.setScalar(M.sc2);M.on=1;if(bye===2)M.a2=0;else if(bye)M.a1=0;else M.a0=0;M.t=0;M.said=0;M.snd=0;M.g.visible=true;}   /* the Golden Gate's water is 45 m down at the Marin end: he is bigger there, to be seen from the deck */
 function seaMonTick(rdt){const M=BAYM;if(!DRIVE||!MAR.a)return;const i=PL.idx,m_=x=>Math.round(x/SEG),pe=ents.find(e=>e.player);if(!pe)return;
   if(i<Z.marina)M.a0=M.a1=M.a2=1;   // ready again for the next pass
   if(!M.on){if(G.state==='race'&&i>Z.marina){const v=Math.abs(pe.v),d0=(Z.gg0+m_(100))*SEG-pe.s,d1=(Z.gg1-m_(60))*SEG-pe.s;   // started far enough ahead, for the speed, that he is up by the time you get there
-      const d2=(Z.rb1-m_(220))*SEG-pe.s;if(M.a0&&d0<Math.max(280,v*7)&&d0>60)seaMonStart(0);else if(M.a1&&d1<Math.max(380,v*8.5)&&d1>120)seaMonStart(1);else if(M.a2&&d2<Math.max(330,v*7)&&d2>110)seaMonStart(2);}return;}
-  const bye=M.bye,R2=bye===2,T_=R2?17:bye?15:26;
+      const d2=(Z.rb1+m_(10))*SEG-pe.s;if(M.a0&&d0<Math.max(280,v*7)&&d0>60)seaMonStart(0);else if(M.a1&&d1<Math.max(380,v*8.5)&&d1>120)seaMonStart(1);else if(M.a2&&d2<Math.max(330,v*7)&&d2>110)seaMonStart(2);}return;}
+  const bye=M.bye,R2=bye===2,sk=R2?(M.ts!=null?M.ts+3.6:M.tp!=null?M.tp:1e9):0,T_=R2?Math.min(sk+5.2,60):bye?15:26;   // at Richmond he stays up until he has slammed the ground (or you have gone by), then sinks
   if(G.state!=='race'||M.t>T_||i<Z.marina||i>(R2?Z.rb1+m_(700):Z.gg1+m_(800))){M.on=0;M.g.visible=false;return;}
-  M.t+=rdt;const t=M.t,g=M.g,sc=M.sc2,WY=M.wy,V=M.V,rise=R2?sst(t,0,3.2)*(1-sst(t,11.5,16.5)):bye?sst(t,0,2.6)*(1-sst(t,10,15)):sst(t,0,5.5)*(1-sst(t,20,26));at(M.s,M.lat,0,V);
+  M.t+=rdt;const t=M.t,g=M.g,sc=M.sc2,WY=M.wy,V=M.V,rise=R2?sst(t,0,3.2)*(1-sst(t,sk,sk+5)):bye?sst(t,0,2.6)*(1-sst(t,10,15)):sst(t,0,5.5)*(1-sst(t,20,26));if(R2)V.copy(M.C);else at(M.s,M.lat,0,V);
   g.position.set(V.x,WY-sc*7.2+rise*sc*(bye?7:6)+Math.sin(t*.7)*.6,V.z);   // from right under the water up to the waist (the chest, at the Marin end)
   const cam=camera.position;g.rotation.set(0,Math.atan2(cam.x-V.x,cam.z-V.z),Math.sin(t*.5)*.04);g.updateMatrixWorld(true);
   M.U.rotation.y=Math.sin(t*.4)*.25;M.E.rotation.x=.25+Math.sin(t*1.1)*.08;M.E.rotation.y=Math.sin(t*.6)*.25;
   const wv=bye===1?sst(t,1.8,3.2)*(1-sst(t,9,10.5)):0;   // goodbye: one arm up high, waving slowly from side to side
   M.A.forEach((A,k)=>{const sx=k?1:-1;if(k&&wv>0){A.rotation.x=-.35*wv;A.rotation.z=sx*(.12+wv*(2.25+.45*Math.sin((t-1.8)*2.2)));}
     else{A.rotation.x=-rise*(.9+.3*Math.sin(t*.8+k));A.rotation.z=sx*(.12+rise*.35);}});   // the arms come up dripping
+  if(R2){const dT=wdiff(M.s-pe.s),v=Math.abs(pe.v);if(M.tp==null&&dT<-60)M.tp=t;
+    if(M.ts==null&&t>3.4&&!PL.crash&&dT<Math.max(v,4)*1.3+6&&dT>-20)M.ts=t;   // as you come off the bridge: one arm goes up, and he slams his fist down beside the road just as you get there
+    if(M.ts!=null){const u=t-M.ts,up=sst(u,0,.85),dn=u<.85?0:Math.min(1,((u-.85)/.28)**2),w=up*(1-sst(u,2.2,3.4)),A=M.A[M.sx>0?1:0];
+      let dy=M.ha-g.rotation.y;dy=Math.atan2(Math.sin(dy),Math.cos(dy));g.rotation.y+=dy*w;M.U.rotation.y*=1-w;
+      A.rotation.x=lerp(A.rotation.x,lerp(-2.9,M.aHit,dn),w);A.rotation.z=lerp(A.rotation.z,0,w);g.updateMatrixWorld(true);
+      if(!M.hit&&u>=1.13){M.hit=1;const T=M.T;G.shake=Math.max(G.shake,1.5);sfxBoom();sfxCrunch(1.2);sfxBigStomp(1.2);say('BOOM !','THE EYE SLAMS THE GROUND',2);NOGY=1;
+        for(let q=0;q<26;q++)puff(V.set(T.x+R(-5,5),T.y+.6,T.z+R(-5,5)),R(-9,9),R(2,10),R(-9,9),R(2,4),R(9,16),R(2,3.5),.6,0x8a7a62);   // a cloud of dust
+        for(let q=0;q<20;q++)emit(smokeP,si++,V.set(T.x+R(-2,2),T.y+1,T.z+R(-2,2)),R(-8,8),R(8,17),R(-8,8),R(.5,1),R(.4,.8),R(1.2,2),.95,0x4a3e32,14,.2);NOGY=0;   // and rocks and clods flung up
+        if(!PL.crash&&!MOSQ.lift&&Math.hypot(PL.x-T.x,PL.z-T.z)<110){PL.air=1;PL.vy=Math.max(PL.vy||0,7.5);PL.safe=Math.max(PL.safe,2.5);}}}}   // the jolt throws the car up a metre or so; it lands and drives on at the same speed
   for(const w of M.weed)w.p.rotation.set(Math.sin(t*1.3+w.ph)*w.a,0,Math.sin(t*1.7+w.ph)*w.a*.7);
   if(!M.snd&&t>.1){M.snd=1;const d=cam.distanceTo(V);sfxSeaBellow(clamp(700/(d+200),.35,1)*(bye===1?.6:1));G.shake=Math.max(G.shake,bye===1?.1:.25);}
   if(!M.said&&t>(bye?2.2:2)){M.said=1;if(R2)say('OUT OF THE BAY !','THE EYE RISES BY THE RICHMOND BRIDGE',2.4);else if(bye)say('BYE BYE !','THE EYE WAVES GOODBYE',2.4);else say('OUT OF THE BAY !','THE EYE RISES BESIDE THE GOLDEN GATE',2.4);}
