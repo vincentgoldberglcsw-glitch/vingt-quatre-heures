@@ -3045,14 +3045,14 @@ function woodIguTick(rdt){const W_=WIGU;if(!DRIVE||!(Z.rb1>0)||!Z.refinery)retur
     const ph=k.ph,K=3.2;for(const sg of k.segs){const z=sg.z,A=.04+.1*Math.max(0,.6-z)/1.9;sg.g.position.x=A*Math.sin(ph-K*z);sg.g.rotation.y=Math.atan(-A*K*Math.cos(ph-K*z));}   // the side-to-side wave down the body and tail
     k.segs[0].g.rotation.x=k.pz>0?-Math.max(0,Math.sin(k.t*5))*.3:0;
     for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f;L.g.rotation.y=q*.55;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.25;}}}
-// Wilma Chan Way: two giant iguanas (about 10 m long) pacing slowly up and down the verges, one on each side, after the overpass (the right-hand one clear of the gas station), stopping now and then to bob their heads.
+// Wilma Chan Way: two giant iguanas (about 12 m long) pacing slowly up and down the verges right at the road's edge, one on each side, after the overpass (the right-hand one clear of the gas station), stopping now and then to bob their heads.
 // They keep off the tarmac (visual only) (WCIG, wcIguTick).
 const WCIG={l:null,V:new THREE.Vector3()};
 function wcIguTick(rdt){const W_=WCIG;if(!DRIVE||!Z.wilma||!Z.tu0)return;const m_=x=>Math.round(x/SEG),WL=Math.min(Z.tu0-Z.wilma,m_(464)),a=Math.round(Z.wilma+WL*.72),b=Z.tu0-m_(40);if(b-a<m_(40))return;
-  if(!W_.l){W_.l=[[1,.4],[-1,.72]].map(([sd,f])=>{const o=bigIguMk(),sc=4.5;o.g.scale.setScalar(sc);const s0=(a+(b-a)*f)*SEG;return Object.assign(o,{sc,sd,s:s0,lo:s0-(b-a)*SEG*.12,hi:s0+(b-a)*SEG*.12,dir:sd,v:R(1.8,2.4),ph:0,pz:R(0,2),t:R(0,5)});});}
+  if(!W_.l){W_.l=[[1,.4],[-1,.72]].map(([sd,f])=>{const o=bigIguMk(),sc=5.5;o.g.scale.setScalar(sc);const s0=(a+(b-a)*f)*SEG;return Object.assign(o,{sc,sd,s:s0,lo:s0-(b-a)*SEG*.12,hi:s0+(b-a)*SEG*.12,dir:sd,v:R(1.8,2.4),ph:0,pz:R(0,2),t:R(0,5)});});}
   const near=G.state==='race'&&PL.idx>Z.wilma-m_(100)&&PL.idx<Z.tu0+m_(20);for(const k of W_.l)k.g.visible=near;if(!near)return;
   for(const k of W_.l){k.t+=rdt;if(k.pz>0)k.pz-=rdt;else{k.s+=k.dir*k.v*rdt;k.ph+=k.v*rdt/k.sc*4.2;if(k.s>k.hi)k.dir=-1;else if(k.s<k.lo)k.dir=1;if(Math.random()<rdt*.1)k.pz=R(1,2.5);}   // pacing, turning at each end, stopping to bob
-    const j=wrapI(Math.floor(k.s/SEG));at(k.s,k.sd*(RW+XW[j]+7),0,W_.V);W_.V.y=Math.max(groundAt(W_.V.x,W_.V.z),H[j]);k.g.position.copy(W_.V);k.g.rotation.y=yaw(j)+(k.dir<0?Math.PI:0);
+    const j=wrapI(Math.floor(k.s/SEG));at(k.s,k.sd*(RW+XW[j]+4),0,W_.V);W_.V.y=Math.max(groundAt(W_.V.x,W_.V.z),H[j]);k.g.position.copy(W_.V);k.g.rotation.y=yaw(j)+(k.dir<0?Math.PI:0);
     const ph=k.ph,K=3.2;for(const sg of k.segs){const z=sg.z,A=.04+.1*Math.max(0,.6-z)/1.9;sg.g.position.x=A*Math.sin(ph-K*z);sg.g.rotation.y=Math.atan(-A*K*Math.cos(ph-K*z));}   // the side-to-side wave down the body and tail
     k.segs[0].g.rotation.x=k.pz>0?-Math.max(0,Math.sin(k.t*5))*.3:0;
     for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f;L.g.rotation.y=q*.55;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.25;}}}
@@ -3528,7 +3528,7 @@ function rsrTick(rdt){return;   // owner 2026-11-19: no more waves crashing over
     if(u>=2.2&&u<5.2)for(const c of RSR.cans){if(c.w===w&&c.on&&c.gone){const p=c.m.position,i=wrapI(Math.floor(w.s0/SEG)),n=Nn[i],k=(rdt*1.4);p.x+=n.x*w.sd*k*2.2;p.z+=n.z*w.sd*k*2.2;}}
     if(u<4.6&&near<16&&Math.abs(PL.gy-H[w.i])<3){const lat=((PL.x-P[w.i].x)*Nn[w.i].x+(PL.z-P[w.i].z)*Nn[w.i].z)*w.sd;if(lat>e-ext-.5)PL.wash=Math.max(PL.wash||0,.9);}
     if(u>5.4){w.t=-1;w.m.visible=false;for(const c of RSR.cans)if(c.w===w){c.w=null;if(c.gone){c.on=0;c.m.visible=false;}}w.cn=0;}}}
-// Dust devils: tall spinning columns of dust, wider at the top, wandering across and along the road in Richmond (from the San Rafael bridge to I-80, in the dry yellow fields)
+// Dust devils (on Wilma Chan Way they also whirl tumbleweeds, branches and small lizards round): tall spinning columns of dust, wider at the top, wandering across and along the road in Richmond (from the San Rafael bridge to I-80, in the dry yellow fields)
 // and on Alameda's streets (out to the Posey Tube, and home from the Webster Tube), carrying scraps of paper and leaves round with them; now and then one heads right across your line.
 // Drive into one and dust swirls round the car and browns the windscreen for a moment, the car shakes and wobbles a little (never slowed or pushed off line), a gust whooshes past and dust kicks out from the wheels.
 const DUSTD={l:[],init:0,hz:null};
@@ -3542,9 +3542,14 @@ function dustTick(rdt){if(!DRIVE)return;PL.dustW=Math.max(0,(PL.dustW||0)-rdt*.9
     for(let k=0;k<7;k++)cg.push(new THREE.CylinderGeometry(1.2+k*.55,.6+k*.5,3,10,1,true));
     for(let q=0;q<8;q++){const g=new THREE.Group(),cs=[],bits=[];for(let k=0;k<7;k++){const c=new THREE.Mesh(cg[k],mt);c.position.y=1.5+k*2.9;g.add(c);cs.push(c);}
       for(let k=0;k<5;k++){const b=new THREE.Mesh(pg,pm[k%4]);g.add(b);bits.push({m:b,a:R(0,6.3),h:R(1,15),r:R(1,3.5),w:R(2.5,4.5)});}
-      g.visible=false;scene.add(g);DUSTD.l.push({g,cs,bits,on:0,s:0,lat:0,tl:0,vl:0,ph:R(0,6),gt:0,k:1,zn:0,hit:0,aim:1});}
+      const wb=[],twM=std({color:0x9a7a4a,roughness:1,wireframe:true}),brM=std({color:0x5a4230,roughness:.95}),lfM=std({color:0x6a7a3a,roughness:.9});   /* on Wilma Chan Way: tumbleweeds, branches and small lizards caught up in it */
+      for(let k=0;k<2;k++){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.55,1),twM);g.add(m);wb.push({m,a:R(0,6.3),h:R(.6,6),r:R(1.2,2.6),w:R(2,3.4),sp:4});}
+      for(let k=0;k<2;k++){const m=new THREE.Group(),st=new THREE.Mesh(cyl(.05,.07,1.8,5),brM);st.rotation.z=1.5;m.add(st);const tw=new THREE.Mesh(cyl(.025,.035,.8,4),brM);tw.position.set(.3,.25,0);tw.rotation.z=.7;m.add(tw);const lf=new THREE.Mesh(new THREE.IcosahedronGeometry(.28,0),lfM);lf.position.set(.55,.5,0);m.add(lf);g.add(m);wb.push({m,a:R(0,6.3),h:R(3,13),r:R(1.6,3.2),w:R(2.5,4),sp:2.5});}
+      for(let k=0;k<2;k++){const L=lizMk();scene.remove(L.g);L.g.visible=true;L.g.scale.setScalar(.8);g.add(L.g);wb.push({m:L.g,L,a:R(0,6.3),h:R(2,10),r:R(1.4,3),w:R(2.6,4.2),sp:3.5});}
+      for(const b of wb)b.m.visible=false;
+      g.visible=false;scene.add(g);DUSTD.l.push({g,cs,bits,wb,on:0,s:0,lat:0,tl:0,vl:0,ph:R(0,6),gt:0,k:1,zn:0,hit:0,aim:1});}
     const hz=document.createElement('div');hz.style.cssText='position:fixed;inset:0;opacity:0;z-index:4;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(184,146,90,.5) 0,rgba(156,118,66,.82) 60%,rgba(120,88,48,.95) 100%)';document.body.appendChild(hz);DUSTD.hz=hz;}   /* the brown haze over the windscreen */
-  const V3=DUSTD.v||(DUSTD.v=new THREE.Vector3());DUSTD.t=(DUSTD.t||0)+rdt;const t=DUSTD.t,want=zn===1?7:zn===2?5:0;let act=0;for(const d of DUSTD.l)if(d.on)act++;
+  const V3=DUSTD.v||(DUSTD.v=new THREE.Vector3());DUSTD.t=(DUSTD.t||0)+rdt;const t=DUSTD.t,want=zn===1?7:zn===2?3:0;let act=0;for(const d of DUSTD.l)if(d.on)act++;
   for(const d of DUSTD.l){
     if(d.on){const ds=wdiff(d.s-pe.s);if(ds<-140||ds>720){d.on=0;d.g.visible=false;act--;}}
     if(!d.on&&act<want&&Math.random()<rdt*1.2){const s=pe.s+R(160,540),zz=dustZone(wrapI(Math.floor(wrapS(s)/SEG)));   /* a new one whips up somewhere ahead */
@@ -3554,6 +3559,7 @@ function dustTick(rdt){if(!DRIVE)return;PL.dustW=Math.max(0,(PL.dustW||0)-rdt*.9
     if(!d.aim&&ds>20&&ds<150){d.aim=1;d.tl=pe.lat+R(-1.5,1.5);d.gt=R(4,6);}   /* this one crosses right over your line */
     d.vl+=(clamp((d.tl-d.lat)*.9,-9,9)-d.vl)*rdt*.9;d.lat+=d.vl*rdt;d.s+=Math.sin(t*.3+d.ph)*3*rdt;
     at(d.s,d.lat,0,d.g.position);d.cs.forEach((c,k)=>{c.rotation.y=t*(2.2-k*.18)+d.ph;c.position.x=Math.sin(t*1.3+k*.7+d.ph)*(.5+k*.25);c.position.z=Math.cos(t*1.1+k*.6)*(.4+k*.2);});d.g.scale.set(d.k,1,d.k);
+    {const jw=wrapI(Math.floor(wrapS(d.s)/SEG)),onW=jw>=Z.wilma&&jw<Z.tu0;for(const b of d.wb){b.m.visible=onW;if(!onW)continue;b.a+=rdt*b.w;b.m.position.set(Math.cos(b.a)*b.r*(1+b.h*.06),b.h+Math.sin(t*1.3+b.a)*1.4,Math.sin(b.a)*b.r*(1+b.h*.06));b.m.rotation.set(t*b.sp+b.a,t*b.sp*.7,b.a*2);if(b.L)lizWig(b.L,2,rdt);}}   /* Wilma Chan Way: tumbleweeds, branches and wriggling little lizards whirled round in it */
     for(const b of d.bits){b.a+=rdt*b.w;b.m.position.set(Math.cos(b.a)*b.r*(1+b.h*.06),b.h+Math.sin(t*1.7+b.a)*1.2,Math.sin(b.a)*b.r*(1+b.h*.06));b.m.rotation.set(t*3+b.a,t*2.1,b.a);}
     if(Math.abs(ds)<220&&Math.random()<rdt*(Math.abs(ds)<90?9:3)){at(d.s+R(-4,4),d.lat+R(-3,3),R(.3,2),V3);const a=R(0,6.283);puff(V3,Math.cos(a)*R(3,7),R(.8,2.5),Math.sin(a)*R(3,7),1,R(5,9),R(2,3.4),.45,0xc8a868);}   /* dust kicked up round its foot */
     const dd=Math.hypot(d.g.position.x-PL.x,d.g.position.z-PL.z),rr=3*d.k+1.3;
