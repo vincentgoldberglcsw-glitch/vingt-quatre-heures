@@ -3177,17 +3177,41 @@ function woodIguTick(rdt){const W_=WIGU;if(!DRIVE||!(Z.rb1>0)||!Z.refinery)retur
     const ph=k.ph,K=3.2;for(const sg of k.segs){const z=sg.z,A=.04+.1*Math.max(0,.6-z)/1.9;sg.g.position.x=A*Math.sin(ph-K*z);sg.g.rotation.y=Math.atan(-A*K*Math.cos(ph-K*z));}   // the side-to-side wave down the body and tail
     k.segs[0].g.rotation.x=k.pz>0?-Math.max(0,Math.sin(k.t*5))*.3:0;
     for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f;L.g.rotation.y=q*.55;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.25;}}}
-// Wilma Chan Way: two giant iguanas (about 12 m long) pacing slowly up and down the verges right at the road's edge, one on each side, after the overpass (the right-hand one clear of the gas station), stopping now and then to bob their heads.
-// They keep off the tarmac (visual only) (WCIG, wcIguTick).
-const WCIG={l:null,V:new THREE.Vector3()};
-function wcIguTick(rdt){const W_=WCIG;if(!DRIVE||!Z.wilma||!Z.tu0)return;const m_=x=>Math.round(x/SEG),WL=Math.min(Z.tu0-Z.wilma,m_(464)),a=Math.round(Z.wilma+WL*.72),b=Z.tu0-m_(40);if(b-a<m_(40))return;
-  if(!W_.l){W_.l=[[1,.4],[-1,.72]].map(([sd,f])=>{const o=bigIguMk(),sc=5.5;o.g.scale.setScalar(sc);const s0=(a+(b-a)*f)*SEG;return Object.assign(o,{sc,sd,s:s0,lo:s0-(b-a)*SEG*.12,hi:s0+(b-a)*SEG*.12,dir:sd,v:R(1.8,2.4),ph:0,pz:R(0,2),t:R(0,5)});});}
-  const near=G.state==='race'&&PL.idx>Z.wilma-m_(100)&&PL.idx<Z.tu0+m_(20);for(const k of W_.l)k.g.visible=near;if(!near)return;
-  for(const k of W_.l){k.t+=rdt;if(k.pz>0)k.pz-=rdt;else{k.s+=k.dir*k.v*rdt;k.ph+=k.v*rdt/k.sc*4.2;if(k.s>k.hi)k.dir=-1;else if(k.s<k.lo)k.dir=1;if(Math.random()<rdt*.1)k.pz=R(1,2.5);}   // pacing, turning at each end, stopping to bob
-    const j=wrapI(Math.floor(k.s/SEG));at(k.s,k.sd*(RW+XW[j]+4),0,W_.V);W_.V.y=Math.max(groundAt(W_.V.x,W_.V.z),H[j]);k.g.position.copy(W_.V);k.g.rotation.y=yaw(j)+(k.dir<0?Math.PI:0);
-    const ph=k.ph,K=3.2;for(const sg of k.segs){const z=sg.z,A=.04+.1*Math.max(0,.6-z)/1.9;sg.g.position.x=A*Math.sin(ph-K*z);sg.g.rotation.y=Math.atan(-A*K*Math.cos(ph-K*z));}   // the side-to-side wave down the body and tail
-    k.segs[0].g.rotation.x=k.pz>0?-Math.max(0,Math.sin(k.t*5))*.3:0;
-    for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f;L.g.rotation.y=q*.55;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.25;}}}
+// Wilma Chan Way: two giant iguanas (about 12 m long) waiting on the verges after the overpass, one on each side. As the car comes, they dart out and scurry right across the road
+// in front of it, and back again, feet on the tarmac. Hit one and it's a big comic-book BOOF!: the iguana is bounced, tumbling, off to the side, lands and runs off; the car gets a jolt, never a crash (WCIG, wcIguTick, boof).
+const WCIG={l:null,V:new THREE.Vector3(),A:new THREE.Vector3(),B:new THREE.Vector3()};
+function boof(txt='BOOF!'){let el=document.getElementById('boof');if(!el){el=document.createElement('div');el.id='boof';el.style.cssText='position:fixed;left:50%;top:34%;width:min(62vw,520px);aspect-ratio:1.45;margin-left:calc(min(62vw,520px)/-2);pointer-events:none;z-index:60;opacity:0';
+    const pts=[];for(let k=0;k<26;k++){const a=k/26*6.283,r=k%2?.62:1-.12*((k*7)%3)/2;pts.push((72.5+Math.cos(a)*70*r).toFixed(1)+','+(50+Math.sin(a)*48*r).toFixed(1));}   // a jagged yellow starburst, red and black edges, bold outlined red letters (all one SVG)
+    const T='x="72.5" y="62" text-anchor="middle" font-family="Impact,\'Arial Black\',Arial,sans-serif" font-weight="900" font-size="34" letter-spacing="1" transform="rotate(-8 72.5 50)"';
+    el.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 145 100" style="position:absolute;inset:0;width:100%;height:100%"><polygon points="'+pts.join(' ')+'" fill="#ffe014" stroke="#c4101a" stroke-width="3" stroke-linejoin="miter"/><polygon points="'+pts.join(' ')+'" fill="none" stroke="#111" stroke-width="1" transform="translate(72.5 50) scale(.86) translate(-72.5 -50)"/>'+
+      '<text '+T+' dx="2.5" dy="2.5" fill="#111" stroke="#111" stroke-width="3"></text><text '+T+' fill="#e8141c" stroke="#111" stroke-width="2.4" paint-order="stroke"></text></svg>';document.body.appendChild(el);}
+  el.querySelectorAll('text').forEach(o=>{o.textContent=txt;});el.getAnimations().forEach(a=>a.cancel());
+  el.animate([{opacity:1,transform:'scale(.1) rotate(-25deg)'},{opacity:1,transform:'scale(1.25) rotate(6deg)',offset:.14},{opacity:1,transform:'scale(1) rotate(-4deg)',offset:.24},{opacity:1,transform:'scale(1.06) rotate(-3deg)',offset:.8},{opacity:0,transform:'scale(1.5) rotate(4deg)'}],{duration:1150,easing:'ease-out',fill:'forwards'});}
+function wcIguTick(rdt){const W_=WCIG;if(!DRIVE||!Z.wilma||!Z.tu0)return;const pe=ents.find(e=>e.player);if(!pe)return;const m_=x=>Math.round(x/SEG),WL=Math.min(Z.tu0-Z.wilma,m_(464)),a=Math.round(Z.wilma+WL*.66),b=Z.tu0-m_(40);if(b-a<m_(40))return;
+  const vl=j=>RW+XW[j]+4;   // where they wait, just off the tarmac
+  if(!W_.l){W_.l=[[1,.25],[-1,.55]].map(([sd,f])=>{const o=bigIguMk(),sc=5.5;o.g.scale.setScalar(sc);o.g.rotation.order='YXZ';const s=(a+(b-a)*f)*SEG;return Object.assign(o,{sc,sd,s,s0:s,lat:sd*vl(Math.round(s/SEG)),st:0,tl:0,y:0,vy:0,vs:0,vl:0,ro:0,rx:0,sp:0,cd:R(0,.5),kc:0,dir:1,h:0,ph:0,pz:0,t:R(0,5)});});}
+  const near=G.state==='race'&&PL.idx>Z.wilma-m_(100)&&PL.idx<Z.tu0+m_(20);for(const k of W_.l)k.g.visible=near;
+  if(!near){for(const k of W_.l){k.st=0;k.s=k.s0;k.sd=Math.sign(k.lat)||k.sd;k.y=0;k.cd=R(0,.5);}return;}
+  const vc=Math.max(Math.abs(pe.v),6);
+  for(const k of W_.l){k.t+=rdt;k.kc-=rdt;const j=wrapI(Math.floor(k.s/SEG)),w=vl(j),ds=wdiff(k.s-pe.s);let us=0,ul=0;
+    if(k.st===0){k.cd-=rdt;const side=Math.sign(k.lat)||1;k.lat+=(side*w-k.lat)*clamp(rdt*.5,0,1);
+      const tr=ds/vc,tm=w/14;   // dart out when the car will arrive just as it reaches the middle of the road, or any time the car is crawling up close
+      if(k.cd<=0&&ds>12&&ds<260&&((tr>tm+.15&&tr<tm+1.3)||(Math.abs(pe.v)<8&&ds<90))){k.st=1;k.tl=-side*(w+3.5);k.v=R(13,16);k.pz=0;}
+      else if(k.pz>0)k.pz-=rdt;else{k.s+=k.dir*1.6*rdt;us=k.dir*1.6;k.ph+=1.6*rdt/k.sc*4.2;if(Math.abs(k.s-k.s0)>14)k.dir=-Math.sign(k.s-k.s0);if(Math.random()<rdt*.15)k.pz=R(.6,1.6);}}   // pacing, bobbing its head, between dashes
+    else if(k.st===1){const dl=k.tl-k.lat,st=k.v*rdt;if(Math.abs(dl)<=st){k.lat=k.tl;k.st=0;k.cd=R(.25,.9);k.pz=R(.3,.8);}else{k.lat+=Math.sign(dl)*st;ul=Math.sign(dl)*k.v;us=Math.sign(k.s0-k.s)*1.5;k.s+=us*rdt;}k.ph+=k.v*rdt/k.sc*4.2;}   // a fast scurry right across
+    else{k.vy-=16*rdt;k.y+=k.vy*rdt;k.s+=k.vs*rdt;k.lat+=k.vl*rdt;k.ro+=k.sp*rdt;k.rx+=k.sp*.35*rdt;k.vs*=Math.exp(-.6*rdt);   // knocked flying, tumbling
+      if(k.y<=0&&k.vy<0){k.y=0;if(k.vy<-5){k.vy*=-.35;k.sp*=.5;}else{k.vy=0;k.ro=k.rx=0;k.st=1;k.tl=(Math.sign(k.lat)||1)*(w+3.5);k.v=R(10,13);}}}   // a bounce, then it lands, rights itself and runs off the road
+    if(k.st!==2)k.s=clamp(k.s,a*SEG,b*SEG);
+    const i2=wrapI(Math.floor(k.s/SEG));at(k.s,k.lat,0,W_.V);const fy=W_.V.y;W_.V.y=Math.max(fy,Math.abs(k.lat)>RW+XW[i2]+1?groundAt(W_.V.x,W_.V.z):fy)+k.y;k.g.position.copy(W_.V);
+    const n=Math.hypot(us,ul);if(n>1e-3&&k.st!==2){const u=us/n,v=ul/n;at(k.s+u*2,k.lat+v*2,0,W_.A);at(k.s-u*2,k.lat-v*2,0,W_.B);const hT=Math.atan2(W_.A.x-W_.B.x,W_.A.z-W_.B.z);let dh=hT-k.h;dh=Math.atan2(Math.sin(dh),Math.cos(dh));k.h+=dh*clamp(rdt*(k.st===1?14:4),0,1);}
+    k.g.rotation.set(k.rx,k.h,k.ro);
+    const ph=k.ph,K=3.2,mv=k.st===2?.3:1;for(const sg of k.segs){const z=sg.z,A=(.04+.1*Math.max(0,.6-z)/1.9)*mv;sg.g.position.x=A*Math.sin(ph-K*z);sg.g.rotation.y=Math.atan(-A*K*Math.cos(ph-K*z));}   // the side-to-side wave down the body and tail
+    k.segs[0].g.rotation.x=k.st===0&&k.pz>0?-Math.max(0,Math.sin(k.t*5))*.3:0;
+    for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f;L.g.rotation.y=q*.55;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.25;}
+    if(k.st!==2&&k.kc<=0&&!PL.crash&&Math.abs(pe.v)>3&&Math.abs(PL.gy-fy)<3){   // the car against the long body (head to tail tip), never a crash
+      const fx=Math.sin(k.h),fz=Math.cos(k.h),dx=PL.x-W_.V.x,dz=PL.z-W_.V.z,al=clamp(dx*fx+dz*fz,-7*k.sc/5.5,6*k.sc/5.5),ex=dx-fx*al,ez=dz-fz*al;
+      if(ex*ex+ez*ez<2.3*2.3){const sd=Math.sign(k.lat-pe.lat)||(Math.random()<.5?-1:1);k.st=2;k.kc=1.2;k.y=0;k.vy=R(9,12);k.vs=clamp(pe.v*.45,-20,20)+R(-1,2);k.vl=sd*R(5,8);k.sp=sd*R(5,8);
+        PL.vx*=.82;PL.vz*=.82;G.shake=Math.max(G.shake,.6);sfxBoing(1);sfxThump(.9);boof();}}}}
 // Richmond woods past the end of Shane Drive, before the I-80 on-ramp: six fat green-and-black caterpillars (about a quarter of a car long) inching slowly across the road, a hump
 // rippling down each body and the body swaying. Run one over and it squishes flat with a squelch and a splash of pink ooze. Never a crash, no slowdown (CATP, catTick).
 const CATP={l:null,goo:[],V:new THREE.Vector3()};
@@ -5641,7 +5665,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={buildHero:m=>buildHero(m),CENT,WQK,EYEB,LAKE,LKR,lakeIn:()=>{const n=Nn[PL.idx];lakeRailBreak(PL.idx);lakeStart({src:"rail",x:PL.x,y:(PL.cy||H[PL.idx])+.3,z:PL.z,vx:n.x*10,vz:n.z*10,vy:3,rs:(PL.idx-15)*SEG});},BIGI,WIGU,CATP,FWI,fwIgu:()=>{const pe=ents.find(e=>e.player);fwIguStart(pe.s+60);},TUBI,RIGI,NUDG,nudge:()=>nudgeStart(),IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,TDR,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={buildHero:m=>buildHero(m),WCIG,boof:t=>boof(t),CENT,WQK,EYEB,LAKE,LKR,lakeIn:()=>{const n=Nn[PL.idx];lakeRailBreak(PL.idx);lakeStart({src:"rail",x:PL.x,y:(PL.cy||H[PL.idx])+.3,z:PL.z,vx:n.x*10,vz:n.z*10,vy:3,rs:(PL.idx-15)*SEG});},BIGI,WIGU,CATP,FWI,fwIgu:()=>{const pe=ents.find(e=>e.player);fwIguStart(pe.s+60);},TUBI,RIGI,NUDG,nudge:()=>nudgeStart(),IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,TDR,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
