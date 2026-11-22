@@ -2293,8 +2293,8 @@ function schedule(){if(!AC||AC.state!=='running')return;const sp=60/94/4;
     }
     nextStep+=sp;stepN++;}}
 function sfxBoom(){if(!AC)return;const t=AC.currentTime;hit(t,2.2,1.6,260,'lowpass',master);hit(t,.5,.9,1800,'lowpass',master);tone('sine',95,t,1.6,1.3,master,{to:26,h:.15});for(let i=0;i<7;i++)hit(t+.25+i*.17+Math.random()*.1,.12,.25,R(900,3000),'bandpass',master);}
-function sfxScrape(v){if(!AC)return;const t=AC.currentTime;hit(t,.28,.5*v,2400,'bandpass',master);tone('square',70,t,.12,.4*v,master,{to:40});}
 function sfxMushroom(k){if(!AC)return;sfxBoom();const t=AC.currentTime;hit(t,3.5,1.8*k,140,'lowpass',master);tone('sine',62,t,3.8,1.4*k,master,{to:18});tone('triangle',40,t+.1,3,.6*k,master,{to:16});for(let i=0;i<9;i++)hit(t+.6+i*.55+Math.random()*.3,R(1.2,2.2),R(.5,.9)*k*(1-i/12),R(90,200),'lowpass',master);}   // the tanker: a deeper boom and a long rolling rumble
+function sfxScrape(v){if(!AC)return;const t=AC.currentTime;hit(t,.28,.5*v,2400,'bandpass',master);tone('square',70,t,.12,.4*v,master,{to:40});}
 function sfxPing(){if(!AC)return;tone('triangle',R(1800,3400),AC.currentTime,.05,.12,master);}
 function sfxBeep(hi){if(!AC)return;tone('square',hi?880:440,AC.currentTime,hi?.5:.14,.2,master,{lp:2000});}
 function updateAudio(rpm,thr,speed,slip){if(!AC)return;const t=AC.currentTime,f=rpm/60*3*(G.slow<1?.7:1),on=G.state==='race'||G.state==='count'||G.state==='finish';
@@ -2405,9 +2405,9 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*SPILL.g*(1-(PL.melt
   if(DRIVE&&zoneArr[PL.idx]===1&&!offroad){let c=0;for(let q=-6;q<14;q++){const u=wrapI(PL.idx+q),v=wrapI(u+1);c+=Math.abs((T[v].x-T[u].x)*Nn[u].x+(T[v].z-T[u].z)*Nn[u].z);}   // Alameda's big corners hold at 200 mph: the grip rises with what the bend asks for at this speed
     const need=f0*f0*(c/(20*SEG))/9.81;if(need>.6*g){const k=Math.min(7,need*1.35/(g||1));for(let q=0;q<4;q++)VE.mu[q]*=Math.max(1,k);}}
   if(PL.wash>0){const w=PL.wash;for(let k=0;k<4;k++)VE.mu[k]*=1-.2*w;VE.rr+=w*(1.2+.025*Math.abs(f0));VS.v+=w*2.2*dt;VS.r+=Math.sin(G.raceT*3.3)*.2*w*dt;}   /* a wave washing over the Marina: a little drag (light, so it barely slows you), slightly less grip, and a shove towards the field (marinaTick) */
+  if(DRIVE&&PL.dustW>0){const w=PL.dustW;VS.v+=Math.sin(G.raceT*9)*7*w*dt;VS.r+=Math.sin(G.raceT*6.1)*.3*w*dt;}   /* inside a dust devil: a slight sideways wobble that cancels itself out (dustTick) */
   VE.grade=PL.slope||0;VE.air=PL.air?1:0;VE.aids=G.aids?1:0;VE.sens=G.sens;VI.st=st;VI.thr=thr;VI.brk=brk;VI.rev=rev;VI.analog=G.pad?1:0;
   stepVehicle(VS,M.dyn,VI,VE,dt);
-  if(DRIVE&&PL.dustW>0){const w=PL.dustW;VS.v+=Math.sin(G.raceT*9)*7*w*dt;VS.r+=Math.sin(G.raceT*6.1)*.3*w*dt;}   /* inside a dust devil: a slight sideways wobble that cancels itself out (dustTick) */
   if(G.state==='finish'&&G.finT>=2.6&&VS.u<.3){VS.u=VS.v=VS.r=0;}
   PL.x=VS.x;PL.z=VS.z;PL.h=VS.h;fx=Math.sin(PL.h);fz=Math.cos(PL.h);PL.vx=fx*VS.u+fz*VS.v;PL.vz=fz*VS.u-fx*VS.v;
   const f=VS.u,v=Math.abs(f),a=VS.axF,yawR=VS.r,delta=VS.delta,spin=VS.spin;
@@ -3095,7 +3095,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);bigIguTick(rdt);tubeIguTick(rdt);rigiTick(rdt);iguMoreTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);eyeMonTick(rdt);bigfootTick(rdt);seaMonTick(rdt);sfBldTick(rdt);sfPyrTick(rdt);clayTick(rdt);hydMosqTick(rdt);hydIguTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);bigIguTick(rdt);tubeIguTick(rdt);rigiTick(rdt);iguMoreTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);eyeMonTick(rdt);dadBeetleTick(rdt);bigfootTick(rdt);seaMonTick(rdt);sfBldTick(rdt);sfPyrTick(rdt);clayTick(rdt);hydMosqTick(rdt);hydIguTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -3926,10 +3926,10 @@ function beetleBuild(B=BTL){const g=new THREE.Group(),UP=new THREE.Vector3(0,1,0
   const limb=(L,a,b,r,rings,per)=>{const ax=b.clone().sub(a).normalize(),t1=new THREE.Vector3().crossVectors(ax,Math.abs(ax.y)<.9?UP:v3(1,0,0)).normalize(),t2=new THREE.Vector3().crossVectors(ax,t1);
     for(let k=0;k<rings;k++){const u=(k+.5)/rings;for(let j=0;j<per;j++){const th=(j+(k%2)*.5)/per*Math.PI*2,n=t1.clone().multiplyScalar(Math.cos(th)).addScaledVector(t2,Math.sin(th));L.push([a.clone().lerp(b,u).addScaledVector(n,r),ax.clone().addScaledVector(n,.55).normalize()]);}}};
   // legs, planted wide and bent: scaly thighs and shins, knee plates, clawed feet with red-brown toes
-  const LG=[];for(const sx of[-1,1]){const hip=v3(sx*.62,3,0),kn=v3(sx*.8,1.65,.32),an=v3(sx*.72,.42,0);
-    seg(g,hip,kn,.6,.5,gdk);seg(g,kn,an,.5,.4,gdk);sph(g,.5,1,.9,1,kn.x,kn.y,kn.z+.08,gry,8,6);limb(LG,hip,kn,.56,3,7);limb(LG,kn,an,.47,3,6);
-    sph(g,.46,1.05,.5,1.5,an.x,.25,.22,gdk,10,6);for(const tx of[-.26,0,.26])seg(g,v3(an.x+tx,.22,.78),v3(an.x+tx*1.35,.04,1.2),.14,.02,red,5);}
-  scales(g,LG);sph(g,.95,1.15,.62,.85,0,3.1,0,gdk,10,7);   // the hips
+  B.LG=[];for(const sx of[-1,1]){const hip=v3(sx*.62,3,0),kn=v3(sx*.8,1.65,.32),an=v3(sx*.72,.42,0),LP=new THREE.Group(),q=new THREE.Group(),LG=[];LP.position.copy(hip);q.position.copy(hip).negate();LP.add(q);g.add(LP);B.LG.push(LP);   // each leg hangs from a pivot at the hip, so it can step
+    seg(q,hip,kn,.6,.5,gdk);seg(q,kn,an,.5,.4,gdk);sph(q,.5,1,.9,1,kn.x,kn.y,kn.z+.08,gry,8,6);limb(LG,hip,kn,.56,3,7);limb(LG,kn,an,.47,3,6);
+    LP.ft=sph(q,.46,1.05,.5,1.5,an.x,.25,.22,gdk,10,6);for(const tx of[-.26,0,.26])seg(q,v3(an.x+tx,.22,.78),v3(an.x+tx*1.35,.04,1.2),.14,.02,red,5);scales(q,LG);}
+  sph(g,.95,1.15,.62,.85,0,3.1,0,gdk,10,7);   // the hips
   // the hunched trunk: a plated grey back, the ribbed yellow-green chest and belly in front
   const T=new THREE.Group();T.position.set(0,3.15,0);T.rotation.x=.38;g.add(T);B.T=T;
   sph(T,1.25,1.12,1.45,.85,0,1.55,-.22,gry,12,9);sph(T,1.2,.98,1.38,.72,0,1.5,.12,grn,16,12);
@@ -4078,6 +4078,40 @@ function eyeMonTick(rdt){const M=EYEM;if(!DRIVE||!Z.toll)return;const pe=ents.fi
   const st=Math.floor((M.ph-Math.PI/2)/Math.PI);if(st!==M.n){const first=M.n<0;M.n=st;if(!first){const L=M.L[((st%2)+2)%2],F=L.ft.getWorldPosition(M.F),k=clamp(260/(cd+60),.12,1);
       sfxEyeStomp(k);G.shake=Math.max(G.shake,.55*k);
       if(cd<1000){NOGY=1;for(let q=0;q<16;q++){const a=R(0,6.283),sp=R(5,12);puff(V.set(F.x+Math.cos(a)*R(2,8),F.y+.5,F.z+Math.sin(a)*R(2,8)),Math.cos(a)*sp,R(2,7),Math.sin(a)*sp,R(4,7),R(14,26),R(1.6,2.8),.6,0x9a8c74);}NOGY=0;}}}}
+// THE DADDY BEETLE: on Shane Drive in Richmond, far off across the open land (some 300 m from the road), the daddy of the beetle in the bay: the same beetle, half as big again
+// (some 150 m tall) and a little darker and older. He stomps slowly about, swaying, arms swinging; every heavy footfall is a deep thud that shakes the ground and kicks up a
+// big cloud of dust. His head turns to watch your car, and now and then he roars. He never comes near the road. Once you are past him he turns up again further ahead (DADB, dadBeetleTick; __test.dadBeetle()).
+const DADB={g:null,on:0,s:0,lat:-360,sd:-1,h:0,ph:0,t:0,n:-1,said:0,rc:6};
+function dadBeetleBuild(){const D=DADB;beetleBuild(D);const mm=new Map();D.g.traverse(o=>{if(o.material){let m=mm.get(o.material);if(!m){m=o.material.clone();m.color.multiplyScalar(.75);m.fog=false;m.userData.c0=m.color.clone();m.userData.e0=m.emissive.clone();mm.set(o.material,m);}o.material=m;}});D.mats=[...mm.values()];   // his own gentler haze (below), so he still looms through rain and fog
+  for(const r of D.rings)scene.remove(r);D.sc=20;D.g.scale.setScalar(D.sc);D.ar=D.A.rotation.clone();D.F=new THREE.Vector3();}
+function dadBeetlePlace(ahead){const D=DADB,pe=ents.find(e=>e.player);if(!pe)return;if(!D.g)dadBeetleBuild();D.on=1;D.s=pe.s+ahead;const an=sd=>{at(D.s,sd*350,0,D.V);return Math.abs(Math.atan2(Math.sin(Math.atan2(D.V.x-PL.x,D.V.z-PL.z)-PL.h),Math.cos(Math.atan2(D.V.x-PL.x,D.V.z-PL.z)-PL.h)));};D.sd=an(-1)<an(1)?-1:1;D.lat=D.sd*R(300,330);   // on whichever side the road ahead bends towards, so he stands out in front of you
+  D.dir=Math.random()<.6?Math.PI:0;D.h=D.dir;D.t=0;D.n=-1;D.rc=R(5,9);}
+function dadBeetleTick(rdt){const D=DADB;if(!DRIVE||!Z.shane)return;const pe=ents.find(e=>e.player);if(!pe)return;const i=PL.idx,m_=x=>Math.round(x/SEG);
+  const zone=G.state==='race'&&i>Z.shane-m_(260)&&i<Z.refinery+m_(60);
+  if(!zone){if(D.on){D.on=0;D.g.visible=false;}if(i<Z.rb1||i>Z.i80)D.said=0;return;}
+  if(!D.on)dadBeetlePlace(R(560,640));
+  else if(pe.s-D.s>150&&pe.s+500<Z.refinery*SEG)dadBeetlePlace(R(560,640));   // gone by: he turns up again further ahead
+  D.t+=rdt;const t=D.t,g=D.g,sc=D.sc,sd=D.sd;
+  // walking: slow, heavy strides, mostly along the road, wandering in and out a little but never nearer than 290 m
+  D.ph+=rdt*1.5;const hT=D.dir+Math.cos(D.dir)*(Math.sin(t*.2)*.5+clamp((315-sd*D.lat)/50,-1,1)*.6);D.h+=clamp(hT-D.h,-1,1)*rdt*.5;
+  const v=6*(.5+.5*Math.abs(Math.sin(D.ph)));D.s+=Math.cos(D.h)*v*rdt;D.lat=sd*Math.max(290,sd*D.lat+Math.sin(D.h)*v*rdt);
+  const V=D.V;at(D.s,D.lat,0,V);const j=wrapI(Math.floor(D.s/SEG)),n=Nn[j],a=P[j],b=P[wrapI(j+1)],tl=Math.hypot(b.x-a.x,b.z-a.z)||1,tx=(b.x-a.x)/tl,tz=(b.z-a.z)/tl;
+  const dx=tx*Math.cos(D.h)+n.x*sd*Math.sin(D.h),dz=tz*Math.cos(D.h)+n.z*sd*Math.sin(D.h),gh=(x,z)=>Math.max(groundAt(x,z),Terrain.heightAt(x,z)),gy=gh(V.x,V.z);   // the real land out there (the hills), not just the road's
+  g.position.set(V.x,gy-sc*2.75*(1-Math.cos(.32*Math.sin(D.ph)))-.5,V.z);   // he dips as his legs swing, so the planted foot stays on the ground
+  g.rotation.set(0,Math.atan2(dx,dz),Math.sin(D.ph)*.05);
+  D.LG.forEach((L,k)=>{const q=D.ph+k*Math.PI;L.rotation.x=-Math.sin(q)*.32;L.position.y=3+Math.max(0,Math.cos(q))*.4;});
+  D.T.rotation.x=.38+Math.sin(D.ph*2)*.04;D.T.rotation.z=Math.sin(D.ph)*.06;
+  D.A.rotation.set(D.ar.x+Math.sin(D.ph)*.25,D.ar.y,D.ar.z);D.A2.rotation.set(-.55+Math.sin(D.ph+Math.PI)*.25,0,.32);
+  // the head turns to watch your car
+  g.visible=true;g.updateMatrixWorld(true);const cam=camera.position,W=D.W.copy(cam);g.worldToLocal(W);const cd=cam.distanceTo(g.position);
+  {const f=scene.fog,hz=f&&f.far?clamp((cd-f.near)/(Math.max(f.far,1500)-f.near),0,.8):0;for(const m of D.mats){m.color.copy(m.userData.c0).multiplyScalar(1-hz);m.emissive.copy(m.userData.e0);if(f)m.emissive.lerp(f.color,hz);}}   // faded into the haze with distance, but never quite gone
+  const hy=cd<900?clamp(Math.atan2(W.x,W.z),-1.1,1.1):Math.sin(t*.4)*.6;D.H.rotation.y+=(hy-D.H.rotation.y)*clamp(rdt*1.4,0,1);D.H.rotation.x=-.32+Math.sin(D.ph*2)*.04;
+  if(!D.said&&cd<900){D.said=1;D.rc=R(1,2);say('THE DADDY BEETLE !','STOMPING ACROSS RICHMOND',2.4);}
+  if((D.rc-=rdt)<=0){D.rc=R(9,16);sfxBeetleRoar(clamp(300/(cd+60),.25,.9));}   // now and then a deep roar
+  // a footfall each time a foot comes down: a deep thud, the ground shakes, a big cloud of dust
+  const st=Math.floor((D.ph-Math.PI/2)/Math.PI);if(st!==D.n){const first=D.n<0;D.n=st;if(!first){const L=D.LG[((st%2)+2)%2],F=L.ft.getWorldPosition(D.F),k=clamp(300/(cd+60),.12,1),fy=gh(F.x,F.z);
+      sfxEyeStomp(k);G.shake=Math.max(G.shake,.6*k);
+      if(cd<1200){NOGY=1;for(let q=0;q<22;q++){const a=R(0,6.283),sp=R(6,15);puff(V.set(F.x+Math.cos(a)*R(3,12),fy+1,F.z+Math.sin(a)*R(3,12)),Math.cos(a)*sp,R(2,9),Math.sin(a)*sp,R(6,10),R(18,34),R(1.8,3),.6,0x9a8c74);}NOGY=0;}}}}
 // Bigfoot in the Marin redwoods, from the owner's toy: about 13 m tall (three cars), shaggy warm reddish-brown fur, tan bearded face, long arms, big feet. Once per pass
 // he steps out from between the trees right to the edge of the road just ahead, on your side, raises both fists and bangs them down on the car as you go by (a thump,
 // a jolt of shake: no crash, no slowing), chases after you for a few seconds (thudding feet, a roar), then gives up: throws his arms up and beats his chest (BIGF, bigfootTick; __test.bigfoot()).
@@ -4886,7 +4920,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={BIGI,TUBI,RIGI,IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={BIGI,TUBI,RIGI,IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
