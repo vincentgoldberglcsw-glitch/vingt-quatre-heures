@@ -2293,6 +2293,7 @@ function schedule(){if(!AC||AC.state!=='running')return;const sp=60/94/4;
     nextStep+=sp;stepN++;}}
 function sfxBoom(){if(!AC)return;const t=AC.currentTime;hit(t,2.2,1.6,260,'lowpass',master);hit(t,.5,.9,1800,'lowpass',master);tone('sine',95,t,1.6,1.3,master,{to:26,h:.15});for(let i=0;i<7;i++)hit(t+.25+i*.17+Math.random()*.1,.12,.25,R(900,3000),'bandpass',master);}
 function sfxScrape(v){if(!AC)return;const t=AC.currentTime;hit(t,.28,.5*v,2400,'bandpass',master);tone('square',70,t,.12,.4*v,master,{to:40});}
+function sfxMushroom(k){if(!AC)return;sfxBoom();const t=AC.currentTime;hit(t,3.5,1.8*k,140,'lowpass',master);tone('sine',62,t,3.8,1.4*k,master,{to:18});tone('triangle',40,t+.1,3,.6*k,master,{to:16});for(let i=0;i<9;i++)hit(t+.6+i*.55+Math.random()*.3,R(1.2,2.2),R(.5,.9)*k*(1-i/12),R(90,200),'lowpass',master);}   // the tanker: a deeper boom and a long rolling rumble
 function sfxPing(){if(!AC)return;tone('triangle',R(1800,3400),AC.currentTime,.05,.12,master);}
 function sfxBeep(hi){if(!AC)return;tone('square',hi?880:440,AC.currentTime,hi?.5:.14,.2,master,{lp:2000});}
 function updateAudio(rpm,thr,speed,slip){if(!AC)return;const t=AC.currentTime,f=rpm/60*3*(G.slow<1?.7:1),on=G.state==='race'||G.state==='count'||G.state==='finish';
@@ -2405,6 +2406,7 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*SPILL.g*(1-(PL.melt
   if(PL.wash>0){const w=PL.wash;for(let k=0;k<4;k++)VE.mu[k]*=1-.2*w;VE.rr+=w*(1.2+.025*Math.abs(f0));VS.v+=w*2.2*dt;VS.r+=Math.sin(G.raceT*3.3)*.2*w*dt;}   /* a wave washing over the Marina: a little drag (light, so it barely slows you), slightly less grip, and a shove towards the field (marinaTick) */
   VE.grade=PL.slope||0;VE.air=PL.air?1:0;VE.aids=G.aids?1:0;VE.sens=G.sens;VI.st=st;VI.thr=thr;VI.brk=brk;VI.rev=rev;VI.analog=G.pad?1:0;
   stepVehicle(VS,M.dyn,VI,VE,dt);
+  if(DRIVE&&PL.dustW>0){const w=PL.dustW;VS.v+=Math.sin(G.raceT*9)*7*w*dt;VS.r+=Math.sin(G.raceT*6.1)*.3*w*dt;}   /* inside a dust devil: a slight sideways wobble that cancels itself out (dustTick) */
   if(G.state==='finish'&&G.finT>=2.6&&VS.u<.3){VS.u=VS.v=VS.r=0;}
   PL.x=VS.x;PL.z=VS.z;PL.h=VS.h;fx=Math.sin(PL.h);fz=Math.cos(PL.h);PL.vx=fx*VS.u+fz*VS.v;PL.vz=fz*VS.u-fx*VS.v;
   const f=VS.u,v=Math.abs(f),a=VS.axF,yawR=VS.r,delta=VS.delta,spin=VS.spin;
@@ -3272,20 +3274,40 @@ function rsrTick(rdt){return;   // owner 2026-11-19: no more waves crashing over
     if(u>=2.2&&u<5.2)for(const c of RSR.cans){if(c.w===w&&c.on&&c.gone){const p=c.m.position,i=wrapI(Math.floor(w.s0/SEG)),n=Nn[i],k=(rdt*1.4);p.x+=n.x*w.sd*k*2.2;p.z+=n.z*w.sd*k*2.2;}}
     if(u<4.6&&near<16&&Math.abs(PL.gy-H[w.i])<3){const lat=((PL.x-P[w.i].x)*Nn[w.i].x+(PL.z-P[w.i].z)*Nn[w.i].z)*w.sd;if(lat>e-ext-.5)PL.wash=Math.max(PL.wash||0,.9);}
     if(u>5.4){w.t=-1;w.m.visible=false;for(const c of RSR.cans)if(c.w===w){c.w=null;if(c.gone){c.on=0;c.m.visible=false;}}w.cn=0;}}}
-// Richmond: dust storms whip up in the dry yellow fields as you enter and drive dust across the road (DUSTD: whirling columns that wander and now and then cross the road)
-const DUSTD={l:[],init:0};
-function dustTick(rdt){if(!DRIVE||G.state!=='race')return;const i0=PL.idx,on=i0>=Z.rb1-Math.round(120/SEG)&&i0<=Z.shane+Math.round(300/SEG);if(!on&&!DUSTD.init)return;
-  if(!DUSTD.init){DUSTD.init=1;const mt=new THREE.MeshBasicMaterial({color:0xc9a866,transparent:true,opacity:.2,depthWrite:false,side:THREE.DoubleSide});
-    for(let q=0;q<6;q++){const g=new THREE.Group(),cs=[];for(let k=0;k<7;k++){const c=new THREE.Mesh(new THREE.CylinderGeometry(1.2+k*.55,.6+k*.5,3,10,1,true),mt);c.position.y=1.5+k*2.9;g.add(c);cs.push(c);}g.visible=false;scene.add(g);
-      DUSTD.l.push({g,cs,s:(Z.rb1+Math.round(140/SEG))*SEG+q*(Z.shane-Z.rb1-Math.round(300/SEG))*SEG/6+R(0,40),lat:(q%2?-1:1)*R(28,80),tl:0,vl:0,ph:R(0,6),gt:R(2,8),k:R(.9,1.5)});}}
-  const V3=new THREE.Vector3(),pe=ents.find(e=>e.player);if(!pe)return;DUSTD.t=(DUSTD.t||0)+rdt;const t=DUSTD.t;
-  for(const d of DUSTD.l){const ds=wdiff(d.s-pe.s);if(Math.abs(ds)>420){d.g.visible=false;continue;}d.g.visible=true;
-    d.gt-=rdt;if(d.gt<=0){d.gt=R(7,14);d.tl=Math.sign(d.lat)*-1*R(10,60)*(Math.random()<.6?1:-1)*0+(Math.random()<.5?-Math.sign(d.lat)*R(8,70):Math.sign(d.lat)*R(28,80));}   /* a gust sends it wandering, sometimes right across the road */
-    if(!d.tl)d.tl=d.lat;d.vl+=(Math.sign(d.tl-d.lat)*9-d.vl)*rdt*.6;if(Math.abs(d.tl-d.lat)<1.5)d.vl*=.9;d.lat+=d.vl*rdt;d.s+=Math.sin(t*.3+d.ph)*3*rdt;
-    at(d.s,d.lat,0,d.g.position);d.g.position.y+=0;d.cs.forEach((c,k)=>{c.rotation.y=t*(2.2-k*.18)+d.ph;c.position.x=Math.sin(t*1.3+k*.7+d.ph)*(.5+k*.25);c.position.z=Math.cos(t*1.1+k*.6)*(.4+k*.2);});d.g.scale.set(d.k,1,d.k);
-    const near=Math.abs(d.lat)<16&&Math.abs(ds)<260;if(Math.random()<rdt*(near?14:3)&&Math.abs(ds)<200){at(d.s+R(-6,6),d.lat+R(-4,4),R(.3,2),V3);const side=-Math.sign(d.lat||1);puff(V3,side*R(3,9),R(.5,2),R(-1,1),1,R(5,9),R(2.2,3.6),near?.55:.4,0xc8a868);}
-    if(near&&Math.abs(ds)<12&&Math.abs(d.lat)<8){G.shake=Math.max(G.shake,.12);}}
-  if(on&&Math.random()<rdt*3.5){at(pe.s+R(30,160),(Math.random()<.5?-1:1)*R(14,24),R(.2,1),V3);puff(V3,-Math.sign(V3.x)*0+R(-3,3),R(.4,1.5),R(-3,3),1,R(4,8),R(2,3.4),.35,0xc8a868);}   /* loose dust drifting across the road */
+// Dust devils: tall spinning columns of dust, wider at the top, wandering across and along the road in Richmond (from the San Rafael bridge to I-80, in the dry yellow fields)
+// and on Alameda's streets (out to the Posey Tube, and home from the Webster Tube), carrying scraps of paper and leaves round with them; now and then one heads right across your line.
+// Drive into one and dust swirls round the car and browns the windscreen for a moment, the car shakes and wobbles a little (never slowed or pushed off line), a gust whooshes past and dust kicks out from the wheels.
+const DUSTD={l:[],init:0,hz:null};
+function dustZone(i){const m_=x=>Math.round(x/SEG);if(i>=Z.rb1-m_(120)&&i<=Z.i80)return 1;if((i>Z.start+m_(60)&&i<Z.tu0-m_(60))||(i>Z.wt0+m_(60)&&i<NS-m_(30)))return 2;return 0;}
+function sfxDustGust(){if(!AC)return;const t=AC.currentTime,s=AC.createBufferSource();s.buffer=noiseBuf(1.7);const fl=AC.createBiquadFilter();fl.type='bandpass';fl.Q.value=1.3;fl.frequency.setValueAtTime(300,t);fl.frequency.linearRampToValueAtTime(1500,t+.45);fl.frequency.linearRampToValueAtTime(700,t+.8);fl.frequency.linearRampToValueAtTime(1200,t+1.05);fl.frequency.linearRampToValueAtTime(400,t+1.6);
+  const g=AC.createGain();g.gain.setValueAtTime(.001,t);g.gain.linearRampToValueAtTime(.5,t+.25);g.gain.linearRampToValueAtTime(.28,t+.65);g.gain.linearRampToValueAtTime(.42,t+.95);g.gain.exponentialRampToValueAtTime(.001,t+1.65);s.connect(fl);fl.connect(g);g.connect(master);s.start(t);s.stop(t+1.7);}
+function dustTick(rdt){if(!DRIVE)return;PL.dustW=Math.max(0,(PL.dustW||0)-rdt*.9);if(DUSTD.hz)DUSTD.hz.style.opacity=(PL.dustW*.8).toFixed(3);if(PL.dustW>0)G.shake=Math.max(G.shake,.3*PL.dustW);if(G.state!=='race')return;
+  const pe=ents.find(e=>e.player);if(!pe)return;const zn=dustZone(PL.idx);if(!zn&&!DUSTD.init)return;
+  if(!DUSTD.init){DUSTD.init=1;const mt=new THREE.MeshBasicMaterial({color:0xc9a866,transparent:true,opacity:.2,depthWrite:false,side:THREE.DoubleSide}),cg=[],pg=new THREE.PlaneGeometry(.45,.32),
+      pm=[0xe8e2cc,0xa8823e,0x7d7a34,0xd6ccb0].map(c=>new THREE.MeshBasicMaterial({color:c,side:THREE.DoubleSide}));   /* papers and dry leaves */
+    for(let k=0;k<7;k++)cg.push(new THREE.CylinderGeometry(1.2+k*.55,.6+k*.5,3,10,1,true));
+    for(let q=0;q<8;q++){const g=new THREE.Group(),cs=[],bits=[];for(let k=0;k<7;k++){const c=new THREE.Mesh(cg[k],mt);c.position.y=1.5+k*2.9;g.add(c);cs.push(c);}
+      for(let k=0;k<5;k++){const b=new THREE.Mesh(pg,pm[k%4]);g.add(b);bits.push({m:b,a:R(0,6.3),h:R(1,15),r:R(1,3.5),w:R(2.5,4.5)});}
+      g.visible=false;scene.add(g);DUSTD.l.push({g,cs,bits,on:0,s:0,lat:0,tl:0,vl:0,ph:R(0,6),gt:0,k:1,zn:0,hit:0,aim:1});}
+    const hz=document.createElement('div');hz.style.cssText='position:fixed;inset:0;opacity:0;z-index:4;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(184,146,90,.5) 0,rgba(156,118,66,.82) 60%,rgba(120,88,48,.95) 100%)';document.body.appendChild(hz);DUSTD.hz=hz;}   /* the brown haze over the windscreen */
+  const V3=DUSTD.v||(DUSTD.v=new THREE.Vector3());DUSTD.t=(DUSTD.t||0)+rdt;const t=DUSTD.t,want=zn===1?7:zn===2?5:0;let act=0;for(const d of DUSTD.l)if(d.on)act++;
+  for(const d of DUSTD.l){
+    if(d.on){const ds=wdiff(d.s-pe.s);if(ds<-140||ds>720){d.on=0;d.g.visible=false;act--;}}
+    if(!d.on&&act<want&&Math.random()<rdt*1.2){const s=pe.s+R(160,540),zz=dustZone(wrapI(Math.floor(wrapS(s)/SEG)));   /* a new one whips up somewhere ahead */
+      if(zz){const sd=Math.random()<.5?-1:1,w=zz===1?[10,60]:[5,17];d.on=1;act++;d.zn=zz;d.s=s;d.lat=sd*R(w[0],w[1]);d.tl=Math.random()<.55?-sd*R(w[0]*.5,w[1]):d.lat;d.vl=0;d.gt=R(5,10);d.k=zz===1?R(.9,1.5):R(.7,1.1);d.hit=0;d.aim=Math.random()<.4?0:1;d.g.visible=true;}}
+    if(!d.on)continue;const ds=wdiff(d.s-pe.s),w=d.zn===1?60:17;
+    d.gt-=rdt;if(d.gt<=0){d.gt=R(5,11);d.tl=(Math.random()<.5?-1:1)*Math.sign(d.lat||1)*R(4,w);}   /* a gust sends it wandering, sometimes right across the road */
+    if(!d.aim&&ds>20&&ds<150){d.aim=1;d.tl=pe.lat+R(-1.5,1.5);d.gt=R(4,6);}   /* this one crosses right over your line */
+    d.vl+=(clamp((d.tl-d.lat)*.9,-9,9)-d.vl)*rdt*.9;d.lat+=d.vl*rdt;d.s+=Math.sin(t*.3+d.ph)*3*rdt;
+    at(d.s,d.lat,0,d.g.position);d.cs.forEach((c,k)=>{c.rotation.y=t*(2.2-k*.18)+d.ph;c.position.x=Math.sin(t*1.3+k*.7+d.ph)*(.5+k*.25);c.position.z=Math.cos(t*1.1+k*.6)*(.4+k*.2);});d.g.scale.set(d.k,1,d.k);
+    for(const b of d.bits){b.a+=rdt*b.w;b.m.position.set(Math.cos(b.a)*b.r*(1+b.h*.06),b.h+Math.sin(t*1.7+b.a)*1.2,Math.sin(b.a)*b.r*(1+b.h*.06));b.m.rotation.set(t*3+b.a,t*2.1,b.a);}
+    if(Math.abs(ds)<220&&Math.random()<rdt*(Math.abs(ds)<90?9:3)){at(d.s+R(-4,4),d.lat+R(-3,3),R(.3,2),V3);const a=R(0,6.283);puff(V3,Math.cos(a)*R(3,7),R(.8,2.5),Math.sin(a)*R(3,7),1,R(5,9),R(2,3.4),.45,0xc8a868);}   /* dust kicked up round its foot */
+    const dd=Math.hypot(d.g.position.x-PL.x,d.g.position.z-PL.z),rr=3*d.k+1.3;
+    if(dd<rr&&!PL.crash){PL.dustW=Math.min(1,Math.max(.85,PL.dustW+rdt*6));G.shake=Math.max(G.shake,.32);if(!d.hit){d.hit=1;sfxDustGust();}
+      if(Math.random()<rdt*30){const a=R(0,6.283),r=R(1.5,3);puff(V3.set(PL.x+Math.cos(a)*r,PL.gy+R(.4,2.2),PL.z+Math.sin(a)*r),PL.vx*.7-Math.sin(a)*7,R(1,4),PL.vz*.7+Math.cos(a)*7,1,R(4,7),R(1,1.8),.55,0xc8a868);}   /* swirling round the car */
+      if(Math.random()<rdt*24){puff(V3.set(PL.x+R(-1.1,1.1),PL.gy+.25,PL.z+R(-1.1,1.1)),PL.vx*.3+R(-5,5),R(1,3),PL.vz*.3+R(-5,5),.8,R(3,5),R(.8,1.4),.6,0xb89860);}}   /* kicked out from the wheels */
+    else if(dd>rr+8)d.hit=0;}
+  if(zn===1&&Math.random()<rdt*3.5){at(pe.s+R(30,160),(Math.random()<.5?-1:1)*R(14,24),R(.2,1),V3);puff(V3,R(-3,3),R(.4,1.5),R(-3,3),1,R(4,8),R(2,3.4),.35,0xc8a868);}   /* loose dust drifting across the road */
 }
 function sfxBell(){if(!AC)return;let t=AC.currentTime;for(let k=0;k<2;k++){for(const[f,v]of[[1760,.22],[2640,.1],[4400,.05]])tone('sine',f,t,.9,v,master,{a:.002,h:.08});t+=.24;}}
 function sfxScreech(){if(!AC)return;const t=AC.currentTime;tone('sawtooth',2300,t,.9,.12,master,{to:1300,a:.05,h:.4,lp:3200,ft:'bandpass',q:6});}
@@ -4326,7 +4348,35 @@ function tnkBoom(cd){const K=TNK,V=K.v,x=K.C.x,y=TNK.wat+11,z=K.C.z;NOGY=1;   //
   for(let k=0;k<50;k++){const a=R(0,6.283),sp=R(4,20);puff(V.set(x+R(-6,6),y+2,z+R(-6,6)),Math.cos(a)*sp,R(8,30),Math.sin(a)*sp,R(5,9),R(18,34),R(1.2,2.4),.95,k%3?0xff7a1c:0xffd060);}
   for(let k=0;k<26;k++){const a=R(0,6.283),sp=R(1,8);puff(V.set(x,y+8,z),Math.cos(a)*sp,R(14,30),Math.sin(a)*sp,R(8,12),R(30,50),R(3,5.5),.8,0x151311);}
   for(let k=0;k<22;k++){const a=R(0,6.283),sp=R(8,22);flame(V.set(x,y+2,z),Math.cos(a)*sp,R(8,20),Math.sin(a)*sp,R(1.5,3),R(4,7),R(1,1.8),0xff8a2a);}NOGY=0;
-  const near=clamp(500/(cd+100),.2,.8);sfxBoom();sfxThump(2*near);G.shake=Math.max(G.shake,.35*near);$('flash').style.opacity=.25*near;say('THE BEETLE !','HE BREAKS A TANKER IN TWO',2.6);}
+  const near=clamp(500/(cd+100),.25,1);sfxMushroom(near);sfxThump(2*near);G.shake=Math.max(G.shake,1.1*near);$('flash').style.opacity=.75*near;say('THE BEETLE !','HE BREAKS A TANKER IN TWO',2.6);
+  if(!K.mc)tnkCloudBuild();const M=K.mc;M.on=1;M.t=0;M.ld=0;M.pa=0;M.near=near;M.x=x;M.z=z;M.wd=R(0,6.283);for(const o of M.all)o.visible=false;}
+// the fireball mushroom cloud: a few lumpy, unlit shells (fireball, dome, rolling ring, glowing underside, stem, base surge) plus a shockwave ring on the water
+function tnkCloudBuild(){const lump=(geo,a)=>{const p=geo.attributes.position,nm=geo.attributes.normal,c=[];for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i),n=Math.sin(x*3.7+y*1.3)*Math.sin(y*4.1-z*2.2)*Math.sin(z*3.3+x*2.9)+.5*Math.sin(x*7.9-z*6.1+y*5.3);
+      p.setXYZ(i,x+nm.getX(i)*a*n,y+nm.getY(i)*a*n,z+nm.getZ(i)*a*n);const v=.68+.32*clamp(n*.8+.5,0,1);c.push(v,v,v);}geo.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return geo;},
+    mk=(geo,vc=true)=>{const o=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({vertexColors:vc,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide}));o.visible=false;o.frustumCulled=false;scene.add(o);return o;};
+  const M=TNK.mc={on:0,t:0,c:new THREE.Color(),cs:[0xfff2a8,0xffa030,0xd8461a,0x6a2214,0x2c2826].map(h=>new THREE.Color(h))};
+  M.fb=mk(lump(new THREE.SphereGeometry(1,28,18),.16));M.cap=mk(lump(new THREE.SphereGeometry(1,28,18),.15));
+  M.roll=mk(lump(new THREE.TorusGeometry(1,.5,16,36).rotateX(Math.PI/2),.13));M.glow=mk(lump(new THREE.TorusGeometry(1,.42,12,30).rotateX(Math.PI/2),.12));
+  M.stem=mk(lump(new THREE.CylinderGeometry(.7,1,1,18,8,true).translate(0,.5,0),.1));M.surge=mk(lump(new THREE.TorusGeometry(1,.35,10,36).rotateX(Math.PI/2),.2));
+  M.shock=mk(new THREE.RingGeometry(.9,1,80).rotateX(-Math.PI/2),false);M.shock.material.color.setHex(0xfff4dc);M.surge.material.color.setHex(0xb8b2a8);
+  M.all=[M.fb,M.cap,M.roll,M.glow,M.stem,M.surge,M.shock];}
+function tnkHeat(m,k){const M=TNK.mc,s=M.cs,f=clamp(k,0,.999)*4,i=Math.floor(f);m.color.copy(s[i]).lerp(s[i+1],f-i);}   // hot yellow > orange > deep red > dark smoke as k goes 0 > 1
+function tnkCloud(rdt){const M=TNK.mc,W=TNK.wat,V=TNK.v;M.t+=rdt;const u=M.t;if(u>44){tnkCloudOff();return;}
+  const fo=1-sst(u,22,42),dr=Math.max(0,u-5)*1.3,x=M.x+Math.cos(M.wd)*dr,z=M.z+Math.sin(M.wd)*dr,   // fades and drifts off with the wind
+    H=W+20+120*(1-Math.exp(-u/3.2))+.7*u,rc=14+42*sst(u,.3,9)+.6*u,rw=5+9*sst(u,.4,6)+.12*u;
+  const fb=M.fb;fb.visible=u<11;if(fb.visible){fb.position.set(x,H,z);fb.scale.setScalar(Math.min(8+50*sst(u,0,.7),rc*.85));fb.rotation.y=u*.2;tnkHeat(fb.material,.12+.75*sst(u,1,10));fb.material.opacity=1-sst(u,8,11);}
+  const cp=M.cap;cp.visible=u>.35;if(cp.visible){cp.position.set(x,H+rc*.12,z);cp.scale.set(rc,rc*.62,rc);cp.rotation.y=u*.05;tnkHeat(cp.material,sst(u,.4,9));cp.material.opacity=.95*sst(u,.35,.9)*fo;}
+  const rl=M.roll;rl.visible=u>.5;if(rl.visible){rl.position.set(x,H-rc*.18,z);rl.scale.set(rc*.95,rc*.8,rc*.95);rl.rotation.y=-u*.08;tnkHeat(rl.material,sst(u,.6,10.5));rl.material.opacity=.95*sst(u,.5,1.1)*fo;}
+  const gl=M.glow;gl.visible=u>.6&&u<26;if(gl.visible){gl.position.set(x,H-rc*.36,z);gl.scale.set(rc*.72,rc*.55,rc*.72);gl.rotation.y=u*.11;tnkHeat(gl.material,.12+.62*sst(u,2,18));gl.material.opacity=.9*sst(u,.6,1.2)*(1-sst(u,16,26));}   // the hot underside of the cap, glowing longest
+  const st=M.stem;st.visible=u>.3&&u<30;if(st.visible){const top=H-rc*.3,ox=x-M.x,oz=z-M.z;st.position.set(M.x,W,M.z);st.scale.set(rw,Math.max(1,top-W),rw);st.rotation.set(oz/(top-W+1),u*.1,-ox/(top-W+1));tnkHeat(st.material,sst(u,.3,7));st.material.opacity=.9*sst(u,.3,.8)*(1-sst(u,14,30));}
+  const sg=M.surge;sg.visible=u>.4&&u<26;if(sg.visible){const r=14+130*(1-Math.exp(-u/4));sg.position.set(M.x,W+r*.12,M.z);sg.scale.set(r,r*.45,r);sg.rotation.y=u*.06;sg.material.opacity=.55*sst(u,.4,1.8)*(1-sst(u,10,26));}   // the base surge rolling out over the water
+  const sh=M.shock;sh.visible=u<3;if(sh.visible){sh.position.set(M.x,W+.6,M.z);sh.scale.setScalar(12+320*u);sh.material.opacity=.85*(1-u/3);}
+  if(u<9){boom.position.set(x,Math.min(H,W+60),z);boom.distance=1500;boom.intensity=Math.max(boom.intensity,26000*(1-sst(u,0,8)));}else if(!M.ld){M.ld=1;boom.distance=140;}   // a strong orange light over the water and sky, dying away
+  if(u<4)G.shake=Math.max(G.shake,.35*M.near*(1-u/4));
+  if(u<18){M.pa=(M.pa||0)+rdt*16;NOGY=1;while(M.pa>=1){M.pa--;const a=R(0,6.283);tnkHeat({color:M.c},sst(u,.6,10.5));   // billows boiling off the rolling ring, and fire up the stem
+      puff(V.set(x+Math.cos(a)*rc*R(.8,1.1),H-rc*R(.05,.35),z+Math.sin(a)*rc*R(.8,1.1)),Math.cos(a)*R(1,4),R(1,4),Math.sin(a)*R(1,4),rc*.35,rc*.7,R(3,5),.5*fo,M.c.getHex());
+      if(u<7){const hh=R(0,H-rc*.3-W);flame(V.set(M.x+R(-rw,rw)*.5,W+hh,M.z+R(-rw,rw)*.5),R(-2,2),R(10,20),R(-2,2),rw*.8,rw*1.6,R(.8,1.4),0xff8a2a);}}NOGY=0;}}
+function tnkCloudOff(){const M=TNK.mc;if(!M)return;M.on=0;for(const o of M.all)o.visible=false;if(!M.ld){M.ld=1;boom.distance=140;}}
 function tnkOff(){const K=TNK;K.on=0;if(!K.bow)return;K.bow.visible=K.stern.visible=K.slick.visible=false;K.b.g.visible=false;for(const r of K.b.rings)r.visible=false;}
 function sfxBeetleRoar(k){if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),o2=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain();o.type='sawtooth';o2.type='square';
   o.frequency.setValueAtTime(60,t);o.frequency.linearRampToValueAtTime(88,t+.8);o.frequency.exponentialRampToValueAtTime(36,t+3.4);o2.frequency.setValueAtTime(30,t);o2.frequency.exponentialRampToValueAtTime(21,t+3.4);
@@ -4380,6 +4430,7 @@ function gullTick(){const B=GULL,on=PL.idx>CLF[0]-200&&PL.idx<Z.rb0;
   for(let k=0;k<36;k++){const b=B.b[k],c=B.c[b.f],a=tm*b.w+b.ph,fy=y=>y-H[c[0]]+c[2]+22;
     at(c[0]*SEG+Math.cos(a)*b.r*2,c[1]+Math.sin(a)*b.r,fy(b.h+Math.sin(a*2)*1.5),B.V);at(c[0]*SEG+Math.cos(a+.05*Math.sign(b.w))*b.r*2,c[1]+Math.sin(a+.05*Math.sign(b.w))*b.r,fy(b.h),B.W);
     B.E.set(0,Math.atan2(B.W.x-B.V.x,B.W.z-B.V.z),Math.sin(a)*.3);B.Q.setFromEuler(B.E);const fl=Math.sin(tm*8+b.ph);B.S.set(2.2,fl*2.2,2.2);B.M.compose(B.V,B.Q,B.S);B.im.setMatrixAt(k,B.M);}
+  if(K.mc&&K.mc.on){if(G.state!=='race')tnkCloudOff();else tnkCloud(rdt);}   // the mushroom cloud outlives the ship
   B.im.count=36;B.im.instanceMatrix.needsUpdate=true;}
 // ---- freeway earthquakes (free drive): one strong quake on each freeway stretch (I-880, I-80, the Marin freeway), once per drive, at a random point.
 // A rumble that builds, the sky going dark, cracks running across the lanes ahead, then the road splits open in a jagged fissure across all but one lane.
