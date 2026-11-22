@@ -1597,10 +1597,11 @@ await BOOT.step('THE EAST BAY · BERKELEY · EMERYVILLE',.72);
     // Hyde Street: WE LOVE THE LEADER boards on the way down, and a big propaganda board at the bottom
     [[Z.hyde+m(365),-1,'WE LOVE THE LEADER','He keeps the city safe.','#8a1010'],[Z.hyde+m(430),1,'WE LOVE THE LEADER','Gratitude is duty.','#14284a'],[Z.marina-m(150),1,'WE ♥ THE LEADER','His eyes are on Hyde Street.','#3a1458']].forEach(([i,sd,a,b,bg])=>tall(i,sd,leaderPoster(a,b,bg)));
     {const n0=scene.children.length;tall(Z.marina-m(35),-1,leaderPoster('THE LEADER','KNOWS · SEES · PROVIDES','#8a1010',1));   /* the big one */const g=scene.children[n0];if(g)g.scale.setScalar(1.35);}
-    {// leaking toxic-waste barrels on I-880 and the bridges, glowing green ooze spreading out into the lane (drive through it and the car is slimed green for a while: TOX, toxTick)
+    {// leaking toxic-waste barrels on I-880, the bridges and in the Posey Tube, glowing green ooze spreading out into the lane (drive through it and the car is slimed green for a while: TOX, toxTick)
       const bm=std({color:0xc8a820,roughness:.5,metalness:.4}),bm2=std({color:0x2a5a8a,roughness:.5,metalness:.4}),om=new THREE.MeshBasicMaterial({color:0x7dff2e,transparent:true,opacity:.92,polygonOffset:true,polygonOffsetFactor:-4,depthWrite:false}),gm=new THREE.MeshBasicMaterial({color:0xaaff55,transparent:true,opacity:.3,blending:THREE.AdditiveBlending,polygonOffset:true,polygonOffsetFactor:-5,depthWrite:false,fog:false});
       TOX.mm=[om,gm];
-      for(const[i,sd]of[[Z.tu1+m(1200),-1],[Z.tu1+m(2600),1],[Z.b0+m(520),1],[Z.b0+m(1700),-1],[Z.rb0+m(500),-1]]){const w=RW+XW[i],s=i*SEG,ol=sd*(w-3.3),sh=new THREE.Shape();
+      const tuA=Z.tu0+Math.round((Z.tu1-Z.tu0)*.36),tuB=Z.tu0+Math.round((Z.tu1-Z.tu0)*.64);   // two in the Posey Tube too, a little in from the tiled wall, between the drum fires
+      for(const[i,sd,ins=0]of[[Z.tu1+m(1200),-1],[Z.tu1+m(2600),1],[Z.b0+m(520),1],[Z.b0+m(1700),-1],[Z.rb0+m(500),-1],[tuA,-1,.9],[tuB,1,.9]]){const w=RW+XW[i]-ins,s=i*SEG,ol=sd*(w-3.3),sh=new THREE.Shape();
         for(let k=0;k<16;k++){const an=k/16*6.283,r=(k%2?2.3:3)*(.85+Math.random()*.3),x=Math.cos(an)*r,y=Math.sin(an)*r*1.5;k?sh.lineTo(x,y):sh.moveTo(x,y);}
         const g=new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2);at(s,ol,.05,V);for(const[mm,sc,dy]of[[om,1,0],[gm,1.3,.02]]){const pd=new THREE.Mesh(g,mm);pd.position.copy(V);pd.position.y+=dy;pd.rotation.y=yaw(i);pd.scale.setScalar(sc);scene.add(pd);}
         for(let k=0;k<3;k++){const d=new THREE.Mesh(cyl(.3,.3,.9,12),k===1?bm2:bm);if(k===1){at(s,sd*(w-.35),.3,V);d.position.copy(V);d.rotation.set(0,yaw(i),Math.PI/2);}else{at(s+(k-1)*1.2,sd*(w+.25),.45,V);d.position.copy(V);}
