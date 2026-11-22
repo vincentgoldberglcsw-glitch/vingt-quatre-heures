@@ -3768,11 +3768,14 @@ function logSpill(sd,rear){const L=LOGT,i=wrapI(Math.floor(L.s/SEG)),xs=Math.sig
   sfxCrunch(.5);say('LOGS ON THE ROAD','',2);}
 function logTick(dt,pe){const L=LOGT;if(!L.g)return;const m_=x=>Math.round(x/SEG),i0=PL.idx;
   if(L.spill&&Math.abs(wdiff(pe.s-L.s0))>600){for(const o of L.logs){scene.remove(o.m);L.g.add(o.m);o.m.rotation.order='XYZ';o.m.rotation.set(0,0,0);o.m.position.copy(o.home);}L.spill=0;L.act=false;L.g.visible=false;}   // well away: load it back up
-  if(!L.act&&!L.spill&&i0>Z.gg1+m_(150)&&i0<Z.sq-m_(300)&&Math.random()<dt*.6){const s=wrapS(pe.s+R(260,420)),i=wrapI(Math.floor(s/SEG));if(i<Z.sq-m_(80)){L.act=true;L.s=s;L.lat=-.25*(RW+XW[i]);L.v=15;L.g.visible=true;}}
+  if(i0<Z.gg1||i0>Z.sq)L.n1=0;   // the first log truck of each pass comes straight away (Bigfoot is waiting for it)
+  if(!L.act&&!L.spill&&i0>Z.gg1+m_(150)&&i0<Z.sq-m_(300)&&(!L.n1||Math.random()<dt*.6)){const s=wrapS(pe.s+R(260,420)),i=wrapI(Math.floor(s/SEG));if(i<Z.sq-m_(80)){L.act=true;L.s=s;L.lat=-.25*(RW+XW[i]);L.v=15;L.g.visible=true;L.fst=!L.n1;L.n1=1;L.sw=0;}}
   if(L.act){let i=wrapI(Math.floor(L.s/SEG));const ds=wdiff(L.s-pe.s);
     if(!L.spill&&(ds<-220||ds>1300||i>Z.sq+m_(150))){L.act=false;L.g.visible=false;}
     else{let v=L.spill?0:15;const dp=wdiff(pe.s-L.s);if(dp>0&&dp<24&&Math.abs(pe.lat-L.lat)<2.6)v=Math.min(v,Math.max(0,pe.v-2));
-      L.v+=clamp(v-L.v,-7*dt,2.5*dt);L.s=wrapS(L.s+L.v*dt);i=wrapI(Math.floor(L.s/SEG));at(L.s,L.lat,0,L.g.position);const sl=(H[wrapI(i+1)]-H[wrapI(i-1)])/(2*SEG);L.g.rotation.set(-Math.atan(sl),yaw(i),0);
+      L.v+=clamp(v-L.v,-7*dt,2.5*dt);L.s=wrapS(L.s+L.v*dt);i=wrapI(Math.floor(L.s/SEG));
+      let yw=0;if(L.sw>0){L.sw=Math.max(0,L.sw-dt);const u=L.sw/1.6,w=RW+XW[i]-1.4;L.lat=clamp(L.lat+L.swd*7*u*dt,-w,w);yw=Math.sin((1.6-L.sw)*8)*.32*u;}   // shoved by Bigfoot: swerves across, snaking
+      at(L.s,L.lat,0,L.g.position);const sl=(H[wrapI(i+1)]-H[wrapI(i-1)])/(2*SEG);L.g.rotation.set(-Math.atan(sl),yaw(i)+yw,0);
       for(const w of L.g.wh)w.rotation.x+=L.v*dt/.5;if(L.bt>0)L.bt-=dt;
       if(L.wob>0){L.wob=Math.max(0,L.wob-dt*1.6);const q=Math.sin(L.wob*34)*L.wob*.12;L.g.scale.set(1+q,1-q,1+q*.4);if(!L.wob)L.g.scale.set(1,1,1);}
       const dc=wdiff(pe.s-(L.s+1.95)),dl=pe.lat-L.lat;
@@ -4730,9 +4733,20 @@ function sfxBigfootRoar(k){if(!AC)return;const t=AC.currentTime;for(const[f,v]of
   hit(t,1.9,.55*k,480,'bandpass',master);hit(t+.1,1.5,.3*k,1300,'bandpass',master);}
 function bigfootTick(rdt){const B=BIGF;if(!DRIVE||!Z.sq)return;const pe=ents.find(e=>e.player);if(!pe)return;const i=PL.idx,m_=x=>Math.round(x/SEG);
   if(i<Z.gg1||i>Z.sq){B.armed=1;B.at=0;}
+  if(B.st===0&&B.armed&&G.state==='race'&&LOGT.act&&LOGT.fst&&!LOGT.spill&&i>Z.gg1&&i<Z.sq-m_(300)){const d=wdiff(LOGT.s-pe.s);if(d>45&&d<70+Math.max(0,pe.v-15)*1.8){   // the first log truck of the pass: he runs out of the redwoods beside it, ahead of the car, and shoves it
+    if(!B.g)bigfootBuild();B.st=6;B.t=B.t2=0;B.armed=0;LOGT.fst=0;B.sd=Math.sign(LOGT.lat)||-1;B.s=LOGT.s+1;B.lat=10;B.n=-1;B.ph=0;B.lean=0;B.said=0;B.h=null;B.bang=0;}}
   if(B.st===0){if(B.g)B.g.visible=false;if(B.armed&&G.state==='race'&&i>Z.gg1+m_(180)&&i<Z.sq-m_(800)){if(!B.at)B.at=Math.min(Z.gg1+m_(R(250,700)),Z.sq-m_(900));if(i>=B.at)bigfootStart();}return;}
   B.t+=rdt;B.t2+=rdt;const g=B.g,ds=B.s-pe.s,cd=camera.position.distanceTo(g.position),kd=clamp(70/(cd+25),.08,1);
   let run=0,lean=0,face=0;const A=[[0,B.A[0].rotation.z],[0,B.A[1].rotation.z]];   // per arm target [x,z]
+  const L=LOGT,dT=wdiff(L.s-pe.s);
+  if(B.st===6){   // running out from the trees alongside the log truck, keeping pace with it
+    if(!L.act||L.spill){B.st=5;}else{B.s=L.s+1;B.lat=Math.max(-.4,B.lat-rdt*8);run=1;face=1;lean=.25;for(let k=0;k<2;k++){const sx=k?1:-1;A[k]=[Math.sin(B.ph+k*Math.PI)*.9-.3,sx*.15];}
+      if(!B.said&&cd<320){B.said=1;say('BIGFOOT !','OUT OF THE REDWOODS',2.2);}
+      if((B.lat<=-.4&&B.t2>1)||dT<26){B.st=7;B.t2=0;B.bang=0;}}}
+  if(B.st===7){   // both huge hands on the side of the truck and a mighty shove: it swerves away across the road and the logs spill off
+    lean=.6;if(!B.bang){B.s=L.s+1;for(let k=0;k<2;k++){const sx=k?1:-1;A[k]=[-1.45,-sx*.3];}
+      if(B.t2>.4){B.bang=1;if(L.act&&!L.spill){L.bt=.7;L.wob=1;L.sw=1.6;L.swd=-B.sd;logSpill(B.sd,false);}sfxThump(clamp(kd*2,.4,1.4));sfxBigStomp(kd);G.shake=Math.max(G.shake,.5*kd);say('BIGFOOT SHOVES THE LOG TRUCK!','LOGS ON THE ROAD',2.6);}}
+    else{for(let k=0;k<2;k++){const sx=k?1:-1;A[k]=[-1.2,-sx*.45];}if(B.t2>1.5){B.st=4;B.t2=0;sfxBigfootRoar(clamp(kd*1.8,.3,1));}}}
   if(B.st===1){   // stepping out from between the trees, right to the edge of the road
     B.lat=Math.max(.6,B.lat-rdt*8);run=B.lat>.6?.5:0;
     if(!B.said&&cd<300){B.said=1;say('BIGFOOT !','OUT OF THE REDWOODS',2.2);}
@@ -4756,7 +4770,7 @@ function bigfootTick(rdt){const B=BIGF;if(!DRIVE||!Z.sq)return;const pe=ents.fin
   if(B.st===5&&(ds<-700||i>Z.sq||i<Z.gg1)){B.st=0;g.visible=false;return;}
   // place him at the edge of the road, feet on it (road height there), turning towards the car (or along the road while chasing)
   const j=wrapI(Math.floor(B.s/SEG)),w=RW+XW[j],V=at(B.s,B.sd*(w+B.lat),0,B.V);
-  const a=P[j],b=P[wrapI(j+1)],hT=face?Math.atan2(b.x-a.x,b.z-a.z):Math.atan2(PL.x-V.x,PL.z-V.z);if(B.h==null)B.h=hT;
+  const a=P[j],b=P[wrapI(j+1)],hT=B.st===7?Math.atan2(L.g.position.x-V.x,L.g.position.z-V.z):face?Math.atan2(b.x-a.x,b.z-a.z):Math.atan2(PL.x-V.x,PL.z-V.z);if(B.h==null)B.h=hT;
   let dh=hT-B.h;dh=Math.atan2(Math.sin(dh),Math.cos(dh));B.h+=dh*clamp(rdt*5,0,1);
   B.ph+=rdt*(run?(run>.6?8.5:4):0);if(!run)B.ph+=(Math.round(B.ph/Math.PI)*Math.PI-B.ph)*clamp(rdt*6,0,1);
   const bob=run?Math.abs(Math.sin(B.ph))*.04*B.sc:0;g.position.set(V.x,V.y+bob,V.z);g.rotation.set(0,B.h,0);g.visible=true;
