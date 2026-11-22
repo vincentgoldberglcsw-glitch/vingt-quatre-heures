@@ -3263,6 +3263,7 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),D2=THREE.DoubleSide;
   const KINDS=['car','tanker','buggy','moto','truck','tanker','pickup','moto','ox','tanker','truck','pickup','car','moto','buggy','pickup','car','truck','car','pickup'];
   KINDS.forEach((k,n)=>{const v=MK[k]();if(k==='truck'&&n%2===0)addDrums(v.g,-1.2,3.9,7);v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r,soft:1}};TRAF.push(t);OBST.push(t.ob);});
   [['police',1],['truck2',3],['police',6],['truck2',8],['police',10],['tanker',99]].forEach(([k,n])=>{const v=MK[k]();if(k==='truck2'&&n===3){addDrums(v.g,2.6,3.8,6.6);}v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,extra:true,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r,soft:1}};TRAF.push(t);OBST.push(t.ob);});   // double-trailer trucks and police cars, added after the others and using Math.random, so the seeded scenery stays put
+  TRAF.mkPol=MK.police;   // for the police cars at San Quentin
   // the cable car: red and cream, open at the ends, with passengers hanging on
   CABLE=[];const red=std({color:0xa8241c,roughness:.6}),crm=std({color:0xe8dcb8,roughness:.7}),wd=std({color:0x5a3a22,roughness:.8});for(const dir of[1,-1]){const g=new THREE.Group();g.wh=[];
     box(g,2.5,1,8.4,red,0,.9,0);box(g,2.4,1.3,4.4,crm,0,2.05,0);box(g,2.6,.18,8.8,wd,0,3.3,0);box(g,2.2,.4,8.2,crm,0,3.55,0);for(const z of[-3.9,-2.3,2.3,3.9])for(const x of[-1.15,1.15])box(g,.08,1.6,.08,wd,x,2.1,z);
@@ -4470,6 +4471,7 @@ function tnkStart(){const K=TNK,pe=ents.find(e=>e.player);if(!pe)return;if(!K.bo
   const px=Math.cos(K.ry),pz=-Math.sin(K.ry),rx=P[i].x-K.C.x,rz=P[i].z-K.C.z,far=(px*rx+pz*rz)>0?-1:1;K.bp=[K.C.x+px*far*48,K.C.z+pz*far*48];K.byaw=Math.atan2(K.C.x-K.bp[0],K.C.z-K.bp[1]);
   for(const h of[K.bow,K.stern]){h.position.set(K.C.x,TNK.wat,K.C.z);h.rotation.set(0,K.ry,0);h.visible=true;}const b=K.b;b.A.quaternion.copy(b.qr);b.A.scale.setScalar(1);b.rt=[0,1.6];}
 function tnkTick(rdt){const K=TNK;if(!DRIVE||!Z.rb0)return;const i=PL.idx,m_=x=>Math.round(x/SEG);
+  sqFxTick(rdt);
   if(i<Z.sq||i>Z.rb1)K.armed=1;   // ready again for the next pass
   if(!K.on&&K.armed&&G.state==='race'&&i>=Z.sq+m_(150)&&i<Z.sq+m_(230))tnkStart();
   if(K.mc&&K.mc.on){if(G.state!=='race')tnkCloudOff();else tnkCloud(rdt);}   // the mushroom cloud outlives the ship
@@ -4530,6 +4532,37 @@ function tnkCloud(rdt){const M=TNK.mc,W=TNK.wat,V=TNK.v;M.t+=rdt;const u=M.t;if(
       puff(V.set(x+Math.cos(a)*rc*R(.8,1.1),H-rc*R(.05,.35),z+Math.sin(a)*rc*R(.8,1.1)),Math.cos(a)*R(1,4),R(1,4),Math.sin(a)*R(1,4),rc*.35,rc*.7,R(3,5),.5*fo,M.c.getHex());
       if(u<7){const hh=R(0,H-rc*.3-W);flame(V.set(M.x+R(-rw,rw)*.5,W+hh,M.z+R(-rw,rw)*.5),R(-2,2),R(10,20),R(-2,2),rw*.8,rw*1.6,R(.8,1.4),0xff8a2a);}}NOGY=0;}}
 function tnkCloudOff(){const M=TNK.mc;if(!M)return;M.on=0;for(const o of M.all)o.visible=false;if(!M.ld){M.ld=1;boom.distance=140;}}
+// ---- San Quentin extras (free drive): fallout from the tanker's mushroom cloud drifting down on the road to the San Rafael bridge, faint sirens wailing at the prison, and police cars by the gate with their light bars flashing
+const ASH={on:0,t:0},SIR={},POLX={l:null},PV=new THREE.Vector3();
+function sqFxTick(rdt){ashTick(rdt);sirenTick(rdt);polTick(rdt);}
+function ashBuild(){const mk=(n,c,sz,add)=>{const p=new Float32Array(n*3),g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));
+    const o=new THREE.Points(g,new THREE.PointsMaterial({map:glowTex,color:c,size:sz,transparent:true,depthWrite:false,opacity:add?1:.9,fog:false,vertexColors:!add,blending:add?THREE.AdditiveBlending:THREE.NormalBlending}));o.frustumCulled=false;o.visible=false;scene.add(o);
+    const q=[],cp=camera.position,cl=[];for(let i=0;i<n;i++){q.push(Math.random());p[i*3]=cp.x+R(-20,20);p[i*3+1]=cp.y+R(-3,16);p[i*3+2]=cp.z+R(-20,20);const v=R(.28,.9);cl.push(v,v*.98,v*.95);}if(!add)g.setAttribute("color",new THREE.Float32BufferAttribute(cl,3));return{o,p,q,n,g};};   // ash in mixed greys, from pale to charcoal
+  ASH.a=mk(900,0xffffff,.34,0);ASH.e=mk(120,0xff8a30,.24,1);}
+function ashTick(rdt){const M=TNK.mc,i=PL.idx,m_=x=>Math.round(x/SEG);if(M&&M.on&&M.t<1&&!ASH.on){ASH.on=1;ASH.t=0;}if(!ASH.on)return;if(!ASH.a)ashBuild();
+  ASH.t+=rdt;const t=ASH.t;if(t>110||i>Z.rb0+m_(80)||i<Z.sq-m_(200)||G.state!=='race'){ASH.on=0;ASH.a.o.visible=ASH.e.o.visible=false;return;}
+  const k=sst(t,1,6)*(1-sst(t,70,110))*(1-sst(i,Z.rb0-m_(300),Z.rb0+m_(40)))*(G.tun<.5?1:0),tm=tmNow();   // thickens for a while, then thins out by the bridge
+  camera.getWorldDirection(PV);const cx=camera.position.x+PV.x*10,cy=camera.position.y,cz=camera.position.z+PV.z*10;
+  for(const[S,n,fall,sw]of[[ASH.a,Math.round(900*k),1.5,1.4],[ASH.e,Math.round(120*k*(1-sst(t,12,40))),.9,1]]){S.o.visible=n>0;if(!n)continue;S.g.setDrawRange(0,n);const p=S.p;
+    for(let j=0;j<n;j++){const q=S.q[j],o=j*3;p[o+1]-=fall*(.7+q*.6)*rdt;p[o]+=(Math.sin(tm*.8+q*40)*sw+.6)*rdt;p[o+2]+=Math.cos(tm*.95+q*31)*sw*rdt;   // falling slowly and swirling
+      let d=p[o]-cx;if(d>20)p[o]-=40;else if(d<-20)p[o]+=40;d=p[o+2]-cz;if(d>20)p[o+2]-=40;else if(d<-20)p[o+2]+=40;d=p[o+1]-cy;if(d<-4)p[o+1]+=20;else if(d>16)p[o+1]-=20;}
+    S.g.attributes.position.needsUpdate=true;}
+  ASH.e.o.material.opacity=.7+.3*Math.sin(tm*9);}
+function sirenTick(rdt){if(!AC)return;const a=Z.sq+Math.round(260/SEG),i=PL.idx,m_=x=>Math.round(x/SEG);
+  const v=(G.state==='race'&&!G.paused)?sst(i,a-m_(1100),a-m_(80))*(1-sst(i,a+m_(150),a+m_(750))):0;   // rising as you near the prison, fading after
+  if(!SIR.o){if(v<=0)return;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=1300;SIR.g=AC.createGain();SIR.g.gain.value=0;f.connect(SIR.g);SIR.g.connect(master);
+    SIR.o=[['sawtooth',.3],['triangle',.7]].map(([ty,vol])=>{const o=AC.createOscillator(),g=AC.createGain();o.type=ty;g.gain.value=vol;o.connect(g);g.connect(f);o.start();return o;});SIR.t=0;SIR.z=0;}
+  SIR.t+=rdt;const t=SIR.t,ct=AC.currentTime;
+  SIR.o[0].frequency.setTargetAtTime(620+320*(.5+.5*Math.sin(t*1.6)),ct,.06);SIR.o[1].frequency.setTargetAtTime(540+280*(.5+.5*Math.sin(t*1.15+2)),ct,.06);   // two sirens wailing up and down, out of step
+  SIR.g.gain.setTargetAtTime(.045*v*(.7+.3*Math.sin(t*.45)),ct,.3);
+  if(v<=0){SIR.z+=rdt;if(SIR.z>3){for(const o of SIR.o)o.stop();SIR.g.disconnect();SIR.o=null;}}else SIR.z=0;}
+function polBuild(){const a=Z.sq+Math.round(260/SEG);POLX.l=[];const gm=[0xff2020,0x2050ff].map(c=>new THREE.SpriteMaterial({map:glowTex,color:c,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0}));POLX.gm=gm;
+  for(const[dm,off,ry]of[[-170,5,.9],[-70,8,-.7],[-25,6.5,2.5],[45,4.5,-1.3],[120,9,.35],[0,3,0]]){const v=TRAF.mkPol(),g=v.g;for(const[k,x]of[[0,-.33],[1,.33]]){const s=new THREE.Sprite(gm[k]);s.position.set(x,1.65,0);s.scale.setScalar(3.2);g.add(s);}
+    g.visible=false;scene.add(g);const c={g,s:a*SEG+dm,off,ry,mv:ry===0&&dm===0,ob:{x:1e9,z:1e9,r:2.3,soft:1}};OBST.push(c.ob);POLX.l.push(c);}}   // parked at odd angles on the shoulder by the prison yard; the last one cruises slowly along it
+function polTick(rdt){const a=Z.sq+Math.round(260/SEG),i=PL.idx,m_=x=>Math.round(x/SEG),near=G.state==='race'&&i>a-m_(1000)&&i<a+m_(600);
+  if(!POLX.l){if(!near||!TRAF.mkPol)return;polBuild();}const tm=tmNow(),f=(tm*7|0)%2,gl=.3+.55*(1-clamp(wx.sunK,0,1));POLX.gm[0].opacity=f?gl:.03;POLX.gm[1].opacity=f?.03:gl;   // glows brighter in the dark
+  for(const c of POLX.l){c.g.visible=near;if(!near){c.ob.x=1e9;continue;}let s=c.s,ry=c.ry;if(c.mv){const u=tm*.035;s=c.s+190*Math.sin(u);ry=Math.cos(u)<0?Math.PI:0;}   // the moving one drives up and back at a crawl
+    const j=wrapI(Math.floor(s/SEG));at(s,-(RW+XW[j]+c.off),0,PV);c.g.position.copy(PV);c.g.rotation.y=yaw(j)+ry;c.ob.x=PV.x;c.ob.z=PV.z;}}
 function tnkOff(){const K=TNK;K.on=0;if(!K.bow)return;K.bow.visible=K.stern.visible=K.slick.visible=false;K.b.g.visible=false;for(const r of K.b.rings)r.visible=false;}
 function sfxBeetleRoar(k){if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),o2=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain();o.type='sawtooth';o2.type='square';
   o.frequency.setValueAtTime(60,t);o.frequency.linearRampToValueAtTime(88,t+.8);o.frequency.exponentialRampToValueAtTime(36,t+3.4);o2.frequency.setValueAtTime(30,t);o2.frequency.exponentialRampToValueAtTime(21,t+3.4);
