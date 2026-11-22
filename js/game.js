@@ -2488,6 +2488,14 @@ function aiUpdate(e,dt,pe){
   const ds=e.v*dt;e.s=wrapS(e.s+ds);e.dist+=ds;
   if(wx.wet>.5&&e.v>25&&Math.random()<dt*7)puff(at(e.s-2.5,e.lat,.5,V),R(-1,1),R(1,2.5),R(-1,1),1,4.5,R(.6,1.1),.3,0xd0d6da);
 }
+// Bay drive: where the car goes back on the road after a crash or a fall - the spot where it happened (never further back), in the right-hand lane facing along the road,
+// stepping forward only until it is clear of traffic, obstacles and the quake gap. The distance driven moves with it, so nothing along the way fires twice or gets skipped.
+function backOnRoad(pe,j0,s0=pe.s){let j=wrapI(j0),lat=-(RW+XW[j])/2;
+  for(let k=0;k<80;k++){const jj=wrapI(j0+k),l=-(RW+XW[jj])/2,s=jj*SEG;at(s,l,0,V);let ok=!(QK&&QK.st&&jj>=QK.a-2&&jj<=QK.b+4);
+    if(ok)for(const t of TRAF)if(t.act&&!t.fall&&Math.abs(wdiff(t.s-s))<14&&Math.abs(t.lat-l)<2.8){ok=false;break;}
+    if(ok)for(const o of OBST)if(o.r<30&&Math.hypot(o.x-V.x,o.z-V.z)<o.r+3){ok=false;break;}
+    if(ok){j=jj;lat=l;break;}}
+  pe.dist+=wdiff(j*SEG-s0);pe.s=j*SEG;pe.lat=lat;at(pe.s,lat,0,V);PL.idx=j;PL.x=V.x;PL.z=V.z;PL.h=G.camH=yaw(j);return j;}
 function sim(dt){const pe=ents.find(e=>e.player);
   if(G.state==='race')G.raceT+=dt;
   if(!DRIVE&&G.state==='race'){turkeysTick(dt);oldManTick(dt,pe);leadTick(dt,pe);}
@@ -2498,7 +2506,9 @@ function sim(dt){const pe=ents.find(e=>e.player);
   if(wx.wet>.5&&!PL.crash&&pe.v>20&&Math.random()<dt*26)puff(V.set(PL.x-Math.sin(PL.h)*2.6,.5,PL.z-Math.cos(PL.h)*2.6),R(-1.5,1.5),R(1,3),R(-1.5,1.5),1.2,5.5,R(.7,1.2),.34,0xd0d6da);
   if(PL.crash&&PL.crash.dive)diveTick(dt,pe);
   else if(PL.crash){const w=hero.wreck,still=!w||(Math.hypot(w.vx,w.vz)<1&&w.y<=0&&!w.wr);tubeFire(dt);const tb=PL.crash.tf>2.3;
-    if(tb||PL.crash.t>4||(PL.crash.t>2.5&&still)){const i=PL.idx=wrapI(tb?Z.tu1+30:(w?w.idx:PL.idx)+35);if(w)endWreck(w);if(TUF.st){TUF.on=0;for(const o of TUF.st)o.visible=false;}pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;sndRestore();PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();
+    if(tb||PL.crash.t>4||(PL.crash.t>2.5&&still)){const wi=w?w.idx:PL.idx;   // Bay drive: back on the road at the spot where it crashed
+      let i=PL.idx=wrapI(tb?Z.tu1+30:DRIVE?Math.floor(PL.crash.s/SEG)+Math.round(4/SEG):wi+35);if(w)endWreck(w);if(TUF.st){TUF.on=0;for(const o of TUF.st)o.visible=false;}
+      if(DRIVE)i=backOnRoad(pe,i,PL.crash.s);else{pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);}PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;sndRestore();PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();
       hero.position.set(PL.x,H[i],PL.z);hero.rotation.set(0,PL.h,0);GY=PL.gy=PL.cy=H[i];PL.air=0;PL.vy=0;say(DRIVE?'BACK ON THE ROAD':'BACK IN THE RACE','',1.5);}}
   if(G.state==='race'){G.doomT-=dt;if(G.doomT<=0){G.doomT=R(38,70);const c=ents.filter(e=>!e.player&&e.out<=0&&!e.doom&&wdiff(e.s-pe.s)>45&&wdiff(e.s-pe.s)<230&&e.v>35);if(c.length){const e=c[Math.random()*c.length|0];e.doom=Math.random()<.5?-1:1;}else G.doomT=6;}
     if(!DRIVE&&pe.dist>=LAPS*LEN){G.state='finish';G.finT=0;G.slow=.3;G.slowT=3.2;first=true;sfxCheer();say('DRAPEAU À DAMIER','P'+(standings().indexOf(pe)+1)+' · '+LAPS+' LAPS',4);announce("Le drapeau à damier ! Les vingt-quatre heures sont terminées !");}}
@@ -4985,7 +4995,7 @@ function diveTick(dt,pe){const D=PL.crash;D.tt+=dt;
   if(u>S+8.4){const F=D.F||[D.dir,0],sp=26*sst(u,S+8.4,S+9.1),px=-F[1],pz=F[0];D.wx+=F[0]*sp*dt;D.wz+=F[1]*sp*dt;   // it bolts, McQueen on its back
     if(Math.random()<dt*34){const s=Math.random()<.5?-1:1,o=R(.6,1.3);puff(V.set(D.wx+F[0]*R(1.8,3)+px*s*o,-44.9,D.wz+F[1]*R(1.8,3)+pz*s*o),px*s*R(2,5),R(1.5,3.5),pz*s*R(2,5),.25,R(.8,1.6),R(.5,.9),.6,0xeef2f4);}   // spray off the bow
     if(Math.random()<dt*14)puff(V.set(D.wx-F[0]*3.2+R(-.5,.5),-44.9,D.wz-F[1]*3.2+R(-.5,.5)),0,.5,0,.5,2,R(.8,1.4),.5,0xeef2f4);}   // and a wake behind
-  if(u>(D.rep?4.6:S+12.3)||D.skip){{const h=document.getElementById("skiph");if(h)h.style.display="none";}const i=PL.idx=wrapI(D.rep&&!D.hole?D.idx-40:(Z.BR.find(r=>D.idx>=r[0]&&D.idx<=r[1])||[Z.b0])[0]-45);pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;sndRestore();PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();first=true;G.uw=0;
+  if(u>(D.rep?4.6:S+12.3)||D.skip){{const h=document.getElementById("skiph");if(h)h.style.display="none";}const i=backOnRoad(pe,D.idx+Math.round(6/SEG));PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;sndRestore();PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();first=true;G.uw=0;   // back on the road where the car went off (past the gap if it went through one), not back at the start of the bridge
     hero.visible=true;hero.position.set(PL.x,H[i],PL.z);hero.rotation.set(0,PL.h,0);mcq.rotation.set(0,0,0);manatee.visible=false;manatee.pipe.visible=false;SEA.g.visible=SEA.oc.visible=SEA.dome.visible=SEA.tk.visible=false;SEA.light.intensity=0;say('BACK ON DRY LAND','',2);}}
 // iguanas swimming gracefully by in the dive scene (three, circling the car at a distance, tails swaying)
 const UWI={l:[]};
