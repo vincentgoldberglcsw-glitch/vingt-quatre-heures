@@ -2395,6 +2395,7 @@ function readInput(racing){let st=0,thr=0,brk=0;if(!racing)return[0,0,0];
   if(G.autoSt!=null)st=G.autoSt;return[st,thr,brk];}
 function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*SPILL.g*(1-(PL.melt||0)*.1),racing=G.state==='race';
   if(PL.crash){PL.crash.t+=dt/Math.max(G.slow,.3);return;}
+  if(DRIVE&&NUDG.on&&nudgeCarry(dt,pe))return;   // pushed back onto the road by a giant iguana (nudgeTick)
   if(MOSQ.lift&&mosqCarry(dt,pe))return;   // held up by the giant mosquito: driving paused, the car carried along the road (mosqCarry)
   if(PL.auto&&autoDrive(dt,pe))return;   // backing out of the driveway at the start, pulling in at the finish
   let[st,thr,brk]=readInput(racing);if(G.state==='finish')brk=1;
@@ -2997,6 +2998,37 @@ function rigiTick(rdt){const Q=RIGI,pe=ents.find(e=>e.player);if(!pe||!DRIVE||!(
     k.segs[0].g.rotation.x=k.pz>0?-Math.max(0,Math.sin(k.t*6))*.3:0;
     for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f;L.g.rotation.y=q*.55;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.25;}
     if(k.st!==2){const dx=Q.V.x-PL.x,dz=Q.V.z-PL.z;if(dx*dx+dz*dz<3.2*3.2&&Math.abs(pe.v)>2&&!PL.crash){k.st=2;k.vy=R(7,9.5);k.vs=clamp(pe.v*.5,-12,12)+R(-1,1);k.vl=R(-2,2);k.sp=R(-6,6);k.pz=0;sfxBoing(.9);}}}}
+// Stuck on the Bay drive (off the road, or wedged and barely moving with the throttle down for a few seconds): a giant iguana scuttles in, puts its head to the car and shoves it
+// smoothly back onto the road, facing along it, in the lane by the edge; a bump and a grunt, then it bobs its head and scuttles off. Never a crash (NUDG: nudgeTick, nudgeCarry).
+const NUDG={k:null,on:0,stk:0,ph:0,t:0,SC:2.4,V:new THREE.Vector3(),A:new THREE.Vector3(),B:new THREE.Vector3()};
+function sfxGrunt(){if(!AC)return;const t=AC.currentTime;tone('sawtooth',72,t,.45,.35,master,{to:48,h:.25});tone('square',55,t+.05,.35,.2,master,{to:40});hit(t,.3,.3,500,'lowpass',master);}
+function nudgeStart(){const Q=NUDG,pe=ents.find(e=>e.player);if(!DRIVE||!pe||Q.on||PL.crash)return;const m_=x=>Math.round(x/SEG);
+  if(!Q.k){Q.k=bigIguMk();Q.k.g.scale.setScalar(Q.SC);Q.k.g.rotation.order='YXZ';}
+  const sd=Math.sign(pe.lat)||1,j1=wrapI(PL.idx+m_(6)),ed=edgeAt[j1],l1=sd*Math.max(1.6,Math.min(Math.abs(pe.lat),ed-2.6)),dS=wdiff(j1*SEG-pe.s),dl=l1-pe.lat,n=Math.hypot(dS,dl)||1;
+  Object.assign(Q,{on:1,ph:0,t:0,s0:pe.s,l0:pe.lat,dS,l1,h0:PL.h,dH:((yaw(j1)-PL.h+Math.PI*3)%(Math.PI*2))-Math.PI,ux:dS/n,ul:dl/n,R:Q.SC*1.15+2.3,D:clamp(n/5,1.4,3),aph:0});
+  Q.is=pe.s-Q.ux*(Q.R+16);Q.il=pe.lat-Q.ul*(Q.R+16);Q.k.b.rotation.set(0,0,0);Q.k.g.visible=true;}
+function nudgeCarry(dt,pe){const Q=NUDG;if(!Q.on||Q.ph>1)return false;   // the car is held, then slid across, while the iguana does its work
+  const u=Q.ph===1?sst(Q.t,0,Q.D):0,s=wrapS(Q.s0+Q.dS*u),lat=lerp(Q.l0,Q.l1,u),i=PL.idx=wrapI(Math.floor(s/SEG));
+  pe.dist+=wdiff(s-pe.s);pe.s=s;pe.lat=lat;pe.v=0;at(s,lat,0,V);PL.x=V.x;PL.z=V.z;const e=RW+XW[i],al=Math.abs(lat);
+  GY=PL.gy=PL.cy=V.y+((KB[i]&(lat>0?1:2))&&al>e+.25&&al<e+3.1?.13:0);PL.air=0;PL.vy=0;PL.slope=0;PL.vx=PL.vz=0;PL.h=Q.h0+Q.dH*u;VS.u=VS.v=VS.r=0;
+  hero.position.set(PL.x,PL.cy,PL.z);hero.rotation.set(0,PL.h,Q.ph===1?Math.sin(Q.t*11)*.015:0);return true;}
+function nudgeTick(rdt){const Q=NUDG,pe=ents.find(e=>e.player);if(!DRIVE||!pe)return;
+  if(!Q.on){const off=Math.abs(pe.lat)>edgeAt[PL.idx]+.5,thr=PL.thr>.3||keys.KeyX,ok=G.state==='race'&&!PL.crash&&!PL.auto&&!MOSQ.lift&&!PL.air&&Math.abs(wdiff(pe.s-S0))>40;
+    Q.stk=ok&&Math.abs(pe.v)<2&&(thr||off)?Q.stk+rdt*(thr?1:.5):Math.max(0,Q.stk-rdt*2);if(Q.stk>=4){Q.stk=0;nudgeStart();}return;}
+  const k=Q.k;Q.t+=rdt;if(PL.crash||G.state!=='race'){Q.on=0;k.g.visible=false;return;}
+  let s,l,us=Q.ux,ul=Q.ul,mv=1,bob=0;const cs=Q.ph<=1?pe.s:0,cl=pe.lat;
+  if(Q.ph===0){const ts=cs-Q.ux*Q.R,tl=cl-Q.ul*Q.R,ds=wdiff(ts-Q.is),dl=tl-Q.il,d=Math.hypot(ds,dl),st=9*rdt;   // scuttles in from behind the car
+    if(d<=st||Q.t>4){Q.is=ts;Q.il=tl;Q.ph=1;Q.t=0;sfxGrunt();sfxScrape(.7);G.shake=Math.max(G.shake,.3);say('AN IGUANA GIVES YOU A PUSH','',2.2);}else{Q.is+=ds/d*st;Q.il+=dl/d*st;us=ds;ul=dl;}s=Q.is;l=Q.il;Q.aph+=rdt*9*5/Q.SC;}
+  else if(Q.ph===1){s=cs-Q.ux*Q.R;l=cl-Q.ul*Q.R;Q.aph+=rdt*Math.hypot(Q.dS,Q.l1-Q.l0)/Q.D*5/Q.SC*1.6;if(Math.random()<rdt*3)sfxScrape(.35);   // head down, pushing
+    if(Q.t>=Q.D){Q.ph=2;Q.t=0;Q.is=s;Q.il=l;sfxThump(.7);G.shake=Math.max(G.shake,.45);sfxGrunt();resetVehicle(VS,hero.M.dyn,0);VS.x=PL.x;VS.z=PL.z;VS.h=PL.h;PL.safe=Math.max(PL.safe,2);}}
+  else if(Q.ph===2){s=Q.is;l=Q.il;mv=0;bob=1;if(Q.t>1.4){Q.ph=3;Q.t=0;}}   // bobs its head
+  else{const a=Math.min(1,Q.t*2),bs=-Q.ux,bl=-Q.ul,qs=Q.ul*(Q.l0>0?-1:1)*.5,ql=-Q.ux*.5;us=lerp(Q.ux,bs+qs,a);ul=lerp(Q.ul,bl+ql,a);const n=Math.hypot(us,ul)||1;Q.is+=us/n*8*rdt*a;Q.il+=ul/n*8*rdt*a;s=Q.is;l=Q.il;Q.aph+=rdt*8*5/Q.SC;   // turns and scuttles off
+    if(Q.t>3){Q.on=0;k.g.visible=false;return;}}
+  const j=wrapI(Math.floor(wrapS(s)/SEG)),al=Math.abs(l);at(s,l,al>6.6+XW[j]&&al<9.6+XW[j]?.13:0,Q.V);k.g.position.copy(Q.V);
+  const n=Math.hypot(us,ul)||1,uu=us/n,ww=ul/n;at(s+uu*2,l+ww*2,0,Q.A);at(s-uu*2,l-ww*2,0,Q.B);k.g.rotation.set(-Math.atan2(Q.A.y-Q.B.y,Math.hypot(Q.A.x-Q.B.x,Q.A.z-Q.B.z)),Math.atan2(Q.A.x-Q.B.x,Q.A.z-Q.B.z),0);
+  const ph=Q.aph,K=3.2;for(const sg of k.segs){const z=sg.z,A=(.04+.1*Math.max(0,.6-z)/1.9)*(.4+.6*mv);sg.g.position.x=A*Math.sin(ph-K*z);sg.g.rotation.y=Math.atan(-A*K*Math.cos(ph-K*z));}
+  k.segs[0].g.rotation.x=bob?-Math.max(0,Math.sin(Q.t*6))*.3:Q.ph===1?.15:0;
+  for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f*mv;L.g.rotation.y=q*.55;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.25*mv;}}
 // More iguanas, in Alameda (the streets before the Posey Tube) and Richmond: now and then a family crosses the road ahead, a big one leading 2-4 babies in a wobbly line (they wait
 // when she stops to bob her head); any the car hits is flung up, lands and runs on (never a crash, no slowdown). And a few cling to the parked cars (roof and bonnet) and the houses
 // beside the road, up and down the front walls and along the roof ridges, bodies flat to the surface, bobbing their heads now and then. Visual only (IGF, IGC, iguMoreTick).
@@ -3101,7 +3133,7 @@ function driveTick(rdt){const zn=zoneOf(PL.idx);
   if(G.state==='race'&&!QS.has('wx')){DA.wxT=(DA.wxT||R(150,300))-rdt;if(DA.wxT<=0){DA.wxT=R(150,300);const ws=['sun','overcast','rain','hail','snow'].filter(w=>w!==G.weather),w=ws[Math.random()<.75?Math.random()*2|0:Math.random()*ws.length|0];G.weather=w;say(WX[w].name,'',2.4);}}   // Bay weather turns every few minutes
   leavesTick(rdt,zn!=='tunnel'&&zn!=='bridge'&&zn!=='freeway');G.tun=lerp(G.tun,zn==='tunnel'?1:0,clamp(rdt*3.5,0,1));G.brg=lerp(G.brg,zn==='bridge'&&PL.idx>=Z.gg0&&PL.idx<Z.gg1?clamp(.3+.6*Math.sin(PL.idx*.0105+tmNow()*.035),0,.8):0,clamp(rdt*.7,0,1));   /* fog banks roll through the Golden Gate only */jazzTick(rdt,(G.state==='race'||G.state==='finish')&&!G.paused&&!QS.has('mute'));   // on the bridge you drive through banks of fog and out into the sun again
   if(G.state!=='race'||G.paused)return;
-  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);bigIguTick(rdt);tubeIguTick(rdt);rigiTick(rdt);iguMoreTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);eyeMonTick(rdt);dadBeetleTick(rdt);bigfootTick(rdt);seaMonTick(rdt);sfBldTick(rdt);sfPyrTick(rdt);clayTick(rdt);hydMosqTick(rdt);hydIguTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
+  {const pl=placeOf(PL.idx);if(pl[1]!==DA.zn){DA.zn=pl[1];say(pl[1],pl[2],2.6);}}turkeysTick(rdt);shopTick(rdt);vanTick(rdt);bbQuakeTick(rdt);conesTick(rdt);bearsTick(rdt);rsrTick(rdt);bitsTick(rdt);dustTick(rdt);sfSmokeTick(rdt);litterTick(rdt);rtkTick(rdt);stormTick(rdt);bayTick(rdt);crowsTick(rdt);birdsTick(rdt);owlsTick(rdt);skunksTick(rdt);tumbleTick(rdt);iguanaTick(rdt);bigIguTick(rdt);tubeIguTick(rdt);rigiTick(rdt);nudgeTick(rdt);iguMoreTick(rdt);spillTick(rdt);toxTick(rdt);mosqTick(rdt);beetleTick(rdt);eyeMonTick(rdt);dadBeetleTick(rdt);bigfootTick(rdt);seaMonTick(rdt);sfBldTick(rdt);sfPyrTick(rdt);clayTick(rdt);hydMosqTick(rdt);hydIguTick(rdt);tnkTick(rdt);pennyTick(rdt);shootTick(rdt);snapTick(rdt);millTick(rdt);craneTick(rdt);refTick(rdt);planesTick(rdt);pedsTick(rdt);exhaustTick(rdt);papersTick(rdt);ducksTick(rdt);debrisTick(rdt);for(const f of FLARES){const q=tmNow()*6+f.ph,k=.85+Math.sin(q)*.08+Math.sin(q*2.7)*.06;f.sp.scale.set(26*k,52*k*(1+Math.sin(q*1.9)*.08),1);f.sp.position.y=f.b+Math.sin(q*1.3)*1.2;}quakeTick(rdt);cityQuakeTick(rdt);fqTick(rdt);ggqTick(rdt);marinTick(rdt);extrasTick(rdt);almTick(rdt);sqHydTick(rdt);if(!MAR.hold)marinaTick(rdt);ggCloudTick(rdt);
   {const sp=Math.hypot(PL.vx,PL.vz);howlTick((zn==='bridge'?1:zn==='freeway'?clamp(H[PL.idx]/9,0,1):0)*clamp(sp/45,.4,1)*(PL.crash?.3:1));
     if(zn==='town'){DA.caw=(DA.caw??5)-rdt;if(DA.caw<=0){DA.caw=R(7,16);sfxCaw();}}
     G.smk=clamp((G.smk||0)+(zn==='tunnel'?rdt/15:-rdt/2.5),0,1);
@@ -5059,7 +5091,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={BIGI,TUBI,RIGI,IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={BIGI,TUBI,RIGI,NUDG,nudge:()=>nudgeStart(),IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
