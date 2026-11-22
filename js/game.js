@@ -2340,9 +2340,9 @@ function sfxMushroom(k){if(!AC)return;sfxBoom();const t=AC.currentTime;hit(t,3.5
 function sfxScrape(v){if(!AC)return;const t=AC.currentTime;hit(t,.28,.5*v,2400,'bandpass',master);tone('square',70,t,.12,.4*v,master,{to:40});}
 function sfxPing(){if(!AC)return;tone('triangle',R(1800,3400),AC.currentTime,.05,.12,master);}
 function sfxBeep(hi){if(!AC)return;tone('square',hi?880:440,AC.currentTime,hi?.5:.14,.2,master,{lp:2000});}
-function updateAudio(rpm,thr,speed,slip){if(!AC)return;const t=AC.currentTime,f=rpm/60*3*(G.slow<1?.7:1),on=G.state==='race'||G.state==='count'||G.state==='finish';
+function updateAudio(rpm,thr,speed,slip){if(!AC)return;const SH=!!(hero&&hero.sherpTyres),t=AC.currentTime,f=rpm/60*3*(G.slow<1?.7:1)*(SH?.48:1),on=G.state==='race'||G.state==='count'||G.state==='finish';   // SH: the Sherp's engine is a low, slow rumble - an octave down, the treble cut
   for(const[o,m]of engOsc)o.frequency.setTargetAtTime(f*m,t,.03);
-  engFilt.frequency.setTargetAtTime(500+rpm*.28+thr*1700,t,.05);engG.gain.setTargetAtTime(on&&!G.paused&&!PL.crash?(.11+thr*.15)*(G.cam===1?1.15:1):0,t,.06);
+  engFilt.frequency.setTargetAtTime(SH?180+rpm*.06+thr*380:500+rpm*.28+thr*1700,t,.05);engG.gain.setTargetAtTime(on&&!G.paused&&!PL.crash?(.11+thr*.15)*(G.cam===1?1.15:1)*(SH?1.45:1):0,t,.06);
   windG.gain.setTargetAtTime(on&&!G.paused?Math.min(.22,speed*speed*.00003):0,t,.1);squealG.gain.setTargetAtTime(on&&!G.paused&&!PL.crash&&!(DRIVE&&thr>.2&&Math.abs(PL.steer)<.2&&!PL.brk)?clamp((slip-2.6)*.055,0,.32):0,t,.05);engG.echo.gain.setTargetAtTime(G.tun*1.1,t,.15);
   rainG_.gain.setTargetAtTime(G.paused?0:G.weather==='rain'?.1:G.weather==='hail'?.14:0,t,.3);musicG.gain.setTargetAtTime(musicOn?(G.state==='title'?.65:.42):0,t,.2);}
 
