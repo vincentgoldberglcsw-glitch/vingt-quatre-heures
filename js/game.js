@@ -323,8 +323,12 @@ function crowdTex(s0,density){let s=s0;const r=()=>{s=(s*16807)%2147483647;retur
     g.filter='blur(1.3px)';for(let x=0;x<H;x+=24+r()*16)if(Math.sin(x*.008+s0*2)+r()>density)fig(x,0,1);g.filter='none';});
   t.wrapT=THREE.RepeatWrapping;return t;}
 if(!DRIVE){const mk=(s0,d)=>std({map:crowdTex(s0,d),alphaTest:.3,side:THREE.DoubleSide,roughness:1});
- const a=mk(11,1.4),b=mk(29,1.55),c=mk(47,.35),d=mk(83,.35);   // owner 2026-11-22: thinner crowds; 2026-11-23: the trackside rows halved again (grandstand stays full, as in the film)
+ const a=mk(11,1.6),b=mk(29,1.72),c=mk(47,.35),d=mk(83,.35);   // owner 2026-11-22: thinner crowds; 2026-11-23: the trackside rows halved again (grandstand stays full, as in the film)
  for(const sd of[-1,1]){ribbon(sd*10.9,sd*10.9,0,2.2,a,16);ribbon(sd*12.3,sd*12.3,0,2.35,b,13.3);}
+ // 2026-11-23: the people bunch up where the action is: the start straight, round the tyre footbridge and at the real corners (a thin scatter elsewhere)
+ const e=mk(61,.55),cl=(sd,i0,i1)=>{i0=Math.max(0,i0|0);i1=Math.min(NS,i1|0);if(i1-i0>4)ribbon(sd*11.6,sd*11.6,0,2.3,e,14.6,i0,i1);};
+ cl(-1,20,232);cl(1,20,GS0-2);cl(-1,196,236);cl(1,196,236);
+ let lc=-999;for(let i=0;i<NS;i++){const k=Math.abs(kS[i]),pv=Math.abs(kS[(i-1+NS)%NS]);if(k>=.0035&&pv<.0035&&i-lc>120){lc=i;if(i>GS0-20&&i<GS1+20)continue;cl(-Math.sign(kS[i]),i-25,i+55);}}
  [16,13.3,17.1,14.2,15.3,12.4].forEach((vs,k)=>ribbon(15.5+k*1.5,15.5+k*1.5,.7+k*.6,2.75+k*.6,k%2?c:d,vs,GS0,GS1));}
 
 await BOOT.step('TRACKSIDE STRUCTURES',.16);
@@ -429,6 +433,36 @@ if(!DRIVE){ // start area dressing: painted echelon bays on the pit side, and a 
     g.save();g.translate(x+128,64);g.scale(1,-1);g.fillStyle=n[2];g.font='900 54px Arial Black,Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(n[0],0,4,226);g.restore();});speck(g,H,W,2500,['rgba(90,80,60,.14)'],6);});
   ht.wrapT=THREE.RepeatWrapping;const hm=std({map:ht,roughness:.8,side:THREE.DoubleSide});
   ribbon(-10.25,-10.25,0,1.25,hm,24,20,230).castShadow=true;ribbon(10.25,10.25,0,1.25,hm,24,20,GS0-2);
+}
+if(!DRIVE){ // 1970 hoardings, invented brands in the period style (no real marks): along the pit straight, the front of the grandstand, the tyre footbridge and the corners
+  const F=(g,s,x,y,px,c)=>{g.fillStyle=c;g.font=`900 ${px}px Arial Black,Arial`;g.textAlign='center';g.textBaseline='middle';g.fillText(s,x,y);};
+  const DR=[
+    (g,w,h)=>{g.fillStyle='#f2ede0';g.fillRect(0,0,w,h);[['#1c2a5a',46],['#6f9fd2',70],['#c8302a',94]].forEach(([c,y])=>{g.fillStyle=c;g.fillRect(0,y-9,w,20);});   // a vermouth: navy, sky and red stripes
+      g.fillStyle='#f2ede0';g.beginPath();g.ellipse(w/2,h/2,250,62,0,0,7);g.fill();g.strokeStyle='#1c2a5a';g.lineWidth=6;g.stroke();F(g,'MARZANO',w/2,h/2+4,78,'#1c2a5a');},
+    (g,w,h)=>{g.fillStyle='#1f6a3a';g.fillRect(0,0,w,h);g.fillStyle='#f2cf2a';g.beginPath();g.moveTo(70,22);g.lineTo(170,22);g.lineTo(170,92);g.quadraticCurveTo(120,140,70,92);g.closePath();g.fill();   // an oil in green and yellow, with a shield
+      F(g,'V',120,70,64,'#1f6a3a');F(g,'VERDOL',580,h/2+4,96,'#f2cf2a');},
+    (g,w,h)=>{g.fillStyle='#f4c82a';g.fillRect(0,0,w,h);g.fillStyle='#d23a1e';g.beginPath();g.moveTo(130,128);for(let k=0;k<=8;k++){const a=Math.PI*(1.08+k*.105);g.lineTo(130+Math.cos(a)*92,124+Math.sin(a)*100);}g.closePath();g.fill();   // a scallop emblem
+      g.strokeStyle='#f4c82a';g.lineWidth=5;for(let k=1;k<8;k++){const a=Math.PI*(1.08+k*.105);g.beginPath();g.moveTo(130,128);g.lineTo(130+Math.cos(a)*90,124+Math.sin(a)*98);g.stroke();}F(g,'COQUILLE',600,h/2+4,92,'#d23a1e');},
+    (g,w,h)=>{g.fillStyle='#f2c81e';g.fillRect(0,0,w,h);g.fillStyle='#141414';g.fillRect(0,0,w,16);g.fillRect(0,h-16,w,16);for(const x of[60,110]){g.beginPath();g.moveTo(x,40);g.lineTo(x+40,80);g.lineTo(x,120);g.lineTo(x+22,80);g.closePath();g.fill();}   // a tyre maker in yellow and black
+      F(g,'VULCOR',560,h/2+4,104,'#141414');},
+    (g,w,h)=>{g.fillStyle='#f2ede0';g.fillRect(0,0,w,h);g.fillStyle='#c8302a';g.beginPath();g.moveTo(60,40);g.lineTo(150,80);g.lineTo(60,120);g.closePath();g.moveTo(240,40);g.lineTo(150,80);g.lineTo(240,120);g.closePath();g.fill();F(g,'ÉTINCEL',630,h/2+4,92,'#141414');},   // spark plugs, a red bow-tie
+    (g,w,h)=>{g.fillStyle='#141414';g.fillRect(0,0,w,h);F(g,'CHRONEX',w/2,h/2-8,90,'#f2ede0');F(g,'GENÈVE · CHRONOGRAPHES',w/2,h-24,26,'#d8b23c');},
+    (g,w,h)=>{g.fillStyle='#1f4f9a';g.fillRect(0,0,w,h);g.fillStyle='#f2ede0';g.beginPath();g.ellipse(w/2,h/2,300,58,0,0,7);g.fill();F(g,'AZURA',w/2,h/2+4,88,'#c8302a');F(g,'SUPER',110,h/2+4,40,'#f2ede0');F(g,'SUPER',w-110,h/2+4,40,'#f2ede0');},   // a petrol brand in an oval
+    (g,w,h)=>{g.fillStyle='#b8261e';g.fillRect(0,0,w,h);g.strokeStyle='#f2ede0';g.lineWidth=8;g.strokeRect(14,14,w-28,h-28);F(g,'FREINEX',w/2,h/2+4,96,'#f2ede0');}];   // brake linings
+  const BM=DR.map(fn=>std({roughness:.8,map:canvas(1024,160,(g,w,h)=>{fn(g,w,h);speck(g,w,h,600,['rgba(90,80,60,.14)'],7);})}));
+  const wd=wood;let bn=0;
+  const board=(i,o,y,len,ht,face)=>{const b=new THREE.Mesh(new THREE.BoxGeometry(.1,ht,len),BM[bn++%BM.length]);off(i,o,y,b.position);b.rotation.y=yaw(i)+(face?Math.PI:0);b.castShadow=true;scene.add(b);return b;};
+  // pit straight, opposite the stands: big boards up on legs above the hoarding wall
+  const lg=new THREE.BoxGeometry(.16,1,.16);
+  for(let i=26;i<228;i+=15){const b=board(i,-13.4,4.1,12,2.4,0);for(const dz of[-5,5]){const p=new THREE.Mesh(lg,wd);p.position.copy(b.position).addScaledVector(T[i],dz);p.scale.y=5.3;p.position.y=b.position.y-1.45;scene.add(p);}}
+  // along the front of the grandstand, under the first row
+  for(let i=GS0+3;i<GS1-3;i+=6)board(i,14.15,.65,9,1.1,1);
+  // the tyre footbridge: a banner hung under the arch on each face, and a big board either side
+  {const i=215,c=canvas(1024,160,(g,w,h)=>{DR[0](g,w,h);});const ban=new THREE.Mesh(new THREE.PlaneGeometry(15,2.3),std({map:c,side:THREE.DoubleSide,roughness:.85}));ban.position.copy(P[i]);ban.position.y+=10.4;ban.rotation.y=yaw(i);scene.add(ban);
+    for(const[j,sd]of[[207,-1],[207,1],[223,-1],[223,1]])board(j,sd*12.2,2.4,10,2,sd>0);}
+  // the corners: low boards on the outside, along the Armco
+  let lc=-999;for(let i=0;i<NS;i++){const k=Math.abs(kS[i]),pv=Math.abs(kS[wrapI(i-1)]);if(k>=.0035&&pv<.0035&&i-lc>120){lc=i;if(i>GS0-20&&i<GS1+20)continue;const sd=-Math.sign(kS[i]);
+    for(let j=i+4;j<i+48&&j<NS;j+=9)board(j,sd*10.6,.95,8,1.1,sd>0);}}
 }
 let ferris;const gondolas=[];
 if(!DRIVE){ // fairground opposite the grandstand: big wheel with lights, striped tents
@@ -5721,7 +5755,7 @@ function startIntro(){initAudio();if(AC&&AC.state==='suspended')AC.resume();wind
   shots.push({type:'run',t0:t,d:2.6,v:0});t+=2.6;shots.push({type:'clock',t0:t,d:1.15,v:99});t+=1.15;
   INTRO={shots,T:t,i:-1};G.state='intro';G.t=0;}
 function beginRace(){INTRO=null;cutC.style.display='none';for(const id of['tl','tr','br','lf','map','bl'])$(id).classList.remove('hide');runners.forEach(r=>{r.visible=false;});
-  G.state='race';first=true;PL.lapStart=0;PL.rpm=1200;say('PARTEZ !','',1.2);sfxRoar();G.waveT=tm+5;announce("Et c'est parti pour les vingt-quatre heures !");}
+  G.state='race';first=true;PL.lapStart=0;PL.rpm=1200;say('PARTEZ !','',1.2);sfxRoar();if(!DRIVE)G.panT=0;G.waveT=tm+5;announce("Et c'est parti pour les vingt-quatre heures !");}
 function introTick(rdt){const I=INTRO;if(!I.hold)G.t+=rdt;if(G.t>=I.T){beginRace();return null;}
   let i=Math.max(I.i,0);while(i+1<I.shots.length&&I.shots[i+1].t0<=G.t)i++;const s=I.shots[i];
   if(i!==I.i){I.i=i;if(s.type==='clock'&&s.v!==99)sfxTick();}
@@ -5844,7 +5878,11 @@ function frame(manual){
   else if(G.state==='finish'&&G.finT<4.4&&!DRIVE){at(S0-15,-(RW-3.4),1.05,camera.position);camera.fov=lerp(camera.fov,34,.2);look.lerp(V.copy(hero.position).setY(.6),first?1:.25);}   // low by the line as the flag falls
   else if(G.cam===0){ // chase: the camera swings round a little behind the car, so you see it turn in
     let dh=((PL.h-G.camH+Math.PI*3)%(Math.PI*2))-Math.PI;G.camH+=dh*clamp(rdt*4.5,0,1);if(first)G.camH=PL.h;
-    const gy=PL.cy||0,sl=PL.air?0:PL.slope||0,mq=MOSQ.lift?clamp((PL.cy-PL.gy)/12,0,1):0,cd=7.4+mq*4;camera.position.set(PL.x-Math.sin(G.camH)*cd+jx,(hero.M.camY||1.75)+gy-sl*7.4+jy+mq*4.5+Math.sin(tm*31)*.008*f/60,PL.z-Math.cos(G.camH)*cd);camera.fov=lerp(56,74,clamp(f/105,0,1));look.set(PL.x+fx*9,.85+gy+sl*9-mq*3.5,PL.z+fz*9);}   // carried up by the mosquito: back and above, looking down past the car at the road
+    const gy=PL.cy||0,sl=PL.air?0:PL.slope||0,mq=MOSQ.lift?clamp((PL.cy-PL.gy)/12,0,1):0,cd=7.4+mq*4;camera.position.set(PL.x-Math.sin(G.camH)*cd+jx,(hero.M.camY||1.75)+gy-sl*7.4+jy+mq*4.5+Math.sin(tm*31)*.008*f/60,PL.z-Math.cos(G.camH)*cd);camera.fov=lerp(56,74,clamp(f/105,0,1));look.set(PL.x+fx*9,.85+gy+sl*9-mq*3.5,PL.z+fz*9);
+    if(!DRIVE&&G.panT!=null&&G.panT<3.4&&G.state==='race'){const u=G.panT;G.panT+=rdt;   // Le Mans opening: from high and wide over the grid, down into a low view just behind the 917's rear wheel, then over to the chase camera (control is live throughout)
+      const sx=Math.cos(PL.h),sz=-Math.sin(PL.h),a=sst(u,0,2.1),ah=sst(u,0,1.7),b=sst(u,2.1,3.4);
+      V.set(lerp(PL.x-fx*28+sx*11,PL.x-fx*3.3-sx*1.35,a),gy+lerp(16,.42,ah),lerp(PL.z-fz*28+sz*11,PL.z-fz*3.3-sz*1.35,a)).lerp(camera.position,b);camera.position.copy(V);
+      V2.set(PL.x+fx*lerp(4,14,a),gy+lerp(.4,.55,a),PL.z+fz*lerp(4,14,a)).lerp(look,b);look.copy(V2);camera.fov=lerp(lerp(38,46,a),camera.fov,b);}}   // carried up by the mosquito: back and above, looking down past the car at the road
   else if(G.cam===1){V.set(-.24,.86,.12);hero.localToWorld(V);camera.position.copy(V);camera.position.y+=jy+Math.sin(tm*37)*.004*f/60;camera.fov=74;look.set(-.24-PL.steer*3,.68,30);hero.localToWorld(look);
     interior.spin.rotation.z=PL.steer*1.5;const sw=(n,k)=>{n.rotation.z=-Math.PI*.75+clamp(k,0,1)*Math.PI*1.5;},D=interior.d,rv=PL.rpm/8400;
     sw(interior.needle,rv);sw(D.spd,Math.abs(f)*3.6/400);sw(D.temp,.42+rv*.3);sw(D.press,.25+rv*.55);sw(D.fuel,1-G.raceT/G.RACE*.9);sw(D.amp,.55+Math.sin(tm*3)*.01);interior.lamp.material.color.setHex(PL.warn?0xff2a12:0x330000);
