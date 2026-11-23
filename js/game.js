@@ -3743,7 +3743,7 @@ function dustTick(rdt){if(!DRIVE)return;PL.dustW=Math.max(0,(PL.dustW||0)-rdt*.9
       for(const b of wb)b.m.visible=false;
       g.visible=false;scene.add(g);DUSTD.l.push({g,cs,bits,wb,on:0,s:0,lat:0,tl:0,vl:0,ph:R(0,6),gt:0,k:1,zn:0,hit:0,aim:1});}
     const hz=document.createElement('div');hz.style.cssText='position:fixed;inset:0;opacity:0;z-index:4;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(184,146,90,.5) 0,rgba(156,118,66,.82) 60%,rgba(120,88,48,.95) 100%)';document.body.appendChild(hz);DUSTD.hz=hz;}   /* the brown haze over the windscreen */
-  const V3=DUSTD.v||(DUSTD.v=new THREE.Vector3());DUSTD.t=(DUSTD.t||0)+rdt;const t=DUSTD.t,want=zn===1?7:zn===2?3:0;let act=0;for(const d of DUSTD.l)if(d.on)act++;
+  const V3=DUSTD.v||(DUSTD.v=new THREE.Vector3());DUSTD.t=(DUSTD.t||0)+rdt;const t=DUSTD.t,want=zn===1?7:zn===2?2:0;let act=0;for(const d of DUSTD.l)if(d.on)act++;
   for(const d of DUSTD.l){
     if(d.on){const ds=wdiff(d.s-pe.s);if(ds<-140||ds>720){d.on=0;d.g.visible=false;act--;}}
     if(!d.on&&act<want&&Math.random()<rdt*1.2){const s=pe.s+R(160,540),zz=dustZone(wrapI(Math.floor(wrapS(s)/SEG)));   /* a new one whips up somewhere ahead */
