@@ -267,7 +267,9 @@ for(let i=0;i<NS;i+=3)for(const sd of [-1,1])for(let k=0;k<3;k++){
     if(hh(0)>=.3){const oo=-(13.5+k*6.5+hh(1)*4+XW[i]),x=P[i].x+Nn[i].x*oo+(hh(2)-.5)*3,z=P[i].z+Nn[i].z*oo+(hh(3)-.5)*3;if(farFromRoad(x,z,10))treePos.push([x,z]);}}
   if(DRIVE){const zn=zoneOf(i);if(zn==='town'){if(k||i%9||(i>Z.wt0-5&&i<Z.wt0+70))continue;o=sd*11.2;minD=9.5;}else if(zn==='freeway'){if(k||rnd()<.6||H[i]>1)continue;o=sd*rr(26,60);}else if(zn==='hills'){if(rnd()<.6||H[i]>.5)continue;}else continue;}   // street trees in town, a few by the freeways, oaks at the foot of the Richmond hills; the redwoods are their own
   else if(sd>0&&i>GS0-8&&i<GS1+8&&Math.abs(o)<36||sd<0&&i>GS0&&i<GS1)continue;
-  const x=P[i].x+Nn[i].x*o+rr(-3,3)*(minD<16?.2:1),z=P[i].z+Nn[i].z*o+rr(-3,3)*(minD<16?.2:1);if(farFromRoad(x,z,minD)){treePos.push([x,z]);if(minD===9.5)TOWNT.push([x,z]);}}
+  const x=P[i].x+Nn[i].x*o+rr(-3,3)*(minD<16?.2:1),z=P[i].z+Nn[i].z*o+rr(-3,3)*(minD<16?.2:1);
+  if(!DRIVE&&Math.sin(i/NS*25.13+1.3)>.45&&(Math.sin(i*12.9898+k*78.233+sd*3.1)*43758.5453%1+1)%1>.06)continue;   // Le Mans: four stretches of open Sarthe farmland, only the odd tree (filtered after the draws, so the rest of the seeded scenery is unchanged)
+  if(farFromRoad(x,z,minD)){treePos.push([x,z]);if(minD===9.5)TOWNT.push([x,z]);}}
 const CARDS=34,NT=treePos.length;
 const leaves=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,1),leafMat,NT*CARDS);
 const cores=new THREE.InstancedMesh(coreG,std({roughness:1}),NT*2);
@@ -321,7 +323,7 @@ function crowdTex(s0,density){let s=s0;const r=()=>{s=(s*16807)%2147483647;retur
     g.filter='blur(1.3px)';for(let x=0;x<H;x+=24+r()*16)if(Math.sin(x*.008+s0*2)+r()>density)fig(x,0,1);g.filter='none';});
   t.wrapT=THREE.RepeatWrapping;return t;}
 if(!DRIVE){const mk=(s0,d)=>std({map:crowdTex(s0,d),alphaTest:.3,side:THREE.DoubleSide,roughness:1});
- const a=mk(11,1.05),b=mk(29,1.3),c=mk(47,.35),d=mk(83,.35);   // owner 2026-11-22: thinner crowds
+ const a=mk(11,1.4),b=mk(29,1.55),c=mk(47,.35),d=mk(83,.35);   // owner 2026-11-22: thinner crowds; 2026-11-23: the trackside rows halved again (grandstand stays full, as in the film)
  for(const sd of[-1,1]){ribbon(sd*10.9,sd*10.9,0,2.2,a,16);ribbon(sd*12.3,sd*12.3,0,2.35,b,13.3);}
  [16,13.3,17.1,14.2,15.3,12.4].forEach((vs,k)=>ribbon(15.5+k*1.5,15.5+k*1.5,.7+k*.6,2.75+k*.6,k%2?c:d,vs,GS0,GS1));}
 
