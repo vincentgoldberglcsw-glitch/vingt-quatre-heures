@@ -2612,13 +2612,13 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*SPILL.g*(1-(PL.melt
     if(DRIVE){const e=RW+XW[bi],al=Math.abs(lat);if((KB[bi]&(lat>0?1:2))&&al>e+.25&&al<e+3.1)PL.gy+=.13;}   // up the kerb onto the pavement (KB: which sides have pavement here)
     PL.slope=(H[wrapI(bi+1)]-H[wrapI(bi-1)])/(2*SEG)*(fx*T[bi].x+fz*T[bi].z);GY=PL.gy;
     if(PL.cy===undefined||dt<=0){PL.cy=PL.gy;PL.vy=0;PL.air=0;}
-    else if(PL.air){PL.vy-=24*dt;PL.cy+=PL.vy*dt;if(PL.cy>PL.gy+3.2){PL.cy=PL.gy+3.2;PL.vy=Math.min(PL.vy,0);}if(PL.cy<=PL.gy){const dn=(PL.slope||0)*f-PL.vy;/* how hard it meets the road, not how fast it falls */PL.cy=PL.gy;PL.air=0;PL.vy=(PL.slope||0)*f;/* land moving with the road, so it does not hop straight off again */if(dn>3){const k=clamp(dn/9,.3,1.6);PL.land=.12*k;G.shake=Math.max(G.shake,.7*k);sfxThump(k);for(let q=0;q<10;q++)spark(V.set(PL.x+R(-.8,.8),PL.gy+.1,PL.z+R(-.8,.8)),PL.vx*.6+R(-3,3),R(.5,3),PL.vz*.6+R(-3,3));}}}
+    else if(PL.air){PL.vy-=24*dt;PL.cy+=PL.vy*dt;const cap=PL.hiJ?9.6:3.2;if(PL.cy>PL.gy+cap){PL.cy=PL.gy+cap;PL.vy=Math.min(PL.vy,0);}if(PL.cy<=PL.gy){const dn=(PL.slope||0)*f-PL.vy;/* how hard it meets the road, not how fast it falls */PL.cy=PL.gy;PL.air=0;PL.hiJ=0;PL.vy=(PL.slope||0)*f;/* land moving with the road, so it does not hop straight off again */if(dn>3){const k=clamp(dn/9,.3,1.6);PL.land=.12*k;G.shake=Math.max(G.shake,.7*k);sfxThump(k);for(let q=0;q<10;q++)spark(V.set(PL.x+R(-.8,.8),PL.gy+.1,PL.z+R(-.8,.8)),PL.vx*.6+R(-3,3),R(.5,3),PL.vz*.6+R(-3,3));}}}
     else{const vg=(PL.gy-PL.cy)/dt;if(vg<PL.vy-24*dt-.05&&v>12){PL.air=1;PL.vy-=24*dt;PL.cy+=PL.vy*dt;}else{PL.vy=vg;PL.cy=PL.gy;}}}   // where the road drops away faster than the car can fall, it flies   // height of the road here, and how steeply it climbs the way the car is pointing
   pe.dist+=wdiff(ns-pe.s);pe.s=ns;pe.v=f;PL.warn=racing&&f>vcp[wrapI(bi+3)]*Math.sqrt(g*M.dyn.gk)*1.03&&f>25;
   // guardrail: a glancing touch scrapes and bounces, a real hit is a crash
   const WLL=lat<0&&wallR[bi]?wallR[bi]:wallAt[bi];
   if(Math.abs(lat)>WLL){const sd=Math.sign(lat),vn=(PL.vx*Nn[bi].x+PL.vz*Nn[bi].z)*sd,spd=Math.hypot(PL.vx,PL.vz),RUB=DRIVE&&((bi>=Z.gg0-Math.round(320/SEG)&&bi<Z.gg0+Math.round(60/SEG))||(bi>=Z.toll-Math.round(60/SEG)&&bi<Z.toll+Math.round(330/SEG))||(bi>=Z.downtown-Math.round(60/SEG)&&bi<Z.hyde+Math.round(40/SEG))||(bi>=Z.marina-Math.round(30/SEG)&&bi<Z.marina+Math.round((MR*1.571+40)/SEG)));   /* the approach to the Golden Gate: rubbery rails, you bounce and never crash or fall */
-    if(!RUB&&racing&&DRIVE&&zoneArr[bi]===4&&PL.safe<=0&&spd>44.7&&vn>3.5){startDive(sd,vn,bi);return;}   // on the bridge the rail holds the car up to 100 mph (44.7 m/s); a real hit above that takes you through
+    if(!RUB&&racing&&DRIVE&&zoneArr[bi]===4&&PL.safe<=0&&spd>44.7&&vn>3.5){if(bi>=Z.rb0&&bi<=Z.rb1)rsrSplash(sd,vn,bi);else startDive(sd,vn,bi);return;}   // on the bridge the rail holds the car up to 100 mph (44.7 m/s); a real hit above that takes you through
     if(!RUB&&racing&&DRIVE&&zoneArr[bi]===3&&H[bi]>6&&PL.safe<=0&&spd>(HRL(bi)?67:44.7)&&vn>(HRL(bi)?6:3.5)){pe.lat=lat;fallOff(sd,vn,bi);return;}   // and off the elevated freeway (I-880, and I-80 towards Berkeley: only at 150 mph)
     if(!RUB&&racing&&DRIVE&&CLF&&sd>0&&bi>=CLF[0]+15&&bi<=CLF[1]&&PL.safe<=0&&spd>22&&vn>4.5){pe.lat=lat;lakeCrash(sd,vn,bi,pe);return;}   // Marin: a hard hit breaks the timber rail above the lake, and over the edge into it
     if(!RUB&&racing&&DRIVE&&CLF&&sd>0&&bi>=CLF[0]&&bi<=CLF[1]&&PL.safe<=0&&spd>22&&vn>4.5){pe.lat=lat;fallOff(sd,vn,bi);say('OFF THE CLIFF','No. '+LIV().num+' - McQUEEN',3);return;}   // Marin: through the rail and off the cliff into the rocks
@@ -3319,16 +3319,17 @@ function rigiTick(rdt){const Q=RIGI,pe=ents.find(e=>e.player);if(!pe||!DRIVE||!(
   const inR=i=>i>=a&&i<b,pl=j=>6.6+XW[j]+1.5;   // the middle of the pavement
   if(!Q.l.length)for(let n=0;n<7;n++){const k=Object.assign(lizMk(),{st:0,cd:0,s:0,lat:0,tl:0,dir:1,y:0,vy:0,vs:0,vl:0,v:4,t:0,ph:R(0,6),sp:0,pz:0,fr:1});k.g.scale.setScalar(SC);k.g.rotation.order='YXZ';Q.l.push(k);}
   const near=pv>=a-m_(400)&&pv<b+m_(60);
-  if(!near){for(const k of Q.l)if(k.st){k.st=0;k.g.visible=false;k.fr=1;}return;}
+  if(!near){for(const k of Q.l)if(k.st){k.st=0;k.g.visible=false;k.fr=1;k.g.scale.setScalar(SC);}return;}
   const spawn=(k,s,side)=>{const j=wrapI(Math.floor(s/SEG));k.st=1;k.s=s;k.lat=side*pl(j)+R(-.6,.6);k.dir=Math.random()<.5?1:-1;k.v=R(3.5,6.5);k.y=0;k.pz=0;k.t=0;k.b.rotation.set(0,0,0);k.g.visible=true;};
   for(const k of Q.l)if(!k.st){k.cd-=rdt;if(k.cd>0)continue;const s=wrapS(pe.s+(k.fr?R(-30,320):R(200,380))),j=wrapI(Math.floor(s/SEG));if(inR(j)){spawn(k,s,Math.random()<.5?1:-1);k.fr=0;}else k.cd=R(.5,1.5);}
   Q.cd-=rdt;if(Q.cd<=0&&inR(pv)){Q.cd=R(3.5,7);const lo=Math.max(30,Math.abs(pe.v)*1.6),hi=lo+50;   // one darts out into the road ahead
     let k=Q.l.find(k=>k.st===1&&(d=>d>lo&&d<hi)(wdiff(k.s-pe.s)));if(!k){k=Q.l.find(k=>k.st===1&&wdiff(k.s-pe.s)<-20)||Q.l.find(k=>k.st===1&&wdiff(k.s-pe.s)>hi+80);if(k){const s=wrapS(pe.s+R(lo,hi));if(inR(wrapI(Math.floor(s/SEG))))spawn(k,s,Math.random()<.5?1:-1);else k=null;}}
     if(k){const j=wrapI(Math.floor(k.s/SEG)),sd=Math.sign(k.lat)||1;k.st=3;k.tl=-sd*pl(j);k.turn=Math.random()<.3?R(1.5,3.5):0;k.v=R(5,7.5);k.pz=0;}}
   for(const k of Q.l){if(!k.st)continue;const ds=wdiff(k.s-pe.s),j=wrapI(Math.floor(k.s/SEG));k.t+=rdt;
-    if(ds<-60||ds>450||(k.st===1&&!inR(j))){k.st=0;k.g.visible=false;k.cd=R(.5,3);continue;}
+    if(ds<-60||ds>450||(k.st===1&&!inR(j))){k.st=0;k.g.visible=false;k.cd=R(.5,3);k.g.scale.setScalar(SC);continue;}
     let us=0,ul=0;
-    if(k.st===2){k.vy-=14*rdt;k.y+=k.vy*rdt;k.s=wrapS(k.s+k.vs*rdt);k.lat+=k.vl*rdt;k.b.rotation.x+=k.sp*rdt;k.b.rotation.z+=k.sp*.4*rdt;us=k.vs;ul=k.vl;
+    if(k.st===4){k.fl-=rdt;if(k.fl<=0){k.st=1;k.g.scale.setScalar(SC);k.pz=0;sfxBoing(.5);}}   // squashed flat by the daddy beetle's foot: a few seconds later it pops back up
+    else if(k.st===2){k.vy-=14*rdt;k.y+=k.vy*rdt;k.s=wrapS(k.s+k.vs*rdt);k.lat+=k.vl*rdt;k.b.rotation.x+=k.sp*rdt;k.b.rotation.z+=k.sp*.4*rdt;us=k.vs;ul=k.vl;
       if(k.y<=0&&k.vy<0){k.y=0;k.b.rotation.set(0,0,0);const jj=wrapI(Math.floor(k.s/SEG));k.st=3;k.turn=0;k.tl=(Math.sign(k.lat)||1)*pl(jj);k.v=R(5,7);}}   // flung up; lands and runs on to the nearest pavement
     else if(k.pz>0){k.pz-=rdt;us=k.dir*.01;}   // stops a moment and bobs its head
     else if(k.st===1){k.s=wrapS(k.s+k.dir*k.v*rdt);k.lat+=(Math.sign(k.lat)*pl(j)-k.lat)*clamp(rdt*.5,0,1);us=k.dir*k.v;ul=Math.sin(k.t*.7+k.ph)*.4;k.lat+=ul*rdt;k.ph+=rdt*k.v*5/SC;if(Math.random()<rdt*.1)k.pz=R(.6,1.6);if(Math.random()<rdt*.04)k.dir=-k.dir;}
@@ -3337,10 +3338,10 @@ function rigiTick(rdt){const Q=RIGI,pe=ents.find(e=>e.player);if(!pe||!DRIVE||!(
     const al=Math.abs(k.lat),h=al>6.6+XW[j]&&al<9.6+XW[j]?.13:0;at(k.s,k.lat,h,Q.V);Q.V.y+=k.y;k.g.position.copy(Q.V);
     const n=Math.hypot(us,ul);if(n>1e-4&&k.st!==2){const u=us/n,w=ul/n;at(k.s+u*2,k.lat+w*2,0,Q.A);at(k.s-u*2,k.lat-w*2,0,Q.B);   // faces the way it runs, nose up or down with the slope
       k.g.rotation.set(-Math.atan2(Q.A.y-Q.B.y,Math.hypot(Q.A.x-Q.B.x,Q.A.z-Q.B.z)),Math.atan2(Q.A.x-Q.B.x,Q.A.z-Q.B.z),0);}
-    const ph=k.ph,K=3.2,mv=k.pz>0||k.st===2?0:1;for(const sg of k.segs){const z=sg.z,A=(.04+.1*Math.max(0,.6-z)/1.9)*(.4+.6*mv);sg.g.position.x=A*Math.sin(ph-K*z);sg.g.rotation.y=Math.atan(-A*K*Math.cos(ph-K*z));}   // body and tail swinging
+    const ph=k.ph,K=3.2,mv=k.pz>0||k.st===2||k.st===4?0:1;for(const sg of k.segs){const z=sg.z,A=(.04+.1*Math.max(0,.6-z)/1.9)*(.4+.6*mv);sg.g.position.x=A*Math.sin(ph-K*z);sg.g.rotation.y=Math.atan(-A*K*Math.cos(ph-K*z));}   // body and tail swinging
     k.segs[0].g.rotation.x=k.pz>0?-Math.max(0,Math.sin(k.t*6))*.3:0;
     for(const L of k.legs){const q=Math.sin(ph)*L.s*L.f;L.g.rotation.y=q*.55;L.g.rotation.z=L.s*Math.max(0,Math.cos(ph)*L.s*L.f)*.25;}
-    if(k.st!==2){const dx=Q.V.x-PL.x,dz=Q.V.z-PL.z;if(dx*dx+dz*dz<1.9*1.9&&Math.abs(pe.v)>2&&!PL.crash){k.st=2;k.vy=R(7,9.5);k.vs=clamp(pe.v*.5,-12,12)+R(-1,1);k.vl=R(-2,2);k.sp=R(-6,6);k.pz=0;sfxBoing(.9);}}}}
+    if(k.st!==2&&k.st!==4){const dx=Q.V.x-PL.x,dz=Q.V.z-PL.z;if(dx*dx+dz*dz<1.9*1.9&&Math.abs(pe.v)>2&&!PL.crash){k.st=2;k.vy=R(7,9.5);k.vs=clamp(pe.v*.5,-12,12)+R(-1,1);k.vl=R(-2,2);k.sp=R(-6,6);k.pz=0;sfxBoing(.9);}}}}
 // Stuck on the Bay drive (off the road, or wedged and barely moving with the throttle down for a few seconds): a giant iguana scuttles in, puts its head to the car and shoves it
 // smoothly back onto the road, facing along it, in the lane by the edge; a bump and a grunt, then it bobs its head and scuttles off. Never a crash (NUDG: nudgeTick, nudgeCarry).
 const NUDG={k:null,on:0,stk:0,ph:0,t:0,SC:2.4,V:new THREE.Vector3(),A:new THREE.Vector3(),B:new THREE.Vector3()};
@@ -4508,7 +4509,7 @@ function beetleBuild(B=BTL){const g=new THREE.Group(),UP=new THREE.Vector3(0,1,0
   B.sc=13.5;g.scale.setScalar(B.sc);g.visible=false;scene.add(g);B.g=g;B.V=new THREE.Vector3();B.W=new THREE.Vector3();B.tg=new THREE.Vector3();B.Q=new THREE.Quaternion();B.v1=new THREE.Vector3();B.v3=new THREE.Vector3();
   B.qr=new THREE.Quaternion().setFromUnitVectors(v3(0,-1,0),v3(-.75,.55,.38).normalize());B.qw=new THREE.Quaternion().setFromUnitVectors(v3(0,-1,0),v3(-.35,.88,-.32).normalize());B.qs=new THREE.Quaternion();A.quaternion.copy(B.qr);
   B.rings=[0,1].map(()=>{const m=new THREE.Mesh(new THREE.RingGeometry(.86,1,48).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xeef4f6,transparent:true,opacity:0,depthWrite:false}));m.visible=false;scene.add(m);return m;});}
-function beetleStart(k,big){const B=BTL,pe=ents.find(e=>e.player);if(!pe)return;if(!B.g)beetleBuild();B.on=1;B.armed[k]=0;B.k=k;B.t=0;B.big=big?1:0;B.lead=big?120:170;B.s=pe.s+B.lead;B.n=big?1:Math.random()<.5?2:3;B.hj=-1;B.sj=-1;B.st=null;B.pa=0;B.roar=0;
+function beetleStart(k,big){const B=BTL,pe=ents.find(e=>e.player);if(!pe)return;if(!B.g)beetleBuild();B.on=1;B.armed[k]=0;B.k=k;B.t=0;B.big=big?1:0;B.lead=big?120:170;B.s=pe.s+B.lead;B.n=big?1:k==="rb"?3:Math.random()<.5?2:3;B.hj=-1;B.sj=-1;B.st=null;B.pa=0;B.roar=0;
   let sd=Math.random()<.5?-1:1;at(pe.s+150,sd*60,0,B.V);if(Terrain.landAt(B.V.x,B.V.z)>=.2)sd=-sd;B.sd=sd;B.rt=[0,1.6];sfxBigSplash();G.shake=Math.max(G.shake,.4);}
 function beetleOff(){const B=BTL;B.on=0;if(B.g){B.g.visible=false;for(const r of B.rings)r.visible=false;}}
 function beetleTick(rdt){const B=BTL;if(!DRIVE||!Z.rb1)return;const pe=ents.find(e=>e.player);if(!pe)return;beetleShake(rdt);const i=PL.idx,m_=x=>Math.round(x/SEG);
@@ -4529,7 +4530,7 @@ function beetleTick(rdt){const B=BTL;if(!DRIVE||!Z.rb1)return;const pe=ents.find
         const k=u<1.45?((u-1.1)/.35)**2:u<1.9?1:1-sst(u,1.9,2.6);
         if(u<1.45)A.quaternion.slerpQuaternions(B.qw,B.qs,k);else if(u<1.9)A.quaternion.copy(B.qs);else A.quaternion.slerpQuaternions(B.qr,B.qs,k);
         A.scale.setScalar(lerp(1,B.ak,u<1.45?k:u<1.9?1:k));
-        if(u>=1.45&&B.hj!==j){B.hj=j;(B.big?beetleBigHit:beetleHit)(B.tg);}}}}
+        if(u>=1.45&&B.hj!==j){B.hj=j;if(B.k==="rb"&&j===2)beetleBigHit(B.tg,1);else(B.big?beetleBigHit:beetleHit)(B.tg);}}}}   // on the Richmond-San Rafael bridge his THIRD bang throws the car and all the traffic some 9 m (30 ft) up
   if(!striking){B.A.quaternion.slerp(B.qr,clamp(rdt*2,0,1));B.A.scale.setScalar(lerp(B.A.scale.x,1,clamp(rdt*3,0,1)));}
   // water: spray at the waterline and white water streaming off him while he rises and sinks; a ring of waves
   const top=g.position.y+7.5*B.sc,cd=camera.position.distanceTo(g.position),wet=B.st==null?t<t7+1.5:t-B.st<5.5;
@@ -4559,14 +4560,14 @@ function beetleHit(p){const d=camera.position.distanceTo(p),near=clamp(140/(d+40
   if(zoneArr[PL.idx]===4&&!SAFEZ()&&!PL.crash&&near>.3){const n=Nn[PL.idx],k=-BTL.sd*R(2.5,3.5)*near;PL.vx+=n.x*k;PL.vz+=n.z*k;VS.r+=R(.12,.22)*(Math.random()<.5?-1:1)*near;PL.safe=Math.max(PL.safe,2.5);BTL.wv=near;BTL.wt=0;BTL.wsd=-BTL.sd;}   // knocked sideways, then the car snakes left and right: fight it (the rail holds, never a crash)
   BTL.bsA=1;BTL.bsT=0;BTL.bup=0;BTL.bn=Nn[PL.idx];G.shake=Math.max(G.shake,2.2*near);   // the whole bridge jolts down and sways: rails, underside, piers, trusses, towers and cables
   const cr=beetleCrush(p);say('THE BEETLE STRIKES !',cr?'HE CRUSHES THE TRAFFIC':'CATCH THE SWERVE',1.8);}
-function beetleBigHit(p){const B=BTL;G.shake=Math.max(G.shake,3.6);PL.bump=Math.max(PL.bump||0,2);LT.flash=1;sfxBeetleSlam();   // the one huge blow: a boom and crunch, a flash, the bridge heaves, and every vehicle nearby is thrown into the air
+function beetleBigHit(p,hi){const B=BTL;G.shake=Math.max(G.shake,3.6);PL.bump=Math.max(PL.bump||0,2);LT.flash=1;sfxBeetleSlam();   // the one huge blow: a boom and crunch, a flash, the bridge heaves, and every vehicle nearby is thrown into the air
   NOGY=1;for(let q=0;q<60;q++){const a=R(0,6.283),sp=R(3,16);puff(B.v3.set(p.x+R(-5,5),p.y+.5,p.z+R(-5,5)),Math.cos(a)*sp,R(4,20),Math.sin(a)*sp,R(2,4.5),R(9,18),R(1.4,2.8),.65,0x9a958e);}
   for(let q=0;q<70;q++)spark(B.v3.set(p.x+R(-2,2),p.y+.4,p.z+R(-2,2)),R(-20,20),R(4,22),R(-20,20));NOGY=0;
   B.bsA=1.6;B.bsT=0;B.bup=0;B.bn=Nn[PL.idx];
-  if(zoneArr[PL.idx]===4&&!PL.crash){const d=Math.hypot(PL.x-p.x,PL.z-p.z),k=clamp(1-d/120,.35,1);PL.air=1;PL.vy=Math.max(PL.vy||0,11.3+5.7*k);PL.safe=Math.max(PL.safe,5);B.pb=1;B.pbT=0;B.wv=.5;B.wt=0;B.wsd=-B.sd;}   // the player's car is flung up and bounces (the landing never wrecks it)
-  for(const t of TRAF){if(!t.act||t.fall||t.cr||!t.g.visible)continue;const d=Math.hypot(t.g.position.x-p.x,t.g.position.z-p.z);if(d>150)continue;const k=clamp(1-d/150,.3,1);
-    t.jp={y:0,vy:(7.1+9.9*k)*R(.85,1.1),b:Math.random()<.5?1:2,rx:R(-.18,.18)*k,rz:R(-.25,.25)*k,ry:R(-.3,.3)*k};}
-  say('CRASH !','THE WHOLE BRIDGE JUMPS',2.2);}
+  if(zoneArr[PL.idx]===4&&!PL.crash){const d=Math.hypot(PL.x-p.x,PL.z-p.z),k=clamp(1-d/120,.35,1);PL.air=1;PL.vy=Math.max(PL.vy||0,hi?20.8:11.3+5.7*k);if(hi)PL.hiJ=1;PL.safe=Math.max(PL.safe,hi?6.5:5);B.pb=1;B.pbT=0;B.wv=.5;B.wt=0;B.wsd=-B.sd;}   // the player's car is flung up and bounces (the landing never wrecks it)
+  for(const t of TRAF){if(!t.act||t.fall||t.cr||!t.g.visible)continue;const d=Math.hypot(t.g.position.x-p.x,t.g.position.z-p.z);if(d>(hi?280:150))continue;const k=clamp(1-d/150,.3,1);
+    t.jp={y:0,vy:(hi?20.5:7.1+9.9*k)*R(.85,1.1),b:Math.random()<.5?1:2,rx:R(-.18,.18)*k,rz:R(-.25,.25)*k,ry:R(-.3,.3)*k};}
+  if(hi)say('KA-BOOM !','EVERYTHING JUMPS 30 FEET',2.4);else say('CRASH !','THE WHOLE BRIDGE JUMPS',2.2);}
 function beetleJump(t,dt){const J=t.jp;J.vy-=24*dt;J.y+=J.vy*dt;   // a vehicle thrown up by the big blow: it flies, lands, bounces once or twice, then drives on
   if(J.y<=0){J.y=0;if(J.b>0&&J.vy<-3){J.b--;J.vy*=-.38;J.rx*=-.5;J.rz*=-.5;J.ry*=.5;const q=t.g.position;NOGY=1;for(let k=0;k<6;k++)puff(V.set(q.x+R(-1.5,1.5),q.y+.2,q.z+R(-1.5,1.5)),R(-2,2),R(.5,2),R(-2,2),R(.6,1.2),R(2,4),R(.8,1.4),.5,0x9a958e);NOGY=0;if((q.x-PL.x)**2+(q.z-PL.z)**2<3600)sfxThump(.5);}else{t.jp=null;return;}}
   const f=clamp(J.y/1.5,0,1);t.g.position.y+=J.y;t.g.rotation.x+=J.rx*f;t.g.rotation.z+=J.rz*f;t.g.rotation.y+=J.ry*f;}
@@ -4662,22 +4663,31 @@ function eyeMonTick(rdt){const M=EYEM;if(!DRIVE||!Z.toll)return;const pe=ents.fi
       if(cd<1000){NOGY=1;for(let q=0;q<16;q++){const a=R(0,6.283),sp=R(5,12);puff(V.set(F.x+Math.cos(a)*R(2,8),F.y+.5,F.z+Math.sin(a)*R(2,8)),Math.cos(a)*sp,R(2,7),Math.sin(a)*sp,R(4,7),R(14,26),R(1.6,2.8),.6,0x9a8c74);}NOGY=0;}}}}
 // THE DADDY BEETLE: on Shane Drive in Richmond, far off across the open land (some 300 m from the road), the daddy of the beetle in the bay: the same beetle, half as big again
 // (some 150 m tall) and a little darker and older. He stomps slowly about, swaying, arms swinging; every heavy footfall is a deep thud that shakes the ground and kicks up a
-// big cloud of dust. His head turns to watch your car, and now and then he roars. He never comes near the road. Once you are past him he turns up again further ahead (DADB, dadBeetleTick; __test.dadBeetle()).
+// big cloud of dust. His head turns to watch your car, and now and then he roars. Once you are past him he turns up again further ahead (DADB, dadBeetleTick; __test.dadBeetle()).
+// Owner 2026-11-23: he walks a little closer (some 160-200 m out), among the hillside houses, and flattens any his feet come down on in a burst of dust; and now and then
+// he casually walks straight ACROSS Shane Drive ahead of you: each foot that comes down by the road shakes the ground hard (camera and car, never a crash) and squashes
+// any iguana on the pavement flat as a pancake (it pops back up a few seconds later and runs off) (dadStep, DHOU).
 const DADB={g:null,on:0,s:0,lat:-360,sd:-1,h:0,ph:0,t:0,n:-1,said:0,rc:6};
 function dadBeetleBuild(){const D=DADB;beetleBuild(D);const mm=new Map();D.g.traverse(o=>{if(o.material){let m=mm.get(o.material);if(!m){m=o.material.clone();m.color.multiplyScalar(.75);m.fog=false;m.userData.c0=m.color.clone();m.userData.e0=m.emissive.clone();mm.set(o.material,m);}o.material=m;}});D.mats=[...mm.values()];   // his own gentler haze (below), so he still looms through rain and fog
   for(const r of D.rings)scene.remove(r);D.sc=20;D.g.scale.setScalar(D.sc);D.ar=D.A.rotation.clone();D.F=new THREE.Vector3();}
-function dadBeetlePlace(ahead){const D=DADB,pe=ents.find(e=>e.player);if(!pe)return;if(!D.g)dadBeetleBuild();D.on=1;D.s=pe.s+ahead;const an=sd=>{at(D.s,sd*350,0,D.V);return Math.abs(Math.atan2(Math.sin(Math.atan2(D.V.x-PL.x,D.V.z-PL.z)-PL.h),Math.cos(Math.atan2(D.V.x-PL.x,D.V.z-PL.z)-PL.h)));};D.sd=an(-1)<an(1)?-1:1;D.lat=D.sd*R(300,330);   // on whichever side the road ahead bends towards, so he stands out in front of you
-  D.dir=Math.random()<.6?Math.PI:0;D.h=D.dir;D.t=0;D.n=-1;D.rc=R(5,9);}
+function dadBeetlePlace(ahead){const D=DADB,pe=ents.find(e=>e.player);if(!pe)return;if(!D.g)dadBeetleBuild();D.on=1;D.s=pe.s+ahead;const an=sd=>{at(D.s,sd*350,0,D.V);return Math.abs(Math.atan2(Math.sin(Math.atan2(D.V.x-PL.x,D.V.z-PL.z)-PL.h),Math.cos(Math.atan2(D.V.x-PL.x,D.V.z-PL.z)-PL.h)));};D.sd=an(-1)<an(1)?-1:1;D.lat=D.sd*R(175,200);   // on whichever side the road ahead bends towards, so he stands out in front of you
+  D.dir=Math.random()<.6?Math.PI:0;D.h=D.dir;D.t=0;D.n=-1;D.rc=R(5,9);D.cx=null;D.xcd=R(3,8);}
 function dadBeetleTick(rdt){const D=DADB;if(!DRIVE||!Z.shane)return;const pe=ents.find(e=>e.player);if(!pe)return;const i=PL.idx,m_=x=>Math.round(x/SEG);
   const zone=G.state==='race'&&i>Z.shane-m_(260)&&i<Z.refinery+m_(60);
   dadStackTick(rdt);
-  if(!zone){if(D.on){D.on=0;D.g.visible=false;}if(i<Z.rb1||i>Z.i80){D.said=0;dadStackReset();}return;}
+  if(!zone){if(D.on){D.on=0;D.g.visible=false;D.cx=null;}if(i<Z.rb1||i>Z.i80){D.said=0;dadStackReset();dadHouseReset();}return;}
+  if(!DHOU.l)dadHouseBuild();
   if(!D.on)dadBeetlePlace(R(560,640));
-  else if(pe.s-D.s>150&&pe.s+500<Z.refinery*SEG)dadBeetlePlace(R(560,640));   // gone by: he turns up again further ahead
+  else if(pe.s-D.s>(D.cx?600:150)&&pe.s+500<Z.refinery*SEG)dadBeetlePlace(R(560,640));   // gone by: he turns up again further ahead
   D.t+=rdt;const t=D.t,g=D.g,sc=D.sc,sd=D.sd;
-  // walking: slow, heavy strides, mostly along the road, wandering in and out a little but never nearer than 290 m
-  D.ph+=rdt*1.5;const hT=D.dir+Math.cos(D.dir)*(Math.sin(t*.2)*.5+clamp((315-sd*D.lat)/50,-1,1)*.6);D.h+=clamp(hT-D.h,-1,1)*rdt*.5;
-  const v=6*(.5+.5*Math.abs(Math.sin(D.ph)));D.s+=Math.cos(D.h)*v*rdt;D.lat=sd*Math.max(290,sd*D.lat+Math.sin(D.h)*v*rdt);
+  if(D.cx){const X=D.cx;X.t+=rdt;D.ph+=rdt*1.7;D.lat=lerp(X.a,X.b,sst(X.t,0,X.T));D.s+=Math.cos(D.dir)*.6*rdt;const hX=Math.PI/2*Math.sign(X.b-X.a)*sd;D.h+=clamp(hX-D.h,-1,1)*clamp(rdt*2,0,1);   // crossing Shane Drive: straight over the road, casually
+    if(X.t>=X.T){D.cx=null;D.sd=-sd;D.h=-D.h;D.xcd=R(25,40);}}   // over on the other side: he wanders on from there
+  else{// walking: slow, heavy strides, mostly along the road, wandering in and out a little but never nearer than 160 m
+  D.ph+=rdt*1.5;const hT=D.dir+Math.cos(D.dir)*(Math.sin(t*.2)*.5+clamp((185-sd*D.lat)/50,-1,1)*.6);D.h+=clamp(hT-D.h,-1,1)*rdt*.5;
+  const v=6*(.5+.5*Math.abs(Math.sin(D.ph)));D.s+=Math.cos(D.h)*v*rdt;D.lat=sd*Math.max(160,sd*D.lat+Math.sin(D.h)*v*rdt);
+  D.xcd=(D.xcd??R(3,8))-rdt;const dx0=wdiff(D.s-pe.s);
+  if(D.xcd<=0&&dx0>260&&dx0<430&&D.s<(Z.refinery-m_(200))*SEG&&pe.v>3){D.cx={t:0,T:R(17,20),a:D.lat,b:-sd*R(175,195)};say('LOOK OUT !','THE DADDY BEETLE IS CROSSING THE ROAD',2.4);   // now and then he decides to cross the road ahead of you
+    let n=0;for(const k of RIGI.l){if(n>=2)break;if(k.st!==1||wdiff(k.s-pe.s)<60)continue;const j=wrapI(Math.floor(D.s/SEG));k.s=wrapS(D.s+R(-14,14));k.lat=(n?1:-1)*(8.1+XW[j]);k.pz=R(1,3);n++;}}}   // (a couple of iguanas happen to be on the pavements just there)
   const V=D.V;at(D.s,D.lat,0,V);const j=wrapI(Math.floor(D.s/SEG)),n=Nn[j],a=P[j],b=P[wrapI(j+1)],tl=Math.hypot(b.x-a.x,b.z-a.z)||1,tx=(b.x-a.x)/tl,tz=(b.z-a.z)/tl;
   const dx=tx*Math.cos(D.h)+n.x*sd*Math.sin(D.h),dz=tz*Math.cos(D.h)+n.z*sd*Math.sin(D.h),gh=(x,z)=>Math.max(groundAt(x,z),Terrain.heightAt(x,z)),gy=gh(V.x,V.z);   // the real land out there (the hills), not just the road's
   g.position.set(V.x,gy-sc*2.75*(1-Math.cos(.32*Math.sin(D.ph)))-.5,V.z);   // he dips as his legs swing, so the planted foot stays on the ground
@@ -4696,7 +4706,23 @@ function dadBeetleTick(rdt){const D=DADB;if(!DRIVE||!Z.shane)return;const pe=ent
       sfxEyeStomp(Math.min(1,k*1.2));G.shake=Math.max(G.shake,1.1*k);PL.bump=Math.max(PL.bump||0,.3*k);   // the ground shakes hard, the car jolts (never a crash)
       if(cd<1400){NOGY=1;for(let q=0;q<34;q++){const a=R(0,6.283),sp=R(8,20);puff(V.set(F.x+Math.cos(a)*R(3,14),fy+1,F.z+Math.sin(a)*R(3,14)),Math.cos(a)*sp,R(3,12),Math.sin(a)*sp,R(10,16),R(40,70),R(2.5,4.5),.65,0x9a8c74);}
         for(let q=0;q<12;q++)puff(V.set(F.x+R(-10,10),fy+R(4,20),F.z+R(-10,10)),R(-3,3),R(12,28),R(-3,3),R(12,20),R(50,90),R(3.5,5.5),.5,0xa89a80);NOGY=0;}   // and a tall column of dust boils up
-      for(const s of DSTK)if(!s.st&&i>s.i-m_(650)&&i<s.i+m_(100)){s.n=(s.n||0)+1;s.kick=Math.min(.06,s.kick+.02);}}}}   // each stomp rocks the refinery stacks a little more
+      dadStep(F,fy,k,cd);for(const s of DSTK)if(!s.st&&i>s.i-m_(650)&&i<s.i+m_(100)){s.n=(s.n||0)+1;s.kick=Math.min(.06,s.kick+.02);}}}}   // each stomp rocks the refinery stacks a little more
+// the hillside houses out where the daddy beetle walks (160-235 m off Shane Drive), which his feet flatten; stood back up for the next pass
+const DHOU={l:null};
+function dadHouseBuild(){const m_=x=>Math.round(x/SEG);DHOU.l=[];const wg=new THREE.BoxGeometry(1,1,1),rg=new THREE.ConeGeometry(.75,1,4).rotateY(Math.PI/4),rm=std({color:0x5a4a40,roughness:.9}),wm=[0xe8dcc0,0xd8c8a8,0xb8c9d6,0xe6e0d0,0xc9b89a].map(c=>std({color:c,roughness:.9}));DHOU.rub=std({color:0x6e665c,roughness:1});
+  for(let i=Z.shane-m_(260);i<Z.refinery+m_(40);i+=m_(R(45,70)))for(const sd of[-1,1]){at(i*SEG,sd*R(150,235),0,V);if(Terrain.landAt(V.x,V.z)<.2)continue;
+    const y=Math.max(groundAt(V.x,V.z),Terrain.heightAt(V.x,V.z)),g=new THREE.Group(),w=R(11,15),d=R(8,10),h=3.6,wl=new THREE.Mesh(wg,wm[Math.random()*5|0]),rf=new THREE.Mesh(rg,rm);
+    wl.scale.set(w,h,d);wl.position.y=h/2;rf.scale.set(w*1.15,2.2,d*1.15);rf.position.y=h+1.1;wl.castShadow=rf.castShadow=true;g.add(wl,rf);g.position.set(V.x,y-.2,V.z);g.rotation.y=R(0,6.283);scene.add(g);DHOU.l.push({g,wl,rf,m0:wl.material,sm:0});}}
+function dadHouseReset(){const D=DADB;D.hs=D.sq=0;for(const h of DHOU.l||[]){if(!h.sm)continue;h.sm=0;h.g.scale.set(1,1,1);h.g.rotation.x=h.g.rotation.z=0;h.wl.material=h.m0;h.rf.visible=true;}}
+function dadStep(F,fy,k,cd){const D=DADB;   // each footfall: flatten any house under it; and while he crosses the road, shake the ground hard and squash the iguanas on the pavement
+  for(const h of DHOU.l||[]){if(h.sm)continue;const dx=h.g.position.x-F.x,dz=h.g.position.z-F.z;if(dx*dx+dz*dz>30*30)continue;h.sm=1;h.g.scale.set(1.25,.16,1.25);h.g.rotation.x=R(-.08,.08);h.g.rotation.z=R(-.08,.08);h.wl.material=DHOU.rub;h.rf.visible=Math.random()<.5;
+    const p=h.g.position;NOGY=1;for(let q=0;q<22;q++){const a=R(0,6.283),sp=R(4,12);puff(V.set(p.x+Math.cos(a)*R(1,8),p.y+R(1,4),p.z+Math.sin(a)*R(1,8)),Math.cos(a)*sp,R(3,12),Math.sin(a)*sp,R(4,8),R(16,30),R(2,3.5),.65,q%3?0x9a8c74:0x6e665c);}
+    for(let q=0;q<18;q++)spark(V.set(p.x,p.y+2,p.z),R(-10,10),R(4,14),R(-10,10));NOGY=0;   // a burst of dust and splinters
+    if(cd<1200){sfxCrunch(Math.min(1.2,k*1.6));setTimeout(()=>sfxCrunch(.6*k),140);}if(!D.hs&&cd<1000){D.hs=1;say('CRUNCH !','HE STEPS RIGHT ON A HOUSE',2);}}
+  if(!D.cx)return;const pd=Math.hypot(F.x-PL.x,F.z-PL.z),kr=clamp(300/(pd+60),.25,1.4);G.shake=Math.max(G.shake,2*kr);PL.bump=Math.max(PL.bump||0,.9*kr);
+  if(kr>1&&!PL.crash&&!PL.air){PL.air=1;PL.vy=Math.max(PL.vy||0,3*kr);PL.safe=Math.max(PL.safe,2);}   // a foot by the road: the ground jumps and the car hops (never a crash)
+  for(const q of RIGI.l){if(q.st!==1&&q.st!==3)continue;const dx=q.g.position.x-F.x,dz=q.g.position.z-F.z;if(dx*dx+dz*dz>32*32)continue;q.st=4;q.fl=R(2.6,3.6);q.g.scale.set(RIGI.SC*1.8,RIGI.SC*.12,RIGI.SC*1.8);sfxBoing(.8);
+    if(!D.sq){D.sq=1;say('SPLAT !','IGUANA PANCAKE',1.8);}}}
 // the refinery stacks near the end of Shane Drive: rocked harder by each of the daddy beetle's stomps, then (one, a few stomps later the other) they topple away
 // from the road onto the houses beyond, breaking into sections as they hit, with a crash, dust and debris; the houses are crushed flat. Put back for the next pass.
 function dadStackTick(rdt){for(const[j,s]of DSTK.entries()){s.t+=rdt;
@@ -4913,16 +4939,17 @@ function sfPyrTick(rdt){if(!DRIVE||!SFP.length)return;const pe=ents.find(e=>e.pl
         const a=R(-1.2,1.2),ox=o.out[0]*Math.cos(a)-o.out[1]*Math.sin(a),oz=o.out[0]*Math.sin(a)+o.out[1]*Math.cos(a),q=R(0,o.r*1.2);
         puff(V.set(o.p0.x+ox*q,o.p0.y+2,o.p0.z+oz*q),ox*R(4,9),R(1,5),oz*R(4,9),R(8,12),R(22,36),R(3,5),.7,0xa8a094);NOGY=0;}}   // dust pouring off it and rolling out at the base, away from the street
     else o.st=2;}}
-// San Francisco, off the Bay Bridge: a giant terracotta figure (an ancient west-Mexican clay horn player, some 75 m tall) stands among the buildings on the right,
-// well back from the road, blowing his long horn. In the city quake he shudders and cracks, his horn and an arm snap off, and he leans away from the road and
-// slumps into a heap of broken terracotta in clouds of dust (CLAY, clayTick; visual only, nothing reaches the road). Stood back up for the next pass.
+// San Francisco, off the Bay Bridge: a giant grey clay figure (an ancient west-Mexican clay horn player, some 75 m tall) stands among the buildings on the right,
+// well back from the road, blowing his long horn. In the city quake he shudders and cracks, his horn and an arm snap off, then he CRUMBLES from the top down (owner
+// 2026-11-23: crumble like clay, not melt like chocolate): piece after piece breaks away, big chunks fall, smash on the ground into fragments in puffs of dust, and
+// a heap of broken clay builds at his feet (CLAY, clayTick; visual only, nothing reaches the road). Stood back up for the next pass.
 const CLAY={g:null,ch:[],nc:0};
 function clayBuild(){const C=CLAY,m_=x=>Math.round(x/SEG),i=Z.b1+m_(560),g=new THREE.Group(),S=.7;C.i=i;
-  const tc=canvas(256,256,(c,w,h)=>{c.fillStyle='#a8643f';c.fillRect(0,0,w,h);for(let k=0;k<1100;k++){const r=Math.random();c.fillStyle=r<.45?'rgba(220,204,186,.2)':r<.75?'rgba(124,66,40,.35)':'rgba(70,40,28,.22)';c.beginPath();c.arc(Math.random()*w,Math.random()*h,1+Math.random()*9,0,6.283);c.fill();}});
-  const EM={emissive:0xffffff,emissiveIntensity:.32},clay=std({map:tc,emissiveMap:tc,...EM,roughness:.95}),clayD=std({map:tc,emissiveMap:tc,...EM,roughness:.95,side:THREE.DoubleSide}),dark=std({color:0x2e1a12,roughness:1}),
-    crest=std({roughness:.95,map:canvas(256,256,(c,w,h)=>{c.drawImage(tc.image,0,0);c.strokeStyle='rgba(60,30,18,.75)';c.lineWidth=3;for(let k=0;k<56;k++){const a=k/56*6.283;c.beginPath();c.moveTo(128+Math.cos(a)*62,128+Math.sin(a)*62);c.lineTo(128+Math.cos(a)*122,128+Math.sin(a)*122);c.stroke();}
+  const tc=canvas(256,256,(c,w,h)=>{c.fillStyle='#8e8b86';c.fillRect(0,0,w,h);for(let k=0;k<1100;k++){const r=Math.random();c.fillStyle=r<.45?'rgba(214,212,206,.2)':r<.75?'rgba(96,93,88,.35)':'rgba(52,50,48,.22)';c.beginPath();c.arc(Math.random()*w,Math.random()*h,1+Math.random()*9,0,6.283);c.fill();}});
+  const EM={emissive:0xffffff,emissiveIntensity:.32},clay=std({map:tc,emissiveMap:tc,...EM,roughness:.95}),clayD=std({map:tc,emissiveMap:tc,...EM,roughness:.95,side:THREE.DoubleSide}),dark=std({color:0x2a2928,roughness:1}),
+    crest=std({roughness:.95,map:canvas(256,256,(c,w,h)=>{c.drawImage(tc.image,0,0);c.strokeStyle='rgba(44,43,41,.75)';c.lineWidth=3;for(let k=0;k<56;k++){const a=k/56*6.283;c.beginPath();c.moveTo(128+Math.cos(a)*62,128+Math.sin(a)*62);c.lineTo(128+Math.cos(a)*122,128+Math.sin(a)*122);c.stroke();}
       c.lineWidth=5;c.beginPath();c.arc(128,128,124,0,6.283);c.stroke();})}),   // the sun-ray crest: incised radiating lines
-    belly=std({roughness:.95,map:canvas(256,256,(c,w,h)=>{c.drawImage(tc.image,0,0);c.strokeStyle='rgba(60,30,18,.8)';c.lineWidth=3;for(const x of[40,88]){c.beginPath();c.moveTo(x,40);c.lineTo(x,216);c.stroke();}c.lineWidth=2;for(let y=46;y<214;y+=9){c.beginPath();c.moveTo(44,y);c.lineTo(84,y+4);c.stroke();}})});   // the incised belly panel
+    belly=std({roughness:.95,map:canvas(256,256,(c,w,h)=>{c.drawImage(tc.image,0,0);c.strokeStyle='rgba(44,43,41,.8)';c.lineWidth=3;for(const x of[40,88]){c.beginPath();c.moveTo(x,40);c.lineTo(x,216);c.stroke();}c.lineWidth=2;for(let y=46;y<214;y+=9){c.beginPath();c.moveTo(44,y);c.lineTo(84,y+4);c.stroke();}})});   // the incised belly panel
   for(const mm of[crest,belly]){mm.emissiveMap=mm.map;mm.emissive.set(0xffffff);mm.emissiveIntensity=.32;}   // a little self-glow so the terracotta reads in dull weather
   const SPH=new THREE.SphereGeometry(1,22,16),UP=new THREE.Vector3(0,1,0),
     P_=(geo,mt,x,y,z,sx=1,sy=1,sz=1,rx=0,ry=0,rz=0)=>{const o=new THREE.Mesh(geo,mt);o.position.set(x*S,y*S,z*S);o.scale.set(sx*S,sy*S,sz*S);o.rotation.set(rx,ry,rz);o.castShadow=true;g.add(o);return o;},
@@ -4943,29 +4970,43 @@ function clayBuild(){const C=CLAY,m_=x=>Math.round(x/SEG),i=Z.b1+m_(560),g=new T
   C.parts=[part(horn,M0,4),part(arm,[22,72,0],7)];   // the horn and his left arm can snap off in the quake
   limb([-22,72,0],[-27,75,13],6.5,5.6);limb([-27,75,13],H2,5.6,4.6);P_(SPH,clay,...H2,5,4.6,5);
   const p=off(i,-(RW+XW[i]+72),0);p.y=groundAt(p.x,p.z)-1;g.position.copy(p);const tg=off(i-m_(260),0,0);tg.y=p.y;g.lookAt(tg);scene.add(g);C.g=g;C.y0=p.y+1;   // facing the traffic coming off the bridge
-  for(let k=0;k<12;k++){const c=new THREE.Mesh(new THREE.DodecahedronGeometry(1),clay);c.scale.setScalar(R(1.2,2.6));c.visible=false;c.castShadow=true;scene.add(c);C.ch.push({m:c});}
+  const DG=new THREE.DodecahedronGeometry(1,0);for(let k=0;k<44;k++){const c=new THREE.Mesh(DG,clay);c.visible=false;c.castShadow=true;scene.add(c);C.ch.push({m:c});}   // chunks that break away and fall
+  C.fr=[];for(let k=0;k<90;k++){const c=new THREE.Mesh(DG,clay);c.visible=false;scene.add(c);C.fr.push({m:c,t:0});}   // and the fragments they smash into on the ground
+  C.bits=g.children.filter(o=>o.isMesh).sort((a,b)=>b.position.y-a.position.y);   // the pieces of him, top first: they crumble away in this order
   const c0=off(i,0,0),dx=p.x-c0.x,dz=p.z-c0.z,l=Math.hypot(dx,dz)||1;C.out=[dx/l,dz/l];C.ax=new THREE.Vector3(dz/l,0,-dx/l);C.q0=g.quaternion.clone();C.p0=g.position.clone();   // which way is away from the road
   C.rub=[];for(let k=0;k<11;k++){const a=R(-1.3,1.3),q=R(0,30),m=new THREE.Mesh(new THREE.DodecahedronGeometry(1),clay);m.position.set(p.x+(C.out[0]*Math.cos(a)-C.out[1]*Math.sin(a))*q,C.y0,p.z+(C.out[0]*Math.sin(a)+C.out[1]*Math.cos(a))*q);
     m.rotation.set(R(0,3),R(0,3),R(0,3));m.visible=false;m.castShadow=true;scene.add(m);C.rub.push({m,s:R(5,11),d:R(0,1.5)});}}   // the heap of broken terracotta he crumbles into
 const CLQ=new THREE.Quaternion();
 function clayCrack(v){if(!AC)return;const t=AC.currentTime;for(let k=0;k<5;k++)hit(t+k*R(.03,.09),.06,.45*v,R(3500,6000),'bandpass',master);hit(t,.25,.6*v,1400,'bandpass',master);}   // brittle pottery cracking
+function clayChunk(p,sz,vx,vz){const C=CLAY,c=C.ch[(C.nc=(C.nc||0)+1)%C.ch.length];c.m.position.copy(p);c.m.scale.set(sz,sz*R(.7,1),sz*R(.8,1.1));c.m.rotation.set(R(0,3),R(0,3),R(0,3));c.sz=sz;c.vx=vx;c.vz=vz;c.vy=R(-1,2.5);c.w=R(1,4);c.down=0;c.m.visible=true;}   // a lump of clay breaks away
+function clayFrags(p,sz,n){const C=CLAY;for(let q=0;q<n;q++){const f=C.fr[C.fi=((C.fi||0)+1)%C.fr.length],a=R(0,6.283),sp=R(3,10);f.m.position.copy(p);f.m.scale.setScalar(sz*R(.22,.42));f.m.rotation.set(R(0,3),R(0,3),R(0,3));f.vx=Math.cos(a)*sp;f.vz=Math.sin(a)*sp;f.vy=R(4,10);f.down=0;f.b=1;f.m.visible=true;}}   // ...and smashes into fragments on the ground
+function claySmash(p,sz,near){const C=CLAY;clayFrags(p,sz,sz>2.5?5:3);NOGY=1;for(let q=0;q<(sz>2.5?8:4);q++)puff(V.set(p.x+R(-1,1)*sz,C.y0+1,p.z+R(-1,1)*sz),R(-4,4),R(1,5),R(-4,4),R(2,4),R(8,16)*Math.min(1.6,sz/2.5),R(2,3.2),.6,q%2?0x9c9a96:0xb4b2ae);NOGY=0;
+  if(near&&(C.sn||0)<=0){C.sn=R(.12,.3);clayCrack(R(.45,.8));if(sz>3)sfxCrunch(.45);}}
 function clayTick(rdt){if(!DRIVE)return;const C=CLAY;if(!C.g)clayBuild();const pe=ents.find(e=>e.player);if(!pe)return;
-  if(CQ.st===0){if(C.q){C.q=0;C.nc=0;C.snd=0;for(const c of C.ch)c.m.visible=false;for(const r of C.rub)r.m.visible=false;C.g.quaternion.copy(C.q0);C.g.position.copy(C.p0);C.g.scale.set(1,1,1);
-      for(const o of C.parts){if(o.off)C.g.add(o.g);o.g.position.copy(o.p0);o.g.rotation.set(0,0,0);o.g.scale.set(1,1,1);o.off=0;}}return;}   // stood back up for the next pass
-  const ds=C.i*SEG-pe.s;if(!C.q){if(ds<700&&ds>-300){C.q=1;C.t=0;}else return;}
-  C.t+=rdt;const t=C.t,k=sst(t,2,8.5),sh=t<2.5?.5*(1-t/2.5):0,near=Math.abs(ds)<800,sp=()=>C.g.localToWorld(V.set(R(-24,24),R(20,100),R(-6,14)).multiplyScalar(.7));
-  CLQ.setFromAxisAngle(C.ax,.55*k*k);C.g.quaternion.copy(CLQ).multiply(C.q0);C.g.scale.set(1+.25*k,1-.6*k,1+.25*k);C.g.position.set(C.p0.x+R(-sh,sh),C.p0.y-4*k,C.p0.z+R(-sh,sh));   // shudders, then leans away from the road and slumps
-  for(const[n,o]of C.parts.entries()){if(t<1.3+n)continue;if(!o.off){o.off=1;scene.attach(o.g);const sp_=R(4,7);o.vy=R(1,3);o.vx=C.out[0]*sp_;o.vz=C.out[1]*sp_;if(near)clayCrack(1);}   // the horn snaps off, then his arm, and they drop away from the road
-    const fl=C.y0+o.fl;if(o.g.position.y>fl){o.vy-=20*rdt;o.g.position.x+=o.vx*rdt;o.g.position.y+=o.vy*rdt;o.g.position.z+=o.vz*rdt;o.g.rotateOnWorldAxis(C.ax,rdt*1.3);
-      if(o.g.position.y<=fl){o.g.position.y=fl;if(near){sfxCrunch(.7);clayCrack(.8);}NOGY=1;const w=o.g.getWorldPosition(V);for(let q=0;q<10;q++)puff(w,R(-5,5),R(1,4),R(-5,5),3,R(10,16),R(2,3),.6,0xa8907a);NOGY=0;}}}
-  for(const r of C.rub){const s=r.s*sst(t,3+r.d,9+r.d);r.m.visible=s>.05;r.m.scale.set(s,s*.6,s);}   // the rubble heaps up at his feet
+  if(CQ.st===0){if(C.q){C.q=0;C.nb=0;C.snd=0;for(const c of C.ch)c.m.visible=false;for(const f of C.fr)f.m.visible=false;for(const r of C.rub)r.m.visible=false;for(const b of C.bits)b.visible=true;C.g.quaternion.copy(C.q0);C.g.position.copy(C.p0);C.g.scale.set(1,1,1);
+      for(const o of C.parts){if(o.off)C.g.add(o.g);o.g.position.copy(o.p0);o.g.rotation.set(0,0,0);o.g.scale.set(1,1,1);o.g.visible=true;o.off=0;o.sm=0;}}return;}   // stood back up for the next pass
+  const ds=C.i*SEG-pe.s;if(!C.q){if(ds<700&&ds>-300){C.q=1;C.t=0;C.nb=0;}else return;}
+  C.t+=rdt;C.sn=(C.sn||0)-rdt;const t=C.t,k=sst(t,2,10),sh=t<2.5?.5*(1-t/2.5):t<10?.12:0,near=Math.abs(ds)<800,sp=()=>C.g.localToWorld(V.set(R(-24,24),R(20,100),R(-6,14)).multiplyScalar(.7));
+  CLQ.setFromAxisAngle(C.ax,.12*k);C.g.quaternion.copy(CLQ).multiply(C.q0);C.g.position.set(C.p0.x+R(-sh,sh),C.p0.y-3*k,C.p0.z+R(-sh,sh));   // shudders and settles a little, but stays hard clay: no slumping, he breaks up
+  for(const[n,o]of C.parts.entries()){if(t<1.3+n||o.sm)continue;if(!o.off){o.off=1;scene.attach(o.g);const sp_=R(4,7);o.vy=R(1,3);o.vx=C.out[0]*sp_;o.vz=C.out[1]*sp_;if(near)clayCrack(1);}   // the horn snaps off, then his arm, and they drop away from the road
+    const fl=C.y0+o.fl;o.vy-=20*rdt;o.g.position.x+=o.vx*rdt;o.g.position.y+=o.vy*rdt;o.g.position.z+=o.vz*rdt;o.g.rotateOnWorldAxis(C.ax,rdt*1.3);
+    if(o.g.position.y<=fl){o.sm=1;o.g.visible=false;if(near){sfxCrunch(.8);clayCrack(1);}const w=o.g.getWorldPosition(V2);w.y=C.y0+1;   // it hits the ground and shatters
+      for(let q=0;q<5;q++){const a=R(0,6.283),s=R(3,7);clayChunk(V.set(w.x+Math.cos(a)*6,C.y0+R(2,8),w.z+Math.sin(a)*6),R(1.6,3),Math.cos(a)*s,Math.sin(a)*s);}claySmash(w,4.5,0);}}
+  const want=Math.floor(clamp((t-2.6)/7.4,0,1)*C.bits.length);   // crumbling from the top down: piece after piece breaks away
+  while(C.nb<want){const b=C.bits[C.nb++];b.visible=false;const w=b.getWorldPosition(V2),sz=clamp((b.scale.x+b.scale.y+b.scale.z)/3*.42,1.4,5.5),n=sz>4?4:sz>2.5?3:2;
+    for(let q=0;q<n;q++)clayChunk(V.set(w.x+R(-1,1)*sz*1.4,w.y+R(-1,1)*sz,w.z+R(-1,1)*sz*1.4),sz*R(.65,1),C.out[0]*R(0,4)+R(-3,3),C.out[1]*R(0,4)+R(-3,3));
+    NOGY=1;for(let q=0;q<4;q++)puff(V.set(w.x+R(-2,2)*sz,w.y,w.z+R(-2,2)*sz),R(-3,3),R(-2,2),R(-3,3),R(3,6),R(8,16)*Math.min(1.6,sz/2.5),R(2.2,3.4),.6,0xaeaca8);NOGY=0;
+    if(near&&(C.sn||0)<=0){C.sn=R(.15,.35);clayCrack(.9);}}
+  for(const r of C.rub){const s=r.s*1.35*sst(t,3+r.d,10+r.d);r.m.visible=s>.05;r.m.scale.set(s,s*.6,s);}   // the heap of broken clay builds up at his feet
   if(near&&!C.snd&&t>.4){C.snd=1;clayCrack(1);if(AC){const a=AC.currentTime+1.8;hit(a,4,1,85,'lowpass',master);tone('sine',34,a,4,.6,master,{to:22,a:.2,h:.6});}
     setTimeout(()=>{sfxCrunch(1);clayCrack(1);},2600);setTimeout(()=>{sfxCrunch(.8);clayCrack(.7);},3800);setTimeout(()=>sfxCrunch(.6),5200);G.shake=Math.max(G.shake,.3);}
-  if(t<10&&Math.random()<rdt*(t<8?16:4)){NOGY=1;puff(sp(),R(-3,3),R(-4,-1),R(-3,3),R(3,6),R(10,18),R(2.5,3.5),.55,0xb9a28a);
-    const a=R(-1.2,1.2),ox=C.out[0]*Math.cos(a)-C.out[1]*Math.sin(a),oz=C.out[0]*Math.sin(a)+C.out[1]*Math.cos(a),q=R(0,20);if(t>2)puff(V.set(C.p0.x+ox*q,C.y0+2,C.p0.z+oz*q),ox*R(4,9),R(1,5),oz*R(4,9),R(8,12),R(22,34),R(3,5),.65,0xb0987e);NOGY=0;}   // dust pouring off him and rolling out at the base
-  if(t<9&&C.nc<C.ch.length&&Math.random()<rdt*2.2){const c=C.ch[C.nc++];c.m.position.copy(sp());c.vx=R(-3,3);c.vz=R(-3,3);c.vy=R(0,2);c.down=0;c.m.visible=true;}   // and a chip or two breaks off
-  for(const c of C.ch){if(!c.m.visible||c.down)continue;c.vy-=20*rdt;c.m.position.x+=c.vx*rdt;c.m.position.y+=c.vy*rdt;c.m.position.z+=c.vz*rdt;c.m.rotation.x+=rdt*3;c.m.rotation.z+=rdt*2;
-    if(c.m.position.y<=C.y0+.8){c.m.position.y=C.y0+.8;c.down=1;NOGY=1;for(let q=0;q<5;q++)puff(c.m.position,R(-3,3),R(1,3),R(-3,3),2,R(6,10),R(1.5,2.5),.55,0xa8907a);NOGY=0;}}}
+  if(t<11&&Math.random()<rdt*(t<9?14:4)){NOGY=1;if(C.nb<C.bits.length)puff(sp(),R(-3,3),R(-4,-1),R(-3,3),R(3,6),R(10,18),R(2.5,3.5),.55,0xb4b2ae);
+    const a=R(-1.2,1.2),ox=C.out[0]*Math.cos(a)-C.out[1]*Math.sin(a),oz=C.out[0]*Math.sin(a)+C.out[1]*Math.cos(a),q=R(0,20);if(t>2)puff(V.set(C.p0.x+ox*q,C.y0+2,C.p0.z+oz*q),ox*R(4,9),R(1,5),oz*R(4,9),R(8,12),R(22,34),R(3,5),.65,0xa4a29e);NOGY=0;}   // grey dust pouring off him and rolling out at the base
+  if(t>1&&t<3&&Math.random()<rdt*3)clayChunk(sp(),R(1.2,2.2),R(-3,3),R(-3,3));   // the first chips crack off before he goes
+  for(const c of C.ch){if(!c.m.visible||c.down)continue;c.vy-=20*rdt;c.m.position.x+=c.vx*rdt;c.m.position.y+=c.vy*rdt;c.m.position.z+=c.vz*rdt;c.m.rotation.x+=rdt*c.w;c.m.rotation.z+=rdt*c.w*.7;
+    if(c.m.position.y<=C.y0+c.sz*.5){c.down=1;c.m.visible=false;claySmash(c.m.position,c.sz,near);}}   // a chunk hits the ground and breaks up
+  for(const f of C.fr){if(!f.m.visible||f.down)continue;f.vy-=20*rdt;f.m.position.x+=f.vx*rdt;f.m.position.y+=f.vy*rdt;f.m.position.z+=f.vz*rdt;f.m.rotation.x+=rdt*5;f.m.rotation.y+=rdt*3;
+    const gy=C.y0+f.m.scale.x*.5;if(f.m.position.y<=gy){f.m.position.y=gy;if(f.b>0&&f.vy<-3){f.b--;f.vy*=-.3;f.vx*=.5;f.vz*=.5;}else f.down=1;}}}   // fragments bounce once and lie there
 // Hyde St, on the way up: the giant mosquito flies across in front of the car and over the street. At the top of the hill he is back: he swoops at the car,
 // then grabs one of the skaters rolling down ahead, carries him up a few metres and drops him; the kid lands on his board and skates on (HMQ, hydMosqTick; visual only).
 const HMQ={g:null,on:0,armed:1,armed2:1,armed3:1,t:0};
@@ -5058,7 +5099,8 @@ function tnkBuild(){const K=TNK,hullM=std({color:0x2a2c30,roughness:.7}),redM=st
   K.bow=half(1);K.stern=half(-1);K.b={};beetleBuild(K.b);K.C=new THREE.Vector3();K.u=new THREE.Vector3();K.v=new THREE.Vector3();
   K.slick=new THREE.Mesh(new THREE.RingGeometry(.55,1,48).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x0c0b0a,transparent:true,opacity:0,depthWrite:false}));K.slick.visible=false;scene.add(K.slick);}
 function tnkStart(small){const K=TNK,pe=ents.find(e=>e.player);if(!pe)return;if(!K.bow)tnkBuild();K.on=1;K.armed=0;K.t=0;K.hit=0;K.pa=0;K.roar=0;K.small=small?1:0;K.W=small?.25:null;   // small: the toll-plaza version, out on the rough sea there (its water is at road level)
-  const s0=pe.s+(small?700:900);let ok=null;for(const[ds,la]of[[0,330],[0,280],[80,400],[-80,300],[150,460],[0,250]]){at(s0+ds,la,0,K.v);if(Terrain.landAt(K.v.x,K.v.z)<.2&&Terrain.landAt(K.v.x+60,K.v.z)<.2&&Terrain.landAt(K.v.x-60,K.v.z)<.2&&Terrain.landAt(K.v.x,K.v.z+60)<.2&&Terrain.landAt(K.v.x,K.v.z-60)<.2){ok=[ds,la];break;}}
+  const s0=pe.s+(small?700:900);let ok=null;for(const[ds,la]of small?[[0,330],[0,280],[80,400],[-80,300],[150,460],[0,250]]:[[0,215],[40,190],[-40,240],[0,280],[0,330],[80,400]]){   // (owner 2026-11-23: off San Quentin it breaks a little closer in to the bridge)
+  at(s0+ds,la,0,K.v);if(Terrain.landAt(K.v.x,K.v.z)<.2&&Terrain.landAt(K.v.x+60,K.v.z)<.2&&Terrain.landAt(K.v.x-60,K.v.z)<.2&&Terrain.landAt(K.v.x,K.v.z+60)<.2&&Terrain.landAt(K.v.x,K.v.z-60)<.2){ok=[ds,la];break;}}
   if(!ok)ok=[0,330];at(s0+ok[0],ok[1],0,K.C);const i=wrapI(Math.round((s0+ok[0])/SEG));K.ry=yaw(i)+.45;K.u.set(Math.sin(K.ry),0,Math.cos(K.ry));
   // the beetle stands on the far side of the ship from the road, facing it
   const px=Math.cos(K.ry),pz=-Math.sin(K.ry),rx=P[i].x-K.C.x,rz=P[i].z-K.C.z,far=(px*rx+pz*rz)>0?-1:1;K.bp=[K.C.x+px*far*48,K.C.z+pz*far*48];K.byaw=Math.atan2(K.C.x-K.bp[0],K.C.z-K.bp[1]);
@@ -5134,7 +5176,16 @@ function tnkCloud(rdt){const M=TNK.mc,W=TNK.wat,V=TNK.v;M.t+=rdt;const u=M.t;if(
 function tnkCloudOff(){const M=TNK.mc;if(!M)return;M.on=0;for(const o of M.all)o.visible=false;if(!M.ld){M.ld=1;boom.distance=140;}}
 // ---- San Quentin extras (free drive): fallout from the tanker's mushroom cloud drifting down on the road to the San Rafael bridge, faint sirens wailing at the prison, and police cars by the gate with their light bars flashing
 const ASH={on:0,t:0},SIR={},POLX={l:null},PV=new THREE.Vector3();
-function sqFxTick(rdt){ashTick(rdt);sirenTick(rdt);polTick(rdt);}
+function sqFxTick(rdt){ashTick(rdt);radTick(rdt);sirenTick(rdt);polTick(rdt);}
+// radioactive fallout from the mushroom cloud: glowing green-yellow motes raining down on the Richmond-San Rafael bridge as you drive onto it (owner 2026-11-23), once the tanker has gone up this pass
+const RAD={};
+function radTick(rdt){const i=PL.idx,m_=x=>Math.round(x/SEG);if(i<Z.sq)RAD.said=0;const k=G.state==="race"&&!TNK.armed&&G.tun<.5?sst(i,Z.rb0-m_(120),Z.rb0+m_(60))*(1-sst(i,Z.rb1-m_(150),Z.rb1+m_(40))):0;
+  if(!RAD.o){if(k<=0)return;const n=520,p=new Float32Array(n*3),g=new THREE.BufferGeometry(),cp=camera.position;g.setAttribute("position",new THREE.BufferAttribute(p,3));RAD.q=[];for(let j=0;j<n;j++){RAD.q.push(Math.random());p[j*3]=cp.x+R(-22,22);p[j*3+1]=cp.y+R(-3,18);p[j*3+2]=cp.z+R(-22,22);}
+    RAD.o=new THREE.Points(g,new THREE.PointsMaterial({map:glowTex,color:0xb6ff3c,size:.6,transparent:true,depthWrite:false,fog:false,blending:THREE.AdditiveBlending}));RAD.o.frustumCulled=false;RAD.p=p;RAD.g=g;RAD.n=n;scene.add(RAD.o);}
+  const n=Math.round(RAD.n*k);RAD.o.visible=n>0;if(!n)return;RAD.g.setDrawRange(0,n);const p=RAD.p,tm=tmNow(),cx=camera.position.x,cy=camera.position.y,cz=camera.position.z;
+  for(let j=0;j<n;j++){const q=RAD.q[j],o=j*3;p[o+1]-=(2.2+q*1.6)*rdt;p[o]+=Math.sin(tm*1.1+q*40)*1.2*rdt;p[o+2]+=Math.cos(tm*1.3+q*31)*1.2*rdt;   // drifting down, twinkling
+    let d=p[o]-cx;if(d>22)p[o]-=44;else if(d<-22)p[o]+=44;d=p[o+2]-cz;if(d>22)p[o+2]-=44;else if(d<-22)p[o+2]+=44;d=p[o+1]-cy;if(d<-4)p[o+1]+=22;else if(d>18)p[o+1]-=22;}
+  RAD.g.attributes.position.needsUpdate=true;RAD.o.material.opacity=.75+.25*Math.sin(tm*7);if(!RAD.said&&k>.5){RAD.said=1;say("FALLOUT !","GLOWING GREEN DUST ON THE BRIDGE",2.2);}}
 function ashBuild(){const mk=(n,c,sz,add)=>{const p=new Float32Array(n*3),g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));
     const o=new THREE.Points(g,new THREE.PointsMaterial({map:glowTex,color:c,size:sz,transparent:true,depthWrite:false,opacity:add?1:.9,fog:false,vertexColors:!add,blending:add?THREE.AdditiveBlending:THREE.NormalBlending}));o.frustumCulled=false;o.visible=false;scene.add(o);
     const q=[],cp=camera.position,cl=[];for(let i=0;i<n;i++){q.push(Math.random());p[i*3]=cp.x+R(-20,20);p[i*3+1]=cp.y+R(-3,16);p[i*3+2]=cp.z+R(-20,20);const v=R(.28,.9);cl.push(v,v*.98,v*.95);}if(!add)g.setAttribute("color",new THREE.Float32BufferAttribute(cl,3));return{o,p,q,n,g};};   // ash in mixed greys, from pale to charcoal
@@ -5519,7 +5570,7 @@ function lakeStart(o){const L=LAKE,pe=ents.find(e=>e.player);if(!L.g)lakeBuild()
 function lakeTick(dt,pe){const D=PL.crash,L=LAKE;D.tt+=dt;if(D.rep&&D.tt>.6&&keys.Space)D.skip=1;
   if(D.ph===0){D.x+=D.vx*dt;D.z+=D.vz*dt;D.vy-=13*dt;D.y+=D.vy*dt;hero.position.set(D.x,D.y,D.z);hero.rotation.set(Math.min(1.05,hero.rotation.x+.5*dt),D.h,hero.rotation.z+.2*dt);   // falling, seen from the driver's seat
     if(D.y<L.wy-.3||D.skip){D.ph=1;D.t1=D.tt;D.wx=D.x;D.wz=D.z;NOGY=1;for(let k=0;k<60;k++){const a=R(0,6.283),sp=R(2,10);puff(V.set(D.x,L.wy+.2,D.z),Math.cos(a)*sp,R(5,18),Math.sin(a)*sp,R(.8,1.6),R(4,7),R(1.2,2.4),.8,0xc8d0a8);}NOGY=0;
-      sfxBigSplash();sfxThump(1.2);G.shake=.8;say('INTO THE LAKE',D.rep?'SPACE to skip':'',2.2);}
+      sfxBigSplash();sfxThump(1.2);G.shake=.8;say(D.eye?'INTO THE BAY':'INTO THE LAKE',D.rep?'SPACE to skip':'',2.2);}
     return;}
   const u=D.tt-D.t1;
   if(u<9.4){hero.position.y=Math.max(L.wy-8.85,hero.position.y-(u<1?3.2:1.1)*dt);hero.rotation.x+=(.22-hero.rotation.x)*Math.min(1,dt*1.3);hero.rotation.z+=(.08-hero.rotation.z)*Math.min(1,dt*1.3);   // sinking slowly, settling level
@@ -5527,7 +5578,7 @@ function lakeTick(dt,pe){const D=PL.crash,L=LAKE;D.tt+=dt;if(D.rep&&D.tt>.6&&key
   else hero.visible=false;
   if(u>3.4&&!D.m1){D.m1=1;say('SOMETHING IN THE MURK','',2.2);sfxUnderThud();}
   if(u>5.6&&!D.m2){D.m2=1;sfxUnderThud();}
-  if(u>8.75&&!D.m3){D.m3=1;sfxGulp();G.shake=.9;say('GULP !','',1.6);}
+  if(u>8.75&&!D.m3){D.m3=1;sfxGulp();G.shake=.9;say(D.eye?'SCOOPED UP !':'GULP !','',1.6);}
   L.fd||lakeFade(0);L.fd.style.opacity=clamp((u-8.9)/.5,0,1);   // dark inside the fish
   if(u>10.6||D.skip)lakeEnd(pe);}
 function lakeEnd(pe){const D=PL.crash,L=LAKE,i=backOnRoad(pe,wrapI(Math.floor(D.rs/SEG)),pe.s);   // back on the road: where the mosquito picked the car up, or just before the broken rail
@@ -5544,13 +5595,28 @@ function lakeScene(tm){const D=PL.crash,L=LAKE;if(D.ph<1){L.g.visible=false;G.uw
   const a=sst(u,2.2,7.6),lun=sst(u,8.3,9.1),dd=lerp(lerp(34,7.5,a),3,lun),sd=lerp(12,0,a),wob=Math.sin(tm*.7)*1.2*(1-a);
   F.position.set(c.x-D.wx+fx*dd+sx*(sd+wob),c.y-L.wy+lerp(2.5,.55,a)+lun*.75,c.z-D.wz+fz*dd+sz*(sd+wob));
   F.rotation.set(0,Math.atan2(-(fx*dd+sx*sd)+sx*0,-(fz*dd+sz*sd)),0);
-  const sw=1.6+lun*3;F.tail.rotation.y=Math.sin(tm*sw)*.35;F.rotation.y+=Math.sin(tm*sw+1.2)*.05;F.jaw.rotation.x=1.05*sst(u,7.7,8.4);for(const[fn,s]of F.pf)fn.rotation.z=s*(.3+Math.sin(tm*2.4)*.25);
+  const sw=1.6+lun*3;F.tail.rotation.y=Math.sin(tm*sw)*.35;F.rotation.y+=Math.sin(tm*sw+1.2)*.05;F.jaw.rotation.x=1.05*sst(u,7.7,8.4);for(const[fn,s]of F.pf)fn.rotation.z=s*(.3+Math.sin(tm*2.4)*.25);F.visible=!D.eye;if(L.eye||D.eye)lakeEye(D,u,tm,c,a,lun);
   // two marine iguanas: they swim in close round the car, tails sculling, then drift away on their own
   for(const k of L.ig){const n=k.n,an=tm*(.45+n*.1)+n*Math.PI,r=u<6?lerp(10,2.6+n*.8,sst(u,.8,4.2)):lerp(2.6+n*.8,32,sst(u,6,10.5)),y=c.y-L.wy+(n?1.4:.5)+Math.sin(tm*.9+n)*.35;
     const x=c.x-D.wx+Math.cos(an)*r,z=c.z-D.wz+Math.sin(an)*r;k.g.position.set(x,y,z);const vx=x-k.px,vz=z-k.pz;if(vx*vx+vz*vz>1e-6)k.g.rotation.set(0,Math.atan2(vx,vz),0);k.px=x;k.pz=z;
     const ph=tm*4.5+n,K=3.2;for(const sg of k.segs){const zz=sg.z,A_=.05+.22*Math.max(0,.6-zz)/1.9;sg.g.position.x=A_*Math.sin(ph-K*zz);sg.g.rotation.y=Math.atan(-A_*K*Math.cos(ph-K*zz));}   // the tail sweeps side to side
     for(const lg of k.legs){lg.g.rotation.y=-lg.f*.2-.9*lg.s*(lg.f>0?.4:1);lg.g.rotation.z=lg.s*.3;}}   // legs tucked back along the body
   if(u<9&&Math.random()<.35){NOGY=1;V.set(c.x+R(-1.8,1.8),c.y+R(0,1),c.z+R(-1.8,1.8));puff(V,R(-.2,.2),R(.5,1.3),R(-.2,.2),R(.04,.08),R(.08,.15),R(1.4,2.4),.6,0xd6e2b0);NOGY=0;}}
+// Off the Richmond-San Rafael bridge (owner 2026-11-23): no manatee dive here. The car goes over the rail and down into the murky bay, the lake's under-water scene
+// (lakeStart/lakeTick, src 'rsr'), but it is the one-eyed monster who looms out of the murk: his huge glowing eye comes up close to peer at the car, head tilting,
+// then both great arms reach in and scoop it up; dark, and you are back on the road where you went off (rsrSplash, lakeEye).
+function rsrSplash(sd,vn,bi){ohNo();const n=Nn[bi],out=Math.max(vn,9),y=(PL.cy||H[bi])+.3;
+  lakeStart({src:'rsr',x:PL.x+n.x*sd*1.5,y,z:PL.z+n.z*sd*1.5,vx:PL.vx*.45+n.x*sd*out,vz:PL.vz*.45+n.z*sd*out,vy:4,rs:bi*SEG});LAKE.wy=BTL.wat;PL.crash.eye=1;
+  V.set(PL.x,y,PL.z);for(let i=0;i<30;i++)spark(V,PL.vx*.4+R(-9,9),R(1,9),PL.vz*.4+R(-9,9));sfxCrunch(1);G.shake=1;say('OVER THE RAIL','DOWN INTO THE MURKY BAY',2.4);}
+function lakeEye(D,u,tm,c,a,lun){const L=LAKE;let M=L.eye;
+  if(!M){M=L.eye={};eyeMonBuild(M);scene.remove(M.g);L.g.add(M.g);M.g.rotation.order='YXZ';M.sc=2.6;M.g.scale.setScalar(M.sc);M.E.children[0].material.emissive.setHex(0x9a9a80);M.Y=new THREE.Vector3();}
+  M.g.visible=!!D.eye;if(!D.eye)return;
+  const F=L.F.position,yw=Math.atan2(c.x-L.g.position.x-F.x,c.z-L.g.position.z-F.z),bob=Math.sin(tm*.6)*.3;   // the eye goes where the fish would have been: out of the murk, up close, then a lunge
+  M.g.rotation.set(.18+.12*lun,yw,0);M.U.rotation.set(0,0,Math.sin(tm*.8)*.16*(1-lun));M.E.rotation.set(.2,0,0);
+  M.Y.set(0,4.35*M.sc,1.08*M.sc).applyEuler(M.g.rotation);M.g.position.set(F.x-M.Y.x,F.y-M.Y.y+bob,F.z-M.Y.z);   // placed so his eye is right there (his legs are lost in the mud and the murk below)
+  M.A.forEach((A,k)=>{const sx=k?1:-1;A.rotation.x=-.25*a-1.5*lun+Math.sin(tm*.9+k)*.12;A.rotation.z=sx*(.12+.25*(1-lun));});   // arms drifting, then reaching in for the car
+  M.bl=(M.bl==null?R(1.5,3):M.bl)-1/60;if(M.bl<-.15)M.bl=R(1.8,3.5);M.E.scale.y=M.bl<0?.08:1;   // a slow blink
+  if(!D.e1&&u>3.2){D.e1=1;sfxCurious(1);}if(!D.e2&&u>6.4){D.e2=1;sfxCurious(.8);}}
 function lakeCam(D,rdt,jx){const L=LAKE,u=D.ph<1?-1:D.tt-D.t1,c=hero.position;
   if(u<2.2||u>=7.4){V.set(-.24,.86,.12);hero.localToWorld(V);camera.position.copy(V);camera.position.x+=jx;camera.fov=lerp(camera.fov,74,.2);hero.canopy.visible=false;interior.visible=true;D.cp=0;   // the driver's view: the fall, the splash, under the water; at the end the fish fills the windscreen
     if(u>=7.4){V2.copy(L.F.position).add(L.g.position);V2.y+=.3;look.lerp(V2,.25);}else{look.set(-.24,.55,30);hero.localToWorld(look);}}
@@ -5710,7 +5776,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={buildHero:m=>buildHero(m),WCIG,boof:t=>boof(t),CENT,WQK,EYEB,LAKE,LKR,lakeIn:()=>{const n=Nn[PL.idx];lakeRailBreak(PL.idx);lakeStart({src:"rail",x:PL.x,y:(PL.cy||H[PL.idx])+.3,z:PL.z,vx:n.x*10,vz:n.z*10,vy:3,rs:(PL.idx-15)*SEG});},BIGI,WIGU,CATP,FWI,fwIgu:()=>{const pe=ents.find(e=>e.player);fwIguStart(pe.s+60);},TUBI,RIGI,NUDG,nudge:()=>nudgeStart(),IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,TDR,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={buildHero:m=>buildHero(m),rsrIn:()=>rsrSplash(1,12,PL.idx),CLAY,DHOU,RAD,WCIG,boof:t=>boof(t),CENT,WQK,EYEB,LAKE,LKR,lakeIn:()=>{const n=Nn[PL.idx];lakeRailBreak(PL.idx);lakeStart({src:"rail",x:PL.x,y:(PL.cy||H[PL.idx])+.3,z:PL.z,vx:n.x*10,vz:n.z*10,vy:3,rs:(PL.idx-15)*SEG});},BIGI,WIGU,CATP,FWI,fwIgu:()=>{const pe=ents.find(e=>e.player);fwIguStart(pe.s+60);},TUBI,RIGI,NUDG,nudge:()=>nudgeStart(),IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,TDR,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
