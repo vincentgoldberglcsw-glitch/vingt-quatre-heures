@@ -3956,6 +3956,7 @@ function sqHydTick(rdt){if(!DRIVE)return;const pe=ents.find(e=>e.player);if(!pe)
 const MAR={on:false,t:0,cows:[],deb:[],waves:[],next:2,g:null,sea:null,a:0,b:0};window.__MAR=MAR;
 if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=4471;return()=>(s=(s*16807)%2147483647)/2147483647;})(),LR=(a,b)=>a+lr()*(b-a),D2=THREE.DoubleSide;
   const a=Z.marina+m_(150),b=Z.gg0-m_(340),G1=new THREE.Group();MAR.a=a;MAR.b=b;MAR.g=G1;scene.add(G1);
+  const GW=new THREE.Group();GW.visible=false;MAR.gw=GW;scene.add(GW);MAR.ba=Z.i80+m_(200);MAR.bb=Z.berkeley+m_(300);   /* the waves and what they wash up live in their own group, so the same ones also break over the right-hand side of I-80 on the way to Berkeley (MAR.bk) */
   const add=o=>{scene.remove(o);G1.add(o);return o;};   /* ribbon() puts its strip straight into the scene: keep the Marina's in one group so the whole stretch can be hidden at once */
   // the field: rough grass from the back of the pavement out to 95 m, with a post-and-rail fence along the road
   const grassT=canvas(256,256,(g,w,h)=>{g.fillStyle='#4d682c';g.fillRect(0,0,w,h);const C=['#5d7a34','#41572a','#6c8b3e','#38491f','#7a8a44'];for(let k=0;k<3200;k++){g.fillStyle=C[k%5];g.fillRect(lr()*w,lr()*h,1+lr()*2,2+lr()*6);}});
@@ -3996,7 +3997,7 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=4471;return()=>(s=(s*1680
     sprayT=canvas(128,128,(g,w,h)=>{for(let k=0;k<1600;k++){const y=h*Math.pow(lr(),1.4);g.fillStyle=`rgba(245,248,250,${(.3+lr()*.6)*(1-.7*y/h)})`;g.beginPath();g.arc(lr()*w,h-y,2+lr()*12*(1-.5*y/h),0,6.283);g.fill();}},true);
   foamT.wrapS=foamT.wrapT=THREE.RepeatWrapping;
   const crestG=new THREE.CylinderGeometry(1,1,LW,18,1,true,0,Math.PI).rotateX(Math.PI/2).rotateZ(Math.PI/2),crestT=canvas(256,16,(g,w,h)=>{const gr=g.createLinearGradient(0,0,w,0);gr.addColorStop(0,"#2c3836");gr.addColorStop(.3,"#4a5c5a");gr.addColorStop(.46,"#c8d2d2");gr.addColorStop(.52,"#f2f5f5");gr.addColorStop(.62,"#8a9a9a");gr.addColorStop(1,"#3a4846");g.fillStyle=gr;g.fillRect(0,0,w,h);for(let k=0;k<400;k++){g.fillStyle=`rgba(240,244,245,${lr()*.5})`;g.fillRect(lr()*w,lr()*h,1+lr()*6,1);}}),crestM=std({map:crestT,roughness:.3,metalness:.15,side:D2}),lipM=std({color:0xe9eef0,roughness:.6});
-  for(let k=0;k<3;k++){const g=new THREE.Group();g.visible=false;G1.add(g);const crest=new THREE.Mesh(crestG,crestM),lip=new THREE.Mesh(new THREE.BoxGeometry(1.6,.6,LW-3),lipM);
+  for(let k=0;k<5;k++){const g=new THREE.Group();g.visible=false;GW.add(g);const crest=new THREE.Mesh(crestG,crestM),lip=new THREE.Mesh(new THREE.BoxGeometry(1.6,.6,LW-3),lipM);
     const sprayM=new THREE.MeshBasicMaterial({map:sprayT,color:0xeef3f5,transparent:true,opacity:0,depthWrite:false,side:D2}),spray=new THREE.Mesh(new THREE.PlaneGeometry(LW,1).translate(0,.5,0).rotateY(Math.PI/2),sprayM);
     const ft=foamT.clone();ft.needsUpdate=true;ft.repeat.set(1,LW/12);const foamM=new THREE.MeshBasicMaterial({map:ft,color:0xe4eaeb,transparent:true,opacity:0,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}),
       foam=new THREE.Mesh(new THREE.PlaneGeometry(1,LW).rotateX(-Math.PI/2).translate(.5,0,0),foamM);foam.position.y=.1;
@@ -4018,7 +4019,7 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),lr=(()=>{let s=4471;return()=>(s=(s*1680
     else if(kind==='trash'){const tm=trashMs[lr()*trashMs.length|0];if(lr()<.5){M_(new THREE.IcosahedronGeometry(.5,0),tm,0,.14,0,LR(.4,.6),LR(.28,.4),LR(.4,.6));}else{M_(new THREE.BoxGeometry(1,1,1),tm,0,.08,0,LR(.25,.5),LR(.1,.2),LR(.3,.5));M_(cyl(.033,.033,.12,8).rotateX(Math.PI/2),trashMs[3],.3,.035,.1,1,1,1);}}
     else{const n=3+(lr()*4|0);for(let k=0;k<n;k++){const L=LR(.6,1.8),t=new THREE.Mesh(new THREE.BoxGeometry(LR(.06,.14),.015,L).translate(0,0,L/2),kelpMs[lr()*3|0]);t.position.y=.02+k*.004;t.rotation.y=LR(-1.2,1.2)+k*.9;bd.add(t);}
       M_(ball,kelpMs[0],0,.05,0,.12,.1,.12);}
-    g.visible=false;G1.add(g);return g;};
+    g.visible=false;GW.add(g);return g;};
   for(let k=0;k<40;k++){const kind=k<3?'big':['fish','weed','fish','squid','fish','weed'][k%6],g=mk(kind),o=kind==='big'?{x:1e9,z:1e9,r:1.2}:null;if(o)OBST.push(o);
     MAR.deb.push({g,bd:g.children[0],kind,o,on:false,age:0,life:60,flop:0,ph:0,gy:0,fly:false,vx:0,vy:0,vz:0,sp:0});}
   for(let k=0;k<30;k++){const kind=k%5<3?'weed':'squid',g=mk(kind);MAR.deb.push({g,bd:g.children[0],kind,o:null,on:false,age:0,life:60,flop:0,ph:0,gy:0,fly:false,vx:0,vy:0,vz:0,sp:0});}   // a bigger pool for the extra squid and seaweed
@@ -4052,34 +4053,34 @@ function marSpawn(big,s,lat,kind){let d=null;for(const q of MAR.deb)if((q.kind==
 MAR.tick=rdt=>marinaTick(rdt);MAR.stick=d=>marStick(d);   /* for scripted tests: the autopilot only steps sim(), and this runs per frame */
 function marinaTick(rdt){if(!DRIVE||!MAR.g)return;const LW=40;   /* the length of road one wave washes over, as in the build above */
  const pe=ents.find(e=>e.player);if(!pe)return;
-  const i0=PL.idx,on=i0>Z.hyde&&i0<Z.gg0+Math.round(500/SEG);PL.wash=Math.max(0,(PL.wash||0)-rdt*1.4);
-  if(on!==MAR.on){MAR.on=on;MAR.g.visible=on;if(on){for(const W of MAR.whs||[])W.armed=1;for(let k=0;k<30;k++){const s=MAR.a*SEG+R(-40,330),i=wrapI(Math.floor(s/SEG)),e=edgeAt[i]-.7,d=marSpawn(false,s,R(-e,e),'skel');if(d)d.life=R(400,900);}}   /* the Marina opens with a scatter of fish skeletons on the road */
-    if(!on){MAR.gust=0;MAR.stk=null;for(const W of MAR.whs||[]){W.st=0;W.g.visible=false;for(const o of W.os)o.x=1e9;}for(const d of MAR.deb){if(d.stk){MAR.g.add(d.g);d.stk=0;d.g.scale.setScalar(1);}d.on=false;d.g.visible=false;if(d.o)d.o.x=1e9;}for(const w of MAR.waves){w.t=-1;w.g.visible=false;}}}
+  const i0=PL.idx,BK=i0>MAR.ba-Math.round(150/SEG)&&i0<MAR.bb+Math.round(250/SEG),on=i0>Z.hyde&&i0<Z.gg0+Math.round(500/SEG)||BK;   /* BK: the stretch of I-80 before Berkeley, where the stormy bay comes up over the viaduct (no field, cows, swell, whales or big fish there) */PL.wash=Math.max(0,(PL.wash||0)-rdt*1.4);
+  if(on!==MAR.on||on&&BK!==!!MAR.bk){if(MAR.on){MAR.gust=0;MAR.stk=null;for(const W of MAR.whs||[]){W.st=0;W.g.visible=false;for(const o of W.os)o.x=1e9;}for(const d of MAR.deb){if(d.stk){MAR.gw.add(d.g);d.stk=0;d.g.scale.setScalar(1);}d.on=false;d.g.visible=false;if(d.o)d.o.x=1e9;}for(const w of MAR.waves){w.t=-1;w.g.visible=false;}}   /* clear the road first (also when a reset jumps straight from one stretch to the other) */
+    MAR.on=on;MAR.bk=BK;MAR.g.visible=on&&!BK;MAR.gw.visible=on;if(on&&!BK){for(const W of MAR.whs||[])W.armed=1;for(let k=0;k<30;k++){const s=MAR.a*SEG+R(-40,330),i=wrapI(Math.floor(s/SEG)),e=edgeAt[i]-.7,d=marSpawn(false,s,R(-e,e),'skel');if(d)d.life=R(400,900);}}   /* the Marina opens with a scatter of fish skeletons on the road */}
   if(!on)return;MAR.t+=rdt;const t=MAR.t;
   // the swell
-  {const S=MAR.sea,n=S.la.length,nc=S.nc;for(let q=0;q<n;q++){const c=q%nc;if(c===nc-1)continue;const l=S.la[q],s=S.sa[q],sw=.42*Math.sin(.11*l-1.25*t+.02*s)+.28*Math.sin(.045*s-.7*t+.03*l)+.15*Math.sin(.29*l+.21*s-2.1*t),
+  if(!BK){const S=MAR.sea,n=S.la.length,nc=S.nc;for(let q=0;q<n;q++){const c=q%nc;if(c===nc-1)continue;const l=S.la[q],s=S.sa[q],sw=.42*Math.sin(.11*l-1.25*t+.02*s)+.28*Math.sin(.045*s-.7*t+.03*l)+.15*Math.sin(.29*l+.21*s-2.1*t),
      k=c===0?.4:.62,y=.52+sw*k;S.pos[q*3+1]=y;const f=sst(sw,.2,.55),dk=.075+.03*Math.sin(.013*s+.02*l);S.col[q*3]=dk+f*.6;S.col[q*3+1]=dk+.018+f*.6;S.col[q*3+2]=dk+.03+f*.6;}
    S.g.attributes.position.needsUpdate=true;S.g.attributes.color.needsUpdate=true;}
   // a new wave every few seconds: often timed to break just as the car gets there
   MAR.next-=rdt;let wh=null,sw=0;
-  if(MAR.whs&&MAR.t>1&&!MAR.waves.some(q=>q.wh&&q.t>=0&&!q.hit)){sw=pe.s+Math.max(pe.v,8)*3.2+R(30,45);const f=(wrapI(Math.floor(sw/SEG))-MAR.a)/(MAR.b-MAR.a),[A,B]=MAR.whs;   /* the first whale early on the Marina, the big one further on toward the bridge */
+  if(!BK&&MAR.whs&&MAR.t>1&&!MAR.waves.some(q=>q.wh&&q.t>=0&&!q.hit)){sw=pe.s+Math.max(pe.v,8)*3.2+R(30,45);const f=(wrapI(Math.floor(sw/SEG))-MAR.a)/(MAR.b-MAR.a),[A,B]=MAR.whs;   /* the first whale early on the Marina, the big one further on toward the bridge */
     if(A.armed&&!A.st&&f<.8)wh=A;else if(B.armed&&!B.st&&!A.armed&&f>.45&&(!A.st||sw-A.s>80))wh=B;}
-  if(MAR.next<=0||wh){if(!wh)MAR.next=R(2.5,6);const w=MAR.waves.find(q=>q.t<0);
+  if(MAR.next<=0||wh){if(!wh)MAR.next=BK?R(1.6,3.4):R(2.5,6);const w=MAR.waves.find(q=>q.t<0);
     if(w){const s0=wh?sw:pe.s+(Math.random()<.5?Math.max(pe.v,8)*2.6+R(-8,8):R(50,220)),i=wrapI(Math.floor(s0/SEG));w.wh=0;   /* a whale's wave goes out as soon as it is due, already rolling in, and breaks far enough ahead that the whale has landed before the car gets there */
-      if(i>MAR.a+12&&i<MAR.b-12){w.s0=s0;w.ed=edgeAt[i];w.t=wh?1:0;w.hit=w.deb=false;w.g.position.copy(P[i]);w.g.rotation.y=yaw(i);w.g.visible=true;w.wh=wh;}}}
+      if(i>(BK?MAR.ba:MAR.a)+12&&i<(BK?MAR.bb:MAR.b)-12){w.s0=s0;w.ed=edgeAt[i];w.hy=BK?H[i]:0;w.t=wh?1:0;w.hit=w.deb=false;w.g.position.copy(P[i]);w.g.rotation.y=yaw(i);w.g.visible=true;w.wh=wh;}}}
   let wet=false;const V=new THREE.Vector3();
   for(const w of MAR.waves){if(w.t<0)continue;w.t+=rdt;const u=w.t,ed=w.ed,near=Math.abs(wdiff(w.s0-pe.s));
-    if(u<2.2){const k=u/2.2,h=lerp(.6,5.4,k*k),cx=lerp(-75,-(ed+1.8),k);w.crest.visible=true;w.crest.position.set(cx,.5,0);w.crest.scale.set(lerp(9,3.2,k),h,1);w.lip.visible=k>.35;w.lip.position.set(cx+.4*k,.5+h,0);w.lip.rotation.z=-k*.7;}
+    if(u<2.2){const k=u/2.2,hy=w.hy||0,h=lerp(.6,5.4+hy*.12,k*k),cx=lerp(-75,-(ed+1.8),k),cy=.5-hy*(1-k*(2-k));w.crest.visible=true;w.crest.position.set(cx,cy,0);w.crest.scale.set(lerp(9,3.2+hy*.08,k),h,1);w.lip.visible=k>.35;w.lip.position.set(cx+.4*k,cy+h,0);   /* hy: on the I-80 viaduct the wave rises out of the bay below and climbs the side to break over the road */w.lip.rotation.z=-k*.7;}
     else w.crest.visible=w.lip.visible=false;
     if(u>=2.2&&!w.hit){w.hit=true;if(near<320){for(let q=0;q<40;q++){at(w.s0+R(-LW/2,LW/2),-(ed+.9),R(1,2.5),V);puff(V,R(-1,1),R(6,13),R(-1,1),2,R(6,11),R(1.4,2.4),.85,0xe8eef0);}}
       if(near<170)sfxSplash();if(near<60)G.shake=Math.max(G.shake,.3*(1-near/60));
       if(w.wh&&w.wh.armed&&!w.wh.st){const dd=wdiff(w.s0-pe.s);if(dd>20)marWhale(w.wh,w,pe,dd);}}   /* once a pass each, a wave brings in a whale skeleton */
-    if(u>=2.2&&u<4.8){const q=(u-2.2)/2.6;w.spray.visible=true;w.spray.position.x=-(ed+.95);w.spray.scale.y=.5+15*Math.sin(Math.min(q*3,1)*Math.PI/2)-q*q*3;w.sprayM.opacity=Math.min(1,1.6*(1-q));}else w.spray.visible=false;
+    if(u>=2.2&&u<4.8){const q=(u-2.2)/2.6;w.spray.visible=true;w.spray.position.x=-(ed+.95);w.spray.position.y=-(w.hy||0);w.spray.scale.y=(w.hy||0)+.5+15*Math.sin(Math.min(q*3,1)*Math.PI/2)-q*q*3;w.sprayM.opacity=Math.min(1,1.6*(1-q));}else w.spray.visible=false;
     if(u>=2.35&&u<7.2){const q=clamp((u-2.35)/1.3,0,1),fr=lerp(-(ed+1.2),ed+2.5,1-(1-q)*(1-q)),bk=-(ed+1.2)+Math.max(0,u-4.6)*3.2;w.fr=fr;w.bk=bk;w.foam.visible=true;w.foam.position.x=bk;w.foam.scale.x=Math.max(.01,fr-bk);
       w.foamM.opacity=u<5?.92:.92*Math.max(0,1-(u-5)/2.2);w.ft.offset.x=-u*.25;w.ft.offset.y=u*.05;
       if(u<5.4&&Math.abs(wdiff(pe.s-w.s0))<LW/2+1.5&&pe.lat<fr+.8&&pe.lat>bk-1)wet=true;}else w.foam.visible=false;
     if(u>=3&&!w.deb){w.deb=true;const n=5+(Math.random()*7|0);for(let k=0;k<n;k++){const kd=MARK[Math.random()*MARK.length|0],c=kd==='fish'?1:2+(Math.random()<.5?1:0);for(let j=0;j<c;j++){const lat=R(-ed+.6,Math.min(w.fr,ed)-.6);marSpawn(false,w.s0+R(-LW/2+2,LW/2-2),lat,kd);}}   /* squid and seaweed come in two or three times as thick as the fish */
-      if(Math.random()<.35){const lat=Math.random()<.5?R(-ed+1.5,-5):R(5,ed-1.5);marSpawn(true,w.s0+R(-LW/2+4,LW/2-4),lat);}}
+      if(!BK&&Math.random()<.35){const lat=Math.random()<.5?R(-ed+1.5,-5):R(5,ed-1.5);marSpawn(true,w.s0+R(-LW/2+4,LW/2-4),lat);}}
     if(u>7.4){w.t=-1;w.g.visible=false;}}
   // the car in the wash: a burst of spray as it hits the water, then drag and a shove towards the field side
   if(wet){if(PL.wash<.35&&!PL.crash){sfxSplash();G.shake=Math.max(G.shake,.35);for(let q=0;q<18;q++)puff(V.set(PL.x+R(-1.5,1.5),.4,PL.z+R(-1.5,1.5)),PL.vx*.3+R(-3,3),R(3,8),PL.vz*.3+R(-3,3),.8,R(3,5),R(.8,1.5),.7,0xe8eef0);}PL.wash=1;}
@@ -4089,12 +4090,12 @@ function marinaTick(rdt){if(!DRIVE||!MAR.g)return;const LW=40;   /* the length o
   for(const d of MAR.deb){if(!d.on)continue;if(d.stk){marStuck(d,rdt,pe);continue;}d.age+=rdt;const p=d.g.position;
     if(d.fly){d.vy-=9.8*rdt;p.x+=d.vx*rdt;p.y+=d.vy*rdt;p.z+=d.vz*rdt;d.bd.rotation.x+=d.sp*rdt;if(p.y<=d.gy){p.y=d.gy;d.fly=false;d.bd.rotation.x=0;}}
     else if(d.age<d.flop){const k=1-d.age/d.flop,s=Math.sin(d.age*11+d.ph);p.y=d.gy+Math.abs(s)*(d.kind==='big'?.05:.1)*k;d.bd.rotation.z=s*.35*k;}
-    if(d.kind!=='big'&&!d.fly&&Math.abs(pe.v)>4){const dx=p.x-PL.x,dz=p.z-PL.z;if(dx*dx+dz*dz<1.7*1.7){d.fly=true;d.vy=R(3,6)+Math.abs(pe.v)*.04;d.vx=PL.vx*.55+R(-2,2);d.vz=PL.vz*.55+R(-2,2);d.sp=R(-12,12);if((d.kind==='weed'||d.kind==='squid'||d.kind==='octo')&&!MAR.stk&&Math.random()<.25)marStick(d);}}
+    if(d.kind!=='big'&&!d.fly&&Math.abs(pe.v)>4){const dx=p.x-PL.x,dz=p.z-PL.z;if(dx*dx+dz*dz<1.7*1.7){d.fly=true;d.vy=R(3,6)+Math.abs(pe.v)*.04;d.vx=PL.vx*.55+R(-2,2);d.vz=PL.vz*.55+R(-2,2);d.sp=R(-12,12);if((d.kind==='weed'||d.kind==='squid'||d.kind==='octo')&&!MAR.stk&&!BK&&Math.random()<.25)marStick(d);}}
     if(!d.fly&&d.i!=null&&d.kind!=='big'){const n=Nn[d.i],tg=T[d.i],tv=2.1*Math.sin(t*.42+d.ph*.15)+.5*Math.sin(t*1.1+d.ph),al=.7*Math.sin(t*.3+1),e=edgeAt[d.i]-.4;p.x+=(n.x*tv+tg.x*al)*rdt;p.z+=(n.z*tv+tg.z*al)*rdt;d.bd.rotation.y+=tv*.25*rdt;const l=(p.x-P[d.i].x)*n.x+(p.z-P[d.i].z)*n.z;if(Math.abs(l)>e){const c=(l>0?e:-e)-l;p.x+=n.x*c;p.z+=n.z*c;}}   /* the water ebbs and flows, dragging the fish and skeletons about the road */
     if(d.age>d.life){const s=Math.max(0,1-(d.age-d.life)/3);d.g.scale.setScalar(s);if(s<=0){d.on=false;d.g.visible=false;if(d.o)d.o.x=1e9;}}}
   for(const W of MAR.whs||[])if(W.st)marWhaleTick(W,rdt,pe);
   // the cows: heads down grazing, now and then a look up (at a passing car, often) or a slow step or two
-  for(const c of MAR.cows){c.tm-=rdt;
+  if(!BK)for(const c of MAR.cows){c.tm-=rdt;
     if(c.tm<=0){if(c.st==='graze'){const r=Math.random();if(r<.45){c.st='step';c.tm=R(1.4,2.8);const dh=Math.hypot(c.x-c.x0,c.z-c.z0)>5?Math.atan2(c.x0-c.x,c.z0-c.z):c.h+R(-.8,.8);c.dh=Math.atan2(Math.sin(dh-c.h),Math.cos(dh-c.h))/c.tm;}
         else if(r<.75){c.st='look';c.tm=R(2,4.5);c.yw=R(-.6,.6);if(AC&&Math.random()<.35){const dx=c.x-PL.x,dz=c.z-PL.z;if(dx*dx+dz*dz<70*70){const t0=AC.currentTime;tone('sawtooth',R(120,150),t0,1.3,.05,master,{to:R(90,105)});}}}else c.tm=R(3,8);}
       else{c.st='graze';c.tm=R(5,13);}}
@@ -4135,7 +4136,7 @@ function marWhaleTick(W,rdt,pe){const g=W.g,V=W.V||(W.V=new THREE.Vector3());W.t
 function marStick(d){d.fly=false;d.stk=1;d.on=true;d.age=0;MAR.stk=d;hero.add(d.g);d.g.position.set(R(-.25,.25),.92,.6);d.g.rotation.set(-.7,R(-.6,.6),0);d.g.scale.setScalar(1.2);d.g.visible=true;MAR.go=Z.gg0+Math.round(R(-60,140)/SEG);}
 function marStuck(d,rdt,pe){const p=d.g.position;
   if(d.stk===1){d.bd.rotation.z=Math.sin(MAR.t*23+d.ph)*.14*Math.min(1,Math.abs(pe.v)/25);
-    if(PL.idx>=MAR.go&&PL.idx<Z.gg1&&Math.abs(pe.v)>12){d.g.getWorldPosition(p);MAR.g.add(d.g);d.stk=2;d.age=0;d.vx=PL.vx*.45+R(-2,2);d.vy=R(3,6);d.vz=PL.vz*.45+R(-2,2);d.sp=R(-14,14);}return;}
+    if(PL.idx>=MAR.go&&PL.idx<Z.gg1&&Math.abs(pe.v)>12){d.g.getWorldPosition(p);MAR.gw.add(d.g);d.stk=2;d.age=0;d.vx=PL.vx*.45+R(-2,2);d.vy=R(3,6);d.vz=PL.vz*.45+R(-2,2);d.sp=R(-14,14);}return;}
   d.age+=rdt;d.vy-=5*rdt;p.x+=d.vx*rdt;p.y+=d.vy*rdt;p.z+=d.vz*rdt;d.bd.rotation.x+=d.sp*rdt;d.g.rotation.y+=rdt*3;d.g.scale.setScalar(1.2*Math.max(0,1-d.age/3));
   if(d.age>3){d.stk=0;d.on=false;d.g.visible=false;d.g.scale.setScalar(1);MAR.stk=null;}}
 // clouds rolling in off the Pacific across the Golden Gate: soft banks that drift over the deck and the towers, now and then right through the car
