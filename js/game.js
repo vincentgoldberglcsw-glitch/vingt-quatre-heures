@@ -2386,15 +2386,19 @@ function ignite(w){w.burn=.01;V.set(w.x,.7+w.y,w.z);
   boom.position.set(w.x,2.5,w.z);boom.intensity=1800;const near=clamp(80/(camera.position.distanceTo(V)+10),0,1);$('flash').style.opacity=.4*near;G.shake=Math.max(G.shake,1.1*near);sfxBoom();}
 function endWreck(w){const car=w.car;car.wreck=null;for(const c of car.corners)c.visible=true;car.bodyMat.color.setScalar(1);car.canopy.material.color.setScalar(1);car.rotation.set(0,w.h,0);if(w.tgt){car.body.geometry.dispose();car.body.geometry=car.M.geo;}if(car.under)car.under.visible=false;{const cy=car.M.cy||1;car.canopy.scale.y=cy;car.canopy.position.y=CYB*(1-cy);}
   const i=wrecks.indexOf(w);if(i>=0)wrecks.splice(i,1);if(w.burn)fires.push({x:w.x,z:w.z,t:5});}
-function updateWrecks(dt){for(const w of [...wrecks]){const car=w.car;w.t+=dt;const gy=w.free?0:H[w.idx];if(w.e.player)GY=gy;w.x+=w.vx*dt;w.z+=w.vz*dt;w.h+=w.wy*dt;const sp=Math.hypot(w.vx,w.vz);
-  if(w.y<=0){const dec=Math.min(sp,(w.brake||(w.wr?9:6.5))*dt);if(sp>.01){w.vx-=w.vx/sp*dec;w.vz-=w.vz/sp*dec;}w.wy*=Math.exp(-1.3*dt);
-    if(sp>5&&Math.random()<dt*45)spark(V.set(w.x+R(-.8,.8),.08,w.z+R(-.8,.8)),w.vx*.6+R(-3,3),R(.5,4),w.vz*.6+R(-3,3));
+// the height of the ground under a wreck. On the road: the same road height the driving car uses (between segments, and up the banking on curves), so a wreck never sinks into a banked bend.
+// Thrown off it (w.free: off the freeway, the dome): the land below (embankment or hillside), or sea level over the water; only the earthquake crack (w.hole) drops right down
+function wreckGY(w){const bi=w.idx,dx=w.x-P[bi].x,dz=w.z-P[bi].z,k=clamp((dx*T[bi].x+dz*T[bi].z)/SEG,-1,1),j=wrapI(bi+(k>=0?1:-1));return H[bi]+(H[j]-H[bi])*Math.abs(k)+bkY(bi,dx*Nn[bi].x+dz*Nn[bi].z);}
+function wreckFloor(w){if(!w.free||w.hole||!DRIVE)return 0;let f=Math.max(0,groundNear(w.x,w.z));try{const t=Terrain.heightAt(w.x,w.z);if(t>f&&t<400)f=t;}catch(e){}return f;}
+function updateWrecks(dt){for(const w of [...wrecks]){const car=w.car;w.t+=dt;const gy=w.free?0:wreckGY(w),fl=wreckFloor(w);if(w.e.player)GY=gy+fl;w.x+=w.vx*dt;w.z+=w.vz*dt;w.h+=w.wy*dt;const sp=Math.hypot(w.vx,w.vz);
+  if(w.y<=fl){const dec=Math.min(sp,(w.brake||(w.wr?9:6.5))*dt);if(sp>.01){w.vx-=w.vx/sp*dec;w.vz-=w.vz/sp*dec;}w.wy*=Math.exp(-1.3*dt);
+    if(sp>5&&Math.random()<dt*45)spark(V.set(w.x+R(-.8,.8),gy+fl+.08,w.z+R(-.8,.8)),w.vx*.6+R(-3,3),R(.5,4),w.vz*.6+R(-3,3));
     if(w.wr){const q0=Math.floor(w.roll/(Math.PI/2));w.roll+=w.wr*dt;if(Math.floor(w.roll/(Math.PI/2))!==q0){w.wr*=.7;
       if(Math.abs(w.wr)>2.3&&sp>4){w.vy=1.2+Math.abs(w.wr)*.32;shed(V.set(w.x,.3,w.z),w.vx,w.vz,1,w.col);for(let i=0;i<6;i++)spark(V,w.vx*.5+R(-5,5),R(1,5),w.vz*.5+R(-5,5));sfxCrunch(.35);squashRoof(w);}
       else{w.wr=0;w.roll=Math.round(w.roll/Math.PI)*Math.PI;}}}}
   else w.roll+=w.wr*dt;
   w.vy-=17*dt;w.y+=w.vy*dt;
-  if(w.y<0){w.y=0;if(w.free&&!w.landed){w.landed=1;impact(w,13);w.vx*=.5;w.vz*=.5;if(DRIVE&&CLF&&w.e.player&&PL.idx>=CLF[0]-40&&PL.idx<=CLF[1]+40){sfxBigSplash();G.shake=.9;NOGY=1;for(let q=0;q<46;q++){const a=R(0,6.283),sp=R(2,9);puff(V.set(w.x,.4,w.z),Math.cos(a)*sp,R(5,18),Math.sin(a)*sp,R(.8,1.6),R(4,7),R(1.2,2.4),.8,0xeef2f4);}NOGY=0;}}   /* off the Marin cliff: into the bay with a heavy splash */if(w.vy<-3.5){shed(V.set(w.x,.3,w.z),w.vx,w.vz,2,w.col);for(let i=0;i<10;i++)spark(V,w.vx*.5+R(-6,6),R(1,6),w.vz*.5+R(-6,6));sfxCrunch(.5);G.shake=Math.max(G.shake,.35);w.vy*=-.25;}else w.vy=0;}
+  if(w.y<fl){w.y=fl;if(w.free&&!w.landed){w.landed=1;impact(w,13);w.vx*=.5;w.vz*=.5;if(DRIVE&&CLF&&w.e.player&&PL.idx>=CLF[0]-40&&PL.idx<=CLF[1]+40){sfxBigSplash();G.shake=.9;NOGY=1;for(let q=0;q<46;q++){const a=R(0,6.283),sp=R(2,9);puff(V.set(w.x,.4,w.z),Math.cos(a)*sp,R(5,18),Math.sin(a)*sp,R(.8,1.6),R(4,7),R(1.2,2.4),.8,0xeef2f4);}NOGY=0;}}   /* off the Marin cliff: into the bay with a heavy splash */if(w.vy<-3.5){shed(V.set(w.x,.3,w.z),w.vx,w.vz,2,w.col);for(let i=0;i<10;i++)spark(V,w.vx*.5+R(-6,6),R(1,6),w.vz*.5+R(-6,6));sfxCrunch(.5);G.shake=Math.max(G.shake,.35);w.vy*=-.25;}else w.vy=0;}
   // guardrail
   let best=1e9,bi=w.idx;for(let k=-10;k<=10;k++){const i=wrapI(w.idx+k),dx=w.x-P[i].x,dz=w.z-P[i].z,d=dx*dx+dz*dz;if(d<best){best=d;bi=i;}}w.idx=bi;
   const n=Nn[bi],lat=(w.x-P[bi].x)*n.x+(w.z-P[bi].z)*n.z;
@@ -3644,8 +3648,9 @@ if(DRIVE){const m_=x=>Math.round(x/SEG),D2=THREE.DoubleSide;
       const blk=paint(0x111214),wht=paint(0xf2f2ee);box(g,1.8,.62,4.6,blk,0,.62,0);box(g,1.84,.5,2.1,wht,0,.66,-.1);box(g,1.6,.52,2.3,glass,0,1.17,-.2);box(g,1.62,.06,1.6,wht,0,1.45,-.2);
       box(g,1.25,.12,.32,dark,0,1.53,0);box(g,.55,.17,.3,TRAF.pol[0],-.33,1.62,0);box(g,.55,.17,.3,TRAF.pol[1],.33,1.62,0);for(const[x,z]of[[-.85,1.4],[.85,1.4],[-.85,-1.4],[.85,-1.4]])wheel(g,x,z,.33);return{g,len:4.7,r:2,vb:R(26,31)};}};
   const KINDS=['car','tanker','buggy','moto','truck','tanker','pickup','moto','ox','tanker','truck','pickup','car','moto','buggy','pickup','car','truck','car','pickup'];
-  KINDS.forEach((k,n)=>{const v=MK[k]();if(k==='truck'&&n%2===0){addDrums(v.g,-1.2,3.9,7);addTrefoils(v.g,[[1.262,2.3,-1.2,Math.PI/2,2.5],[-1.262,2.3,-1.2,-Math.PI/2,2.5],[0,2.3,-4.712,Math.PI,2.3]]);}v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,tox:!!v.g.drums,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r,soft:1}};TRAF.push(t);OBST.push(t.ob);});
+  KINDS.forEach((k,n)=>{const v=MK[k]();if(k==='truck'&&n===4){addDrums(v.g,-1.2,3.9,7);addTrefoils(v.g,[[1.262,2.3,-1.2,Math.PI/2,2.5],[-1.262,2.3,-1.2,-Math.PI/2,2.5],[0,2.3,-4.712,Math.PI,2.3]]);}v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,tox:!!v.g.drums,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r,soft:1}};TRAF.push(t);OBST.push(t.ob);});
   [['police',1],['truck2',3],['police',6],['truck2',8],['police',10],['tanker',99]].forEach(([k,n])=>{const v=MK[k]();if(k==='truck2'&&n===3){addDrums(v.g,2.6,3.8,6.6);addTrefoils(v.g,[[1.262,2.25,2.6,Math.PI/2,2.4],[-1.262,2.25,2.6,-Math.PI/2,2.4],[1.262,2.25,-4.9,Math.PI/2,2.4],[-1.262,2.25,-4.9,-Math.PI/2,2.4],[0,2.25,-8.212,Math.PI,2.3]]);}v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,extra:true,tox:!!v.g.drums,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r,soft:1}};TRAF.push(t);OBST.push(t.ob);});   // double-trailer trucks and police cars, added after the others and using Math.random, so the seeded scenery stays put
+  {const sd0=seed;[['moto',0],['car',2],['moto',4],['car',5],['moto',8],['car',9],['moto',11]].forEach(([k,n])=>{const v=MK[k]();v.g.visible=false;scene.add(v.g);const t={...v,kind:k,n,extra:true,tox:false,s:0,lat:0,lt:0,v:0,act:false,fall:null,ob:{x:1e9,z:1e9,r:v.r,soft:1}};TRAF.push(t);OBST.push(t.ob);});seed=sd0;}   // owner 2026-11-23: more motorbikes and cars (one toxic-waste truck fewer, above); built with the seed put back afterwards, so the seeded scenery stays put
   TRAF.mkPol=MK.police;   // for the police cars at San Quentin
   // the cable car: red and cream, open at the ends, with passengers hanging on
   CABLE=[];const red=std({color:0xa8241c,roughness:.6}),crm=std({color:0xe8dcb8,roughness:.7}),wd=std({color:0x5a3a22,roughness:.8});for(const dir of[1,-1]){const g=new THREE.Group();g.wh=[];
@@ -3826,7 +3831,7 @@ function wheelsOff(t){const W=WHL;if(!W.l){const gm=new THREE.CylinderGeometry(.
     o.vx=tg.x*t.v*R(.8,1.3)+n.x*sd*R(2,7);o.vz=tg.z*t.v*R(.8,1.3)+n.z*sd*R(2,7);o.vy=R(3,7);o.w=R(8,16);}
   t.dead=1;sfxCrunch(.6);sfxScrape(1);G.shake=Math.max(G.shake,.2);}
 function wheelsTick(dt){const W=WHL;if(!W.l)return;for(const o of W.l){if(o.t<=0)continue;o.t-=dt;if(o.t<=0){o.m.visible=false;continue;}o.vy-=20*dt;const p=o.m.position;p.x+=o.vx*dt;p.z+=o.vz*dt;p.y+=o.vy*dt;if(p.y<o.gy&&o.vy<0){p.y=o.gy;o.vy*=-.4;if(o.vy<1)o.vy=0;const k=Math.exp(-.5*dt*6);o.vx*=k;o.vz*=k;}o.m.rotation.x+=o.w*dt;}}
-function trafficTick(dt,pe){bubbleTick(dt);wheelsTick(dt);tdrTick(dt,pe);if(TRAF.pol){const f=(tmNow()*7|0)%2;TRAF.pol[0].emissiveIntensity=f?4:.15;TRAF.pol[1].emissiveIntensity=f?.15:4;}const i0=PL.idx,zn=zoneArr[i0],road=i=>{const c=zoneArr[i];return(c===3&&i>Z.tu1+40&&!(i>Z.detour-60&&i<Z.detour+90))||c===4;},on=road(i0),bay=i0>=Z.b0-250&&i0<=Z.b1,
+function trafficTick(dt,pe){bubbleTick(dt);wheelsTick(dt);tdrTick(dt,pe);if(TRAF.pol){const f=(tmNow()*7|0)%2;TRAF.pol[0].emissiveIntensity=f?4:.15;TRAF.pol[1].emissiveIntensity=f?.15:4;}const i0=PL.idx,zn=zoneArr[i0],mrn=i=>DRIVE&&Z.sq&&i>Z.gg1+20&&i<Z.sq-40,road=(i,t)=>{const c=zoneArr[i];return(c===3&&i>Z.tu1+40&&!(i>Z.detour-60&&i<Z.detour+90))||c===4||(t&&t.kind==='moto'&&mrn(i));},on=road(i0),mar=mrn(i0),bay=i0>=Z.b0-250&&i0<=Z.b1,
     rsr=i0>=Z.rb0-250&&i0<=Z.rb1,i880=i0>Z.tu1&&i0<Z.b0-250,emy=DRIVE&&i0>=Z.emeryville-Math.round(200/SEG)&&i0<=Z.emeryville+Math.round(900/SEG),gap=bay?48:rsr?90:emy?34:70,spd=bay?1:emy?.7:1.2;   // I-880 and the San Rafael bridge: fewer vehicles, further apart and a bit quicker; the Bay Bridge stays busy for the earthquake; Emeryville is bumper-to-bumper, closer together and slower
   {const gt=TRAF.find(o=>o.n===99);if(gt){if(i0<Z.gg0-200||i0>Z.gg1+200){TRAF.ggDone=0;if(gt.act&&i0>Z.gg1+100)gt.qf=false;}   // the Golden Gate tanker: one sure fuel tanker trundling along in your lane on the bridge, every time you cross
     if(!TRAF.ggDone&&!gt.act&&!gt.fall&&i0>=Z.gg0&&i0<Z.gg0+40&&G.state==="race"){TRAF.ggDone=1;const s=wrapS(pe.s+170),i=wrapI(Math.floor(s/SEG)),w=RW+XW[i],ln=[-.75,-.25,.25,.75].map(k=>k*w).reduce((a,b)=>Math.abs(b-pe.lat)<Math.abs(a-pe.lat)?b:a);
@@ -3839,11 +3844,15 @@ function trafficTick(dt,pe){bubbleTick(dt);wheelsTick(dt);tdrTick(dt,pe);if(TRAF
       t.g.position.x+=F.vx*dt;t.g.position.z+=F.vz*dt;t.g.position.y+=F.vy*dt;t.g.rotation.x+=F.w*dt;t.g.rotation.z+=F.w*.3*dt;t.ob.x=1e9;
       if(t.g.position.y<-44&&!F.sp){F.sp=1;sfxSplash();NOGY=1;for(let k=0;k<26;k++){const a=R(0,6.283),sp=R(2,8);puff(V.set(t.g.position.x,-44.6,t.g.position.z),Math.cos(a)*sp,R(5,16),Math.sin(a)*sp,R(.8,1.6),R(4,7),R(1.2,2.4),.8,0xeef2f4);}NOGY=0;}
       if(t.g.position.y<-60){t.hit=0;t.fall=null;t.act=false;t.qf=false;t.g.visible=false;}continue;}
-    const want=on&&t.n<(bay?11:rsr?4:i880?5:emy?15:9);
-    if(t.act){const ds=wdiff(t.s-pe.s),i=wrapI(Math.floor(t.s/SEG));if(!t.qf&&(ds<-160||ds>1000||(!want&&ds>-40)||!road(i))){t.act=false;t.g.visible=false;t.ob.x=1e9;}}
-    if(!t.act){if(want&&Math.random()<dt*1.5){const s=wrapS(pe.s+R(300,850)),i=wrapI(Math.floor(s/SEG));if(road(i)&&!(QK.st&&i>QK.a-200&&i<QK.b+10)&&!FQ.list.some(q=>(q.Fs||[]).some(F=>Math.abs(wdiff(F.s-s))<160))){const w=RW+XW[i],ln=[-.75,-.25,.25,.75][Math.random()*4|0]*w;
-        if(TRAF.every(o=>!o.act||Math.abs(wdiff(o.s-s))>gap||Math.abs(o.lt-ln)>1.5)){t.act=true;t.s=s;t.lt=t.lat=ln;t.v=t.vb*spd;t.g.visible=true;t.dead=0;t.stop=0;t.sk=0;t.g.rotation.z=0;for(const wh of t.g.wh)wh.visible=true;t.lw=t.kind!=='moto'&&t.kind!=='bike'&&t.kind!=='buggy'&&!t.g.legs&&!t.extra&&Math.random()<.12?R(3,9):0;}}}continue;}
-    let v=t.kind==='buggy'||t.kind==='ox'?t.vb:t.vb*spd;for(const o of TRAF){if(o===t||!o.act||o.fall||Math.abs(o.lt-t.lt)>1.5)continue;const d=wdiff(o.s-t.s);if(d>0&&d<(t.len+o.len)/2+14)v=Math.min(v,o.v*.9);}
+    const want=mar?t.kind==='moto'&&t.n<9:on&&t.n<(bay?11:rsr?4:i880?5:emy?15:9);
+    if(t.act){const ds=wdiff(t.s-pe.s),i=wrapI(Math.floor(t.s/SEG));if(!t.qf&&(ds<-160||ds>1000||(!want&&ds>-40)||!road(i,t))){t.act=false;t.g.visible=false;t.ob.x=1e9;}}
+    if(!t.act){if(want&&Math.random()<dt*1.5){const s=wrapS(pe.s+R(300,850)),i=wrapI(Math.floor(s/SEG));if(road(i,t)&&!(QK.st&&i>QK.a-200&&i<QK.b+10)&&!FQ.list.some(q=>(q.Fs||[]).some(F=>Math.abs(wdiff(F.s-s))<160))){const w=RW+XW[i],ln=[-.75,-.25,.25,.75][Math.random()*4|0]*w;
+        if(TRAF.every(o=>!o.act||Math.abs(wdiff(o.s-s))>gap||Math.abs(o.lt-ln)>1.5)){t.act=true;t.s=s;t.lt=t.lat=ln;t.v=t.vb*spd;t.g.visible=true;t.dead=0;t.stop=0;t.sk=0;t.g.rotation.z=0;for(const wh of t.g.wh)wh.visible=true;t.lw=t.kind!=='moto'&&t.kind!=='bike'&&t.kind!=='buggy'&&!t.g.legs&&!t.extra&&Math.random()<.12?R(3,9):0;t.err=(t.kind==='car'||t.kind==='pickup'||t.kind==='moto')&&Math.random()<.3;t.em=t.emc=1;t.emT=R(1,4);t.et=R(2,5);t.ep=R(0,6.3);t.wo=0;}}}continue;}
+    const er=t.err&&!t.dead&&!t.sk&&!t.sw&&!t.kv&&!t.spr&&!t.cr&&!t.jp,eds=wdiff(t.s-pe.s);   // an erratic driver (about 3 in 10 cars, pickups and motorbikes): surges and slows, weaves in the lane, darts across lanes and cuts in, but never slows in front of you or cuts in close ahead
+    if(er){t.emT-=dt;if(t.emT<=0){t.emT=R(2,5);t.em=Math.random()<.3?R(.55,.7):R(.9,1.3);}const pb=eds>0&&eds<50+pe.v*1.5&&Math.abs(pe.lat-t.lat)<2.8;t.emc+=((pb?Math.max(1,t.em):t.em)-t.emc)*Math.min(1,dt*.5);   // no slowing down with you close behind in its lane
+      t.et-=dt;if(t.et<=0){t.et=R(2.5,6);const i2=wrapI(Math.floor(t.s/SEG)),w2=RW+XW[i2],cur=clamp(Math.round((t.lt/w2+.75)*2),0,3),ln=[-.75,-.25,.25,.75][cur>=3?2:cur<=0?1:cur+(Math.random()<.5?-1:1)]*w2,safe=Math.abs(ln-pe.lat)>2.8||eds>30+pe.v*.8||eds<-14;   // into your lane only well ahead of you, or behind you
+        if(safe&&TRAF.every(o=>o===t||!o.act||Math.abs(o.lt-ln)>1.5||Math.abs(wdiff(o.s-t.s))>(t.len+o.len)/2+10))t.lt=ln;}}else if(t.err)t.emc=1;
+    let v=t.kind==='buggy'||t.kind==='ox'?t.vb:t.vb*spd*(t.err?t.emc:1);for(const o of TRAF){if(o===t||!o.act||o.fall||Math.abs(o.lt-t.lt)>1.5)continue;const d=wdiff(o.s-t.s);if(d>0&&d<(t.len+o.len)/2+14)v=Math.min(v,o.v*.9);}if(mar&&LOGT.act&&Math.abs(LOGT.lat-t.lt)<2.5){const d=wdiff(LOGT.s-t.s);if(d>0&&d<22)v=Math.min(v,LOGT.v*.9);}   // Marin: the motorbikes keep behind the log truck too
     if(DUCK.st===1){const dd=wdiff(DUCK.s-t.s);if(dd>0&&dd<55)v=Math.min(v,Math.max(0,(dd-t.len/2-7)*.5));}   // everyone stops for the ducks
     t.sw=0;for(const q of FQ.list)for(const F of q.Fs||[]){if(F.kL<.05)continue;const dd=wdiff(F.s-t.s);if(dd>-6&&dd<170&&t.lat>F.lo-1.6&&t.lat<F.hi+1.6){t.lt=F.free;t.sw=1;if(Math.abs(t.lat-F.free)>1.2)v=Math.min(v,Math.sqrt(12*Math.max(0,dd-t.len/2-5)));}}   // and for a fissure: brake hard, and squeeze past in the open lane
     if(t.dead)v=0;   // no wheels: grinds to a halt
@@ -3854,11 +3863,11 @@ function trafficTick(dt,pe){bubbleTick(dt);wheelsTick(dt);tdrTick(dt,pe);if(TRAF
       if(t.wt<=0){t.wt=R(2.5,5);const ln=[-.75,-.25,.25,.75][Math.random()*4|0]*w2;if(TRAF.every(o=>o===t||!o.act||Math.abs(o.lt-ln)>1.5||Math.abs(wdiff(o.s-t.s))>(t.len+o.len)/2+8))t.lt=ln;}
       t.bkT=(t.bkT??R(4,9))-dt;if(t.bkT<=0){t.bkT=R(6,12);t.bk=R(.7,1.4);}if(t.bk>0){t.bk-=dt;v=Math.min(v,1);t.v=Math.max(0,t.v-6*dt);}
       t.dd=(t.dd??R(4,9))-dt;const dsp=wdiff(t.s-pe.s);if(t.dd<=0){t.dd=R(7,14);if(dsp>15&&dsp<220&&G.state==='race')tdrDrop(t);}}
-    if(t.sk)t.v=Math.max(0,t.v-(t.v*.9+2)*dt);else t.v+=clamp(v-t.v,-9*dt,3*dt);t.s=wrapS(t.s+t.v*dt);const w=RW+XW[i];t.lt=clamp(t.lt,-.75*w,.75*w);t.lat+=clamp(t.lt-t.lat,-(t.sw?3:tx?2.6:1.5)*dt,(t.sw?3:tx?2.6:1.5)*dt);if(tx){t.lat=clamp(t.lat+Math.cos(t.wp)*.9*dt,-.82*w,.82*w);}
+    if(t.sk)t.v=Math.max(0,t.v-(t.v*.9+2)*dt);else t.v+=clamp(v-t.v,-9*dt,3*dt);t.s=wrapS(t.s+t.v*dt);const w=RW+XW[i];t.lt=clamp(t.lt,-.75*w,.75*w);t.lat+=clamp(t.lt-t.lat,-(t.sw?3:tx?2.6:er?2.2:1.5)*dt,(t.sw?3:tx?2.6:er?2.2:1.5)*dt);t.wo=0;if(er){t.ep+=dt*1.6;t.wo=Math.sin(t.ep)*.6*clamp((Math.abs(eds)-6)/20,0,1);}if(tx){t.lat=clamp(t.lat+Math.cos(t.wp)*.9*dt,-.82*w,.82*w);}
     if(t.kv){t.lat+=t.kv*dt;t.kv*=Math.exp(-2.2*dt);if(Math.abs(t.kv)<.2)t.kv=0;t.lt=clamp(t.lat,-.75*w,.75*w);const wl=wallAt[i]-.5;   // knocked sideways by the player
       if(Math.abs(t.lat)>wl){if(zoneArr[i]===4){const n=Nn[i],tg=T[i],sd=Math.sign(t.lat),out=Math.max(3,Math.abs(t.kv));t.fall={vx:tg.x*t.v+n.x*sd*out,vz:tg.z*t.v+n.z*sd*out,vy:2.5,w:R(1,1.8)*sd};t.kv=0;sfxCrunch(.8);sfxScrape(1);G.shake=Math.max(G.shake,.4);placeVehicle(t);continue;}   // over the bridge rail and down into the bay, tipping as it goes
         t.lat=Math.sign(t.lat)*wl;t.kv=0;}}
-    placeVehicle(t);if(tx){t.g.rotation.y+=Math.sin(t.wp*1.7)*.035+(t.lt-t.lat)*.015;t.g.rotation.z=Math.sin(t.wp*1.3)*.035;if(t.bk>0)t.g.rotation.x+=.03;}if(t.jp)beetleJump(t,dt);
+    t.lat+=t.wo||0;placeVehicle(t);t.lat-=t.wo||0;if(t.wo)t.g.rotation.y+=Math.cos(t.ep)*.06;if(tx){t.g.rotation.y+=Math.sin(t.wp*1.7)*.035+(t.lt-t.lat)*.015;t.g.rotation.z=Math.sin(t.wp*1.3)*.035;if(t.bk>0)t.g.rotation.x+=.03;}if(t.jp)beetleJump(t,dt);
     if(t.spr||t.spa){t.spa=(t.spa||0)+(t.spr||0)*dt;t.spr=(t.spr||0)*Math.exp(-1.1*dt);   // careening after a hit by the Sherp: spins round, tyre smoke, then straightens up and drives on
       if(Math.abs(t.spr)<.4){t.spr=0;t.spa=Math.atan2(Math.sin(t.spa),Math.cos(t.spa))*Math.exp(-2.5*dt);if(Math.abs(t.spa)<.02)t.spa=0;}
       t.g.rotation.y+=t.spa;t.g.rotation.z=Math.sin(t.spa*2)*.08*Math.min(1,Math.abs(t.spr)/4);
@@ -4350,7 +4359,7 @@ function wqTick(rdt){const Q=WQK,pe=ents.find(e=>e.player);if(!DRIVE||!pe||!Z.wi
       const dx=k.x-PL.x,dz=k.z-PL.z,ch=Math.sin(PL.h),cc=Math.cos(PL.h),al=dx*ch+dz*cc,ac=dx*cc-dz*ch;if(Math.abs(al)<2.4&&Math.abs(ac)<1.9&&Math.abs(pe.v)>2&&!PL.crash){k.sq=.9;sfxBoing(1);G.shake=Math.max(G.shake,.25);if(!Q.bo){Q.bo=1;say('BOING !','',1.2);}}}}   // run over: squashed flat, springs back
   if(ds<-150)wqEnd();}   // the hole and cracks stay until you are well past
 // the quake's hole: drop into it and the car goes down burning, then the usual reset
-function holeFall(pe){const i=PL.idx;crashPlayer(Math.abs(pe.v)*.3,false);const w=hero.wreck;if(!w)return;w.free=1;w.y=H[i];w.vy=0;w.vx*=.25;w.vz*=.25;w.wr=R(-2,2);w.fire=R(1.6,2.2);
+function holeFall(pe){const i=PL.idx;crashPlayer(Math.abs(pe.v)*.3,false);const w=hero.wreck;if(!w)return;w.free=1;w.hole=1;w.y=H[i];w.vy=0;w.vx*=.25;w.vz*=.25;w.wr=R(-2,2);w.fire=R(1.6,2.2);
   PL.crash.cam=1;camP.set(PL.x+Nn[i].x*14-T[i].x*16,H[i]+12,PL.z+Nn[i].z*14-T[i].z*16);say('INTO THE CRACK','No. '+LIV().num+' - McQUEEN',3);}
 // San Quentin: ~30 prisoners in stripes (instanced) pour out onto the road and wave both arms to flag you down. Harmless: nothing collides, you drive straight through them
 const PRIS={l:[],on:0,V:new THREE.Vector3(),W:new THREE.Vector3(),Y:new THREE.Vector3(0,1,0),X:new THREE.Vector3(1,0,0),P:new THREE.Vector3(),S1:new THREE.Vector3(1,1,1),Q:new THREE.Quaternion(),QY:new THREE.Quaternion(),F:new THREE.Matrix4(),L:new THREE.Matrix4(),M:new THREE.Matrix4(),N:30};
@@ -4780,14 +4789,14 @@ function sfxBigfootRoar(k){if(!AC)return;const t=AC.currentTime;for(const[f,v]of
   hit(t,1.9,.55*k,480,'bandpass',master);hit(t+.1,1.5,.3*k,1300,'bandpass',master);}
 function bigfootTick(rdt){const B=BIGF;if(!DRIVE||!Z.sq)return;const pe=ents.find(e=>e.player);if(!pe)return;const i=PL.idx,m_=x=>Math.round(x/SEG);
   if(i<Z.gg1||i>Z.sq){B.armed=1;B.at=0;}
-  if(B.st===0&&B.armed&&G.state==='race'&&LOGT.act&&LOGT.fst&&!LOGT.spill&&i>Z.gg1&&i<Z.sq-m_(300)){const d=wdiff(LOGT.s-pe.s);if(d>45&&d<70+Math.max(0,pe.v-15)*1.8){   // the first log truck of the pass: he runs out of the redwoods beside it, ahead of the car, and shoves it
-    if(!B.g)bigfootBuild();B.st=6;B.t=B.t2=0;B.armed=0;LOGT.fst=0;B.sd=Math.sign(LOGT.lat)||-1;B.s=LOGT.s+1;B.lat=10;B.n=-1;B.ph=0;B.lean=0;B.said=0;B.h=null;B.bang=0;}}
+  if(B.st===0&&B.armed&&G.state==='race'&&LOGT.act&&LOGT.fst&&!LOGT.spill&&i>Z.gg1&&i<Z.sq-m_(300)){const d=wdiff(LOGT.s-pe.s);if(d>70&&d<115+Math.max(0,pe.v-15)*2.6){   // the first log truck of the pass: he runs out of the redwoods beside it, ahead of the car, and shoves it (owner 2026-11-23: he starts further back in the trees and comes out sooner, so you see him coming)
+    if(!B.g)bigfootBuild();B.st=6;B.t=B.t2=0;B.armed=0;LOGT.fst=0;B.sd=Math.sign(LOGT.lat)||-1;B.s=LOGT.s+1;B.lat=17;B.n=-1;B.ph=0;B.lean=0;B.said=0;B.h=null;B.bang=0;}}
   if(B.st===0){if(B.g)B.g.visible=false;if(B.armed&&G.state==='race'&&i>Z.gg1+m_(180)&&i<Z.sq-m_(800)){if(!B.at)B.at=Math.min(Z.gg1+m_(R(250,700)),Z.sq-m_(900));if(i>=B.at)bigfootStart();}return;}
   B.t+=rdt;B.t2+=rdt;const g=B.g,ds=B.s-pe.s,cd=camera.position.distanceTo(g.position),kd=clamp(70/(cd+25),.08,1);
   let run=0,lean=0,face=0;const A=[[0,B.A[0].rotation.z],[0,B.A[1].rotation.z]];   // per arm target [x,z]
   const L=LOGT,dT=wdiff(L.s-pe.s);
   if(B.st===6){   // running out from the trees alongside the log truck, keeping pace with it
-    if(!L.act||L.spill){B.st=5;}else{B.s=L.s+1;B.lat=Math.max(-.4,B.lat-rdt*8);run=1;face=1;lean=.25;for(let k=0;k<2;k++){const sx=k?1:-1;A[k]=[Math.sin(B.ph+k*Math.PI)*.9-.3,sx*.15];}
+    if(!L.act||L.spill){B.st=5;}else{B.s=L.s+1;B.lat=Math.max(-.4,B.lat-rdt*8);run=1;face=1;lean=.25;B.lat=Math.max(-.4,B.lat+rdt*(B.lat>10?4:0));for(let k=0;k<2;k++){const sx=k?1:-1;A[k]=[Math.sin(B.ph+k*Math.PI)*.9-.3,sx*.15];}
       if(!B.said&&cd<320){B.said=1;say('BIGFOOT !','OUT OF THE REDWOODS',2.2);}
       if((B.lat<=-.4&&B.t2>1)||dT<26){B.st=7;B.t2=0;B.bang=0;}}}
   if(B.st===7){   // both huge hands on the side of the truck and a mighty shove: it swerves away across the road and the logs spill off
