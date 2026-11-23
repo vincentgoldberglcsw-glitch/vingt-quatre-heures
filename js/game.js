@@ -2471,9 +2471,28 @@ function sfxPing(){if(!AC)return;tone('triangle',R(1800,3400),AC.currentTime,.05
 function sfxBeep(hi){if(!AC)return;tone('square',hi?880:440,AC.currentTime,hi?.5:.14,.2,master,{lp:2000});}
 function updateAudio(rpm,thr,speed,slip){if(!AC)return;const SH=!!(hero&&hero.sherpTyres),t=AC.currentTime,f=rpm/60*3*(G.slow<1?.7:1)*(SH?.48:1),on=G.state==='race'||G.state==='count'||G.state==='finish';   // SH: the Sherp's engine is a low, slow rumble - an octave down, the treble cut
   for(const[o,m]of engOsc)o.frequency.setTargetAtTime(f*m,t,.03);
-  engFilt.frequency.setTargetAtTime(SH?180+rpm*.06+thr*380:500+rpm*.28+thr*1700,t,.05);engG.gain.setTargetAtTime(on&&!G.paused&&!PL.crash?(.11+thr*.15)*(G.cam===1?1.15:1)*(SH?1.45:1):0,t,.06);
+  engFilt.frequency.setTargetAtTime(SH?180+rpm*.06+thr*380:500+rpm*.28+thr*1700,t,.05);engG.gain.setTargetAtTime(on&&!G.paused&&!PL.crash?(.11+thr*.15)*(G.cam===1?1.15:1)*(SH?1.45:1)*(!DRIVE&&FLD.at?1+.7*clamp(1-(t-FLD.at)/6,0,1):1):0,t,.06);
   windG.gain.setTargetAtTime(on&&!G.paused?Math.min(.22,speed*speed*.00003):0,t,.1);squealG.gain.setTargetAtTime(on&&!G.paused&&!PL.crash&&!(DRIVE&&thr>.2&&Math.abs(PL.steer)<.2&&!PL.brk)?clamp((slip-2.6)*.055,0,.32):0,t,.05);engG.echo.gain.setTargetAtTime(G.tun*1.1,t,.15);
-  rainG_.gain.setTargetAtTime(G.paused?0:G.weather==='rain'?.1:G.weather==='hail'?.14:0,t,.3);musicG.gain.setTargetAtTime(musicOn?(G.state==='title'?.65:.42):0,t,.2);}
+  rainG_.gain.setTargetAtTime(G.paused?0:G.weather==='rain'?.1:G.weather==='hail'?.14:0,t,.3);musicG.gain.setTargetAtTime(musicOn?(G.state==='title'?.65:.42):0,t,.2);if(!DRIVE)fieldAudio(t,on);}
+// Le Mans field sound: a background drone of the whole pack (loud just after the start, then low under your own engine), plus 3 pooled voices
+// that follow the nearest rival cars - louder as you close in, panned left/right, with a little doppler as they pass or are passed (FLD, fieldAudio).
+const FLD={at:0,dr:null,v:[]};
+function fieldAudio(t,on){const live=on&&!G.paused;
+  if(!FLD.dr){const g=AC.createGain(),lp=AC.createBiquadFilter();g.gain.value=0;lp.type='lowpass';lp.frequency.value=340;lp.Q.value=.7;lp.connect(g);g.connect(master);
+    for(const[f,ty]of[[52,'sawtooth'],[57.5,'sawtooth'],[77,'square'],[104,'sawtooth']]){const o=AC.createOscillator();o.type=ty;o.frequency.value=f;o.connect(lp);o.start();}FLD.dr=g;
+    for(let i=0;i<3;i++){const o=AC.createOscillator(),o2=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain(),p=AC.createStereoPanner?AC.createStereoPanner():null;o.type='sawtooth';o2.type='square';o2.detune.value=-1200;f.type='lowpass';f.Q.value=1.5;g.gain.value=0;
+      o.connect(f);o2.connect(f);f.connect(g);if(p){g.connect(p);p.connect(master);}else g.connect(master);o.start();o2.start();FLD.v.push({o,o2,f,g,p,e:null,d:0,tt:t});}}
+  const k=FLD.at?clamp(1-(t-FLD.at)/8,0,1):0;   // 1 right at the start, gone 8 s later
+  FLD.dr.gain.setTargetAtTime(!live?0:G.state==='count'?.05:.035+.17*k*k,t,.25);
+  const near=[];if(live)for(const e of ents){if(e.player||e.car.wreck||!e.car.visible)continue;const d=Math.hypot(e.car.position.x-PL.x,e.car.position.z-PL.z);if(d<170)near.push([d,e]);}
+  near.sort((a,b)=>a[0]-b[0]);const want=near.slice(0,3).map(n=>n[1]);
+  for(const v of FLD.v)if(v.e&&!want.includes(v.e))v.e=null;
+  for(const e of want)if(!FLD.v.some(v=>v.e===e)){const v=FLD.v.find(v=>!v.e);v.e=e;v.d=-1;}
+  const fx=Math.sin(PL.h),fz=Math.cos(PL.h);
+  for(const v of FLD.v){if(!v.e){v.g.gain.setTargetAtTime(0,t,.12);continue;}const e=v.e,dx=e.car.position.x-PL.x,dz=e.car.position.z-PL.z,d=Math.hypot(dx,dz),dt=Math.max(t-v.tt,.005);
+    const vr=v.d<0?0:clamp((d-v.d)/dt,-60,60),f=(70+Math.min(e.v,95)*2.3)*340/(340+vr);v.d=d;v.tt=t;   // closing in: pitch up; pulling apart: pitch down
+    v.o.frequency.setTargetAtTime(f,t,.05);v.o2.frequency.setTargetAtTime(f,t,.05);v.f.frequency.setTargetAtTime(400+e.v*14,t,.08);
+    v.g.gain.setTargetAtTime(.2*Math.pow(Math.max(0,1-d/170),2.2)*(1-k*.6),t,.08);if(v.p)v.p.pan.setTargetAtTime(clamp((dx*-fz+dz*fx)/(d+6),-.85,.85),t,.08);}}
 
 function sfxThunder(d){if(!AC)return;const t=AC.currentTime+Math.min(3,d/340),v=clamp(140/(d+60),.15,1);hit(t,3.2,1.1*v,140,'lowpass',master);hit(t+.3,2.4,.7*v,90,'lowpass',master);if(d<250)hit(t,.25,1.2*v,2600,'highpass',master);}
 // Trackside announcer, kept faint. Uses the computer's French voice if it has one; otherwise an unintelligible loudspeaker murmur.
@@ -5670,8 +5689,8 @@ function drawClock(g,w,h,v,sec){g.setTransform(1,0,0,1,0,0);g.fillStyle='#16181a
   g.fillStyle='#b8261c';g.beginPath();g.arc(0,0,20,0,7);g.fill();
   g.setTransform(1,0,0,1,0,0);const vg=g.createRadialGradient(w/2,h/2,h*.3,w/2,h/2,w*.65);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=vg;g.fillRect(0,0,w,h);}
 function sfxHeart(v){if(!AC)return;const t=AC.currentTime;tone('sine',66,t,.17,1.1*v,master,{to:34,h:.2});tone('sine',110,t,.07,.5*v,master,{to:60});hit(t,.06,.35*v,300,'lowpass',master);tone('sine',56,t+.18,.15,.8*v,master,{to:32,h:.2});hit(t+.18,.05,.22*v,260,'lowpass',master);}
-function sfxRoar(){if(!AC)return;const t=AC.currentTime;hit(t,6.5,1.1,420,'lowpass',master);hit(t+.1,3.2,.5,1600,'bandpass',master);   // the whole grid firing up at once: a pack of engines, each a little apart, that pulls away and fades
-  for(let i=0;i<18;i++){const d=Math.random()*.45,f=38+Math.random()*40,far=i>9,dur=(far?7.5:5.5)+Math.random()*1.5;tone(i%3?'sawtooth':'square',f,t+d,dur,far?.05:.075,master,{to:f*(2.4+Math.random()*1.2),a:.08+Math.random()*.2,h:.28,lp:far?700:1900,lpTo:far?260:500,det:(Math.random()-.5)*30});}}
+function sfxRoar(){if(!AC)return;const t=AC.currentTime;FLD.at=t;hit(t,6.5,1.4,420,'lowpass',master);hit(t+.1,3.2,.65,1600,'bandpass',master);hit(t,3,.9,110,'lowpass',master);   // the whole grid firing up at once: a pack of engines, each a little apart, that pulls away and fades
+  for(let i=0;i<18;i++){const d=Math.random()*.45,f=38+Math.random()*40,far=i>9,dur=(far?7.5:5.5)+Math.random()*1.5;tone(i%3?'sawtooth':'square',f,t+d,dur,far?.065:.095,master,{to:f*(2.4+Math.random()*1.2),a:.08+Math.random()*.2,h:.28,lp:far?700:1900,lpTo:far?260:500,det:(Math.random()-.5)*30});}}
 function sfxCheer(){if(!AC)return;const t=AC.currentTime;hit(t,4.5,.5,1400,'bandpass',master);hit(t+.2,4,.35,2600,'bandpass',master);}
 function sfxTick(){if(!AC)return;const t=AC.currentTime;tone('square',2100,t,.018,.14,master);hit(t,.02,.12,5000,'highpass',master);}
 
