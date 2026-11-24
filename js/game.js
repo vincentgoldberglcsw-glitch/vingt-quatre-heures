@@ -2461,9 +2461,9 @@ function updateParts(dt){for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.l
 // loose bodywork and wheels
 const debris=[];{const dg=new THREE.BoxGeometry(1,1,1),tg=cyl(.33,.33,.34,16).rotateZ(Math.PI/2);
   for(let i=0;i<42;i++){const m=new THREE.Mesh(i<6?tg:dg,i<6?tyreMat:new THREE.MeshStandardMaterial({roughness:.5}));m.visible=false;m.castShadow=true;scene.add(m);debris.push({m,life:0,v:new THREE.Vector3(),w:new THREE.Vector3(),wheel:i<6});}}
-function shed(pos,vx,vz,n,col){for(const d of debris){if(n<=0)break;if(d.life>0||d.wheel)continue;n--;d.life=R(6,10);d.m.visible=true;d.g=GY;d.m.position.set(pos.x+R(-.8,.8),pos.y+R(0,.4)+(GY>.6&&pos.y<GY-.5?GY:0),pos.z+R(-.8,.8));
+function shed(pos,vx,vz,n,col){for(const d of debris){if(n<=0)break;if(d.life>0||d.wheel)continue;n--;d.life=R(6,10);d.hitE=null;d.m.visible=true;d.g=GY;d.m.position.set(pos.x+R(-.8,.8),pos.y+R(0,.4)+(GY>.6&&pos.y<GY-.5?GY:0),pos.z+R(-.8,.8));
   d.v.set(vx*R(.3,.95)+R(-7,7),R(2,9),vz*R(.3,.95)+R(-7,7));d.w.set(R(-12,12),R(-12,12),R(-12,12));d.m.scale.set(R(.15,.75),R(.012,.03),R(.15,.6));d.m.material.color.setHex(Math.random()<.7?col:0x18181a);}}
-function shedWheel(pos,vx,vz){const d=debris.find(d=>d.wheel&&d.life<=0);if(!d)return;d.life=10;d.m.visible=true;d.g=GY;d.m.position.set(pos.x,.5+GY,pos.z);d.v.set(vx*R(.7,1.05)+R(-5,5),R(3,8),vz*R(.7,1.05)+R(-5,5));d.w.set(R(-4,4),R(-3,3),R(-14,14));}
+function shedWheel(pos,vx,vz){const d=debris.find(d=>d.wheel&&d.life<=0);if(!d)return;d.life=10;d.hitE=null;d.m.visible=true;d.g=GY;d.m.position.set(pos.x,.5+GY,pos.z);d.v.set(vx*R(.7,1.05)+R(-5,5),R(3,8),vz*R(.7,1.05)+R(-5,5));d.w.set(R(-4,4),R(-3,3),R(-14,14));}
 // skid marks: a ring buffer of dark quads laid on the road
 const SKN=1400,skPos=new Float32Array(SKN*18),skG=new THREE.BufferGeometry();skG.setAttribute('position',new THREE.BufferAttribute(skPos,3));
 const skid=new THREE.Mesh(skG,new THREE.MeshBasicMaterial({color:0x0c0c0c,transparent:true,opacity:.5,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-3}));skid.frustumCulled=false;scene.add(skid);let skI=0;const skLast=[null,null];
@@ -2477,7 +2477,7 @@ function startWreck(e,vx,vz,sev,atWall){const car=e.car;if(car.wreck)return car.
   const w={e,car,x:car.position.x,z:car.position.z,y:0,vy:0,h:car.rotation.y,vx,vz,wy:R(1.2,3.5)*(Math.random()<.5?-1:1),roll:0,wr:0,t:0,fire:0,burn:0,idx:wrapI(Math.floor(e.s/SEG)),col:new THREE.Color(car.o.base).getHex()};
   car.wreck=w;wrecks.push(w);underside(car);if(!DRIVE&&e.player)tearUp(w,sev);if(!atWall)impact(w,sev);return w;}
 // Le Mans, the player's car (the film's No. 20 wreck): nose and tail torn open and hanging down, the rear deck lid flung high into the air, panels thrown off; it is sent sliding out to finish pinned against the rail, then it goes up
-function flingPanel(x,y,z,vx,vy,vz,sx,sz,col,spin){const d=debris.find(d=>!d.wheel&&d.life<=0);if(!d)return;d.life=R(12,16);d.m.visible=true;d.g=GY;d.m.position.set(x,y,z);d.v.set(vx,vy,vz);d.w.set(R(-spin,spin),R(-spin,spin),R(-spin,spin));d.m.scale.set(sx,.03,sz);d.m.material.color.setHex(col);}
+function flingPanel(x,y,z,vx,vy,vz,sx,sz,col,spin){const d=debris.find(d=>!d.wheel&&d.life<=0);if(!d)return;d.life=R(12,16);d.hitE=null;d.m.visible=true;d.g=GY;d.m.position.set(x,y,z);d.v.set(vx,vy,vz);d.w.set(R(-spin,spin),R(-spin,spin),R(-spin,spin));d.m.scale.set(sx,.03,sz);d.m.material.color.setHex(col);}
 function tearUp(w,sev){const car=w.car,M=car.M,zR=M.zR,h=(x,y,z,n)=>{const s=Math.sin(x*12.9898+y*78.233+z*37.719+n*4.1)*43758.5453;return s-Math.floor(s);};
   if(!w.tgt){if(car.body.geometry===M.geo)car.body.geometry=M.geo.clone();w.tgt=Float32Array.from(car.body.geometry.attributes.position.array);}const t=w.tgt,side=R(-1,1);
   for(let i=0;i<t.length;i+=3){const x=t[i],y=t[i+1],z=t[i+2],kf=clamp((z-1.4)/(ZF-1.4),0,1),kr=clamp((zR+1.05-z)/1.05,0,1),k=Math.max(kf,kr),a=h(Math.round(x*6),Math.round(y*6),Math.round(z*5),1),b=h(Math.round(x*6),Math.round(y*6),Math.round(z*5),2);
@@ -2490,12 +2490,23 @@ function tearUp(w,sev){const car=w.car,M=car.M,zR=M.zR,h=(x,y,z,n)=>{const s=Mat
   const sd=Math.sign(w.e.lat)||(Math.random()<.5?-1:1),n=Nn[w.idx],vn=(w.vx*n.x+w.vz*n.z)*sd;if(vn<7){w.vx+=n.x*sd*(7-vn+R(2,5));w.vz+=n.z*sd*(7-vn+R(2,5));}
   w.pin=1;w.brake=13;if(!w.fire)w.fire=R(.8,1.2);}
 // Le Mans, a 100-175 mph knock against the barrier: the bodywork on the side and corner that hit is pushed in, and the dents build up hit after hit (cleared when the car is wrecked or a new race starts)
-function dentHero(bi,sd,vn){const car=hero,M=car&&car.M;if(!M||!car.body||car.wreck)return;if(car.body.geometry===M.geo){car.body.geometry=M.geo.clone();car.dentB=M.geo.attributes.position.array;}const a=car.body.geometry.attributes.position,t=a.array,b=car.dentB||M.geo.attributes.position.array;
-  const dx=Nn[bi].x*sd,dz=Nn[bi].z*sd,c=Math.cos(PL.h),s=Math.sin(PL.h),lx=dx*c-dz*s,lz=dx*s+dz*c,zm=(ZF+M.zR)/2,hl=(ZF-M.zR)/2,k=Math.min(.95/Math.max(Math.abs(lx),.01),hl/Math.max(Math.abs(lz),.01)),cx=lx*k,cz=zm+lz*k+R(-.35,.35),cy=R(.22,.42);
+function dentHero(bi,sd,vn){dentCar(hero,PL.h,Nn[bi].x*sd,Nn[bi].z*sd,vn);}
+function dentCar(car,h,dx,dz,vn){const M=car&&car.M;if(!M||!car.body||car.wreck)return;if(car.body.geometry===M.geo){car.body.geometry=M.geo.clone();car.dentB=M.geo.attributes.position.array;}const a=car.body.geometry.attributes.position,t=a.array,b=car.dentB||M.geo.attributes.position.array;
+  const dl=Math.hypot(dx,dz)||1;dx/=dl;dz/=dl;const c=Math.cos(h),s=Math.sin(h),lx=dx*c-dz*s,lz=dx*s+dz*c,zm=(ZF+M.zR)/2,hl=(ZF-M.zR)/2,k=Math.min(.95/Math.max(Math.abs(lx),.01),hl/Math.max(Math.abs(lz),.01)),cx=lx*k,cz=zm+lz*k+R(-.35,.35),cy=R(.22,.42);
   const rad=clamp(.45+vn*.05,.5,1.1),dep=clamp(.03+vn*.011,.04,.16);
   for(let i=0;i<t.length;i+=3){const d=Math.hypot(t[i]-cx,t[i+1]-cy,(t[i+2]-cz)*.8);if(d>rad)continue;const q=(1-d/rad)**2*dep*(1+.4*Math.sin(t[i]*41+t[i+1]*67+t[i+2]*29));
     t[i]-=lx*q;t[i+2]-=lz*q;t[i+1]=Math.max(.09,t[i+1]-q*.25);if(Math.sign(t[i])===Math.sign(b[i])&&Math.abs(t[i])<Math.abs(b[i])*.62)t[i]=b[i]*.62;const oz=b[i+2]-zm;if(Math.abs(t[i+2]-zm)<Math.abs(oz)*.86)t[i+2]=zm+oz*.86;}
   a.needsUpdate=true;car.body.geometry.computeVertexNormals();}
+// Le Mans: the pieces thrown off the player's exploding car hit the rivals near it. A small panel: a clang, a swerve and a lift; a big panel or a wheel: a spin with tyre smoke and a dent; a big piece at a really hard closing speed: the rival crashes too. Only moving pieces, only cars within 80 m of the wreck
+function sfxClang(v){if(!AC)return;const t=AC.currentTime;tone('square',740,t,.22,.22*v,master,{to:540,lp:3200});tone('triangle',1210,t,.4,.16*v,master,{to:1150});hit(t,.08,.35*v,2600,'bandpass',master);}
+function debrisHitAI(){if(DRIVE)return;const hw=hero.wreck;let cars=null;
+  for(const d of debris){if(d.life<=0||d.v.lengthSq()<16)continue;if(!cars){cars=ents.filter(e=>!e.player&&!(e.out>0)&&!e.car.wreck&&(!hw||(e.car.position.x-hw.x)**2+(e.car.position.z-hw.z)**2<6400));if(!cars.length)return;}
+    for(const e of cars){if(d.hitE===e||e.car.wreck)continue;const c=e.car.position,p=d.m.position,dx=p.x-c.x,dz=p.z-c.z;if(dx*dx+dz*dz>2.4*2.4||p.y>c.y+1.6)continue;d.hitE=e;
+      const i=wrapI(Math.floor(e.s/SEG)),cvx=T[i].x*e.v,cvz=T[i].z*e.v,rel=Math.hypot(d.v.x-cvx,d.v.y,d.v.z-cvz),big=d.wheel||Math.max(d.m.scale.x,d.m.scale.z)>1,side=Math.sign(dx*Nn[i].x+dz*Nn[i].z)||1,near=clamp(70/(camera.position.distanceTo(c)+10),.15,1);
+      d.v.set(cvx*.6-dx*2,Math.abs(d.v.y)*.4+2,cvz*.6-dz*2);d.w.multiplyScalar(1.3);for(let k=0;k<6;k++)spark(V.copy(p),R(-4,4),R(1,5),R(-4,4));
+      if(big&&rel>30){crashAI(e,clamp(rel*.3,10,20),-side*6);continue;}
+      if(big){e.spin=R(.6,1.1);e.spinR=(Math.random()<.5?-1:1)*R(3.5,6);e.v*=.7;e.lat=clamp(e.lat-side*R(.6,1.4),-(RW-1),RW-1);dentCar(e.car,e.car.rotation.y,dx,dz,clamp(rel*.4,6,16));sfxCrunch(.6*near);}
+      else{e.lat=clamp(e.lat-side*R(.8,1.6),-(RW-1.2),RW-1.2);e.v*=.82;e.pass=-side;sfxClang(near);if(rel>20)dentCar(e.car,e.car.rotation.y,dx,dz,clamp(rel*.2,4,9));}}}}
 // What you see when a car goes over: floor pan, frame tubes, the flat engine and its exhausts, gearbox, driveshafts and wishbones. Built the first time a car wrecks.
 const UND_TEX=canvas(256,512,(g,w,h)=>{g.fillStyle='#a4a8aa';g.fillRect(0,0,w,h);for(let i=0;i<900;i++){g.fillStyle=`rgba(${Math.random()<.5?255:0},${Math.random()<.5?255:0},${Math.random()<.5?255:0},.035)`;g.fillRect(R(0,w),R(0,h),R(20,90),1);}
   g.strokeStyle='rgba(20,22,24,.75)';g.lineWidth=2;const ys=[0,84,170,262,350,430,512];for(const y of ys){g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke();}for(const x of[64,128,192]){g.beginPath();g.moveTo(x,0);g.lineTo(x,h);g.stroke();}
@@ -2687,7 +2698,7 @@ const SHOWC={};
 function setupGrid(){for(const k in SHOWC)SHOWC[k].visible=false;for(const r of[...RIV,...RIVC])if(r.car)r.car.visible=false;for(const w of [...wrecks])endWreck(w);fires.length=0;ents.length=0;const order=DRIVE?['p']:[0,1,2,3,4,'p',5,6];
   order.forEach((id,k)=>{const s=DRIVE?S0:S0-6-k*7.5,lat=DRIVE?-(5.3+XW[START_I]):RW-2.2;   /* free drive: parked at the kerb in front of the house */   // echelon start: cars parked nose-out along the pit side, as in 1970
     if(id==='p'){ents.push({player:true,car:hero,s,lat,v:0,dist:s-S0,name:'S. McQUEEN',num:LIV().num,out:0});at(s,lat,0,V);PL.x=V.x;PL.z=V.z;PL.idx=wrapI(Math.round(s/SEG));PL.h=yaw(PL.idx)-(DRIVE?0:GRID_A);G.camH=yaw(PL.idx);PL.vx=PL.vz=0;PL.steer=0;resetVehicle(VS,hero.M.dyn,0);PL.crash=null;PL.auto=null;PL.safe=0;PL.lapN=0;if(hero.body&&hero.M&&hero.body.geometry!==hero.M.geo){hero.body.geometry.dispose();hero.body.geometry=hero.M.geo;}PL.last=PL.best=0;}
-    else{const r=(MKEYS===CLASSICS?RIVC:RIV)[id];if(!r.car)r.car=mk(r);r.car.visible=true;ents.push({car:r.car,s,lat,v:0,dist:s-S0,skill:.93+id*.01+rnd()*.015,vmax:MODELS[r.model].top*.94,off:rr(-1,1),pass:0,out:0,doom:0,ang:-GRID_A,name:r.name,num:r.num});}});
+    else{const r=(MKEYS===CLASSICS?RIVC:RIV)[id];if(!r.car)r.car=mk(r);r.car.visible=true;if(r.car.body.geometry!==r.car.M.geo){r.car.body.geometry.dispose();r.car.body.geometry=r.car.M.geo;}ents.push({car:r.car,s,lat,v:0,dist:s-S0,skill:.93+id*.01+rnd()*.015,vmax:MODELS[r.model].top*.94,off:rr(-1,1),pass:0,out:0,doom:0,ang:-GRID_A,name:r.name,num:r.num});}});
   G.raceT=0;G.doomT=30;G.stopT=0;G.finT=0;endSkid();placeAll(0);}
 function placeAll(dt){for(const e of ents){if(e.player||e.car.wreck)continue;const i=wrapI(Math.floor(e.s/SEG));at(e.s,e.lat,0,e.car.position);e.car.rotation.set(0,yaw(i)+(e.doom?e.doom*.45:0)+e.ang,0);if(e.v>2)e.ang*=Math.exp(-1.6*dt);
     for(const w of e.car.wheels)w.rotation.y+=w.userData.dir*e.v*dt/.33;e.car.tail.emissiveIntensity=e.braking?7:1.8;}
@@ -2828,8 +2839,8 @@ function aiUpdate(e,dt,pe){
   if(e.out>0){e.out-=dt;if(e.out<=0){const w=e.car.wreck;if(w){e.s=w.idx*SEG;endWreck(w);}e.car.visible=true;e.v=22;e.lat=0;}return;}
   const i=wrapI(Math.floor(e.s/SEG));let target=Math.min(vc[i]*e.skill*Math.sqrt(wx.grip*(MKEYS===CLASSICS?.78:1)),e.vmax);
   target*=clamp(1-(e.dist-pe.dist)/480,.35,1.15);                                                            // the field stays in touch: rivals ahead ease off, rivals behind push on
-  for(const o of ents){if(o===e||(o.out>0&&!o.car.wreck))continue;const ds=wdiff(o.s-e.s);if(ds>0&&ds<16&&Math.abs(o.lat-e.lat)<2.3){target=Math.min(target,(o.car.wreck?0:o.v)+(ds-6)*.8);e.pass=(o.lat>e.lat?-1:1);}}
-  e.pass*=Math.exp(-dt*.7);
+  for(const o of ents){if(o===e||(o.out>0&&!o.car.wreck))continue;const ds=wdiff(o.s-e.s),bw=!DRIVE&&o.player&&o.car.wreck;if(ds>0&&ds<(bw?95:16)&&Math.abs(o.lat-e.lat)<(bw?4.2:2.3)){target=Math.min(target,bw?14+ds*.55:(o.car.wreck?0:o.v)+(ds-6)*.8);e.pass=(o.lat>e.lat?-1:1)*(bw?1.4:1);}}   /* Le Mans: the burning wreck of the player's car is seen from far off: brake hard and swerve wide round it and the fireball */
+  e.pass*=Math.exp(-dt*.7);if(e.spin>0){e.spin-=dt;e.ang+=e.spinR*dt;e.v=Math.max(0,e.v-24*dt);if(Math.random()<dt*20)puff(V.copy(e.car.position).setY(.4),R(-1,1),R(.5,1.5),R(-1,1),.9,4,R(.8,1.4),.4,0xd8d8d4);}
   if(e.doom){e.lat+=e.doom*10*dt;e.v-=6*dt;if(Math.abs(e.lat)>8.7){crashAI(e,13,e.doom*10);return;}}
   else{const lt=clamp(line[i]*.85+e.off+e.pass*2.7,-(RW-1.6),RW-1.6);e.lat+=clamp(lt-e.lat,-2.4*dt,2.4*dt);}
   if(G.state==='finish'&&G.finT>2.6)target=0;
@@ -2851,7 +2862,7 @@ function sim(dt){const pe=ents.find(e=>e.player);
   if(G.state==='race')heatTick(dt,pe);
   if(G.state==='race'&&G.cam===1&&!PL.crash){PL.cough=(PL.cough??R(3,6))-dt;if(PL.cough<=0){PL.cough=R(6,13);sfxCough();}}   // the smoke gets to him
   if(PL.safe>0)PL.safe-=dt;
-  playerUpdate(dt,pe);wallTick(dt,pe);for(const e of ents)if(!e.player)aiUpdate(e,dt,pe);updateWrecks(dt);placeAll(dt);
+  playerUpdate(dt,pe);wallTick(dt,pe);for(const e of ents)if(!e.player)aiUpdate(e,dt,pe);updateWrecks(dt);debrisHitAI();placeAll(dt);
   if(wx.wet>.5&&!PL.crash&&pe.v>20&&Math.random()<dt*26)puff(V.set(PL.x-Math.sin(PL.h)*2.6,.5,PL.z-Math.cos(PL.h)*2.6),R(-1.5,1.5),R(1,3),R(-1.5,1.5),1.2,5.5,R(.7,1.2),.34,0xd0d6da);
   if(PL.crash&&PL.crash.dive)diveTick(dt,pe);
   else if(PL.crash){const w=hero.wreck,still=!w||(Math.hypot(w.vx,w.vz)<1&&w.y<=0&&!w.wr);tubeFire(dt);const tb=PL.crash.tf>2.3;
