@@ -408,12 +408,14 @@ if(!DRIVE){ // farmhouses
     const ch=new THREE.Mesh(new THREE.BoxGeometry(.8,2.4,.8),std({color:0x9a6a52}));ch.position.set(L*.3,H+2.4,0);g.add(ch);
     g.traverse(m=>{m.castShadow=m.receiveShadow=true;});g.position.copy(V);g.rotation.y=yaw(i)+rr(-.4,.4);scene.add(g);}
 }
+let BALE=null;   // Le Mans straw bales: each instance kept by track point and side, so the ones the car hits can be knocked loose (baleKnock, baleTick)
 if(!DRIVE){ // hay bales
   const straw=canvas(128,128,(g,w,h)=>{g.fillStyle='#c4a95e';g.fillRect(0,0,w,h);for(let i=0;i<900;i++){g.strokeStyle=`hsl(${40+Math.random()*10},${40+Math.random()*20}%,${42+Math.random()*30}%)`;g.lineWidth=1;const x=Math.random()*w,y=Math.random()*h;g.beginPath();g.moveTo(x,y);g.lineTo(x+R(-3,3),y+10+Math.random()*10);g.stroke();}
     g.fillStyle='rgba(60,40,20,.7)';g.fillRect(0,38,w,3);g.fillRect(0,88,w,3);});
   const idx=[];for(let i=0;i<NS;i++)if(Math.sin(i*.034+1)>.5)idx.push(i);
   const bales=new THREE.InstancedMesh(new THREE.BoxGeometry(.56,.5,1.9),std({map:straw,roughness:1}),idx.length*3);bales.castShadow=bales.receiveShadow=true;let k=0;
-  for(const i of idx){const sd=Math.sin(i*.01)>0?1:-1;for(const[o,y]of[[9.05,.25],[9.45,.25],[9.25,.75]]){if(y>.5&&rnd()<.4)continue;Q.setFromAxisAngle(YAX,yaw(i)+rr(-.06,.06));M4.compose(off(i,sd*o,y,V),Q,S.set(1,1,1));bales.setMatrixAt(k++,M4);}}
+  BALE={im:bales,at:[],act:[]};
+  for(const i of idx){const sd=Math.sin(i*.01)>0?1:-1;for(const[o,y]of[[9.05,.25],[9.45,.25],[9.25,.75]]){if(y>.5&&rnd()<.4)continue;Q.setFromAxisAngle(YAX,yaw(i)+rr(-.06,.06));M4.compose(off(i,sd*o,y,V),Q,S.set(1,1,1));bales.setMatrixAt(k,M4);const ky=i*2+(sd>0?1:0);(BALE.at[ky]=BALE.at[ky]||[]).push({k,p:V.clone(),q:Q.clone(),g:V.y-y,v:new THREE.Vector3(),w:new THREE.Vector3(),s:1,hit:0});k++;}}
   bales.count=k;scene.add(bales);
 }
 if(!DRIVE){ // advertising boards
@@ -492,6 +494,26 @@ const ARM=DRIVE?null:(()=>{const OF=ARMS.OF,pr=[[0,0],[.065,.06],[.065,.11],[0,.
 function armcoHit(bi,sd,vn){const A=ARM;if(!A||vn<2.5)return;const q=sd>0?1:0,id=A.map[bi*2+q];if(id<0)return;const s=A.sec[id],u0=clamp((bi-s.i+.5)/2,.1,.9),d=clamp(vn*.03,.05,.42),hard=vn>13;
   A.bend(s,u0,d,hard);const pv=A.map[(s.i-1)*2+q],nx=A.map[(s.i+2)*2+q];if(pv>=0)A.bend(A.sec[pv],.92,d*.45,false);if(nx>=0)A.bend(A.sec[nx],.08,d*.45,false);
   if(hard){off(bi,sd*A.OF,.6,V);for(let i=0;i<14;i++)spark(V,R(-6,6),R(1,7),R(-6,6));sfxCrunch(.8);}}
+// Le Mans straw bales: the car never wrecks on them. Running into a stretch knocks the bales near the car loose: they tumble, slide and bounce off with its momentum (a fast hit bursts one open in a puff of straw), then settle where they land and stay
+function baleZone(bi,sd){const B=BALE;if(!B)return false;const q=sd>0?1:0;for(let j=bi-3;j<=bi+3;j++)if(B.at[wrapI(j)*2+q])return true;return false;}
+function baleKnock(bi,sd,spd){const B=BALE,q=sd>0?1:0,n=Nn[bi];let hn=0;for(let j=bi-1;j<=bi+2;j++){const L=B.at[wrapI(j)*2+q];if(!L)continue;for(const b of L){if(b.hit)continue;b.hit=1;hn++;
+    b.v.set(PL.vx*R(.4,.85)+n.x*sd*R(1.5,4.5),R(1.5,3.5)+spd*R(.03,.08),PL.vz*R(.4,.85)+n.z*sd*R(1.5,4.5));b.w.set(R(-6,6),R(-4,4),R(-6,6));b.brk=spd>30&&Math.random()<.3;B.act.push(b);
+    for(let k=0;k<4;k++)puff(V.copy(b.p),PL.vx*.2+R(-2,2),R(.5,2),PL.vz*.2+R(-2,2),.6,2.4,R(.8,1.5),.5,0xd8c27a);}}
+  if(hn){const f=Math.pow(.95,Math.min(hn,4));PL.vx*=f;PL.vz*=f;sfxThump(clamp(spd/45,.25,.8));G.shake=Math.max(G.shake,.2);}}
+const BE=new THREE.Euler(0,0,0,'YXZ'),BQ=new THREE.Quaternion();
+function baleTick(dt){const B=BALE;if(!B||!B.act.length)return;for(let n=B.act.length-1;n>=0;n--){const b=B.act[n],fl=b.g+.25;b.v.y-=18*dt;b.p.addScaledVector(b.v,dt);b.q.multiply(BQ.setFromEuler(BE.set(b.w.x*dt,b.w.y*dt,b.w.z*dt)));
+    if(b.p.y<fl){b.p.y=fl;if(b.brk&&b.s){b.s=0;for(let k=0;k<10;k++)puff(V.copy(b.p),R(-2.5,2.5),R(.5,2.5),R(-2.5,2.5),.5,2.8,R(1.2,2.2),.55,0xd8c27a);}
+      if(b.v.y<-1.5){b.v.y*=-.3;b.w.multiplyScalar(.6);}else{b.v.y=0;const k=Math.exp(-4*dt);b.v.x*=k;b.v.z*=k;b.w.multiplyScalar(Math.exp(-6*dt));}}
+    const done=b.p.y<=fl+.01&&b.v.lengthSq()<.05;if(done){BE.setFromQuaternion(b.q,'YXZ');b.q.setFromEuler(BE.set(0,BE.y,0,'YXZ'));B.act.splice(n,1);}
+    M4.compose(b.p,b.q,S.set(b.s,b.s,b.s));B.im.setMatrixAt(b.k,M4);}
+  B.im.instanceMatrix.needsUpdate=true;}
+// Le Mans: the car held against the barrier (not the bales) and sliding along it. PL.scr carries the speed to the scraping sound (scrapeSnd); sparks fly at the contact point
+function wallTick(dt,pe){PL.scr=0;if(DRIVE||G.state!=='race'||PL.crash||!pe)return;const i=PL.idx,sd=Math.sign(pe.lat)||1,spd=Math.hypot(PL.vx,PL.vz),bz=baleZone(i,sd);
+  if(bz){if(Math.abs(pe.lat)>7.85)baleKnock(i,sd,spd);return;}
+  if(Math.abs(pe.lat)>=wallAt[i]-.06&&spd>2){PL.scr=spd;const n=Nn[i];if(Math.random()<dt*(4+spd*.5))spark(V.set(PL.x+n.x*sd*.95,(PL.cy||0)+.35,PL.z+n.z*sd*.95),-PL.vx*.15+R(-3,3),R(1,4),-PL.vz*.15+R(-3,3));}}
+let scrA=null;
+function scrapeSnd(t,on){if(DRIVE||!AC)return;if(!scrA){const nb=noiseBuf(2),mk=(f,q)=>{const s=AC.createBufferSource();s.buffer=nb;s.loop=true;const fl=AC.createBiquadFilter();fl.type='bandpass';fl.frequency.value=f;fl.Q.value=q;const g=AC.createGain();g.gain.value=0;s.connect(fl);fl.connect(g);g.connect(master);s.start();return{fl,g};};scrA=[mk(1200,3),mk(3200,10)];}
+  const v=on?(PL.scr||0):0,k=v>0?clamp(.25+v/70,0,1):0,j=.75+Math.random()*.5;scrA[0].g.gain.setTargetAtTime(k*.5*j,t,.03);scrA[1].g.gain.setTargetAtTime(k*.26*(1.2-j*.4),t,.03);scrA[0].fl.frequency.setTargetAtTime(700+v*22,t,.05);scrA[1].fl.frequency.setTargetAtTime(2200+v*45+Math.random()*300,t,.03);}
 let ferris;const gondolas=[];
 if(!DRIVE){ // fairground opposite the grandstand: big wheel with lights, striped tents
   const Rw=17,fw=new THREE.Group();ferris=new THREE.Group();const white=std({color:0xe6e1d0,roughness:.6,metalness:.3}),bulbG=new THREE.SphereGeometry(.16,6,5);
@@ -2457,7 +2479,7 @@ function startWreck(e,vx,vz,sev,atWall){const car=e.car;if(car.wreck)return car.
 // Le Mans, the player's car (the film's No. 20 wreck): nose and tail torn open and hanging down, the rear deck lid flung high into the air, panels thrown off; it is sent sliding out to finish pinned against the rail, then it goes up
 function flingPanel(x,y,z,vx,vy,vz,sx,sz,col,spin){const d=debris.find(d=>!d.wheel&&d.life<=0);if(!d)return;d.life=R(12,16);d.m.visible=true;d.g=GY;d.m.position.set(x,y,z);d.v.set(vx,vy,vz);d.w.set(R(-spin,spin),R(-spin,spin),R(-spin,spin));d.m.scale.set(sx,.03,sz);d.m.material.color.setHex(col);}
 function tearUp(w,sev){const car=w.car,M=car.M,zR=M.zR,h=(x,y,z,n)=>{const s=Math.sin(x*12.9898+y*78.233+z*37.719+n*4.1)*43758.5453;return s-Math.floor(s);};
-  if(!w.tgt){car.body.geometry=M.geo.clone();w.tgt=Float32Array.from(car.body.geometry.attributes.position.array);}const t=w.tgt,side=R(-1,1);
+  if(!w.tgt){if(car.body.geometry===M.geo)car.body.geometry=M.geo.clone();w.tgt=Float32Array.from(car.body.geometry.attributes.position.array);}const t=w.tgt,side=R(-1,1);
   for(let i=0;i<t.length;i+=3){const x=t[i],y=t[i+1],z=t[i+2],kf=clamp((z-1.4)/(ZF-1.4),0,1),kr=clamp((zR+1.05-z)/1.05,0,1),k=Math.max(kf,kr),a=h(Math.round(x*6),Math.round(y*6),Math.round(z*5),1),b=h(Math.round(x*6),Math.round(y*6),Math.round(z*5),2);
     if(k>0){const sk=k*(.55+.45*a);t[i]=x*(1+sk*(.3+.25*b))+side*sk*.25;t[i+1]=Math.max(.035,y-sk*(.55+.3*b)*Math.max(y,.2));t[i+2]=z+(kf>0?1:-1)*sk*(.1+.25*b);}
     else if(z<-.3&&z>zR+.5&&y>.3&&Math.abs(x)<.62)t[i+1]=lerp(y,.05,.6+.4*a);}
@@ -2467,6 +2489,13 @@ function tearUp(w,sev){const car=w.car,M=car.M,zR=M.zR,h=(x,y,z,n)=>{const s=Mat
   for(let n=0;n<4;n++){const lz=n<2?R(1.4,2):R(zR,zR+.9);flingPanel(wx(R(-.8,.8),lz),.7,wz(R(-.8,.8),lz),w.vx*R(.3,.7)+R(-7,7),R(4,11),w.vz*R(.3,.7)+R(-7,7),R(.5,1.1),R(.4,.9),n%2?col:0x2a2a2c,11);}
   const sd=Math.sign(w.e.lat)||(Math.random()<.5?-1:1),n=Nn[w.idx],vn=(w.vx*n.x+w.vz*n.z)*sd;if(vn<7){w.vx+=n.x*sd*(7-vn+R(2,5));w.vz+=n.z*sd*(7-vn+R(2,5));}
   w.pin=1;w.brake=13;if(!w.fire)w.fire=R(.8,1.2);}
+// Le Mans, a 100-175 mph knock against the barrier: the bodywork on the side and corner that hit is pushed in, and the dents build up hit after hit (cleared when the car is wrecked or a new race starts)
+function dentHero(bi,sd,vn){const car=hero,M=car&&car.M;if(!M||!car.body||car.wreck)return;if(car.body.geometry===M.geo){car.body.geometry=M.geo.clone();car.dentB=M.geo.attributes.position.array;}const a=car.body.geometry.attributes.position,t=a.array,b=car.dentB||M.geo.attributes.position.array;
+  const dx=Nn[bi].x*sd,dz=Nn[bi].z*sd,c=Math.cos(PL.h),s=Math.sin(PL.h),lx=dx*c-dz*s,lz=dx*s+dz*c,zm=(ZF+M.zR)/2,hl=(ZF-M.zR)/2,k=Math.min(.95/Math.max(Math.abs(lx),.01),hl/Math.max(Math.abs(lz),.01)),cx=lx*k,cz=zm+lz*k+R(-.35,.35),cy=R(.22,.42);
+  const rad=clamp(.45+vn*.05,.5,1.1),dep=clamp(.03+vn*.011,.04,.16);
+  for(let i=0;i<t.length;i+=3){const d=Math.hypot(t[i]-cx,t[i+1]-cy,(t[i+2]-cz)*.8);if(d>rad)continue;const q=(1-d/rad)**2*dep*(1+.4*Math.sin(t[i]*41+t[i+1]*67+t[i+2]*29));
+    t[i]-=lx*q;t[i+2]-=lz*q;t[i+1]=Math.max(.09,t[i+1]-q*.25);if(Math.sign(t[i])===Math.sign(b[i])&&Math.abs(t[i])<Math.abs(b[i])*.62)t[i]=b[i]*.62;const oz=b[i+2]-zm;if(Math.abs(t[i+2]-zm)<Math.abs(oz)*.86)t[i+2]=zm+oz*.86;}
+  a.needsUpdate=true;car.body.geometry.computeVertexNormals();}
 // What you see when a car goes over: floor pan, frame tubes, the flat engine and its exhausts, gearbox, driveshafts and wishbones. Built the first time a car wrecks.
 const UND_TEX=canvas(256,512,(g,w,h)=>{g.fillStyle='#a4a8aa';g.fillRect(0,0,w,h);for(let i=0;i<900;i++){g.fillStyle=`rgba(${Math.random()<.5?255:0},${Math.random()<.5?255:0},${Math.random()<.5?255:0},.035)`;g.fillRect(R(0,w),R(0,h),R(20,90),1);}
   g.strokeStyle='rgba(20,22,24,.75)';g.lineWidth=2;const ys=[0,84,170,262,350,430,512];for(const y of ys){g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke();}for(const x of[64,128,192]){g.beginPath();g.moveTo(x,0);g.lineTo(x,h);g.stroke();}
@@ -2487,7 +2516,7 @@ function underside(car){if(car.under){car.under.visible=true;return;}const M=car
     for(const z of WZ)for(const dz of[-.25,.25])tube(V3(sd*.42,.065,z+dz),V3(sd*.78,.15,z),.017,alu);}
   car.add(g);car.under=g;}
 // Bodywork gives way where it is hit: the panel is pushed in toward the middle of the car and buckles unevenly, over a few frames.
-function crumple(w,lx,ly,lz,sev){const car=w.car;if(!w.tgt){car.body.geometry=car.M.geo.clone();w.tgt=Float32Array.from(car.body.geometry.attributes.position.array);}
+function crumple(w,lx,ly,lz,sev){const car=w.car;if(!w.tgt){if(car.body.geometry===car.M.geo)car.body.geometry=car.M.geo.clone();w.tgt=Float32Array.from(car.body.geometry.attributes.position.array);}
   const t=w.tgt,rad=clamp(.8+sev*.06,.9,1.9),dep=clamp(.1+sev*.028,.12,.6);let dx=-lx,dy=.3-ly,dz=(ZF+car.M.zR)/2-lz;const dl=Math.hypot(dx,dy,dz)||1;dx/=dl;dy/=dl;dz/=dl;
   for(let i=0;i<t.length;i+=3){const d=Math.hypot(t[i]-lx,t[i+1]-ly,t[i+2]-lz);if(d>rad)continue;const k=(1-d/rad)**2*dep,n=Math.sin(t[i]*37.1+t[i+1]*61.7+t[i+2]*23.3+sev)*.55;
     t[i]+=dx*k*(1+n);t[i+1]=Math.max(.09,t[i+1]+dy*k*(1+n)+n*k*.35);t[i+2]+=dz*k*(1-n);}
@@ -2541,7 +2570,7 @@ function updateWrecks(dt){for(const w of [...wrecks]){const car=w.car;w.t+=dt;co
   else if(w.t>.3&&Math.random()<dt*9)puff(V.set(w.x,w.y+.7,w.z),R(-.5,.5),R(1,2.5),R(-.5,.5),.8,3.5,R(1.5,3),.35,0xb8b8b4);
   if(w.defT>0){w.defT-=dt;const a=car.body.geometry.attributes.position,arr=a.array,tg=w.tgt,k=clamp(dt*15,0,1);for(let i=0;i<arr.length;i++)arr[i]+=(tg[i]-arr[i])*k;a.needsUpdate=true;car.body.geometry.computeVertexNormals();}
   car.position.set(w.x,gy+w.y+.45*(1-Math.cos(w.roll)),w.z);car.rotation.set(0,w.h,w.roll);}}
-function updateFx(dt,rdt){updateParts(dt);
+function updateFx(dt,rdt){updateParts(dt);baleTick(dt);
   for(const d of debris){if(d.life<=0)continue;d.life-=dt;if(d.life<=0){d.m.visible=false;continue;}d.v.y-=20*dt;d.m.position.addScaledVector(d.v,dt);
     const fl=(d.wheel?.33:.05)+(d.g||0);if(d.m.position.y<fl){d.m.position.y=fl;if(d.v.y<-1){d.v.y*=-.42;d.v.x*=.75;d.v.z*=.75;d.w.multiplyScalar(.7);}else{d.v.y=0;d.v.x*=1-2*dt;d.v.z*=1-2*dt;d.w.multiplyScalar(1-3*dt);}}
     d.m.rotation.x+=d.w.x*dt;d.m.rotation.y+=d.w.y*dt;d.m.rotation.z+=d.w.z*dt;}
@@ -2603,7 +2632,7 @@ function sfxBeep(hi){if(!AC)return;tone('square',hi?880:440,AC.currentTime,hi?.5
 function updateAudio(rpm,thr,speed,slip){if(!AC)return;const SH=!!(hero&&hero.sherpTyres),t=AC.currentTime,f=rpm/60*3*(G.slow<1?.7:1)*(SH?.48:1),on=G.state==='race'||G.state==='count'||G.state==='finish';   // SH: the Sherp's engine is a low, slow rumble - an octave down, the treble cut
   for(const[o,m]of engOsc)o.frequency.setTargetAtTime(f*m,t,.03);
   engFilt.frequency.setTargetAtTime(SH?180+rpm*.06+thr*380:500+rpm*.28+thr*1700,t,.05);engG.gain.setTargetAtTime(on&&!G.paused&&!PL.crash?(.11+thr*.15)*(G.cam===1?1.15:1)*(SH?1.45:1)*(!DRIVE&&FLD.at?1+.7*clamp(1-(t-FLD.at)/6,0,1):1):0,t,.06);
-  windG.gain.setTargetAtTime(on&&!G.paused?Math.min(.22,speed*speed*.00003):0,t,.1);squealG.gain.setTargetAtTime(on&&!G.paused&&!PL.crash&&!(DRIVE&&thr>.2&&Math.abs(PL.steer)<.2&&!PL.brk)?clamp((slip-2.6)*.055,0,.32):0,t,.05);engG.echo.gain.setTargetAtTime(G.tun*1.1,t,.15);
+  windG.gain.setTargetAtTime(on&&!G.paused?Math.min(.22,speed*speed*.00003):0,t,.1);squealG.gain.setTargetAtTime(on&&!G.paused&&!PL.crash&&!(DRIVE&&thr>.2&&Math.abs(PL.steer)<.2&&!PL.brk)?clamp((slip-2.6)*.055,0,.32):0,t,.05);engG.echo.gain.setTargetAtTime(G.tun*1.1,t,.15);scrapeSnd(t,on&&!G.paused);
   rainG_.gain.setTargetAtTime(G.paused?0:G.weather==='rain'?.1:G.weather==='hail'?.14:0,t,.3);musicG.gain.setTargetAtTime(musicOn?(G.state==='title'?.65:.42):0,t,.2);if(!DRIVE)fieldAudio(t,on);}
 // Le Mans field sound: a background drone of the whole pack (loud just after the start, then low under your own engine), plus 3 pooled voices
 // that follow the nearest rival cars - louder as you close in, panned left/right, with a little doppler as they pass or are passed (FLD, fieldAudio).
@@ -2655,7 +2684,7 @@ const RIVC=[   // the field when you race the classics
   {base:'#5e1418',num:'82',helmet:'#1a1a1a',model:'f400',name:'M. ROSSI'},{base:'#b8402e',patina:1,num:'65',helmet:'#e6e1d0',model:'bz',name:'D. MARTIN'}];
 function setupGrid(){for(const r of[...RIV,...RIVC])if(r.car)r.car.visible=false;for(const w of [...wrecks])endWreck(w);fires.length=0;ents.length=0;const order=DRIVE?['p']:[0,1,2,3,4,'p',5,6];
   order.forEach((id,k)=>{const s=DRIVE?S0:S0-6-k*7.5,lat=DRIVE?-(5.3+XW[START_I]):RW-2.2;   /* free drive: parked at the kerb in front of the house */   // echelon start: cars parked nose-out along the pit side, as in 1970
-    if(id==='p'){ents.push({player:true,car:hero,s,lat,v:0,dist:s-S0,name:'S. McQUEEN',num:LIV().num,out:0});at(s,lat,0,V);PL.x=V.x;PL.z=V.z;PL.idx=wrapI(Math.round(s/SEG));PL.h=yaw(PL.idx)-(DRIVE?0:GRID_A);G.camH=yaw(PL.idx);PL.vx=PL.vz=0;PL.steer=0;resetVehicle(VS,hero.M.dyn,0);PL.crash=null;PL.auto=null;PL.safe=0;PL.lapN=0;PL.last=PL.best=0;}
+    if(id==='p'){ents.push({player:true,car:hero,s,lat,v:0,dist:s-S0,name:'S. McQUEEN',num:LIV().num,out:0});at(s,lat,0,V);PL.x=V.x;PL.z=V.z;PL.idx=wrapI(Math.round(s/SEG));PL.h=yaw(PL.idx)-(DRIVE?0:GRID_A);G.camH=yaw(PL.idx);PL.vx=PL.vz=0;PL.steer=0;resetVehicle(VS,hero.M.dyn,0);PL.crash=null;PL.auto=null;PL.safe=0;PL.lapN=0;if(hero.body&&hero.M&&hero.body.geometry!==hero.M.geo){hero.body.geometry.dispose();hero.body.geometry=hero.M.geo;}PL.last=PL.best=0;}
     else{const r=(MKEYS===CLASSICS?RIVC:RIV)[id];if(!r.car)r.car=mk(r);r.car.visible=true;ents.push({car:r.car,s,lat,v:0,dist:s-S0,skill:.93+id*.01+rnd()*.015,vmax:MODELS[r.model].top*.94,off:rr(-1,1),pass:0,out:0,doom:0,ang:-GRID_A,name:r.name,num:r.num});}});
   G.raceT=0;G.doomT=30;G.stopT=0;G.finT=0;endSkid();placeAll(0);}
 function placeAll(dt){for(const e of ents){if(e.player||e.car.wreck)continue;const i=wrapI(Math.floor(e.s/SEG));at(e.s,e.lat,0,e.car.position);e.car.rotation.set(0,yaw(i)+(e.doom?e.doom*.45:0)+e.ang,0);if(e.v>2)e.ang*=Math.exp(-1.6*dt);
@@ -2749,12 +2778,13 @@ function playerUpdate(dt,pe){const M=hero.M,g=wx.grip*M.grip*SPILL.g*(1-(PL.melt
   // guardrail: a glancing touch scrapes and bounces, a real hit is a crash
   const WLL=lat<0&&wallR[bi]?wallR[bi]:wallAt[bi];
   if(Math.abs(lat)>WLL){const sd=Math.sign(lat),vn=(PL.vx*Nn[bi].x+PL.vz*Nn[bi].z)*sd,spd=Math.hypot(PL.vx,PL.vz),RUB=DRIVE&&((bi>=Z.gg0-Math.round(320/SEG)&&bi<Z.gg0+Math.round(60/SEG))||(bi>=Z.toll-Math.round(60/SEG)&&bi<Z.toll+Math.round(330/SEG))||(bi>=Z.downtown-Math.round(60/SEG)&&bi<Z.hyde+Math.round(40/SEG))||(bi>=Z.marina-Math.round(30/SEG)&&bi<Z.marina+Math.round((MR*1.571+40)/SEG)));   /* the approach to the Golden Gate: rubbery rails, you bounce and never crash or fall */
-    if(!DRIVE&&racing)armcoHit(bi,sd,vn);if(!RUB&&racing&&DRIVE&&zoneArr[bi]===4&&PL.safe<=0&&spd>44.7&&vn>3.5){if(bi>=Z.rb0&&bi<=Z.rb1)rsrSplash(sd,vn,bi);else startDive(sd,vn,bi);return;}   // on the bridge the rail holds the car up to 100 mph (44.7 m/s); a real hit above that takes you through
+    const BZ=!DRIVE&&baleZone(bi,sd);if(!RUB&&racing&&DRIVE&&zoneArr[bi]===4&&PL.safe<=0&&spd>44.7&&vn>3.5){if(bi>=Z.rb0&&bi<=Z.rb1)rsrSplash(sd,vn,bi);else startDive(sd,vn,bi);return;}   // on the bridge the rail holds the car up to 100 mph (44.7 m/s); a real hit above that takes you through
     if(!RUB&&racing&&DRIVE&&zoneArr[bi]===3&&H[bi]>6&&PL.safe<=0&&spd>(HRL(bi)?67:44.7)&&vn>(HRL(bi)?6:3.5)){pe.lat=lat;fallOff(sd,vn,bi);return;}   // and off the elevated freeway (I-880, and I-80 towards Berkeley: only at 150 mph)
     if(!RUB&&racing&&DRIVE&&CLF&&sd>0&&bi>=CLF[0]+15&&bi<=CLF[1]&&PL.safe<=0&&spd>22&&vn>4.5){pe.lat=lat;lakeCrash(sd,vn,bi,pe);return;}   // Marin: a hard hit breaks the timber rail above the lake, and over the edge into it
     if(!RUB&&racing&&DRIVE&&CLF&&sd>0&&bi>=CLF[0]&&bi<=CLF[1]&&PL.safe<=0&&spd>22&&vn>4.5){pe.lat=lat;fallOff(sd,vn,bi);say('OFF THE CLIFF','No. '+LIV().num+' - McQUEEN',3);return;}   // Marin: through the rail and off the cliff into the rocks
-    if(!RUB&&racing&&PL.safe<=0&&spd>(!DRIVE?78.2:HRL(bi)?67:50)&&vn>(hero.M.tough?11:7)){pe.lat=lat;crashPlayer(vn,true);return;}                              // only a hit at real speed wrecks the car
+    if(!RUB&&racing&&PL.safe<=0&&!BZ&&spd>(!DRIVE?78.2:HRL(bi)?67:50)&&vn>(hero.M.tough?11:7)){pe.lat=lat;crashPlayer(vn,true);return;}                              // only a hit at real speed wrecks the car (never into the Le Mans straw bales)
     PL.x-=Nn[bi].x*sd*(Math.abs(lat)-WLL);PL.z-=Nn[bi].z*sd*(Math.abs(lat)-WLL);lat=WLL*sd;
+    if(!DRIVE&&racing&&!BZ&&vn>2.5&&spd>=44.7){armcoHit(bi,sd,vn);dentHero(bi,sd,vn);sfxThump(clamp(vn/9,.35,1.3));}   // Le Mans, 100 to 175 mph: the barrier and the car both take a dent, with a dull thud under the scrape
     if(vn>0){if(RUB){PL.vx-=Nn[bi].x*sd*vn*.8;PL.vz-=Nn[bi].z*sd*vn*.8;}PL.vx-=Nn[bi].x*sd*vn*1.35;PL.vz-=Nn[bi].z*sd*vn*1.35;PL.vx*=.9;PL.vz*=.9;VS.r*=.4;let dh=((yaw(bi)-PL.h+Math.PI*3)%(Math.PI*2))-Math.PI;if(Math.abs(dh)<1.6)PL.h+=dh*.22;
       if(vn>1.5){sfxScrape(clamp(vn/8,.3,1));G.shake=Math.max(G.shake,.4);for(let i=0;i<10;i++)spark(V.set(PL.x+Nn[bi].x*sd,.5,PL.z+Nn[bi].z*sd),PL.vx*.6+R(-4,4),R(1,6),PL.vz*.6+R(-4,4));}}}
   pe.lat=lat;
@@ -2819,7 +2849,7 @@ function sim(dt){const pe=ents.find(e=>e.player);
   if(G.state==='race')heatTick(dt,pe);
   if(G.state==='race'&&G.cam===1&&!PL.crash){PL.cough=(PL.cough??R(3,6))-dt;if(PL.cough<=0){PL.cough=R(6,13);sfxCough();}}   // the smoke gets to him
   if(PL.safe>0)PL.safe-=dt;
-  playerUpdate(dt,pe);for(const e of ents)if(!e.player)aiUpdate(e,dt,pe);updateWrecks(dt);placeAll(dt);
+  playerUpdate(dt,pe);wallTick(dt,pe);for(const e of ents)if(!e.player)aiUpdate(e,dt,pe);updateWrecks(dt);placeAll(dt);
   if(wx.wet>.5&&!PL.crash&&pe.v>20&&Math.random()<dt*26)puff(V.set(PL.x-Math.sin(PL.h)*2.6,.5,PL.z-Math.cos(PL.h)*2.6),R(-1.5,1.5),R(1,3),R(-1.5,1.5),1.2,5.5,R(.7,1.2),.34,0xd0d6da);
   if(PL.crash&&PL.crash.dive)diveTick(dt,pe);
   else if(PL.crash){const w=hero.wreck,still=!w||(Math.hypot(w.vx,w.vz)<1&&w.y<=0&&!w.wr);tubeFire(dt);const tb=PL.crash.tf>2.3;
@@ -5932,7 +5962,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={crash:(v,w)=>crashPlayer(v,w),ARM,armcoHit:(b,s,v)=>armcoHit(b,s,v),camAt:(x,y,z)=>camP.set(x,y,z),FOLK,buildHero:m=>buildHero(m),rsrIn:()=>rsrSplash(1,12,PL.idx),CLAY,DHOU,RAD,WCIG,boof:t=>boof(t),CENT,WQK,EYEB,LAKE,LKR,lakeIn:()=>{const n=Nn[PL.idx];lakeRailBreak(PL.idx);lakeStart({src:"rail",x:PL.x,y:(PL.cy||H[PL.idx])+.3,z:PL.z,vx:n.x*10,vz:n.z*10,vy:3,rs:(PL.idx-15)*SEG});},BIGI,WIGU,CATP,FWI,fwIgu:()=>{const pe=ents.find(e=>e.player);fwIguStart(pe.s+60);},TUBI,RIGI,NUDG,nudge:()=>nudgeStart(),IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,TDR,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={crash:(v,w)=>crashPlayer(v,w),ARM,BALE,armcoHit:(b,s,v)=>armcoHit(b,s,v),camAt:(x,y,z)=>camP.set(x,y,z),FOLK,buildHero:m=>buildHero(m),rsrIn:()=>rsrSplash(1,12,PL.idx),CLAY,DHOU,RAD,WCIG,boof:t=>boof(t),CENT,WQK,EYEB,LAKE,LKR,lakeIn:()=>{const n=Nn[PL.idx];lakeRailBreak(PL.idx);lakeStart({src:"rail",x:PL.x,y:(PL.cy||H[PL.idx])+.3,z:PL.z,vx:n.x*10,vz:n.z*10,vy:3,rs:(PL.idx-15)*SEG});},BIGI,WIGU,CATP,FWI,fwIgu:()=>{const pe=ents.find(e=>e.player);fwIguStart(pe.s+60);},TUBI,RIGI,NUDG,nudge:()=>nudgeStart(),IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,TDR,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
