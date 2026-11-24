@@ -2268,6 +2268,31 @@ const runners=[];{const suitM=std({color:0xeeeae0,roughness:.85}),skinM=std({col
     const t=new THREE.Mesh(new THREE.CapsuleGeometry(.17,.38,4,10),suitM);t.position.y=1.16;t.scale.z=.7;t.castShadow=true;g.add(t);
     const h=new THREE.Mesh(new THREE.SphereGeometry(.125,12,10),std({color:helmC[i],roughness:.3}));h.position.y=1.64;g.add(h);const f=new THREE.Mesh(new THREE.SphereGeometry(.07,8,6),skinM);f.position.set(0,1.62,.085);g.add(f);
     g.legs=[limb(-.09,.9,.7,.075),limb(.09,.9,.7,.075)];g.arms=[limb(-.24,1.4,.5,.05),limb(.24,1.4,.5,.05)];g.visible=false;scene.add(g);runners.push(g);}}
+// Le Mans only: gendarmes among the people at the fences and in the pits (pale-blue shirt, dark tie, white gloves, dark kepi with a gold band, as in the 1970 photos),
+// and press photographers wandering along the edge of the track, stopping to raise their cameras and fire a flash. Some of each stroll, some stand. (FOLK, folkTick)
+const FOLK=[];if(!DRIVE){const capG=new THREE.CapsuleGeometry(1,1,3,8),sph=new THREE.SphereGeometry(1,10,8),boxG=new THREE.BoxGeometry(1,1,1),cylG=new THREE.CylinderGeometry(1,1,1,12);
+  const skin=std({color:0xd9a988,roughness:.8}),fr=n=>{let s=n*9301+49297;return()=>{s=(s*16807)%2147483647;return s/2147483647;};},rnd=fr(41);
+  const part=(g,geo,m,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;g.add(o);return o;};
+  const limb=(g,x,y,len,r,m,end)=>{const p=new THREE.Group();p.position.set(x,y,0);part(p,capG,m,0,-len/2-r*.4,0,r,len/2,r);if(end)part(p,sph,end,0,-len-r*.6,0,.055,.06,.055);g.add(p);return p;};
+  function person(shirt,legs,kind){const g=new THREE.Group();
+    part(g,capG,shirt,0,1.16,0,.17,.19,.12);g.legs=[limb(g,-.09,.9,.7,.075,legs),limb(g,.09,.9,.7,.075,legs)];
+    part(g,sph,skin,0,1.6,0,.105,.12,.105);
+    if(kind==='cop'){const glove=std({color:0xf4f2ea,roughness:.7}),navy=std({color:0x1a1f33,roughness:.6});g.arms=[limb(g,-.24,1.4,.5,.05,shirt,glove),limb(g,.24,1.4,.5,.05,shirt,glove)];
+      part(g,boxG,navy,0,1.28,.115,.05,.2,.02);   // tie
+      part(g,cylG,navy,0,1.72,0,.105,.12,.105);part(g,cylG,std({color:0xc9a23a,roughness:.4,metalness:.5}),0,1.68,0,.108,.025,.108);part(g,boxG,navy,0,1.665,.1,.17,.015,.09);}   // kepi, gold band, peak
+    else{const hair=std({color:[0x2a1d14,0x5a3a22,0x8a6a40,0x1a1a1a][rnd()*4|0],roughness:.9});g.arms=[limb(g,-.24,1.4,.5,.05,shirt,skin),limb(g,.24,1.4,.5,.05,shirt,skin)];
+      part(g,sph,hair,0,1.66,-.02,.11,.08,.11);const cam=new THREE.Group();cam.position.set(0,1.6,.17);part(cam,boxG,std({color:0x161616,roughness:.5}),0,0,0,.14,.09,.07);part(cam,cylG,std({color:0x222222,roughness:.4}),0,0,.08,.035,.12,.035).rotation.x=Math.PI/2;
+      const fl=new THREE.Mesh(sph,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,depthWrite:false}));fl.position.set(.06,.08,.06);fl.scale.setScalar(.12);cam.add(fl);cam.fl=fl;cam.visible=false;g.add(cam);g.cam=cam;
+      const strap=part(g,boxG,std({color:0x161616}),.12,1.08,.13,.1,.08,.05);strap.castShadow=false;}   // a second camera body on the chest
+    scene.add(g);return g;}
+  const blue=std({color:0x93b4dc,roughness:.8}),navyL=std({color:0x1c2236,roughness:.85});
+  const cop=(i,lat,walk)=>FOLK.push({g:person(blue,navyL,'cop'),cop:1,s0:i*SEG,s:i*SEG,lat,walk,dir:rnd()<.5?1:-1,st:0,t:rnd()*6,rng:4+rnd()*5});
+  [104,109,114,121,127].forEach(i=>cop(i+rnd()*2,10.6+rnd()*.6,rnd()<.4));                                  // in the pits behind the grid
+  for(let i=28;i<228;i+=17+rnd()*12)cop(i,-(10.55+rnd()*.25),rnd()<.5);                                      // at the fence along the start straight
+  for(let i=24;i<GS0-4;i+=16+rnd()*8)cop(i,10.55+rnd()*.25,rnd()<.5);
+  let lc=-999;for(let i=0;i<NS;i++){const k=Math.abs(kS[i]),pv=Math.abs(kS[(i-1+NS)%NS]);if(k>=.0035&&pv<.0035&&i-lc>120){lc=i;if(i>GS0-20&&i<GS1+20)continue;const sd=-Math.sign(kS[i]);cop(i+rnd()*20,sd*(10.55+rnd()*.25),rnd()<.5);}}   // at the corners where the crowd bunches
+  const coats=[0xb08a50,0x6b6a3a,0x8a4a2a,0xd8cfb8,0x3a4a5a,0x9a3a2a],trou=[0x2a2a30,0x4a3a2a,0x6a6a60,0x1e2a40];
+  for(let k=0;k<9;k++){const i=88+k*7+rnd()*5,sd=k%3===2?1:-1;FOLK.push({g:person(std({color:coats[rnd()*coats.length|0],roughness:.9}),std({color:trou[rnd()*trou.length|0],roughness:.9}),'snap'),snap:1,s0:i*SEG,s:i*SEG,sd,lat:0,walk:1,dir:rnd()<.5?1:-1,st:0,t:rnd()*3,rng:6+rnd()*6,ft:0});}}
 const between=(m,a,b)=>{m.position.copy(a).add(b).multiplyScalar(.5);V.copy(b).sub(a);const L=V.length();m.scale.set(1,L,1);m.quaternion.setFromUnitVectors(YAX,V.divideScalar(L));};
 const mSh=new THREE.Vector3(-.235,1.4,0),mH=new THREE.Vector3(),mE=new THREE.Vector3();
 function updateMcq(tm,rdt){if(!mcq.visible)return;const sm=mcq.sm;if(tm<sm.t0||tm>sm.t0+sm.per){sm.t0=tm;sm.per=R(6.5,11);}   // a drag on the cigarette now and then, not on a metronome
@@ -5758,31 +5783,51 @@ function hud(pe,hour){const st=standings();$('pos').textContent=DRIVE?placeOf(PL
   $('warn').textContent=PL.warn&&!PL.crash?'FREINEZ · BRAKE':'';drawMap();}
 
 /* ================= RUNNING START + INTRO MONTAGE ================= */
-function runStart(k,rdt){runners.forEach((r,i)=>{const e=ents[i];if(!e){r.visible=false;return;}r.visible=k<1;const cp=e.car.position,j=wrapI(Math.floor(e.s/SEG));
-    r.position.set(cp.x-Nn[j].x*(1-k)*11.5-T[j].x*(1-k)*3,0,cp.z-Nn[j].z*(1-k)*11.5-T[j].z*(1-k)*3);r.rotation.y=Math.atan2(Nn[j].x,Nn[j].z);
-    const hop=clamp((k-.82)/.18,0,1);r.position.y=Math.sin(hop*Math.PI)*.8;r.scale.setScalar(1-hop*.5);   // the last stride is a vault over the sill into the seat
-    const sw=Math.sin(G.t*17+i)*.9;r.legs[0].rotation.x=sw;r.legs[1].rotation.x=-sw;r.arms[0].rotation.x=-sw;r.arms[1].rotation.x=sw;
+// A thick white cloud from every car's exhausts once the engines fire, thinning out over the first ten seconds of the race
+function gridSmoke(rdt){if(G.smkA==null)return;G.smkA+=rdt;const a=G.smkA;if(a>10)return;const w=1-sst(a,3,10);
+  for(const e of ents){if(e.out>0||Math.random()>=rdt*9*(.3+.7*w))continue;const hy=e.car.rotation.y,bx=-Math.sin(hy),bz=-Math.cos(hy);e.car.localToWorld(V.set(Math.random()<.5?-.25:.25,.3,-2.3));
+    puff(V,bx*1.6+R(-.6,.6),R(.3,1.1),bz*1.6+R(-.6,.6),.7,R(3.2,5),R(2.5,4.2),.14+.36*w,0xf1efe9);}}
+function folkTick(rdt){const cp=camera.position;
+  for(const f of FOLK){const g=f.g;if(g.position.distanceToSquared(cp)>16e4){g.visible=false;if(f.snap)f.s=f.s0;continue;}g.visible=true;f.ph=(f.ph||0)+rdt;f.t-=rdt;
+    if(f.t<=0){f.st=f.walk&&f.st===1?0:1;f.t=f.st?R(2.5,6):R(2,5);if(f.st===0&&Math.abs(f.s-f.s0)>f.rng*.6)f.dir=Math.sign(f.s0-f.s);}   // st 1: stopped, 0: walking
+    if(f.snap){const onTrack=f.sd<0&&!(G.state==='race'&&G.raceT>2||G.state==='finish');f.lat+=((f.sd>0?RW+.3:onTrack?-(RW-1.5):-(RW+.45))-f.lat)*Math.min(1,rdt*(f.lat?1.2:99));}   // on the track before the start, onto the verge once the cars go
+    if(f.st===0){f.s+=f.dir*(f.cop?.75:1.1)*rdt;if(Math.abs(f.s-f.s0)>f.rng)f.dir=Math.sign(f.s0-f.s);}
+    const j=wrapI(Math.floor(f.s/SEG)),n=Nn[j],tg=T[j];at(f.s,f.lat,0,g.position);
+    if(f.st===0){g.rotation.y=Math.atan2(tg.x*f.dir,tg.z*f.dir);const sw=Math.sin(f.ph*7)*.5;g.legs[0].rotation.x=sw;g.legs[1].rotation.x=-sw;g.arms[0].rotation.x=-sw*.7;g.arms[1].rotation.x=sw*.7;if(g.cam)g.cam.visible=false;}
+    else{const sd=Math.sign(f.lat)||1;g.rotation.y=Math.atan2(-n.x*sd,-n.z*sd)+(f.snap?(f.dir*.5):Math.sin(f.ph*.3+f.s0)*.5);g.legs[0].rotation.x=g.legs[1].rotation.x=0;   // facing the track, the photographers looking up or down it
+      if(f.snap){g.arms[0].rotation.x=g.arms[1].rotation.x=-1.45;g.arms[0].rotation.z=-.35;g.arms[1].rotation.z=.35;g.cam.visible=true;f.ft-=rdt;if(f.ft<=0){f.ft=R(.6,2.2);g.cam.fl.material.opacity=1;}
+        const fl=g.cam.fl.material;fl.opacity=Math.max(0,fl.opacity-rdt*9);g.cam.fl.scale.setScalar(.12+fl.opacity*.25);}
+      else g.arms[0].rotation.x=g.arms[1].rotation.x=.25;}   // hands behind the back
+    if(f.st===0&&f.snap)g.arms[0].rotation.z=g.arms[1].rotation.z=0;}}
+function runStart(k,rdt,stand){if(k>=1&&G.smkA==null)G.smkA=0;runners.forEach((r,i)=>{const e=ents[i];if(!e){r.visible=false;return;}r.visible=k<1;const cp=e.car.position;
+    // each driver starts some 9 m behind his own car, runs up along the driver's side, then vaults in over the sill
+    const run=clamp(k/.82,0,1),hop=clamp((k-.82)/.18,0,1);e.car.localToWorld(V.set(lerp(-1.35,-.24,hop),0,.2));at(e.s-4.2,e.lat+.6,0,V2);   // waiting in the gap behind his car on the echelon
+    r.position.set(lerp(V2.x,V.x,run),0,lerp(V2.z,V.z,run));r.rotation.y=run<1?Math.atan2(V.x-V2.x,V.z-V2.z):e.car.rotation.y;
+    r.position.y=Math.sin(hop*Math.PI)*.8;r.scale.setScalar(1-hop*.5);   // the last stride is a vault over the sill into the seat
+    const sw=stand?0:Math.sin(G.t*17+i)*.9;if(stand)r.rotation.y+=Math.sin(G.t*.4+i*2)*.6;r.legs[0].rotation.x=sw;r.legs[1].rotation.x=-sw;r.arms[0].rotation.x=-sw;r.arms[1].rotation.x=sw;
     if(k>=1&&Math.random()<rdt*9){const hy=e.car.rotation.y;puff(V.set(cp.x-Math.sin(hy)*2.4,.4,cp.z-Math.cos(hy)*2.4),R(-.6,.6),R(.4,1.4),R(-.6,.6),.6,3,R(1.2,2.2),.32,0xb9bcc4);}});}
 // The opening: quick cuts between drivers' eyes, the clock and the cars, each shorter than the last, over a heartbeat, until four o'clock.
 const cutC=$('cut'),cutG=cutC.getContext('2d');let INTRO=null;
 function startIntro(){initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');$('res').style.display='none';seed=7+Math.random()*1000|0;setupGrid();hero.visible=true;
   const order=['clock','eyes','car','eyes','wheel','crowd','eyes','tach','clock','car2','eyes','exh','flag','eyes','clock','wheel','eyes','car','tach','eyes','clock','car2','eyes','exh','eyes','clock','eyes','car','eyes','tach','eyes','clock','eyes','car2','eyes','clock'];
-  const shots=[];let t=0,n=0;while(t<6.6){const d=Math.max(.08,.8*Math.pow(.9,n));shots.push({type:order[n%order.length],t0:t,d,v:n});t+=d;n++;}
+  // first a slow sweep at eye height down the grid: drivers waiting behind their cars, photographers, gendarmes
+  G.smkA=null;const shots=[{type:'sweep',t0:0,d:5.5,v:0}];let t=5.5,n=0;while(t<12.1){const d=Math.max(.08,.8*Math.pow(.9,n));shots.push({type:order[n%order.length],t0:t,d,v:n});t+=d;n++;}
   shots.push({type:'run',t0:t,d:2.6,v:0});t+=2.6;shots.push({type:'clock',t0:t,d:1.15,v:99});t+=1.15;
-  INTRO={shots,T:t,i:-1};G.state='intro';G.t=0;}
+  INTRO={shots,T:t,i:-1,sw:5.5};G.state='intro';G.t=0;}
 function beginRace(){INTRO=null;cutC.style.display='none';for(const id of['tl','tr','br','lf','map','bl'])$(id).classList.remove('hide');runners.forEach(r=>{r.visible=false;});
-  G.state='race';first=true;PL.lapStart=0;PL.rpm=1200;say('PARTEZ !','',1.2);sfxRoar();if(!DRIVE)G.panT=0;G.waveT=tm+5;announce("Et c'est parti pour les vingt-quatre heures !");}
+  if(G.smkA==null)G.smkA=0;G.state='race';first=true;PL.lapStart=0;PL.rpm=1200;say('PARTEZ !','',1.2);sfxRoar();if(!DRIVE)G.panT=0;G.waveT=tm+5;announce("Et c'est parti pour les vingt-quatre heures !");}
 function introTick(rdt){const I=INTRO;if(!I.hold)G.t+=rdt;if(G.t>=I.T){beginRace();return null;}
   let i=Math.max(I.i,0);while(i+1<I.shots.length&&I.shots[i+1].t0<=G.t)i++;const s=I.shots[i];
   if(i!==I.i){I.i=i;if(s.type==='clock'&&s.v!==99)sfxTick();}
-  const quiet=I.T-1.15;if(G.t<quiet&&G.t>=(I.nb||0)){sfxHeart(1.9);I.nb=G.t+lerp(.9,.27,G.t/quiet);}   // a loud heartbeat that quickens, then stops dead: a second of silence before the engines
+  const quiet=I.T-1.15,sw=I.sw||0;if(G.t>=sw&&G.t<quiet&&G.t>=(I.nb||0)){sfxHeart(1.9);I.nb=G.t+lerp(.9,.27,(G.t-sw)/(quiet-sw));}   // a loud heartbeat that quickens, then stops dead: a second of silence before the engines
   const flat=s.type==='eyes'||s.type==='clock';cutC.style.display=flat?'block':'none';
   if(flat){const w=innerWidth,h=Math.round(innerHeight*.84);if(cutC.width!==w||cutC.height!==h){cutC.width=w;cutC.height=h;}
     if(s.type==='eyes')drawEyes(cutG,w,h,s.v,G.t);else drawClock(cutG,w,h,s.v,s.v===99?60:60-(I.T-G.t));}
-  if(s.type==='run')runStart(clamp((G.t-s.t0)/(s.d-.15),0,1),rdt);
+  if(s.type==='run')runStart(clamp((G.t-s.t0)/(s.d-.15),0,1),rdt);else if(s.type==='sweep')runStart(0,rdt,true);else if(runners[0].visible)runners.forEach(r=>{r.visible=false;});
   return s;}
 function introCam(s){const u=(G.t-s.t0)/s.d,L=(x,y,z,o)=>hero.localToWorld(o.set(x,y,z));let cock=false;
   switch(s.type){
+    case'sweep':{const e=sst(u,0,1);at(S0+16-e*46,1.55,lerp(1.2,3.4,e),camera.position);at(S0-24-e*40,RW+2.5,1.4,look);camera.fov=42;break;}   // a slow track along the grid at eye height
     case'car':L(1.7-u*.3,.34,3.9,camera.position);L(0,.42,.9,look);camera.fov=30;break;
     case'car2':at(S0+16,2.2+u*.4,.55,camera.position);at(S0-34,RW-2.2,.5,look);camera.fov=11;break;
     case'wheel':L(2.3,.3,1.5-u*.25,camera.position);L(.9,.33,1.25,look);camera.fov=20;break;
@@ -5837,7 +5882,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={buildHero:m=>buildHero(m),rsrIn:()=>rsrSplash(1,12,PL.idx),CLAY,DHOU,RAD,WCIG,boof:t=>boof(t),CENT,WQK,EYEB,LAKE,LKR,lakeIn:()=>{const n=Nn[PL.idx];lakeRailBreak(PL.idx);lakeStart({src:"rail",x:PL.x,y:(PL.cy||H[PL.idx])+.3,z:PL.z,vx:n.x*10,vz:n.z*10,vy:3,rs:(PL.idx-15)*SEG});},BIGI,WIGU,CATP,FWI,fwIgu:()=>{const pe=ents.find(e=>e.player);fwIguStart(pe.s+60);},TUBI,RIGI,NUDG,nudge:()=>nudgeStart(),IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,TDR,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={FOLK,buildHero:m=>buildHero(m),rsrIn:()=>rsrSplash(1,12,PL.idx),CLAY,DHOU,RAD,WCIG,boof:t=>boof(t),CENT,WQK,EYEB,LAKE,LKR,lakeIn:()=>{const n=Nn[PL.idx];lakeRailBreak(PL.idx);lakeStart({src:"rail",x:PL.x,y:(PL.cy||H[PL.idx])+.3,z:PL.z,vx:n.x*10,vz:n.z*10,vy:3,rs:(PL.idx-15)*SEG});},BIGI,WIGU,CATP,FWI,fwIgu:()=>{const pe=ents.find(e=>e.player);fwIguStart(pe.s+60);},TUBI,RIGI,NUDG,nudge:()=>nudgeStart(),IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,TDR,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
@@ -5852,6 +5897,7 @@ function frame(manual){
     // drivers sprint across the road to their cars; engines fire and smoke as they arrive
     runStart(clamp(G.t/2.7,0,1),rdt);}
   else if(G.state!=='intro'&&runners[0].visible)runners.forEach(r=>{r.visible=false;});
+  if(!DRIVE){gridSmoke(rdt);folkTick(rdt);}
   let shot=null;if(G.state==='intro')shot=introTick(rdt);
   if(G.state==='race'||G.state==='finish')sim(dt);
   if(QS.has('boom')&&G.raceT>1.5&&!G.boomed){G.boomed=1;PL.vx+=Nn[PL.idx].x*14;PL.vz+=Nn[PL.idx].z*14;crashPlayer(14,false);}
