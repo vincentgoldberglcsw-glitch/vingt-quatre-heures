@@ -2473,6 +2473,7 @@ function ignite(w){w.burn=.01;V.set(w.x,.7+w.y,w.z);
   for(let i=0;i<26;i++){const a=R(0,6.283),sp=R(2,9);flame(V,Math.cos(a)*sp+w.vx*.4,R(3,11),Math.sin(a)*sp+w.vz*.4,R(1,2),R(3.5,6.5),R(.5,1.2),Math.random()<.5?0xffb347:0xff5a1a);}
   for(let i=0;i<14;i++)puff(V,R(-3,3)+w.vx*.3,R(3,7),R(-3,3)+w.vz*.3,R(2,3),R(7,12),R(3,6),.7,0x1a1816);
   for(let i=0;i<30;i++)spark(V,R(-16,16),R(4,18),R(-16,16));
+  if(w.pin){for(let i=0;i<30;i++){const a=R(0,6.283),sp=R(1,6);flame(V,Math.cos(a)*sp,R(5,14),Math.sin(a)*sp,R(2,3),R(6,10),R(.7,1.4),Math.random()<.5?0xffc060:0xff6a1e);}for(let i=0;i<18;i++)puff(V,R(-2,2),R(5,10),R(-2,2),R(3,4),R(10,16),R(5,8),.8,0x141210);}   /* the player's Le Mans wreck: a bigger fireball and a column of black smoke */
   boom.position.set(w.x,2.5,w.z);boom.intensity=1800;const near=clamp(80/(camera.position.distanceTo(V)+10),0,1);$('flash').style.opacity=.4*near;G.shake=Math.max(G.shake,1.1*near);sfxBoom();}
 function endWreck(w){const car=w.car;car.wreck=null;for(const c of car.corners)c.visible=true;car.bodyMat.color.setScalar(1);car.canopy.material.color.setScalar(1);car.rotation.set(0,w.h,0);if(w.tgt){car.body.geometry.dispose();car.body.geometry=car.M.geo;}if(car.under)car.under.visible=false;{const cy=car.M.cy||1;car.canopy.scale.y=cy;car.canopy.position.y=CYB*(1-cy);}
   const i=wrecks.indexOf(w);if(i>=0)wrecks.splice(i,1);if(w.burn)fires.push({x:w.x,z:w.z,t:5});}
@@ -2500,6 +2501,8 @@ function updateWrecks(dt){for(const w of [...wrecks]){const car=w.car;w.t+=dt;co
   if(w.burn){w.burn=Math.min(1,w.burn+dt*.45);const c=lerp(1,.14,w.burn);car.bodyMat.color.setScalar(c);car.canopy.material.color.setScalar(c);
     if(Math.random()<dt*42)flame(V.set(w.x+R(-.7,.7),w.y+.6,w.z+R(-1.1,1.1)),w.vx*.5+R(-.6,.6),R(2,5),w.vz*.5+R(-.6,.6),R(.8,1.5),R(1.8,3.4),R(.4,.9),Math.random()<.5?0xffa53a:0xff6a1e);
     if(Math.random()<dt*13)puff(V.set(w.x+R(-.5,.5),w.y+1.3,w.z+R(-.5,.5)),R(.3,1.6),R(2.5,5),R(-.5,.5),R(1.5,2.5),R(6,11),R(4,7),.6,0x1c1a18);
+    if(w.pin&&Math.random()<dt*14)puff(V.set(w.x+R(-.6,.6),w.y+1.8,w.z+R(-.6,.6)),R(.4,1.8),R(4,7),R(-.6,.6),R(2.5,3.5),R(11,17),R(6,9),.78,0x121110);   /* thick black smoke rising high off the player's Le Mans wreck */
+    if(w.pin&&Math.random()<dt*16)flame(V.set(w.x+R(-.9,.9),w.y+.5,w.z+R(-1.6,1.6)),R(-.5,.5),R(3,6),R(-.5,.5),R(1.2,2),R(2.8,4.8),R(.5,1),Math.random()<.5?0xffa53a:0xff5a1a);
     boom.intensity=Math.max(boom.intensity,220*(.7+Math.random()*.6));boom.position.set(w.x,2,w.z);}
   else if(w.t>.3&&Math.random()<dt*9)puff(V.set(w.x,w.y+.7,w.z),R(-.5,.5),R(1,2.5),R(-.5,.5),.8,3.5,R(1.5,3),.35,0xb8b8b4);
   if(w.defT>0){w.defT-=dt;const a=car.body.geometry.attributes.position,arr=a.array,tg=w.tgt,k=clamp(dt*15,0,1);for(let i=0;i<arr.length;i++)arr[i]+=(tg[i]-arr[i])*k;a.needsUpdate=true;car.body.geometry.computeVertexNormals();}
@@ -2786,7 +2789,7 @@ function sim(dt){const pe=ents.find(e=>e.player);
   if(wx.wet>.5&&!PL.crash&&pe.v>20&&Math.random()<dt*26)puff(V.set(PL.x-Math.sin(PL.h)*2.6,.5,PL.z-Math.cos(PL.h)*2.6),R(-1.5,1.5),R(1,3),R(-1.5,1.5),1.2,5.5,R(.7,1.2),.34,0xd0d6da);
   if(PL.crash&&PL.crash.dive)diveTick(dt,pe);
   else if(PL.crash){const w=hero.wreck,still=!w||(Math.hypot(w.vx,w.vz)<1&&w.y<=0&&!w.wr);tubeFire(dt);const tb=PL.crash.tf>2.3;
-    if(tb||PL.crash.t>4||(PL.crash.t>2.5&&still)){const wi=w?w.idx:PL.idx;   // Bay drive: back on the road at the spot where it crashed
+    if(tb||PL.crash.t>(DRIVE?4:12)||(DRIVE&&PL.crash.t>2.5&&still)){const wi=w?w.idx:PL.idx;   // Bay drive: back on the road at the spot where it crashed
       let i=PL.idx=wrapI(tb?Z.tu1+30:DRIVE?Math.floor(PL.crash.s/SEG)+Math.round(4/SEG):wi+35);if(w)endWreck(w);if(TUF.st){TUF.on=0;for(const o of TUF.st)o.visible=false;}
       if(DRIVE)i=backOnRoad(pe,i,PL.crash.s);else{pe.s=i*SEG;pe.lat=0;PL.x=P[i].x;PL.z=P[i].z;PL.h=G.camH=yaw(i);}PL.vx=PL.vz=0;PL.steer=0;PL.crash=null;sndRestore();PL.safe=3;resetVehicle(VS,hero.M.dyn,0);clearCrack();fqAfterReset();
       hero.position.set(PL.x,H[i],PL.z);hero.rotation.set(0,PL.h,0);GY=PL.gy=PL.cy=H[i];PL.air=0;PL.vy=0;say(DRIVE?'BACK ON THE ROAD':'BACK IN THE RACE','',1.5);}}
@@ -5948,6 +5951,9 @@ function frame(manual){
     else{if(!D.camS){const j=wrapI(D.idx),n=Nn[j],tg=T[j],dl=(D.wx-P[j].x)*n.x+(D.wz-P[j].z)*n.z,lat=D.sd*Math.max(Math.abs(dl)+9,12)-dl;   // on the surface: out to the side, clear of the bridge and its piers, a little ahead
         D.camS=[D.wx+n.x*lat+tg.x*5,D.wz+n.z*lat+tg.z*5];}
       V.set(D.camS[0],-43.3,D.camS[1]);camP.lerp(V,D.camW?clamp(rdt*2,0,1):1);D.camW=1;camera.position.copy(camP);camera.fov=lerp(camera.fov,30,.1);look.lerp(V2.set(D.wx,-44.7,D.wz),.2);}}
+  else if(PL.crash&&!DRIVE&&hero.wreck&&PL.crash.t>2.2){const c=PL.crash,hw=hero.wreck;   // Le Mans: after a beat, a slow helicopter shot from high up, arcing round the wreck, the fire and the black smoke
+    if(!c.heli){c.heli=1;c.hu=0;c.ha=Math.atan2(camera.position.x-hw.x,camera.position.z-hw.z);c.hp=camera.position.clone();}c.hu+=rdt;const u=c.hu,k=sst(u,0,4.5),a=c.ha+u*.15,r=lerp(30,52,k),y=lerp(12,34,k)+Math.sin(tm*.6)*.5;
+    V.set(hw.x+Math.sin(a)*r+Math.sin(tm*.37)*.6,y,hw.z+Math.cos(a)*r);camP.copy(c.hp).lerp(V,sst(u,0,2.4));camera.position.copy(camP);camera.fov=lerp(camera.fov,lerp(34,44,k),.05);look.lerp(V2.set(hw.x,1.2+k*3.5,hw.z),clamp(rdt*2.5,0,1));}
   else if(PL.crash){if(!PL.crash.cam){PL.crash.cam=1;at(PL.crash.s+55,-PL.crash.sd*5.5,1.6,camP);look.copy(hero.position);}camera.position.copy(camP);camera.position.x+=jx;camera.position.y+=jy;
     const d=camP.distanceTo(hero.position);camera.fov=lerp(camera.fov,clamp(2*Math.atan(6/d)*57.3,9,38),.08);look.lerp(V.copy(hero.position).setY(hero.position.y+.6),.2);}
   else if(G.state==='finish'&&G.finT<4.4&&!DRIVE){at(S0-15,-(RW-3.4),1.05,camera.position);camera.fov=lerp(camera.fov,34,.2);look.lerp(V.copy(hero.position).setY(.6),first?1:.25);}   // low by the line as the flag falls
