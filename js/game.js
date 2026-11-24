@@ -1786,6 +1786,20 @@ function liveryLines(g,w,h,col,lw){g.strokeStyle=col;g.lineWidth=lw;g.lineCap='r
   for(const x of[0,1]){const m=v=>x?w-v:v;L(m(6),330,m(96),336,m(104),610,m(6),620);L(m(120),318,m(150),690);}
   L(150,712,150,1010);L(362,712,362,1010);L(150,1010,362,1010);
   g.beginPath();g.ellipse(256,34,96,13,0,0,7);g.stroke();}
+// Le Mans only: race wear painted over a livery once at build (no runtime cost). Drawn in a unit frame t = nose(0)..tail(1), a = across the body with both
+// lower sills at a=0 and a=1 and the roof at .5; lo = how far up the side the low band reaches. Grime and brake dust behind the wheels, road dirt along the sills,
+// soot over the tail, a dulling film, flies on the nose, a few scratches and scuffs; kept light enough that the livery and numbers still read.
+function raceWear(g,lo,seed,tf=.2,tr=.78){let sd=seed*7919+13;const q=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
+  g.fillStyle='rgba(96,86,70,.1)';g.fillRect(0,0,1,1);   // dulled paint
+  for(const sg of[0,1]){const A=a=>sg?1-a:a;
+    const gr=g.createLinearGradient(0,A(0),0,A(lo*1.15));gr.addColorStop(0,'rgba(30,25,20,.62)');gr.addColorStop(.55,'rgba(48,40,30,.26)');gr.addColorStop(1,'rgba(48,40,30,0)');g.fillStyle=gr;g.fillRect(0,Math.min(A(0),A(lo*1.15)),1,lo*1.15);   // road dirt up the sides
+    for(const t of[tf,tr]){g.save();g.translate(t+.05,A(lo*.25));g.scale(.14,lo*.9);const rg=g.createRadialGradient(0,0,0,0,0,1);rg.addColorStop(0,'rgba(18,15,12,.72)');rg.addColorStop(.6,'rgba(26,21,16,.35)');rg.addColorStop(1,'rgba(26,21,16,0)');g.fillStyle=rg;g.beginPath();g.arc(0,0,1,0,7);g.fill();g.restore();   // brake dust behind the wheel
+      for(let i=0;i<46;i++){const x0=t+.02+q()*.16,a0=lo*q()*.3,len=.02+q()*.06;g.fillStyle=`rgba(${q()<.5?'34,28,22':'72,60,44'},${.06+q()*.14})`;g.beginPath();g.moveTo(x0,A(a0));g.lineTo(x0+len,A(a0+lo*(.25+q()*.5)));g.lineTo(x0+len+.004,A(a0+lo*(.25+q()*.5)));g.lineTo(x0+.006,A(a0));g.fill();}}}   // dirt spray flung back and up
+  const tg=g.createLinearGradient(.84,0,1,0);tg.addColorStop(0,'rgba(14,12,10,0)');tg.addColorStop(1,'rgba(14,12,10,.6)');g.fillStyle=tg;g.fillRect(.84,0,.16,1);   // oil and exhaust soot over the tail
+  for(let i=0;i<26;i++){const x=.9+q()*.1,a=.32+q()*.36;g.fillStyle=`rgba(10,9,8,${.1+q()*.2})`;g.beginPath();g.ellipse(x,a,.01+q()*.03,.01+q()*.03,0,0,7);g.fill();}
+  for(let i=0;i<120;i++){g.fillStyle=`rgba(${q()<.6?'40,34,24':'150,140,90'},${.25+q()*.4})`;g.fillRect(q()*.07,.25+q()*.5,.0018,.0032);}   // flies on the nose
+  for(let i=0;i<34;i++){const x=q()<.5?q()*.15:q(),a=q()<.7?(q()<.5?q()*lo*1.6:1-q()*lo*1.6):q(),dx=(q()-.5)*.03,da=(q()-.5)*.02,lt=q()<.6;
+    g.strokeStyle=lt?`rgba(225,220,205,${.18+q()*.25})`:`rgba(20,18,16,${.2+q()*.25})`;g.lineWidth=.0016;g.beginPath();g.moveTo(x,a);g.lineTo(x+dx,a+da);g.stroke();}}   // scratches and scuffs
 function livery(o,M,res){const ky=4.4/M.CL;
   const map=canvas(512*res,1024*res,(g)=>{g.scale(res,res);const w=512,h=1024;g.fillStyle=o.base;g.fillRect(0,0,w,h);
     if(o.patina){let sd=7;const q=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};   // barn find: paint faded pale in patches, darker blotches, rust spots and dust
@@ -1833,12 +1847,13 @@ function livery(o,M,res){const ky=4.4/M.CL;
     for(const x of[0,1]){const gr=g.createLinearGradient(x?w:0,0,x?w-50:50,0);gr.addColorStop(0,'rgba(60,52,40,.55)');gr.addColorStop(1,'rgba(60,52,40,0)');g.fillStyle=gr;g.fillRect(x?w-50:0,0,50,h);}
     const tg=g.createLinearGradient(0,h,0,h-140);tg.addColorStop(0,'rgba(20,18,16,.6)');tg.addColorStop(1,'rgba(20,18,16,0)');g.fillStyle=tg;g.fillRect(0,h-140,w,140);
     for(let i=0;i<5200;i++){g.fillStyle=`rgba(64,54,40,${Math.random()*.11})`;g.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*4,2+Math.random()*16);}
+    if(!DRIVE&&!o.patina){g.save();g.transform(0,h,w,0,0,0);raceWear(g,.12,+o.num||3);g.restore();}   // Le Mans: race-worn
   });
   const bump=canvas(512,1024,(g,w,h)=>{g.fillStyle='#808080';g.fillRect(0,0,w,h);if(M.plain)return;g.scale(1,ky);liveryLines(g,w,h,'#101010',3);g.fillStyle='#202020';g.beginPath();g.ellipse(256,34,92,10,0,0,7);g.fill();
     if(!M.road)for(let y=792;y<980;y+=11){g.fillRect(168,y,74,5);g.fillRect(270,y,74,5);}g.fillStyle='#c8c8c8';for(const x of[92,420]){g.beginPath();g.ellipse(x,150,34,58,0,0,7);g.fill();}},false);
   const emis=canvas(256,512,(g,w,h)=>{g.fillStyle='#000';g.fillRect(0,0,w,h);g.scale(1,ky);g.fillStyle='#fff';
     for(const[x,y,r]of(M.lamp==='rect'?[[42,85,11],[214,85,11],[118,15,6],[138,15,6]]:M.lamp==='round'?[[44,46,10],[44,75,10],[212,46,10],[212,75,10]]:[[46,64,7.5],[46,86,7.5],[210,64,7.5],[210,86,7.5]])){g.beginPath();g.arc(x,y,r,0,7);g.fill();}});
-  return new THREE.MeshPhysicalMaterial({map,bumpMap:bump,bumpScale:2.5,emissiveMap:emis,emissive:o.bare?0xffcf78:0xffe6b0,emissiveIntensity:M.lamp==='none'?0:5,roughness:o.patina?.78:o.bare?.3:.34,metalness:o.bare?.3:.05,clearcoat:o.patina?.05:.8,clearcoatRoughness:.2,side:THREE.DoubleSide});
+  return new THREE.MeshPhysicalMaterial({map,bumpMap:bump,bumpScale:2.5,emissiveMap:emis,emissive:o.bare?0xffcf78:0xffe6b0,emissiveIntensity:M.lamp==='none'?0:5,roughness:o.patina?.78:o.bare?.3:DRIVE?.34:.46,metalness:o.bare?.3:.05,clearcoat:o.patina?.05:DRIVE?.8:.45,clearcoatRoughness:DRIVE?.2:.42,side:THREE.DoubleSide});
 }
 const hubTex=canvas(256,256,(g)=>{g.clearRect(0,0,256,256);g.fillStyle='#111';g.beginPath();g.arc(128,128,127,0,7);g.arc(128,128,78,0,7,true);g.fill();
   g.strokeStyle='#1d1d1d';g.lineWidth=2;for(const r of[120,112,86]){g.beginPath();g.arc(128,128,r,0,7);g.stroke();}
@@ -1942,9 +1957,10 @@ function livery917(o,m,res){const W=1024*res,H=512*res,kx=W/m.CL,ky=H/ARC917.P,X
     sides((sd)=>ln([[X(.95),YS(sd,.75)],[X(.95),YS(sd,-.7)],[X(-.5),YS(sd,-.7)],[X(-.5),YS(sd,.75)]]));   // door shut lines
     if(o.logos)put(g,X(m.zR+.2),YT(0),-PI/2,()=>disc(g,12,o.num,16));   // the number again on the tail
     sides((sd)=>{const y0=YS(sd,-.15),y1=sd>0?H:0,gr=g.createLinearGradient(0,y0,0,y1);gr.addColorStop(0,'rgba(60,52,40,0)');gr.addColorStop(1,'rgba(60,52,40,.5)');g.fillStyle=gr;g.fillRect(0,Math.min(y0,y1),W,Math.abs(y1-y0));});   // road grime low down
-    for(let i=0;i<1800;i++){g.fillStyle=`rgba(64,54,40,${Math.random()*.09})`;g.fillRect(Math.random()*W,Math.random()*H,(2+Math.random()*14)*res,(1+Math.random()*2)*res);}});
+    for(let i=0;i<1800;i++){g.fillStyle=`rgba(64,54,40,${Math.random()*.09})`;g.fillRect(Math.random()*W,Math.random()*H,(2+Math.random()*14)*res,(1+Math.random()*2)*res);}
+    if(!DRIVE){g.save();g.scale(W,H);raceWear(g,1-YS(1,0)/H,+o.num||3,.2,.76);g.restore();}});   // Le Mans: race-worn
   const emis=canvas(256,128,(g,w,h)=>{g.fillStyle='#000';g.fillRect(0,0,w,h);g.scale(w/W,h/H);g.fillStyle='#fff';for(const[la,z]of lamps){g.beginPath();g.ellipse(X(z),YT(la),.06*kx,.06*ky,0,0,7);g.fill();}});
-  return new THREE.MeshPhysicalMaterial({map,emissiveMap:emis,emissive:o.bare?0xffcf78:0xffe6b0,emissiveIntensity:5,vertexColors:true,roughness:o.bare?.28:.3,metalness:o.bare?.35:.04,clearcoat:1,clearcoatRoughness:.07,side:THREE.DoubleSide});}
+  return new THREE.MeshPhysicalMaterial({map,emissiveMap:emis,emissive:o.bare?0xffcf78:0xffe6b0,emissiveIntensity:5,vertexColors:true,roughness:o.bare?.28:DRIVE?.3:.44,metalness:o.bare?.35:.04,clearcoat:DRIVE?1:.5,clearcoatRoughness:DRIVE?.07:.38,side:THREE.DoubleSide});}
 function canopy917(o,m,res){const W=512*res,H=256*res,E=2/2.6,cols=[];for(let px=0;px<W;px++)cols.push(can917col(m,1.05-2.2*px/W));
   const toS=h=>{const c=new THREE.Color(h);return[c.r,c.g,c.b].map(v=>Math.pow(v,1/2.2)*255);},B=toS(o.base),St=toS(o.stripe||o.base),Pn=toS(o.pin||o.stripe||o.base),Hc=toS(o.helmet);
   return canvas(W,H,(g)=>{const im=g.createImageData(W,H),d=im.data;
