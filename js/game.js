@@ -2317,13 +2317,19 @@ if(!DRIVE){flagman=new THREE.Group();const dk=std({color:0x1c1c1e,roughness:.8})
 const runners=[];{const skinM=std({color:0xd9a988,roughness:.8}),helmC=[0xd8d2c0,0xb3241c,0xe6e1d0,0x1a1a1a,0xe3c94a,0x1d3a6a,0x1f3358,0xe6e1d0],sm=c=>std({color:c,roughness:.85}),
     STY=[{o:0xe8e0c8,j:0xb3241c},{o:0x1f3f9a},{o:0xf0eee8,st:1},{o:0xc42a22,pp:1},{o:0xe8e0c8,j:0xa8221a},{o:0xf0eee8,st:1},{o:0x24469e},{o:0xc42a22,pp:1}],
     patchM=std({color:0xf2ede0,roughness:.8}),sockM=std({color:0xe8e4da,roughness:.9}),bootM=[std({color:0x161412,roughness:.6}),std({color:0x4a2e1c,roughness:.6})],rwb=[0xc8302a,0xf2f0ea,0x1f3a8a].map(c=>std({color:c,roughness:.8})),pipM=std({color:0xf2f0ea,roughness:.8}),bx=(w,h,d,m,x,y,z,par)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);par.add(o);return o;};
-  for(let i=0;i<8;i++){const st=STY[i],suitM=sm(st.o),topM=st.j?sm(st.j):suitM,g=new THREE.Group(),limb=(x,y,len,r,mt,leg)=>{const p=new THREE.Group();p.position.set(x,y,0);const m=new THREE.Mesh(new THREE.CapsuleGeometry(r*1.12,len,3,8),mt);m.position.y=-len/2-r*.4;m.castShadow=true;p.add(m);g.add(p);
-      if(leg){const s=new THREE.Mesh(cyl(r*.95,r*.95,.07,8),sockM);s.position.y=-len-r*.1;p.add(s);bx(.1,.08,.24,bootM[i%2],0,-len-r*.6,.04,p);}else if(st.pp)bx(.014,len,.014,pipM,Math.sign(x)*r*1.1,-len/2-r*.4,0,p);return p;};
-    const t=new THREE.Mesh(new THREE.CapsuleGeometry(.18,.38,4,10),topM);t.position.y=1.16;t.scale.z=.72;t.castShadow=true;g.add(t);
-    const col=new THREE.Mesh(cyl(.085,.1,.07,10),topM);col.position.y=1.5;g.add(col);bx(.012,.36,.01,rwb[1],0,1.2,.133,g);   /* stand-up collar; the zip down the front */
-    for(const[px,py]of[[-.08,1.3],[-.07,1.22]])bx(.06,.035,.01,patchM,px,py,.13,g);if(st.st)rwb.forEach((m,k)=>bx(.012,.34,.01,m,.06+k*.013,1.17,.13,g));
-    const h=new THREE.Mesh(new THREE.SphereGeometry(.125,12,10),std({color:helmC[i],roughness:.3}));h.position.y=1.64;g.add(h);const f=new THREE.Mesh(new THREE.SphereGeometry(.07,8,6),skinM);f.position.set(0,1.62,.085);g.add(f);
-    g.legs=[limb(-.09,.9,.7,.075,suitM,1),limb(.09,.9,.7,.075,suitM,1)];g.arms=[limb(-.24,1.4,.5,.05,topM),limb(.24,1.4,.5,.05,topM)];g.visible=false;scene.add(g);runners.push(g);}}
+  /* jointed drivers: hips, knees, shoulders, elbows; shared geometries; the helmet is carried in the hand until they set off */
+  const CG=(r,l)=>new THREE.CapsuleGeometry(r,l,3,8),gTH=CG(.078,.3),gSH=CG(.062,.32),gUA=CG(.052,.2),gFA=CG(.046,.17),gWA=CG(.13,.1),gCH=CG(.165,.16),gSB=CG(.068,.3),gPV=CG(.12,.08),gGL=new THREE.SphereGeometry(.05,8,6),gBT=new THREE.BoxGeometry(.1,.08,.25),gSK=cyl(.058,.058,.07,8),gNK=cyl(.05,.056,.1,8),gHD=new THREE.SphereGeometry(.098,12,10),gHR=new THREE.SphereGeometry(.104,12,8,0,Math.PI*2,0,1.3),gHM=new THREE.SphereGeometry(.135,14,10,Math.PI/2+.5,Math.PI*2-1,0,2.3),gPK=new THREE.BoxGeometry(.15,.012,.06),gCL=cyl(.075,.09,.06,10),
+    gloveM=[std({color:0x3a2416,roughness:.7}),std({color:0xd8cfb8,roughness:.8})],hairC=[0x3a2a1c,0x1a1410,0x8a6a40,0x2a1e14,0x5a3e22,0x14100c,0x6b4a2a,0x2e2218],
+    ms=(geo,m,x,y,z,par)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;par.add(o);return o;},grp=(x,y,z,par)=>{const p=new THREE.Group();p.position.set(x,y,z);par.add(p);return p;};
+  for(let i=0;i<8;i++){const st=STY[i],suitM=sm(st.o),topM=st.j?sm(st.j):suitM,g=new THREE.Group();
+    ms(gPV,suitM,0,.96,0,g).scale.set(1.15,.7,.8);const tor=grp(0,.92,0,g);ms(gWA,topM,0,.14,0,tor).scale.z=.72;ms(gCH,topM,0,.36,0,tor).scale.set(1.08,1,.7);ms(gSB,topM,0,.5,0,tor).rotation.z=Math.PI/2;
+    ms(gCL,topM,0,.6,0,tor);bx(.012,.36,.01,rwb[1],0,.3,.125,tor);for(const[px,py]of[[-.08,.42],[-.07,.35]])bx(.06,.035,.01,patchM,px,py,.12,tor);if(st.st)rwb.forEach((m,k)=>bx(.012,.34,.01,m,.06+k*.013,.3,.122,tor));
+    ms(gNK,skinM,0,.63,0,tor);const hd=grp(0,.66,0,tor);ms(gHD,skinM,0,.1,0,hd).scale.y=1.12;ms(gHR,sm(hairC[i]),0,.115,-.01,hd).rotation.x=-.35;
+    const hm=new THREE.Group(),hmM=std({color:helmC[i],roughness:.3,side:THREE.DoubleSide});ms(gHM,hmM,0,0,0,hm);ms(gPK,hmM,0,.05,.12,hm).rotation.x=-.2;
+    const leg=x=>{const th=grp(x,.92,0,g);ms(gTH,suitM,0,-.22,0,th);const kn=grp(0,-.44,0,th);ms(gSH,suitM,0,-.2,0,kn);ms(gSK,sockM,0,-.38,0,kn);ms(gBT,bootM[i%2],0,-.44,.04,kn);th.kn=kn;return th;};
+    const arm=x=>{const sh=grp(x,.5,0,tor);ms(gUA,topM,0,-.15,0,sh);const el=grp(0,-.3,0,sh);ms(gFA,topM,0,-.13,0,el);const hn=grp(0,-.28,0,el);ms(gGL,gloveM[i%2],0,-.02,0,hn);
+      if(st.pp){bx(.012,.28,.012,pipM,Math.sign(x)*.055,-.15,0,sh);bx(.012,.26,.012,pipM,Math.sign(x)*.05,-.13,0,el);}sh.el=el;sh.hd=hn;return sh;};
+    g.legs=[leg(-.09),leg(.09)];g.arms=[arm(-.22),arm(.22)];g.tor=tor;g.head=hd;g.helm=hm;helmHand(g);g.visible=false;scene.add(g);runners.push(g);}}
 // Le Mans only: gendarmes among the people at the fences and in the pits (pale-blue shirt, dark tie, white gloves, dark kepi with a gold band, as in the 1970 photos),
 // and press photographers wandering along the edge of the track, stopping to raise their cameras and fire a flash. Some of each stroll, some stand. (FOLK, folkTick)
 const FOLK=[];if(!DRIVE){const capG=new THREE.CapsuleGeometry(1,1,3,8),sph=new THREE.SphereGeometry(1,10,8),boxG=new THREE.BoxGeometry(1,1,1),cylG=new THREE.CylinderGeometry(1,1,1,12);
@@ -2980,7 +2986,7 @@ function sfxBlip(cy){if(!AC)return;const t=AC.currentTime+.02,f=r=>r/60*cy*.5;fo
 // the Le Mans title camera: low and close beside the chosen car like a period grid photo, gliding along the echelon to the next one; the player's driver stands by his car; the start-up blip and its exhaust smoke
 function walkCam(rdt){const k=1-Math.exp(-rdt*1.7),c=hero;c.localToWorld(V.set(-2.3,.78+Math.sin(tm*.3)*.04,7));c.localToWorld(V2.set(-.55,.55,0));
   if(!G.wk){G.wk=1;camP.copy(V);look.copy(V2);}else{camP.lerp(V,k);look.lerp(V2,Math.min(1,k*1.4));}camera.position.copy(camP);camera.fov=lerp(camera.fov,36,.1);hero.canopy.visible=true;interior.visible=false;
-  const r=runners[5];r.visible=true;r.scale.setScalar(1);c.localToWorld(r.position.set(-1.45,0,.75));r.position.y=c.position.y;r.rotation.y=c.rotation.y-.55+Math.sin(tm*.35)*.12;r.legs[0].rotation.x=r.legs[1].rotation.x=0;r.arms[0].rotation.x=r.arms[1].rotation.x=.12;
+  const r=runners[5];r.visible=true;r.scale.setScalar(1);c.localToWorld(r.position.set(-1.45,0,.75));r.position.y=c.position.y;r.rotation.y=c.rotation.y-.55+Math.sin(tm*.35)*.12;if(r.hOn)helmHand(r);r.position.y+=poseIdle(r,5,.5)-.92;
   if(G.blipAt&&tm>=G.blipAt){G.blipAt=0;sfxBlip((ENG[G.model]||[0,6])[1]);G.puffB=tm+.6;G.puffT=tm+2.4;}
   if(G.puffT&&tm>G.puffB&&tm<G.puffT){const u=tm-G.puffB,big=u<.3||(u>.3&&u<.75);if(Math.random()<rdt*(big?45:9)){const zr=c.M.zR!=null?c.M.zR:-2,fx=Math.sin(c.rotation.y),fz=Math.cos(c.rotation.y),sp=R(.8,big?2.6:1.2);c.localToWorld(V.set(R(-.3,.3),.28,zr-.2));
     puff(V,-fx*sp+R(-.3,.3),R(.25,.8),-fz*sp+R(-.3,.3),.3,big?1.9:1.2,R(1,1.8),big?.42:.26,u<.3?0x6f6d6b:0xb9bcc4);}}}
@@ -5922,22 +5928,64 @@ function folkTick(rdt){const cp=camera.position;
         const fl=g.cam.fl.material;fl.opacity=Math.max(0,fl.opacity-rdt*9);g.cam.fl.scale.setScalar(.12+fl.opacity*.25);}
       else g.arms[0].rotation.x=g.arms[1].rotation.x=.25;}   // hands behind the back
     if(f.st===0&&f.snap)g.arms[0].rotation.z=g.arms[1].rotation.z=0;}}
-function runStart(k,rdt,stand){if(k>=1&&G.smkA==null)G.smkA=0;runners.forEach((r,i)=>{const e=ents[i];if(!e){r.visible=false;return;}r.visible=k<1;const cp=e.car.position;
-    // each driver starts some 9 m behind his own car, runs up along the driver's side, then vaults in over the sill
-    const run=clamp(k/.82,0,1),hop=clamp((k-.82)/.18,0,1);e.car.localToWorld(V.set(lerp(-1.35,-.24,hop),0,.2));at(e.s-4.2,e.lat+.6,0,V2);   // waiting in the gap behind his car on the echelon
-    r.position.set(lerp(V2.x,V.x,run),lerp(V2.y,V.y,run),lerp(V2.z,V.z,run));r.rotation.y=run<1?Math.atan2(V.x-V2.x,V.z-V2.z):e.car.rotation.y;
-    r.position.y+=Math.sin(hop*Math.PI)*.8;r.scale.setScalar(1-hop*.5);   // the last stride is a vault over the sill into the seat
-    const sw=stand?0:Math.sin(G.t*17+i)*.9;if(stand)r.rotation.y+=Math.sin(G.t*.4+i*2)*.6;r.legs[0].rotation.x=sw;r.legs[1].rotation.x=-sw;r.arms[0].rotation.x=-sw;r.arms[1].rotation.x=sw;
-    if(k>=1&&Math.random()<rdt*9){const hy=e.car.rotation.y;puff(V.set(cp.x-Math.sin(hy)*2.4,.4,cp.z-Math.cos(hy)*2.4),R(-.6,.6),R(.4,1.4),R(-.6,.6),.6,3,R(1.2,2.2),.32,0xb9bcc4);}});}
+// Doors: the body and canopy triangles over the driver's door are copied into a hinged panel in the car's own livery; a dark copy covers the opening while it is open. 917s and the 512 swing forward and up taking part of the roof, the others swing out on a front hinge
+const DOORHOLE=std({color:0x0b0b0c,roughness:.9,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),DOORIN=std({color:0x1d1d1f,roughness:.8,side:THREE.BackSide});
+function doorGeo(car,fly){const M=car.M;if(M._door!==undefined)return M._door;M._door=null;const can=car.canopy;can.updateMatrix();
+  const bb=new THREE.Box3().setFromBufferAttribute(M.geo.attributes.position),hw=Math.max(-bb.min.x,bb.max.x),cb=new THREE.Box3().setFromBufferAttribute(can.geometry.attributes.position).applyMatrix4(can.matrix),cw=Math.max(-cb.min.x,cb.max.x),z0=-.22,z1=.8;
+  const take=(geo,mat,test)=>{const p=geo.attributes.position,n=geo.attributes.normal,uv=geo.attributes.uv,ix=geo.index,T=(ix?ix.count:p.count)/3,P=[],N=[],U=[],v=[0,1,2].map(()=>new THREE.Vector3()),w=new THREE.Vector3(),q=[0,0,0],nm=mat&&new THREE.Matrix3().getNormalMatrix(mat);
+    for(let t=0;t<T;t++){for(let j=0;j<3;j++){q[j]=ix?ix.getX(t*3+j):t*3+j;v[j].fromBufferAttribute(p,q[j]);if(mat)v[j].applyMatrix4(mat);}
+      if(!test((v[0].x+v[1].x+v[2].x)/3,(v[0].y+v[1].y+v[2].y)/3,(v[0].z+v[1].z+v[2].z)/3))continue;
+      for(let j=0;j<3;j++){P.push(v[j].x,v[j].y,v[j].z);if(n){w.fromBufferAttribute(n,q[j]);if(nm)w.applyMatrix3(nm).normalize();N.push(w.x,w.y,w.z);}if(uv)U.push(uv.getX(q[j]),uv.getY(q[j]));}}
+    if(!P.length)return null;const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));if(N.length)g.setAttribute('normal',new THREE.Float32BufferAttribute(N,3));else g.computeVertexNormals();if(U.length)g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));return g;};
+  const b=take(M.geo,null,(x,y,z)=>x<-hw*.6&&y>.33&&z>z0&&z<z1),c=take(can.geometry,can.matrix,(x,y,z)=>x<(fly?-.1:-cw*.62)&&y>.3&&z>z0&&z<z1);if(!b)return null;
+  const h=new THREE.Box3().setFromBufferAttribute(b.attributes.position);if(c)h.union(new THREE.Box3().setFromBufferAttribute(c.attributes.position));
+  const hp=new THREE.Vector3(fly?(h.min.x+h.max.x)/2:h.min.x+.04,fly?h.max.y-.04:(h.min.y+h.max.y)/2,h.max.z);for(const g of[b,c])if(g)g.translate(-hp.x,-hp.y,-hp.z);return M._door={b,c,hp};}
+function carDoor(car){if(car.door!==undefined)return car.door;car.door=null;const o=car.o;if(!o||!car.M||!car.M.geo||!car.body||!car.body.visible||!car.canopy||car.canopy.scale.x<.01)return null;
+  const fly=IS917[o.model]?1:o.model==='f512'?2:0,D=doorGeo(car,fly);if(!D)return null;
+  const po=m=>{m=m.clone();m.side=THREE.FrontSide;m.polygonOffset=true;m.polygonOffsetFactor=m.polygonOffsetUnits=-4;return m;},piv=new THREE.Group(),hole=new THREE.Group();piv.position.copy(D.hp);hole.position.copy(D.hp);piv.rotation.order='YXZ';
+  for(const[g,m]of[[D.b,car.body.material],[D.c,car.canopy.material]])if(g){piv.add(new THREE.Mesh(g,po(m)),new THREE.Mesh(g,DOORIN));hole.add(new THREE.Mesh(g,DOORHOLE));}
+  piv.visible=hole.visible=false;car.add(piv,hole);return car.door={piv,hole,fly};}
+function setDoor(car,a){const d=carDoor(car);if(!d)return;d.piv.visible=d.hole.visible=a>.003;if(a<=.003)return;const e=a*a*(3-2*a);
+  if(d.fly===1)d.piv.rotation.set(e*1.0,e*.55,0);else if(d.fly===2)d.piv.rotation.set(e*1.2,e*.3,0);else d.piv.rotation.set(0,e*1.15,0);}
+function sfxDoor(v,open){if(!AC||v<.04)return;const t=AC.currentTime;if(open){hit(t,.05,.12*v,2800,'bandpass',master);return;}hit(t,.18,.6*v,380,'lowpass',master);tone('sine',92,t,.2,.4*v,master,{to:48});hit(t+.015,.05,.2*v,2400,'bandpass',master);}
+const RD=[0,.05,.025,.07,.04,.1,.015,.06],RA=[.54,.58,.5,.6,.64,.56,.52,.57],RV=new THREE.Vector3();   /* each driver's reaction delay, and the share of the time he takes to reach his car; driver 4 stumbles */
+function legPose(l,a,b){l.rotation.x=a;l.kn.rotation.x=b;return .44*Math.cos(a)+.48*Math.cos(a+b);}
+function helmHand(r){r.arms[1].hd.add(r.helm);r.helm.position.set(0,-.13,.05);r.helm.rotation.set(.5,0,0);r.hOn=0;}
+// standing on the grid with the helmet in one hand: weight shifting from leg to leg, looking around, now and then a glance up the grid toward the flag
+function poseIdle(r,i,fy){const s1=Math.sin(tm*.55+i*1.7),a1=Math.abs(s1),[L,Rl]=r.legs,[AL,AR]=r.arms;L.rotation.z=.06+.03*s1;Rl.rotation.z=-.06+.03*s1;
+  const d=Math.max(legPose(s1>0?Rl:L,-.12*a1,.28*a1),legPose(s1>0?L:Rl,0,0));r.tor.rotation.set(.03,0,-.04*s1);
+  let lk=.5*Math.sin(tm*.29+i*2.3)+.2*Math.sin(tm*.71+i);const q=(tm*.12+i*.37)%1;if(q<.2)lk=lerp(lk,fy,Math.sin(Math.PI*q/.2));r.head.rotation.set(-.05+.05*Math.sin(tm*.4+i),clamp(lk,-1.3,1.3),0);
+  AR.rotation.set(.08,0,.12);AR.el.rotation.x=-.2;if(i%3===0){AL.rotation.set(.25,0,-.6);AL.el.rotation.x=-1.6;}else{AL.rotation.set(-.12+.05*Math.sin(tm*.5+i),0,-.06);AL.el.rotation.x=-.45;}return d;}
+function runStart(k,rdt,stand){if(k>=1&&G.smkA==null)G.smkA=0;runners.forEach((r,i)=>{const e=ents[i];if(!e){r.visible=false;return;}r.visible=k<1;const car=e.car,cp=car.position,hy=car.rotation.y,[L,Rl]=r.legs,[AL,AR]=r.arms,tor=r.tor,hd=r.head;
+    /* each driver waits some 4 m behind his own car, reacts at his own moment, pulls his helmet on as he sprints up the driver's side, the door swings open as he arrives, he climbs in over the sill and slams it */
+    const ra=RA[i],kk=stand?0:clamp((k-RD[i])/(.97-RD[i]),0,1),u=clamp(kk/ra,0,1),c=clamp((kk-ra)/(.95-ra),0,1);let da=0,dep=.92,bob=0;
+    car.localToWorld(V.set(-1.3,0,.25));at(e.s-4.2,e.lat+.6,0,V2);r.scale.setScalar(1);if(stand&&r.hOn)helmHand(r);
+    if(c<=0){let f=u*u*(3-2*u),yaw=Math.atan2(V.x-V2.x,V.z-V2.z);
+      if(kk<=0){if(stand)yaw+=Math.sin(tm*.4+i*2)*.3;dep=poseIdle(r,i,Math.atan2(Math.sin(hy-yaw+.5),Math.cos(hy-yaw+.5)));}
+      else{const sb=i===4?Math.max(0,Math.sin(Math.PI*clamp((u-.3)/.18,0,1))):0;f-=.05*sb;
+        const amp=Math.min(1,6*u*(1-u)*1.3),p=f*V2.distanceTo(V)/2.6*Math.PI*2+i,sp=Math.sin(p),cs=Math.cos(p);L.rotation.z=Rl.rotation.z=0;
+        dep=Math.max(legPose(L,-.85*amp*sp-.1*amp,amp*(.25+1.25*Math.max(0,cs))+.6*sb),legPose(Rl,.85*amp*sp-.1*amp,amp*(.25+1.25*Math.max(0,-cs))));
+        tor.rotation.set(.28*amp+.55*sb,0,.15*sb);hd.rotation.set(-.2*amp-.3*sb,0,0);AL.rotation.set(.85*amp*sp,0,-.9*sb);AR.rotation.set(-.85*amp*sp,0,.7*sb);AL.el.rotation.x=AR.el.rotation.x=-.15-1.4*amp;
+        if(u<.32){const w=Math.sin(Math.PI*Math.min(1,u/.28));AR.rotation.x=lerp(AR.rotation.x,-2.6,w);AR.el.rotation.x=lerp(AR.el.rotation.x,-1.7,w);AL.rotation.x=lerp(AL.rotation.x,-2.2,w*.6);AL.el.rotation.x=lerp(AL.el.rotation.x,-1.8,w*.6);}
+        bob=.05*amp*Math.abs(sp);da=clamp((u-.8)/.2,0,1);}
+      r.position.lerpVectors(V2,V,f);r.position.y+=dep-.92+bob;r.rotation.y=yaw;}
+    else{const c1=clamp(c/.4,0,1),c2=clamp((c-.4)/.35,0,1),e2=c2*c2*(3-2*c2),c3=clamp((c-.7)/.3,0,1);L.rotation.z=Rl.rotation.z=0;   /* a leg over the sill, swing round and drop into the seat */
+      legPose(L,lerp(-1.9*Math.sin(Math.PI*.5*c1),-1.5,e2),lerp(1.8*c1,.4,e2));legPose(Rl,lerp(0,-1.5,e2),lerp(.15*c1,.4,e2));tor.rotation.set(lerp(.35*c1,-.3,c3),0,0);hd.rotation.set(lerp(-.1,.15,c3),0,0);
+      AL.rotation.set(lerp(-1.3*c1,-1.15,c3),0,0);AR.rotation.set(lerp(-1.3*c1,-1.15,c3),0,0);AL.el.rotation.x=AR.el.rotation.x=lerp(-.4,-.55,c3);
+      car.localToWorld(r.position.set(lerp(lerp(-1.3,-.85,c1),-.26,e2),.08*Math.sin(Math.PI*c1)-.7*e2,lerp(.25,.15,e2)));r.rotation.y=hy+Math.PI/2*(1-e2);da=c<.8?1:Math.max(0,1-((c-.8)/.13)**2);}
+    if(!stand&&(u>=.16||c>0)&&!r.hOn){r.updateMatrixWorld(true);hd.attach(r.helm);r.hOn=1;}
+    if(r.hOn){const s=u>=.34||c>0?1:Math.min(1,rdt*14);r.helm.position.lerp(RV.set(0,.115,0),s);r.helm.rotation.x*=1-s;r.helm.rotation.y*=1-s;r.helm.rotation.z*=1-s;}
+    const pa=car.dA||0,sv=clamp(14/camera.position.distanceTo(cp),0,1);if(pa<=0&&da>0)sfxDoor(sv,1);else if(pa>.04&&da<=0&&c>.8)sfxDoor(sv);car.dA=da;setDoor(car,da);
+    if(k>=1&&Math.random()<rdt*9){puff(V.set(cp.x-Math.sin(hy)*2.4,.4,cp.z-Math.cos(hy)*2.4),R(-.6,.6),R(.4,1.4),R(-.6,.6),.6,3,R(1.2,2.2),.32,0xb9bcc4);}});}
 // The opening: quick cuts between drivers' eyes, the clock and the cars, each shorter than the last, over a heartbeat, until four o'clock.
 const cutC=$('cut'),cutG=cutC.getContext('2d');let INTRO=null;
 function startIntro(){initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');$('res').style.display='none';seed=7+Math.random()*1000|0;setupGrid();hero.visible=true;
   const order=['clock','eyes','car','eyes','wheel','crowd','eyes','tach','clock','car2','eyes','exh','flag','eyes','clock','wheel','eyes','car','tach','eyes','clock','car2','eyes','exh','eyes','clock','eyes','car','eyes','tach','eyes','clock','eyes','car2','eyes','clock'];
   // first a slow sweep at eye height down the grid: drivers waiting behind their cars, photographers, gendarmes
   G.smkA=null;const shots=[{type:'sweep',t0:0,d:5.5,v:0}];let t=5.5,n=0;while(t<12.1){const d=Math.max(.08,.8*Math.pow(.9,n));shots.push({type:order[n%order.length],t0:t,d,v:n});t+=d;n++;}
-  shots.push({type:'run',t0:t,d:2.6,v:0});t+=2.6;shots.push({type:'clock',t0:t,d:1.15,v:99});t+=1.15;
+  shots.push({type:'run',t0:t,d:3.4,v:0});t+=3.4;shots.push({type:'clock',t0:t,d:1.15,v:99});t+=1.15;
   INTRO={shots,T:t,i:-1,sw:5.5};G.state='intro';G.t=0;}
-function beginRace(){INTRO=null;cutC.style.display='none';for(const id of['tl','tr','br','lf','map','bl'])$(id).classList.remove('hide');runners.forEach(r=>{r.visible=false;});
+function beginRace(){INTRO=null;ents.forEach(e=>{if(e.car.door){setDoor(e.car,0);e.car.dA=0;}});cutC.style.display='none';for(const id of['tl','tr','br','lf','map','bl'])$(id).classList.remove('hide');runners.forEach(r=>{r.visible=false;});
   if(G.smkA==null)G.smkA=0;G.state='race';first=true;PL.lapStart=0;PL.rpm=1200;say('PARTEZ !','',1.2);sfxRoar();if(!DRIVE)G.panT=0;G.waveT=tm+5;announce("Et c'est parti pour les vingt-quatre heures !");}
 function introTick(rdt){const I=INTRO;if(!I.hold)G.t+=rdt;if(G.t>=I.T){beginRace();return null;}
   let i=Math.max(I.i,0);while(i+1<I.shots.length&&I.shots[i+1].t0<=G.t)i++;const s=I.shots[i];
