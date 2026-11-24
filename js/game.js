@@ -2291,11 +2291,17 @@ if(!DRIVE){flagman=new THREE.Group();const dk=std({color:0x1c1c1e,roughness:.8})
   const fg=new THREE.PlaneGeometry(1.35,1,8,6),fl=new THREE.Mesh(fg,std({side:THREE.DoubleSide,roughness:.9,map:canvas(128,96,(g)=>{for(let x=0;x<8;x++)for(let y=0;y<6;y++){g.fillStyle=(x+y)%2?'#f2efe6':'#141414';g.fillRect(x*16,y*16,16,16);}})}));fl.position.set(.69,1.5,0);fl.castShadow=true;arm.add(fl);
   flagman.arm=arm;flagman.flag=fl;at(S0+1.5,-(RW-.7),0,flagman.position);flagman.rotation.y=yaw(START_I)+Math.PI;scene.add(flagman);}
 // the other drivers, seen only during the running start
-const runners=[];{const suitM=std({color:0xeeeae0,roughness:.85}),skinM=std({color:0xd9a988,roughness:.8}),helmC=[0xd8d2c0,0xb3241c,0xe6e1d0,0x1a1a1a,0xe3c94a,0x1d3a6a,0x1f3358,0xe6e1d0];
-  for(let i=0;i<8;i++){const g=new THREE.Group(),limb=(x,y,len,r)=>{const p=new THREE.Group();p.position.set(x,y,0);const m=new THREE.Mesh(new THREE.CapsuleGeometry(r,len,3,8),suitM);m.position.y=-len/2-r*.4;m.castShadow=true;p.add(m);g.add(p);return p;};
-    const t=new THREE.Mesh(new THREE.CapsuleGeometry(.17,.38,4,10),suitM);t.position.y=1.16;t.scale.z=.7;t.castShadow=true;g.add(t);
+// 1970 suits, as in the pit-wall photos: one-piece zip-front overalls with a stand-up collar - cream with a red zip-up jacket over them, white with a thin red-white-blue chest stripe, royal blue, bright red with white piping down the arms; small pale sponsor patches, pale socks, dark leather boots
+const runners=[];{const skinM=std({color:0xd9a988,roughness:.8}),helmC=[0xd8d2c0,0xb3241c,0xe6e1d0,0x1a1a1a,0xe3c94a,0x1d3a6a,0x1f3358,0xe6e1d0],sm=c=>std({color:c,roughness:.85}),
+    STY=[{o:0xe8e0c8,j:0xb3241c},{o:0x1f3f9a},{o:0xf0eee8,st:1},{o:0xc42a22,pp:1},{o:0xe8e0c8,j:0xa8221a},{o:0xf0eee8,st:1},{o:0x24469e},{o:0xc42a22,pp:1}],
+    patchM=std({color:0xf2ede0,roughness:.8}),sockM=std({color:0xe8e4da,roughness:.9}),bootM=[std({color:0x161412,roughness:.6}),std({color:0x4a2e1c,roughness:.6})],rwb=[0xc8302a,0xf2f0ea,0x1f3a8a].map(c=>std({color:c,roughness:.8})),pipM=std({color:0xf2f0ea,roughness:.8}),bx=(w,h,d,m,x,y,z,par)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);par.add(o);return o;};
+  for(let i=0;i<8;i++){const st=STY[i],suitM=sm(st.o),topM=st.j?sm(st.j):suitM,g=new THREE.Group(),limb=(x,y,len,r,mt,leg)=>{const p=new THREE.Group();p.position.set(x,y,0);const m=new THREE.Mesh(new THREE.CapsuleGeometry(r*1.12,len,3,8),mt);m.position.y=-len/2-r*.4;m.castShadow=true;p.add(m);g.add(p);
+      if(leg){const s=new THREE.Mesh(cyl(r*.95,r*.95,.07,8),sockM);s.position.y=-len-r*.1;p.add(s);bx(.1,.08,.24,bootM[i%2],0,-len-r*.6,.04,p);}else if(st.pp)bx(.014,len,.014,pipM,Math.sign(x)*r*1.1,-len/2-r*.4,0,p);return p;};
+    const t=new THREE.Mesh(new THREE.CapsuleGeometry(.18,.38,4,10),topM);t.position.y=1.16;t.scale.z=.72;t.castShadow=true;g.add(t);
+    const col=new THREE.Mesh(cyl(.085,.1,.07,10),topM);col.position.y=1.5;g.add(col);bx(.012,.36,.01,rwb[1],0,1.2,.133,g);   /* stand-up collar; the zip down the front */
+    for(const[px,py]of[[-.08,1.3],[-.07,1.22]])bx(.06,.035,.01,patchM,px,py,.13,g);if(st.st)rwb.forEach((m,k)=>bx(.012,.34,.01,m,.06+k*.013,1.17,.13,g));
     const h=new THREE.Mesh(new THREE.SphereGeometry(.125,12,10),std({color:helmC[i],roughness:.3}));h.position.y=1.64;g.add(h);const f=new THREE.Mesh(new THREE.SphereGeometry(.07,8,6),skinM);f.position.set(0,1.62,.085);g.add(f);
-    g.legs=[limb(-.09,.9,.7,.075),limb(.09,.9,.7,.075)];g.arms=[limb(-.24,1.4,.5,.05),limb(.24,1.4,.5,.05)];g.visible=false;scene.add(g);runners.push(g);}}
+    g.legs=[limb(-.09,.9,.7,.075,suitM,1),limb(.09,.9,.7,.075,suitM,1)];g.arms=[limb(-.24,1.4,.5,.05,topM),limb(.24,1.4,.5,.05,topM)];g.visible=false;scene.add(g);runners.push(g);}}
 // Le Mans only: gendarmes among the people at the fences and in the pits (pale-blue shirt, dark tie, white gloves, dark kepi with a gold band, as in the 1970 photos),
 // and press photographers wandering along the edge of the track, stopping to raise their cameras and fire a flash. Some of each stroll, some stand. (FOLK, folkTick)
 const FOLK=[];if(!DRIVE){const capG=new THREE.CapsuleGeometry(1,1,3,8),sph=new THREE.SphereGeometry(1,10,8),boxG=new THREE.BoxGeometry(1,1,1),cylG=new THREE.CylinderGeometry(1,1,1,12);
@@ -5846,8 +5852,8 @@ function folkTick(rdt){const cp=camera.position;
 function runStart(k,rdt,stand){if(k>=1&&G.smkA==null)G.smkA=0;runners.forEach((r,i)=>{const e=ents[i];if(!e){r.visible=false;return;}r.visible=k<1;const cp=e.car.position;
     // each driver starts some 9 m behind his own car, runs up along the driver's side, then vaults in over the sill
     const run=clamp(k/.82,0,1),hop=clamp((k-.82)/.18,0,1);e.car.localToWorld(V.set(lerp(-1.35,-.24,hop),0,.2));at(e.s-4.2,e.lat+.6,0,V2);   // waiting in the gap behind his car on the echelon
-    r.position.set(lerp(V2.x,V.x,run),0,lerp(V2.z,V.z,run));r.rotation.y=run<1?Math.atan2(V.x-V2.x,V.z-V2.z):e.car.rotation.y;
-    r.position.y=Math.sin(hop*Math.PI)*.8;r.scale.setScalar(1-hop*.5);   // the last stride is a vault over the sill into the seat
+    r.position.set(lerp(V2.x,V.x,run),lerp(V2.y,V.y,run),lerp(V2.z,V.z,run));r.rotation.y=run<1?Math.atan2(V.x-V2.x,V.z-V2.z):e.car.rotation.y;
+    r.position.y+=Math.sin(hop*Math.PI)*.8;r.scale.setScalar(1-hop*.5);   // the last stride is a vault over the sill into the seat
     const sw=stand?0:Math.sin(G.t*17+i)*.9;if(stand)r.rotation.y+=Math.sin(G.t*.4+i*2)*.6;r.legs[0].rotation.x=sw;r.legs[1].rotation.x=-sw;r.arms[0].rotation.x=-sw;r.arms[1].rotation.x=sw;
     if(k>=1&&Math.random()<rdt*9){const hy=e.car.rotation.y;puff(V.set(cp.x-Math.sin(hy)*2.4,.4,cp.z-Math.cos(hy)*2.4),R(-.6,.6),R(.4,1.4),R(-.6,.6),.6,3,R(1.2,2.2),.32,0xb9bcc4);}});}
 // The opening: quick cuts between drivers' eyes, the clock and the cars, each shorter than the last, over a heartbeat, until four o'clock.
@@ -5988,8 +5994,8 @@ function frame(manual){
   else if(G.cam===0||G.cam===4){ // chase: the camera swings round a little behind the car, so you see it turn in. Mode 4 (raised chase): further back and higher, looking down about 20 degrees onto the car and the track ahead
     const hi=G.cam===4;let dh=((PL.h-G.camH+Math.PI*3)%(Math.PI*2))-Math.PI;G.camH+=dh*clamp(rdt*4.5,0,1);if(first)G.camH=PL.h;
     const gy=PL.cy||0,sl=PL.air?0:PL.slope||0,mq=MOSQ.lift?clamp((PL.cy-PL.gy)/12,0,1):0,cd=(hi?10:7.4)+mq*4;camera.position.set(PL.x-Math.sin(G.camH)*cd+jx,(hi?7:hero.M.camY||1.75)+gy-sl*7.4+jy+mq*4.5+Math.sin(tm*31)*.008*f/60,PL.z-Math.cos(G.camH)*cd);camera.fov=hi?lerp(58,68,clamp(f/105,0,1)):lerp(56,74,clamp(f/105,0,1));look.set(PL.x+fx*(hi?8:9),(hi?.5:.85)+gy+sl*9-mq*3.5,PL.z+fz*(hi?8:9));
-    if(!DRIVE&&G.panT!=null&&G.panT<3.4&&G.state==='race'){const u=G.panT;G.panT+=rdt;   // Le Mans opening: from high and wide over the grid, down into a low view just behind the 917's rear wheel, then over to the chase camera (control is live throughout)
-      const sx=Math.cos(PL.h),sz=-Math.sin(PL.h),a=sst(u,0,2.1),ah=sst(u,0,1.7),b=sst(u,2.1,3.4);
+    if(!DRIVE&&G.panT!=null&&G.panT<6.8&&G.state==='race'){const u=G.panT;G.panT+=rdt;   // Le Mans opening: from high and wide over the grid, down into a low view just behind the 917's rear wheel, then over to the chase camera (control is live throughout)
+      const sx=Math.cos(PL.h),sz=-Math.sin(PL.h),a=sst(u,0,4.2),ah=sst(u,0,3.4),b=sst(u,4.2,6.8);
       V.set(lerp(PL.x-fx*28+sx*11,PL.x-fx*3.3-sx*1.35,a),gy+lerp(16,.42,ah),lerp(PL.z-fz*28+sz*11,PL.z-fz*3.3-sz*1.35,a)).lerp(camera.position,b);camera.position.copy(V);
       V2.set(PL.x+fx*lerp(4,14,a),gy+lerp(.4,.55,a),PL.z+fz*lerp(4,14,a)).lerp(look,b);look.copy(V2);camera.fov=lerp(lerp(38,46,a),camera.fov,b);}}   // carried up by the mosquito: back and above, looking down past the car at the road
   else if(G.cam===1){V.set(-.24,.86,.12);hero.localToWorld(V);camera.position.copy(V);camera.position.y+=jy+Math.sin(tm*37)*.004*f/60;camera.fov=74;look.set(-.24-PL.steer*3,.68,30);hero.localToWorld(look);
