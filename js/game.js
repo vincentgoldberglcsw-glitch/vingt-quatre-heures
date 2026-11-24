@@ -2419,7 +2419,20 @@ const endSkid=()=>{skLast[0]=skLast[1]=null;};
 const wrecks=[],fires=[];
 function startWreck(e,vx,vz,sev,atWall){const car=e.car;if(car.wreck)return car.wreck;
   const w={e,car,x:car.position.x,z:car.position.z,y:0,vy:0,h:car.rotation.y,vx,vz,wy:R(1.2,3.5)*(Math.random()<.5?-1:1),roll:0,wr:0,t:0,fire:0,burn:0,idx:wrapI(Math.floor(e.s/SEG)),col:new THREE.Color(car.o.base).getHex()};
-  car.wreck=w;wrecks.push(w);underside(car);if(!atWall)impact(w,sev);return w;}
+  car.wreck=w;wrecks.push(w);underside(car);if(!DRIVE&&e.player)tearUp(w,sev);if(!atWall)impact(w,sev);return w;}
+// Le Mans, the player's car (the film's No. 20 wreck): nose and tail torn open and hanging down, the rear deck lid flung high into the air, panels thrown off; it is sent sliding out to finish pinned against the rail, then it goes up
+function flingPanel(x,y,z,vx,vy,vz,sx,sz,col,spin){const d=debris.find(d=>!d.wheel&&d.life<=0);if(!d)return;d.life=R(12,16);d.m.visible=true;d.g=GY;d.m.position.set(x,y,z);d.v.set(vx,vy,vz);d.w.set(R(-spin,spin),R(-spin,spin),R(-spin,spin));d.m.scale.set(sx,.03,sz);d.m.material.color.setHex(col);}
+function tearUp(w,sev){const car=w.car,M=car.M,zR=M.zR,h=(x,y,z,n)=>{const s=Math.sin(x*12.9898+y*78.233+z*37.719+n*4.1)*43758.5453;return s-Math.floor(s);};
+  if(!w.tgt){car.body.geometry=M.geo.clone();w.tgt=Float32Array.from(car.body.geometry.attributes.position.array);}const t=w.tgt,side=R(-1,1);
+  for(let i=0;i<t.length;i+=3){const x=t[i],y=t[i+1],z=t[i+2],kf=clamp((z-1.4)/(ZF-1.4),0,1),kr=clamp((zR+1.05-z)/1.05,0,1),k=Math.max(kf,kr),a=h(Math.round(x*6),Math.round(y*6),Math.round(z*5),1),b=h(Math.round(x*6),Math.round(y*6),Math.round(z*5),2);
+    if(k>0){const sk=k*(.55+.45*a);t[i]=x*(1+sk*(.3+.25*b))+side*sk*.25;t[i+1]=Math.max(.035,y-sk*(.55+.3*b)*Math.max(y,.2));t[i+2]=z+(kf>0?1:-1)*sk*(.1+.25*b);}
+    else if(z<-.3&&z>zR+.5&&y>.3&&Math.abs(x)<.62)t[i+1]=lerp(y,.05,.6+.4*a);}
+  w.defT=.7;const c=Math.cos(w.h),s=Math.sin(w.h),wx=(lx,lz)=>w.x+lx*c+lz*s,wz=(lx,lz)=>w.z-lx*s+lz*c,col=w.col,sp=.45;
+  flingPanel(wx(0,-1.2),1.1,wz(0,-1.2),w.vx*sp+R(-3,3),R(16,21),w.vz*sp+R(-3,3),1.45,1.35,col,7);
+  flingPanel(wx(0,1.7),.8,wz(0,1.7),w.vx*sp+R(-5,5),R(6,10),w.vz*sp+R(-5,5),1.5,.9,col,9);
+  for(let n=0;n<4;n++){const lz=n<2?R(1.4,2):R(zR,zR+.9);flingPanel(wx(R(-.8,.8),lz),.7,wz(R(-.8,.8),lz),w.vx*R(.3,.7)+R(-7,7),R(4,11),w.vz*R(.3,.7)+R(-7,7),R(.5,1.1),R(.4,.9),n%2?col:0x2a2a2c,11);}
+  const sd=Math.sign(w.e.lat)||(Math.random()<.5?-1:1),n=Nn[w.idx],vn=(w.vx*n.x+w.vz*n.z)*sd;if(vn<7){w.vx+=n.x*sd*(7-vn+R(2,5));w.vz+=n.z*sd*(7-vn+R(2,5));}
+  w.pin=1;w.brake=13;if(!w.fire)w.fire=R(.8,1.2);}
 // What you see when a car goes over: floor pan, frame tubes, the flat engine and its exhausts, gearbox, driveshafts and wishbones. Built the first time a car wrecks.
 const UND_TEX=canvas(256,512,(g,w,h)=>{g.fillStyle='#a4a8aa';g.fillRect(0,0,w,h);for(let i=0;i<900;i++){g.fillStyle=`rgba(${Math.random()<.5?255:0},${Math.random()<.5?255:0},${Math.random()<.5?255:0},.035)`;g.fillRect(R(0,w),R(0,h),R(20,90),1);}
   g.strokeStyle='rgba(20,22,24,.75)';g.lineWidth=2;const ys=[0,84,170,262,350,430,512];for(const y of ys){g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke();}for(const x of[64,128,192]){g.beginPath();g.moveTo(x,0);g.lineTo(x,h);g.stroke();}
@@ -2453,7 +2466,7 @@ function impact(w,sev,dir){V.set(w.x,.45+w.y,w.z);
   for(let i=0;i<8+sev*2;i++)spark(V,w.vx*.5+R(-9,9),R(1,9),w.vz*.5+R(-9,9));
   for(let i=0;i<5;i++)puff(V,w.vx*.2+R(-2,2),R(.5,2.5),w.vz*.2+R(-2,2),.8,3.5,R(.8,1.6),.45,0x8a8478);
   if(sev>8){const on=w.car.corners.filter(c=>c.visible);if(on.length>1&&Math.random()<.75){on[Math.random()*on.length|0].visible=false;shedWheel(V,w.vx,w.vz);}}
-  if(sev>10&&w.y<.05){w.vy=R(2,3.5)+sev*.14;w.wr=(Math.random()<.5?-1:1)*R(3.5,7.5);}
+  if(sev>10&&w.y<.05){w.vy=R(2,3.5)+sev*.14;if(!w.pin)w.wr=(Math.random()<.5?-1:1)*R(3.5,7.5);}
   w.wy+=R(-3.5,3.5);if(!w.fire&&sev>9.5)w.fire=w.t+R(.3,.8);
   const near=clamp(70/(camera.position.distanceTo(V)+10),.1,1);G.shake=Math.max(G.shake,(.5+sev*.05)*near);sfxCrunch(clamp(sev/14,.3,1)*near);}
 function ignite(w){w.burn=.01;V.set(w.x,.7+w.y,w.z);
@@ -2481,7 +2494,7 @@ function updateWrecks(dt){for(const w of [...wrecks]){const car=w.car;w.t+=dt;co
   const n=Nn[bi],lat=(w.x-P[bi].x)*n.x+(w.z-P[bi].z)*n.z;
   const WW=wallAt[bi]+.15;
   if(!w.free&&Math.abs(lat)>WW&&w.y<1.2){const sd=Math.sign(lat),vn=(w.vx*n.x+w.vz*n.z)*sd;w.x-=n.x*sd*(Math.abs(lat)-WW);w.z-=n.z*sd*(Math.abs(lat)-WW);
-    if(vn>0){w.vx-=n.x*sd*vn*1.4;w.vz-=n.z*sd*vn*1.4;w.vx*=.86;w.vz*=.86;if(vn>1.5)impact(w,vn,[n.x*sd,n.z*sd]);}}
+    if(vn>0){const rb=w.pin?1.03:1.4;w.vx-=n.x*sd*vn*rb;w.vz-=n.z*sd*vn*rb;w.vx*=w.pin?.8:.86;w.vz*=w.pin?.8:.86;if(vn>1.5)impact(w,vn,[n.x*sd,n.z*sd]);}}   /* the player's Le Mans wreck does not bounce off: it stays pinned along the rail */
   w.e.s=bi*SEG;w.e.lat=clamp(lat,-8.5,8.5);
   if(w.fire&&!w.burn&&w.t>w.fire)ignite(w);
   if(w.burn){w.burn=Math.min(1,w.burn+dt*.45);const c=lerp(1,.14,w.burn);car.bodyMat.color.setScalar(c);car.canopy.material.color.setScalar(c);
@@ -2618,7 +2631,7 @@ function ohNo(){try{if(window.speechSynthesis){const u=new SpeechSynthesisUttera
 // Crash inside the Posey Tube: the whole tube goes up in flames for a couple of seconds, then the car is put back on the road past the exit.
 const TUF={st:null,V:new THREE.Vector3()};
 function tubeFire(dt){const F=TUF;if(!F.st){const m=new THREE.MeshBasicMaterial({color:0xff7a1c,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false,fog:false});F.st=[];for(let n=0;n<8;n++){const o=new THREE.Mesh(new THREE.BoxGeometry(.5,.9,26),m.clone());o.visible=false;scene.add(o);F.st.push(o);}}
-  const c=PL.crash,tb=c&&!c.dive&&PL.idx>=Z.tu0&&PL.idx<=Z.tu1;
+  const c=PL.crash,tb=DRIVE&&c&&!c.dive&&PL.idx>=Z.tu0&&PL.idx<=Z.tu1;
   if(!tb){if(F.on){F.on=0;for(const o of F.st)o.visible=false;}return;}
   if(!F.on){F.on=1;c.tf=0;sfxCrunch(1);}c.tf+=dt;
   const len=Z.tu1-Z.tu0;for(let n=0;n<8;n++){const o=F.st[n],j=Math.max(Z.tu0,Math.min(Z.tu1-1,Math.round(PL.idx+(n-3.5)*(len/8)*.6))),w=RW+XW[j];at(j*SEG,(n%2?1:-1)*(w-.6),.45,F.V);o.position.copy(F.V);o.rotation.set(0,yaw(j),0);o.scale.set(1,.7+.5*Math.sin(tmNow()*13+n*2.1),1);o.material.opacity=.45+.3*Math.sin(tmNow()*17+n);o.visible=true;}
@@ -5882,7 +5895,7 @@ function autopilot(n){let crashes=0,was=false,off=0,vmax=0;const pe=ents.find(e=
     updateWeather(1/60);sim(1/60);if(PL.crash&&!was)crashes++;was=!!PL.crash;if(Math.abs(pe.lat)>edgeAt[PL.idx])off++;vmax=Math.max(vmax,pe.v);}
   for(const k in keys)keys[k]=false;G.autoSt=null;
   return{t:G.raceT.toFixed(0),crashes,offTrackSec:(off/60).toFixed(1),laps:PL.lapN,best:PL.best.toFixed(1),vmaxKmh:Math.round(vmax*3.6),pos:standings().indexOf(pe)+1,state:G.state};}
-window.__test={FOLK,buildHero:m=>buildHero(m),rsrIn:()=>rsrSplash(1,12,PL.idx),CLAY,DHOU,RAD,WCIG,boof:t=>boof(t),CENT,WQK,EYEB,LAKE,LKR,lakeIn:()=>{const n=Nn[PL.idx];lakeRailBreak(PL.idx);lakeStart({src:"rail",x:PL.x,y:(PL.cy||H[PL.idx])+.3,z:PL.z,vx:n.x*10,vz:n.z*10,vy:3,rs:(PL.idx-15)*SEG});},BIGI,WIGU,CATP,FWI,fwIgu:()=>{const pe=ents.find(e=>e.player);fwIguStart(pe.s+60);},TUBI,RIGI,NUDG,nudge:()=>nudgeStart(),IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,TDR,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
+window.__test={crash:(v,w)=>crashPlayer(v,w),camAt:(x,y,z)=>camP.set(x,y,z),FOLK,buildHero:m=>buildHero(m),rsrIn:()=>rsrSplash(1,12,PL.idx),CLAY,DHOU,RAD,WCIG,boof:t=>boof(t),CENT,WQK,EYEB,LAKE,LKR,lakeIn:()=>{const n=Nn[PL.idx];lakeRailBreak(PL.idx);lakeStart({src:"rail",x:PL.x,y:(PL.cy||H[PL.idx])+.3,z:PL.z,vx:n.x*10,vz:n.z*10,vy:3,rs:(PL.idx-15)*SEG});},BIGI,WIGU,CATP,FWI,fwIgu:()=>{const pe=ents.find(e=>e.player);fwIguStart(pe.s+60);},TUBI,RIGI,NUDG,nudge:()=>nudgeStart(),IGF,IGC,IGCL,igFam:()=>{IGF.cd=0;},rigiCross:()=>{RIGI.cd=0;},mosq:()=>mosqStart(2.3),PRIS,TOX,TDR,SQX,MOSQ,BEETLE:BTL,beetle:k=>beetleStart(k||"bb"),EYEM,eyeMon:(d)=>eyeMonPlace(d||300),DADB,dadBeetle:(d)=>dadBeetlePlace(d||450),DSTK,dadStacks:()=>DSTK.forEach((s,j)=>{s.n=5+j*3;}),BIGF,bigfoot:()=>bigfootStart(),BAYM,seaMon:b=>seaMonStart(b),SFB,HMQ,HYI,beetleCrush:p=>beetleCrush(p),TNK,tankerSmash:()=>tnkStart(),CRIT,MQ,GULL,CLF,LOGT,CROWS,BIRDS,SKUNK,TUMB,PENNY,SFX,SNAP,BRH,BK,TFL,MILL,AIR,GGQ,DUCK,DEB,CQ,FQ,CRACKS,fqArm,frame:()=>frame(true),Terrain,hills,VS,VE,VI,rst:u=>resetVehicle(VS,hero.M.dyn,u),dyn:()=>hero.M.dyn,vc,vcp,edgeAt,wallAt,G,PL,ents,keys,wx,wrecks,LT,ANN,struck,boltTo,intro:()=>INTRO,Z,NS,zoneOf,startDrive,startDive,EYES:()=>EYES,OILB,OILX,TRAF,BURN,QK,CABLE,H,SEG,P,scene,camera,THREE,kS,XW,
   jumpTo:k=>jumpTo(JUMPS[k]?JUMPS[k][0]:k),JUMPS,
   goto:i=>{i=wrapI(i);PL.idx=i;PL.x=P[i].x-Nn[i].x*3;PL.z=P[i].z-Nn[i].z*3;PL.h=G.camH=yaw(i);PL.vx=Math.sin(PL.h)*30;PL.vz=Math.cos(PL.h)*30;resetVehicle(VS,hero.M.dyn,30);ents.find(e=>e.player).s=i*SEG;first=true;},
   introAt:(type,n)=>{if(!INTRO)startIntro();const s=INTRO.shots.filter(x=>x.type===type)[n||0];G.t=s.t0+s.d*.4;INTRO.hold=1;return s;},step:n=>{for(let i=0;i<n;i++)sim(1/60);},autopilot,info:()=>renderer.info.render,
