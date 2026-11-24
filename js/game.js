@@ -2682,7 +2682,9 @@ const RIVC=[   // the field when you race the classics
   {base:'#c4231a',num:'34',helmet:'#d8d2c0',model:'p904',name:'J. AUBERT'},{base:'#17181a',pin:'#b9bcc0',num:'43',helmet:'#b9bcc0',model:'m1',name:'K. BRANDT'},{base:'#141c36',num:'54',helmet:'#e6e1d0',model:'ghibli',name:'L. FERRO'},
   {base:'#e3b92e',edge:'#141414',num:'64',helmet:'#141414',model:'bb',name:'R. CONTI'},{base:'#d8401c',num:'71',helmet:'#e6e1d0',model:'lp400',name:'H. WEISS'},{base:'#c9cbc8',nose:'#b3241c',num:'35',helmet:'#b3241c',model:'p904',name:'P. LANG'},
   {base:'#5e1418',num:'82',helmet:'#1a1a1a',model:'f400',name:'M. ROSSI'},{base:'#b8402e',patina:1,num:'65',helmet:'#e6e1d0',model:'bz',name:'D. MARTIN'}];
-function setupGrid(){for(const r of[...RIV,...RIVC])if(r.car)r.car.visible=false;for(const w of [...wrecks])endWreck(w);fires.length=0;ents.length=0;const order=DRIVE?['p']:[0,1,2,3,4,'p',5,6];
+// Le Mans title: one car of each model in the class stands on the echelon, the player's in its own slot (titleGrid); hidden again by setupGrid
+const SHOWC={};
+function setupGrid(){for(const k in SHOWC)SHOWC[k].visible=false;for(const r of[...RIV,...RIVC])if(r.car)r.car.visible=false;for(const w of [...wrecks])endWreck(w);fires.length=0;ents.length=0;const order=DRIVE?['p']:[0,1,2,3,4,'p',5,6];
   order.forEach((id,k)=>{const s=DRIVE?S0:S0-6-k*7.5,lat=DRIVE?-(5.3+XW[START_I]):RW-2.2;   /* free drive: parked at the kerb in front of the house */   // echelon start: cars parked nose-out along the pit side, as in 1970
     if(id==='p'){ents.push({player:true,car:hero,s,lat,v:0,dist:s-S0,name:'S. McQUEEN',num:LIV().num,out:0});at(s,lat,0,V);PL.x=V.x;PL.z=V.z;PL.idx=wrapI(Math.round(s/SEG));PL.h=yaw(PL.idx)-(DRIVE?0:GRID_A);G.camH=yaw(PL.idx);PL.vx=PL.vz=0;PL.steer=0;resetVehicle(VS,hero.M.dyn,0);PL.crash=null;PL.auto=null;PL.safe=0;PL.lapN=0;if(hero.body&&hero.M&&hero.body.geometry!==hero.M.geo){hero.body.geometry.dispose();hero.body.geometry=hero.M.geo;}PL.last=PL.best=0;}
     else{const r=(MKEYS===CLASSICS?RIVC:RIV)[id];if(!r.car)r.car=mk(r);r.car.visible=true;ents.push({car:r.car,s,lat,v:0,dist:s-S0,skill:.93+id*.01+rnd()*.015,vmax:MODELS[r.model].top*.94,off:rr(-1,1),pass:0,out:0,doom:0,ang:-GRID_A,name:r.name,num:r.num});}});
@@ -2945,7 +2947,32 @@ composer.addPass(grade);
 
 await BOOT.step('DASHBOARD AND CONTROLS',.93);
 /* ================= UI + INPUT ================= */
-function refreshTitle(){const M=MODELS[G.model],W=WX[G.weather];$('oCls').textContent=M.cls?'CLASSIC CARS':'RACING CARS';$('oModel').textContent=`${M.name} · ${M.year}`;$('oDesc').textContent=`${M.desc} Top speed ${Math.round(M.top*3.6)} km/h.`;$('oWx').textContent=W.name;$('oWxD').textContent=W.d;$('wxl').textContent=W.name;$('oLiv').textContent=LIV().name;$('oLivD').textContent=LIV().d;$('oSens').textContent=Math.round(G.sens*100)+'%';}
+function refreshTitle(){const M=MODELS[G.model],W=WX[G.weather];$('oCls').textContent=M.cls?'CLASSIC CARS':'RACING CARS';$('oModel').textContent=`${M.name} · ${M.year}`;$('oDesc').textContent=`${M.desc} Top speed ${Math.round(M.top*3.6)} km/h.`;$('oWx').textContent=W.name;$('oWxD').textContent=W.d;$('wxl').textContent=W.name;$('oLiv').textContent=LIV().name;$('oLivD').textContent=LIV().d;$('oSens').textContent=Math.round(G.sens*100)+'%';
+  if(!DRIVE){const E=ENG[G.model]||['',6],L=LIV(),A=LIVS[G.model],sw=$('cSw');$('cNum').textContent=L.num?'No. '+L.num:'';$('cName').textContent=M.name;$('cYear').textContent=M.year;$('cEng').textContent=E[0];$('cTop').textContent=`${Math.round(M.top*3.6)} km/h · ${Math.round(M.top*2.23694)} mph`;$('cDesc').textContent=M.desc;$('cLiv').textContent=L.name;
+    sw.innerHTML='';A.forEach((l,j)=>{const b=document.createElement('button'),ac=l.stripe||l.nose||l.swirl||l.edge||l.twin||l.pin||l.base;b.style.background=`linear-gradient(135deg,${l.base} 0 56%,${ac} 56% 74%,${l.base} 74%)`;b.title=l.name;if(j===G.liv%A.length)b.className='on';b.onclick=()=>{b.blur();pickLiv(j);};sw.appendChild(b);});}}
+// the race programme's line for each car: engine, and how many cylinders fire per turn (half the cylinders), which sets the pitch of its start-up blip
+const ENG={k:['4.5-litre air-cooled flat-12 · 580 bhp',6],o:['4.5-litre air-cooled flat-12 · 520 bhp',6],lh:['4.9-litre air-cooled flat-12 · 600 bhp',6],lhs:['4.5-litre air-cooled flat-12 · 580 bhp',6],f512:['5.0-litre V12 · 550 bhp',6],gt40:['4.7-litre Ford V8 · 390 bhp',4],
+  m1:['3.5-litre straight-six · 277 bhp',3],p904:['2.0-litre flat-four · 180 bhp',2],ghibli:['4.7-litre V8 · 330 bhp',4],bb:['4.9-litre flat-12 · 360 bhp',6],lp400:['4.0-litre V12 · 375 bhp',6],f400:['4.0-litre V12 · 340 bhp',6],bz:['5.4-litre Chevrolet V8 · 365 bhp',4],b507:['3.2-litre V8 · 150 bhp',4],van:['2.4-litre straight-six · 85 bhp',3]};
+function titleGrid(){if(DRIVE||QS.has('auto')||QS.has('render')||QS.has('a'))return;for(const k in SHOWC)SHOWC[k].visible=false;for(const e of ents)if(!e.player)e.car.visible=false;const pe=ents.find(e=>e.player);
+  MKEYS.forEach((m,k)=>{const s=S0-6-k*7.5,lat=RW-2.2,i=wrapI(Math.floor(s/SEG));
+    if(m===G.model){pe.s=s;pe.dist=s-S0;at(s,lat,0,V);PL.x=V.x;PL.z=V.z;PL.idx=wrapI(Math.round(s/SEG));PL.h=yaw(PL.idx)-GRID_A;G.camH=yaw(PL.idx);hero.position.set(V.x,V.y,V.z);hero.rotation.set(0,PL.h,0);return;}
+    let c=SHOWC[m];if(!c){c=SHOWC[m]=mk({...LIVS[m][0],model:m});c.showM=m;if(MODELS[m].hs)c.scale.setScalar(MODELS[m].hs);}c.visible=true;at(s,lat,0,c.position);c.rotation.set(0,yaw(i)-GRID_A,0);});}
+function pickModel(m){if(G.state!=='title')return;G.model=m;G.liv=0;buildHero(m);setupGrid();titleGrid();refreshTitle();G.titleClose=7;if(!DRIVE)G.blipAt=tm+.9;}
+function stepModel(d){const i=MKEYS.indexOf(G.model);pickModel(MKEYS[(i+d+MKEYS.length)%MKEYS.length]);}
+function pickLiv(j){if(G.state!=='title')return;G.liv=j;buildHero(G.model);setupGrid();titleGrid();refreshTitle();G.titleClose=7;}
+// a cold start on the grid: the starter grinds, the engine catches, revs once and settles to idle (pitch from the car's cylinder count)
+function sfxBlip(cy){if(!AC)return;const t=AC.currentTime+.02,f=r=>r/60*cy*.5;for(let i=0;i<5;i++){hit(t+i*.11,.07,.22,R(500,800),'bandpass',master);tone('square',36,t+i*.11,.08,.1,master,{lp:500});}
+  const t1=t+.58,out=AC.createGain(),lp=AC.createBiquadFilter();lp.type='lowpass';lp.Q.value=2;lp.frequency.setValueAtTime(500,t1);lp.frequency.linearRampToValueAtTime(3000,t1+.45);lp.frequency.exponentialRampToValueAtTime(700,t1+1.5);
+  out.gain.setValueAtTime(0,t1);out.gain.linearRampToValueAtTime(.45,t1+.05);out.gain.setValueAtTime(.45,t1+.2);out.gain.linearRampToValueAtTime(.65,t1+.45);out.gain.exponentialRampToValueAtTime(.16,t1+1.3);out.gain.linearRampToValueAtTime(0,t1+2.6);lp.connect(out);out.connect(master);
+  for(const[ty,m,g]of[['sawtooth',1,.5],['square',.5,.35],['sawtooth',2.01,.18]]){const o=AC.createOscillator(),gg=AC.createGain();o.type=ty;gg.gain.value=g;o.frequency.setValueAtTime(f(1500)*m,t1);o.frequency.exponentialRampToValueAtTime(f(1050)*m,t1+.2);o.frequency.exponentialRampToValueAtTime(f(6800)*m,t1+.5);o.frequency.exponentialRampToValueAtTime(f(1100)*m,t1+1.3);o.connect(gg);gg.connect(lp);o.start(t1);o.stop(t1+2.7);}
+  hit(t1,.12,.5,300,'lowpass',master);}
+// the Le Mans title camera: low and close beside the chosen car like a period grid photo, gliding along the echelon to the next one; the player's driver stands by his car; the start-up blip and its exhaust smoke
+function walkCam(rdt){const k=1-Math.exp(-rdt*1.7),c=hero;c.localToWorld(V.set(-2.3,.78+Math.sin(tm*.3)*.04,7));c.localToWorld(V2.set(-.55,.55,0));
+  if(!G.wk){G.wk=1;camP.copy(V);look.copy(V2);}else{camP.lerp(V,k);look.lerp(V2,Math.min(1,k*1.4));}camera.position.copy(camP);camera.fov=lerp(camera.fov,36,.1);hero.canopy.visible=true;interior.visible=false;
+  const r=runners[5];r.visible=true;r.scale.setScalar(1);c.localToWorld(r.position.set(-1.45,0,.75));r.position.y=c.position.y;r.rotation.y=c.rotation.y-.55+Math.sin(tm*.35)*.12;r.legs[0].rotation.x=r.legs[1].rotation.x=0;r.arms[0].rotation.x=r.arms[1].rotation.x=.12;
+  if(G.blipAt&&tm>=G.blipAt){G.blipAt=0;sfxBlip((ENG[G.model]||[0,6])[1]);G.puffB=tm+.6;G.puffT=tm+2.4;}
+  if(G.puffT&&tm>G.puffB&&tm<G.puffT){const u=tm-G.puffB,big=u<.3||(u>.3&&u<.75);if(Math.random()<rdt*(big?45:9)){const zr=c.M.zR!=null?c.M.zR:-2,fx=Math.sin(c.rotation.y),fz=Math.cos(c.rotation.y),sp=R(.8,big?2.6:1.2);c.localToWorld(V.set(R(-.3,.3),.28,zr-.2));
+    puff(V,-fx*sp+R(-.3,.3),R(.25,.8),-fz*sp+R(-.3,.3),.3,big?1.9:1.2,R(1,1.8),big?.42:.26,u<.3?0x6f6d6b:0xb9bcc4);}}}
 function startRace(){clearCrack();initAudio();if(AC&&AC.state==='suspended')AC.resume();window.focus();$('title').classList.add('hide');$('res').style.display='none';for(const id of['tl','tr','br','lf','map','bl'])$(id).classList.remove('hide');
   seed=7+Math.random()*1000|0;setupGrid();hero.visible=true;G.state='count';G.t=0;G.count=4;PL.lapStart=0;first=true;}
 // ---- free drive: start, zone-by-zone atmosphere, and the bridge's horns and gulls
@@ -5829,9 +5856,9 @@ addEventListener('keydown',e=>{const c=codeOf(e);keys[c]=true;if(['ArrowUp','Arr
     if(HOME){if(c==='ArrowRight'||c==='ArrowLeft'||c==='ArrowUp'||c==='ArrowDown'){trkSel=1-trkSel;showHome();}if(c==='Enter'||c==='Space')pickTrack(trkSel===1);if(e.key==='1')pickTrack(false);if(e.key==='2')pickTrack(true);if(c in JKEY)pickTrack(true,JKEY[c]);return;}
     if(DRIVE&&c in JKEY&&c!=='KeyH'){JUMP=JKEY[c];showHome();return;}
     if(c==='Escape'||c==='Backspace'){HOME=true;trkSel=DRIVE?1:0;showHome();return;}
-    if(c==='KeyV'){MKEYS=MKEYS===RACERS?CLASSICS:RACERS;G.model=MKEYS[0];G.liv=0;buildHero(G.model);setupGrid();refreshTitle();G.titleClose=7;}   // racing cars / classic cars
-    if(c==='ArrowRight'||c==='ArrowLeft'){const i=MKEYS.indexOf(G.model);G.model=MKEYS[(i+(c==='ArrowRight'?1:MKEYS.length-1))%MKEYS.length];G.liv=0;buildHero(G.model);setupGrid();refreshTitle();G.titleClose=7;}
-    if(c==='KeyD'||c==='KeyA'){{const n=LIVS[G.model].length;G.liv=(G.liv%n+(c==='KeyD'?1:n-1))%n;}buildHero(G.model);setupGrid();refreshTitle();G.titleClose=7;}
+    if(c==='KeyV'){MKEYS=MKEYS===RACERS?CLASSICS:RACERS;pickModel(MKEYS[0]);}   // racing cars / classic cars
+    if(c==='ArrowRight'||c==='ArrowLeft')stepModel(c==='ArrowRight'?1:-1);
+    if(c==='KeyD'||c==='KeyA'){const n=LIVS[G.model].length;pickLiv((G.liv%n+(c==='KeyD'?1:n-1))%n);}
     if(c==='ArrowDown'||c==='ArrowUp'){const i=WKEYS.indexOf(G.weather);G.weather=WKEYS[(i+(c==='ArrowDown'?1:4))%5];refreshTitle();}
     if(c==='Enter'){if(DRIVE)startDrive();else startIntro();}
     if(c==='Digit1'||c==='Numpad1'||e.key==='1'){pickTrack(false);return;}if(c==='Digit2'||c==='Numpad2'||e.key==='2'){pickTrack(true);return;}
@@ -5851,6 +5878,11 @@ addEventListener('keydown',e=>{const c=codeOf(e);keys[c]=true;if(['ArrowUp','Arr
 addEventListener('keyup',e=>{keys[codeOf(e)]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 addEventListener('pointerdown',()=>{window.focus();initAudio();if(AC&&AC.state==='suspended')AC.resume();});
+// Le Mans title: click or tap a car on the grid to choose it; the card's arrows and the start line work by touch too
+if(!DRIVE){const RAYC=new THREE.Raycaster(),PTR=new THREE.Vector2();
+  renderer.domElement.addEventListener('pointerdown',e=>{if(G.state!=='title'||HOME)return;PTR.set(e.clientX/innerWidth*2-1,1-e.clientY/innerHeight*2);RAYC.setFromCamera(PTR,camera);const h=RAYC.intersectObjects([hero,...MKEYS.map(m=>SHOWC[m]).filter(c=>c&&c.visible)],true)[0];if(!h)return;
+    let o=h.object;while(o&&!o.showM&&o!==hero)o=o.parent;if(o&&o.showM)pickModel(o.showM);else if(o===hero)G.blipAt=tm+.05;});
+  $('cPrev').onclick=()=>{$('cPrev').blur();stepModel(-1);};$('cNext').onclick=()=>{$('cNext').blur();stepModel(1);};const go=document.querySelector('#title .go');go.style.cursor='pointer';go.onclick=()=>{if(G.state==='title'&&!HOME)startIntro();};}
 addEventListener('resize',()=>{if(!innerWidth||!innerHeight)return;renderer.setSize(innerWidth,innerHeight);composer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;grade.uniforms.res.value.set(innerWidth,innerHeight);});
 const mapC=$('map').getContext('2d');let mb;{let a=1e9,b=-1e9,c=1e9,d=-1e9;for(const p of P){a=Math.min(a,p.x);b=Math.max(b,p.x);c=Math.min(c,p.z);d=Math.max(d,p.z);}const sc=130/Math.max(b-a,d-c);mb=p=>[10+(p.x-a)*sc,10+(p.z-c)*sc];}
 function drawMap(){mapC.clearRect(0,0,150,150);mapC.strokeStyle='rgba(239,233,214,.75)';mapC.lineWidth=3;mapC.beginPath();for(let i=0;i<=NS;i+=6){const[x,y]=mb(P[i%NS]);i?mapC.lineTo(x,y):mapC.moveTo(x,y);}mapC.closePath();mapC.stroke();
@@ -5949,7 +5981,7 @@ function sfxTick(){if(!AC)return;const t=AC.currentTime;tone('square',2100,t,.01
 
 await BOOT.step('WARMING UP',.95);
 /* ================= LOOP ================= */
-buildHero(G.model);setupGrid();refreshTitle();
+buildHero(G.model);setupGrid();titleGrid();refreshTitle();if(!DRIVE)$('title').classList.add('lm');
 if(DRIVE){document.querySelector('#title h1').innerHTML='ALAMEDA<br>AROUND THE BAY';showHome();document.querySelector('#title .go').textContent='PRESS ENTER TO DRIVE';
   document.querySelector('#title .keys').innerHTML='ESC — BACK TO TRACK CHOICE<br>Paru St, the Posey Tube, the port, the Bay Bridge, Hyde St, the Golden Gate, the redwoods, Richmond, I-80 and home.';$('of').textContent='';}
 if(QS.has('render')){$('title').classList.add('hide');}
@@ -5989,7 +6021,7 @@ function frame(manual){
   if(flagman){const near=wdiff(S0-pe.s),wave=G.state==='finish'||tm<(G.waveT||0)||G.state==='count'||(PL.lapN>=LAPS-1&&near<320&&near>-30);flagman.arm.rotation.z=wave?Math.sin(tm*9)*.75:lerp(flagman.arm.rotation.z,2.5,.1);flagman.flag.rotation.y=wave?Math.sin(tm*13)*.5:0;}
   // McQueen is out of the car, smoking, whenever he is not driving
   const w=hero.wreck,idle=G.state==='title'||(G.paused&&!w)||(G.state==='finish'&&G.stopT>.6&&!w),after=!!(PL.crash&&w&&PL.crash.t>2.4&&Math.hypot(w.vx,w.vz)<1.5&&w.y<=0);
-  mcq.visible=idle||after;
+  mcq.visible=(idle&&(DRIVE||G.state!=='title'))||after;   /* on the Le Mans title the driver in his race suit stands by the car instead (walkCam) */
   if(idle){V.set(-1.55,0,.35);hero.localToWorld(V);mcq.position.copy(V);mcq.rotation.y=hero.rotation.y-1.75;}
   else if(after){const i=w.idx;mcq.position.set(w.x-T[i].x*5-Nn[i].x*PL.crash.sd*2.5,0,w.z-T[i].z*5-Nn[i].z*PL.crash.sd*2.5);mcq.rotation.y=Math.atan2(w.x-mcq.position.x,w.z-mcq.position.z);}
   const diving=!!(PL.crash&&PL.crash.dive);if(diving)diveScene(tm);
@@ -6000,8 +6032,9 @@ function frame(manual){
   const fx=Math.sin(PL.h),fz=Math.cos(PL.h),f=pe.v,cock=G.cam===1&&!idle&&!PL.crash;
   hero.canopy.visible=!cock;interior.visible=cock;mcq.visible=mcq.visible&&G.state!=='count';
   if(G.titleClose>0)G.titleClose-=rdt;
-  const gridShot=G.state==='count'||(G.state==='title'&&G.titleClose<=0&&!QS.has('a')&&!DRIVE);
+  const gridShot=G.state==='count',walk=G.state==='title'&&!DRIVE&&!QS.has('a');
   if(shot&&G.state==='intro')introCam(shot);
+  else if(walk)walkCam(rdt);
   else if(gridShot){ // the 1970 start photograph: long lens, high behind the grid, looking down the pit straight
     at(S0-96+Math.sin(tm*.15)*2,8.6,6.2,camera.position);camera.fov=25;at(S0+30,1.5,.4,look);hero.canopy.visible=true;interior.visible=false;}
   else if(idle){const a=QS.has('a')?+QS.get('a'):G.state==='title'?-.85+Math.sin(tm*.12)*.55:-.85+tm*.2;camP.set(hero.position.x+Math.sin(hero.rotation.y+a)*8.8,1.15+Math.sin(tm*.2)*.2,hero.position.z+Math.cos(hero.rotation.y+a)*8.8);camera.position.copy(camP);camera.fov=27;look.copy(hero.position).setY(.75);V.set(G.state==='title'?-1.5:-.5,0,.6);look.add(V.applyAxisAngle(YAX,hero.rotation.y));}
