@@ -5734,7 +5734,7 @@ addEventListener('keydown',e=>{const c=codeOf(e);keys[c]=true;if(['ArrowUp','Arr
     return;}
   if(G.state==='intro'){if(c==='Enter'||c==='Space'||c==='Escape')G.t=INTRO.T;return;}   // skip the montage
   if(c==='Enter'&&G.state==='finish'&&$('res').style.display==='block')(DRIVE?startDrive:startRace)();
-  if(c==='KeyC')G.cam=(G.cam+1)%4;
+  if(c==='KeyC')G.cam=[4,2,3,0,1][G.cam]||0;   // cycle: chase, raised chase, cockpit, overhead, TV
   if(c==='KeyT'){const i=WKEYS.indexOf(G.weather);G.weather=WKEYS[(i+1)%5];refreshTitle();say(WX[G.weather].name,WX[G.weather].d,2.4);announce(WXFR[G.weather]);}
   if(c==='KeyN'){ANN.on=!ANN.on;if(!ANN.on&&window.speechSynthesis)speechSynthesis.cancel();say(ANN.on?'ANNOUNCER ON':'ANNOUNCER OFF','',1);}
   if(c==='KeyM'){musicOn=!musicOn;say(musicOn?'MUSIC ON':'MUSIC OFF','',1);}
@@ -5892,9 +5892,9 @@ function frame(manual){
   else if(PL.crash){if(!PL.crash.cam){PL.crash.cam=1;at(PL.crash.s+55,-PL.crash.sd*5.5,1.6,camP);look.copy(hero.position);}camera.position.copy(camP);camera.position.x+=jx;camera.position.y+=jy;
     const d=camP.distanceTo(hero.position);camera.fov=lerp(camera.fov,clamp(2*Math.atan(6/d)*57.3,9,38),.08);look.lerp(V.copy(hero.position).setY(hero.position.y+.6),.2);}
   else if(G.state==='finish'&&G.finT<4.4&&!DRIVE){at(S0-15,-(RW-3.4),1.05,camera.position);camera.fov=lerp(camera.fov,34,.2);look.lerp(V.copy(hero.position).setY(.6),first?1:.25);}   // low by the line as the flag falls
-  else if(G.cam===0){ // chase: the camera swings round a little behind the car, so you see it turn in
-    let dh=((PL.h-G.camH+Math.PI*3)%(Math.PI*2))-Math.PI;G.camH+=dh*clamp(rdt*4.5,0,1);if(first)G.camH=PL.h;
-    const gy=PL.cy||0,sl=PL.air?0:PL.slope||0,mq=MOSQ.lift?clamp((PL.cy-PL.gy)/12,0,1):0,cd=7.4+mq*4;camera.position.set(PL.x-Math.sin(G.camH)*cd+jx,(hero.M.camY||1.75)+gy-sl*7.4+jy+mq*4.5+Math.sin(tm*31)*.008*f/60,PL.z-Math.cos(G.camH)*cd);camera.fov=lerp(56,74,clamp(f/105,0,1));look.set(PL.x+fx*9,.85+gy+sl*9-mq*3.5,PL.z+fz*9);
+  else if(G.cam===0||G.cam===4){ // chase: the camera swings round a little behind the car, so you see it turn in. Mode 4 (raised chase): further back and higher, looking down about 20 degrees onto the car and the track ahead
+    const hi=G.cam===4;let dh=((PL.h-G.camH+Math.PI*3)%(Math.PI*2))-Math.PI;G.camH+=dh*clamp(rdt*4.5,0,1);if(first)G.camH=PL.h;
+    const gy=PL.cy||0,sl=PL.air?0:PL.slope||0,mq=MOSQ.lift?clamp((PL.cy-PL.gy)/12,0,1):0,cd=(hi?10:7.4)+mq*4;camera.position.set(PL.x-Math.sin(G.camH)*cd+jx,(hi?7:hero.M.camY||1.75)+gy-sl*7.4+jy+mq*4.5+Math.sin(tm*31)*.008*f/60,PL.z-Math.cos(G.camH)*cd);camera.fov=hi?lerp(58,68,clamp(f/105,0,1)):lerp(56,74,clamp(f/105,0,1));look.set(PL.x+fx*(hi?8:9),(hi?.5:.85)+gy+sl*9-mq*3.5,PL.z+fz*(hi?8:9));
     if(!DRIVE&&G.panT!=null&&G.panT<3.4&&G.state==='race'){const u=G.panT;G.panT+=rdt;   // Le Mans opening: from high and wide over the grid, down into a low view just behind the 917's rear wheel, then over to the chase camera (control is live throughout)
       const sx=Math.cos(PL.h),sz=-Math.sin(PL.h),a=sst(u,0,2.1),ah=sst(u,0,1.7),b=sst(u,2.1,3.4);
       V.set(lerp(PL.x-fx*28+sx*11,PL.x-fx*3.3-sx*1.35,a),gy+lerp(16,.42,ah),lerp(PL.z-fz*28+sz*11,PL.z-fz*3.3-sz*1.35,a)).lerp(camera.position,b);camera.position.copy(V);
